@@ -23,17 +23,17 @@ collections:
     label_singular: "デバイス記事"
     folder: "src/content/posts/devices"
     create: true
-    slug: "{{fields.permalink}}"
+    slug: "{{year}}{{month}}{{day}}-{{fields.permalink}}"
     extension: "md"
     format: "frontmatter"
     summary: "{{title}} - {{date}}"
     sortable_fields: ["date", "title"]
     fields:
       - { label: "タイトル", name: "title", widget: "string" }
-      - label: "記事URL"
+      - label: "記事URLキーワード"
         name: "permalink"
         widget: "string"
-        hint: "半角英数字とハイフンのみ（例: my-first-post）。これがURLになります。同じカテゴリ内で重複不可。"
+        hint: "短い英語キーワード（例: review-iphone）。日付は自動付与され「20250214-review-iphone」のようなURLになります。"
         pattern: ["^[a-z0-9][a-z0-9-]*[a-z0-9]$", "半角英小文字・数字・ハイフンのみ使用できます（先頭と末尾にハイフン不可）"]
       - { label: "公開日", name: "date", widget: "datetime", format: "YYYY-MM-DD", date_format: "YYYY-MM-DD", time_format: false }
       - { label: "下書き", name: "draft", widget: "boolean", default: false }
@@ -52,17 +52,17 @@ collections:
     label_singular: "ファイナンス記事"
     folder: "src/content/posts/finance"
     create: true
-    slug: "{{fields.permalink}}"
+    slug: "{{year}}{{month}}{{day}}-{{fields.permalink}}"
     extension: "md"
     format: "frontmatter"
     summary: "{{title}} - {{date}}"
     sortable_fields: ["date", "title"]
     fields:
       - { label: "タイトル", name: "title", widget: "string" }
-      - label: "記事URL"
+      - label: "記事URLキーワード"
         name: "permalink"
         widget: "string"
-        hint: "半角英数字とハイフンのみ（例: my-first-post）。これがURLになります。同じカテゴリ内で重複不可。"
+        hint: "短い英語キーワード（例: review-iphone）。日付は自動付与され「20250214-review-iphone」のようなURLになります。"
         pattern: ["^[a-z0-9][a-z0-9-]*[a-z0-9]$", "半角英小文字・数字・ハイフンのみ使用できます（先頭と末尾にハイフン不可）"]
       - { label: "公開日", name: "date", widget: "datetime", format: "YYYY-MM-DD", date_format: "YYYY-MM-DD", time_format: false }
       - { label: "下書き", name: "draft", widget: "boolean", default: false }
