@@ -62,24 +62,59 @@
         }
 
         /* --- エディタ・ツールバー --- */
-        [class*=EditorContainer],
+        [class*=EditorContainer] {
+          min-width: initial !important;
+          max-width: 100vw !important;
+        }
+
+        [class*=EditorControlBar] {
+          position: sticky !important;
+          top: 0 !important;
+          z-index: 100 !important;
+          background: white !important;
+          width: 100% !important;
+          max-width: 100vw !important;
+          overflow: visible !important;
+        }
+
         [class*=ToolbarContainer] {
           min-width: initial !important;
-          overflow-x: auto !important;
+          max-width: 100% !important;
+          overflow: visible !important;
         }
 
         [class*=EditorControlBar] [class*=ToolbarContainer] {
           display: flex !important;
           flex-direction: column !important;
+          flex-wrap: wrap !important;
+          width: 100% !important;
+          padding: 8px !important;
+          gap: 6px !important;
         }
 
+        /* 戻るボタン・ステータス行 */
         [class*=ToolbarSubSectionFirst] {
           display: flex !important;
           flex-direction: row !important;
+          flex-wrap: wrap !important;
+          width: 100% !important;
         }
 
+        /* 保存・公開ボタン行 */
+        [class*=ToolbarSubSectionLast] {
+          display: flex !important;
+          flex-wrap: wrap !important;
+          width: 100% !important;
+          gap: 6px !important;
+        }
+
+        /* 保存/公開ボタンを目立たせる */
+        [class*=ToolbarSubSectionLast] button,
         [class*=PublishedToolbarButton] {
-          padding: 0 8px !important;
+          padding: 8px 12px !important;
+          min-height: 44px !important;
+          font-size: 14px !important;
+          flex: 1 1 auto !important;
         }
 
         [class*=PublishedToolbarButton]::after {
