@@ -1,5 +1,6 @@
 backend:
-  name: git-gateway
+  name: github
+  repo: bickojima/my-blog
   branch: main
 
 # 画像アップロード先（Astroのpublic配下に置く）
