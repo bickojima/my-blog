@@ -8,31 +8,56 @@ public_folder: "/images/uploads"
 
 locale: "ja"
 
+# エディタの設定
+slug:
+  encoding: "unicode"
+  clean_accents: false
+
 collections:
   - name: "devices"
-    label: "Devices"
+    label: "デバイス"
+    label_singular: "デバイス記事"
     folder: "src/content/posts/devices"
     create: true
     slug: "{{slug}}"
     extension: "md"
     format: "frontmatter"
+    summary: "{{title}} - {{date}}"
+    sortable_fields: ["date", "title"]
     fields:
       - { label: "タイトル", name: "title", widget: "string" }
-      - { label: "公開日", name: "date", widget: "datetime", format: "YYYY-MM-DD" }
+      - { label: "公開日", name: "date", widget: "datetime", format: "YYYY-MM-DD", date_format: "YYYY-MM-DD", time_format: false }
       - { label: "下書き", name: "draft", widget: "boolean", default: false }
+      - { label: "カテゴリ", name: "category", widget: "string", default: "devices" }
+      - label: "タグ"
+        name: "tags"
+        widget: "list"
+        required: false
+        default: []
+      - { label: "サムネイル画像", name: "thumbnail", widget: "image", required: false }
       - { label: "概要", name: "summary", widget: "text", required: false }
       - { label: "本文", name: "body", widget: "markdown" }
 
   - name: "finance"
-    label: "Finance"
+    label: "ファイナンス"
+    label_singular: "ファイナンス記事"
     folder: "src/content/posts/finance"
     create: true
     slug: "{{slug}}"
     extension: "md"
     format: "frontmatter"
+    summary: "{{title}} - {{date}}"
+    sortable_fields: ["date", "title"]
     fields:
       - { label: "タイトル", name: "title", widget: "string" }
-      - { label: "公開日", name: "date", widget: "datetime", format: "YYYY-MM-DD" }
+      - { label: "公開日", name: "date", widget: "datetime", format: "YYYY-MM-DD", date_format: "YYYY-MM-DD", time_format: false }
       - { label: "下書き", name: "draft", widget: "boolean", default: false }
+      - { label: "カテゴリ", name: "category", widget: "string", default: "finance" }
+      - label: "タグ"
+        name: "tags"
+        widget: "list"
+        required: false
+        default: []
+      - { label: "サムネイル画像", name: "thumbnail", widget: "image", required: false }
       - { label: "概要", name: "summary", widget: "text", required: false }
       - { label: "本文", name: "body", widget: "markdown" }

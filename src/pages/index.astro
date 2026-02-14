@@ -1,19 +1,102 @@
 ---
-const posts = await Astro.glob('../content/posts/**/*.md');
+import Base from '../layouts/Base.astro';
+
+const postFiles = import.meta.glob('../content/posts/**/*.md', { eager: true }) as Record<string, { frontmatter: Record<string, any> }>;
+const allPosts = Object.values(postFiles);
+const posts = allPosts
+  .filter(post => !post.frontmatter.draft)
+  .sort((a, b) => new Date(b.frontmatter.date).getTime() - new Date(a.frontmatter.date).getTime());
 ---
 
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8">
-  <title>My Blog</title>
-</head>
-<body>
-  <h1>My Blog</h1>
-  <ul>
+<Base title="My Blog">
+  <h1>記事一覧</h1>
+
+  {posts.length === 0 && <p class="no-posts">まだ記事がありません。</p>}
+
+  <div class="post-list">
     {posts.map(post => (
-      <li>{post.frontmatter.title}</li>
+      <article class="post-card">
+        <div class="post-meta">
+          <time datetime={post.frontmatter.date}>{post.frontmatter.date}</time>
+          {post.frontmatter.category && (
+            <span class="category">{post.frontmatter.category}</span>
+          )}
+        </div>
+        <h2 class="post-title">{post.frontmatter.title}</h2>
+        {post.frontmatter.summary && (
+          <p class="post-summary">{post.frontmatter.summary}</p>
+        )}
+        {post.frontmatter.tags && post.frontmatter.tags.length > 0 && (
+          <div class="post-tags">
+            {post.frontmatter.tags.map((tag: string) => (
+              <span class="tag">{tag}</span>
+            ))}
+          </div>
+        )}
+      </article>
     ))}
-  </ul>
-</body>
-</html>
+  </div>
+
+  <style>
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid #333;
+    }
+    .no-posts {
+      color: #999;
+      font-size: 1.1rem;
+      margin-top: 2rem;
+    }
+    .post-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+    .post-card {
+      background: #fff;
+      padding: 1.5rem;
+      border-radius: 8px;
+      border: 1px solid #e0e0e0;
+    }
+    .post-meta {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.5rem;
+    }
+    .post-meta time {
+      font-size: 0.85rem;
+      color: #888;
+    }
+    .category {
+      font-size: 0.75rem;
+      background: #e8f0fe;
+      color: #1a73e8;
+      padding: 0.15rem 0.6rem;
+      border-radius: 12px;
+    }
+    .post-title {
+      font-size: 1.3rem;
+      margin-bottom: 0.5rem;
+    }
+    .post-summary {
+      color: #666;
+      font-size: 0.95rem;
+      margin-bottom: 0.75rem;
+    }
+    .post-tags {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .tag {
+      font-size: 0.75rem;
+      background: #f0f0f0;
+      color: #555;
+      padding: 0.15rem 0.6rem;
+      border-radius: 4px;
+    }
+  </style>
+</Base>
