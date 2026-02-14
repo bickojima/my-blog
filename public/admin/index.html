@@ -401,47 +401,44 @@
 
         // メディアライブラリ：完全削除ボタンをアップロードボタンの隣に移動
         function moveDeleteButtonToHeader() {
-          var modal = document.querySelector('[class*="StyledModal"], [class*="MediaLibrary"]');
-          if (!modal) return;
-
-          // ヘッダー部分（アップロードボタンがある行）を探す
-          var libraryTop = modal.querySelector('[class*="LibraryTop"]');
-          if (!libraryTop) return;
-          if (libraryTop.dataset.deleteMoved) return;
-
-          // 完全削除ボタンを探す（モーダル内全体から）
-          var deleteBtn = null;
-          var allButtons = modal.querySelectorAll('button');
+          // アップロードボタンを探す（テキストで検索）
+          var uploadBtn = null;
+          var allButtons = document.querySelectorAll('button');
           for (var i = 0; i < allButtons.length; i++) {
-            if (allButtons[i].textContent.trim() === '完全削除' ||
-                allButtons[i].textContent.trim().includes('削除')) {
-              // LibraryTop内のボタンは除外
-              if (!libraryTop.contains(allButtons[i])) {
-                deleteBtn = allButtons[i];
+            var t = allButtons[i].textContent.trim();
+            if (t.includes('アップロード') || t === 'Upload') {
+              // モーダル内のボタンのみ対象
+              if (allButtons[i].closest('[class*="StyledModal"], [class*="MediaLibrary"]')) {
+                uploadBtn = allButtons[i];
+                break;
+              }
+            }
+          }
+          if (!uploadBtn) return;
+
+          // アップロードボタンの親コンテナ
+          var uploadContainer = uploadBtn.parentElement;
+          if (!uploadContainer || uploadContainer.dataset.deleteMoved) return;
+
+          // 完全削除ボタンを探す（モーダル内、uploadContainer外）
+          var deleteBtn = null;
+          var modal = uploadBtn.closest('[class*="StyledModal"], [class*="MediaLibrary"]');
+          if (!modal) return;
+          var modalButtons = modal.querySelectorAll('button');
+          for (var j = 0; j < modalButtons.length; j++) {
+            var txt = modalButtons[j].textContent.trim();
+            if (txt.includes('削除')) {
+              if (!uploadContainer.contains(modalButtons[j])) {
+                deleteBtn = modalButtons[j];
                 break;
               }
             }
           }
 
           if (deleteBtn) {
-            // アップロードボタンを探す
-            var uploadBtn = null;
-            var topButtons = libraryTop.querySelectorAll('button');
-            for (var j = 0; j < topButtons.length; j++) {
-              if (topButtons[j].textContent.trim().includes('アップロード')) {
-                uploadBtn = topButtons[j];
-                break;
-              }
-            }
-
-            if (uploadBtn) {
-              // アップロードボタンの直後に挿入
-              uploadBtn.parentNode.insertBefore(deleteBtn, uploadBtn.nextSibling);
-            } else {
-              // アップロードボタンが見つからなければヘッダー末尾に追加
-              libraryTop.appendChild(deleteBtn);
-            }
-            libraryTop.dataset.deleteMoved = 'true';
+            // アップロードボタンの直後に挿入（同じ親コンテナ内）
+            uploadContainer.insertBefore(deleteBtn, uploadBtn.nextSibling);
+            uploadContainer.dataset.deleteMoved = 'true';
           }
         }
 
