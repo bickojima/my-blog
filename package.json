@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "astro": "^5.17.1",
-    "decap-cms-app": "^3.10.0"
+    "decap-cms-app": "^3.10.0",
+    "rehype-figure": "^1.0.1"
   }
 }
