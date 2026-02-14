@@ -1,0 +1,10 @@
+name = "my-blog"
+compatibility_date = "2026-02-14"
+
+# Cloudflare Pages Configuration
+pages_build_output_dir = "dist"
+
+# Build command is defined in Cloudflare Pages dashboard or can be:
+# npm run build
+
+# Environment variables can be set in Cloudflare Pages dashboard
