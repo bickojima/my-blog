@@ -36,10 +36,7 @@ export async function onRequest(context) {
     }
 
     // Return success page that sends token to parent window
-    const content = JSON.stringify({
-      token: data.access_token,
-      provider: 'github'
-    });
+    const token = data.access_token.replace(/"/g, '\\"');
 
     const html = `
 <!DOCTYPE html>
@@ -51,10 +48,21 @@ export async function onRequest(context) {
   <p>Authorization successful. Closing...</p>
   <script>
     (function() {
-      const content = ${content};
-      const message = "authorization:github:success:" + JSON.stringify(content);
-      window.opener.postMessage(message, window.location.origin);
-      window.close();
+      const token = "${token}";
+      const provider = "github";
+
+      // Send message in the format Decap CMS expects
+      window.opener.postMessage(
+        "authorization:github:success:" + JSON.stringify({
+          token: token,
+          provider: provider
+        }),
+        "*"
+      );
+
+      setTimeout(function() {
+        window.close();
+      }, 100);
     })();
   </script>
 </body>
