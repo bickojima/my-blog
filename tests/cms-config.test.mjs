@@ -59,105 +59,96 @@ describe('CMS設定（config.yml）の検証', () => {
   });
 
   describe('コレクション設定', () => {
-    it('コレクションが2つ（devices, finance）定義されている', () => {
-      expect(config.collections).toHaveLength(2);
-      const names = config.collections.map((c) => c.name);
-      expect(names).toContain('devices');
-      expect(names).toContain('finance');
+    it('コレクションが1つ（posts）定義されている', () => {
+      expect(config.collections).toHaveLength(1);
+      expect(config.collections[0].name).toBe('posts');
     });
 
-    for (const collectionName of ['devices', 'finance']) {
-      describe(`${collectionName} コレクション`, () => {
-        const collection = config.collections.find(
-          (c) => c.name === collectionName
-        );
+    describe('posts コレクション', () => {
+      const collection = config.collections[0];
 
-        it('フォルダが正しいパスに設定されている', () => {
-          expect(collection.folder).toBe(
-            `src/content/posts/${collectionName}`
-          );
+      it('フォルダが正しいパスに設定されている', () => {
+        expect(collection.folder).toBe('src/content/posts');
+      });
+
+      it('新規作成が有効になっている', () => {
+        expect(collection.create).toBe(true);
+      });
+
+      it('拡張子がmdに設定されている', () => {
+        expect(collection.extension).toBe('md');
+      });
+
+      it('フォーマットがfrontmatterに設定されている', () => {
+        expect(collection.format).toBe('frontmatter');
+      });
+
+      it('スラッグパターンに年月パスが含まれている', () => {
+        expect(collection.slug).toContain('{{year}}');
+        expect(collection.slug).toContain('{{month}}');
+        expect(collection.slug).toContain('{{slug}}');
+      });
+
+      it('サマリー表示に日付とタイトルが含まれている', () => {
+        expect(collection.summary).toContain('{{date}}');
+        expect(collection.summary).toContain('{{title}}');
+      });
+
+      describe('フィールド定義', () => {
+        const fields = collection.fields;
+        const fieldNames = fields.map((f) => f.name);
+
+        it('必須フィールドがすべて定義されている', () => {
+          expect(fieldNames).toContain('title');
+          expect(fieldNames).toContain('date');
+          expect(fieldNames).toContain('draft');
+          expect(fieldNames).toContain('body');
         });
 
-        it('新規作成が有効になっている', () => {
-          expect(collection.create).toBe(true);
+        it('categoryフィールドが存在しない', () => {
+          expect(fieldNames).not.toContain('category');
         });
 
-        it('拡張子がmdに設定されている', () => {
-          expect(collection.extension).toBe('md');
+        it('オプションフィールドが定義されている', () => {
+          expect(fieldNames).toContain('tags');
+          expect(fieldNames).toContain('thumbnail');
+          expect(fieldNames).toContain('summary');
         });
 
-        it('フォーマットがfrontmatterに設定されている', () => {
-          expect(collection.format).toBe('frontmatter');
+        it('titleフィールドがstringウィジェット', () => {
+          const title = fields.find((f) => f.name === 'title');
+          expect(title.widget).toBe('string');
         });
 
-        it('スラッグパターンに日付が含まれている', () => {
-          expect(collection.slug).toContain('{{fields.date}}');
+        it('dateフィールドがdatetimeウィジェットでYYYY-MM-DD形式', () => {
+          const date = fields.find((f) => f.name === 'date');
+          expect(date.widget).toBe('datetime');
+          expect(date.format).toBe('YYYY-MM-DD');
         });
 
-        it('サマリー表示に日付とタイトルが含まれている', () => {
-          expect(collection.summary).toContain('{{date}}');
-          expect(collection.summary).toContain('{{title}}');
+        it('draftフィールドがbooleanウィジェットでデフォルトfalse', () => {
+          const draft = fields.find((f) => f.name === 'draft');
+          expect(draft.widget).toBe('boolean');
+          expect(draft.default).toBe(false);
         });
 
-        describe('フィールド定義', () => {
-          const fields = collection.fields;
-          const fieldNames = fields.map((f) => f.name);
+        it('tagsフィールドがlistウィジェットでオプション', () => {
+          const tags = fields.find((f) => f.name === 'tags');
+          expect(tags.widget).toBe('list');
+          expect(tags.required).toBe(false);
+        });
 
-          it('必須フィールドがすべて定義されている', () => {
-            expect(fieldNames).toContain('title');
-            expect(fieldNames).toContain('date');
-            expect(fieldNames).toContain('draft');
-            expect(fieldNames).toContain('category');
-            expect(fieldNames).toContain('body');
-          });
+        it('thumbnailフィールドがimageウィジェットでオプション', () => {
+          const thumbnail = fields.find((f) => f.name === 'thumbnail');
+          expect(thumbnail.widget).toBe('image');
+          expect(thumbnail.required).toBe(false);
+        });
 
-          it('オプションフィールドが定義されている', () => {
-            expect(fieldNames).toContain('tags');
-            expect(fieldNames).toContain('thumbnail');
-            expect(fieldNames).toContain('summary');
-          });
-
-          it('titleフィールドがstringウィジェット', () => {
-            const title = fields.find((f) => f.name === 'title');
-            expect(title.widget).toBe('string');
-          });
-
-          it('dateフィールドがdatetimeウィジェットでYYYY-MM-DD形式', () => {
-            const date = fields.find((f) => f.name === 'date');
-            expect(date.widget).toBe('datetime');
-            expect(date.format).toBe('YYYY-MM-DD');
-          });
-
-          it('draftフィールドがbooleanウィジェットでデフォルトfalse', () => {
-            const draft = fields.find((f) => f.name === 'draft');
-            expect(draft.widget).toBe('boolean');
-            expect(draft.default).toBe(false);
-          });
-
-          it('categoryフィールドがhiddenウィジェットで正しいデフォルト値', () => {
-            const category = fields.find((f) => f.name === 'category');
-            expect(category.widget).toBe('hidden');
-            expect(category.default).toBe(collectionName);
-          });
-
-          it('tagsフィールドがlistウィジェットでオプション', () => {
-            const tags = fields.find((f) => f.name === 'tags');
-            expect(tags.widget).toBe('list');
-            expect(tags.required).toBe(false);
-          });
-
-          it('thumbnailフィールドがimageウィジェットでオプション', () => {
-            const thumbnail = fields.find((f) => f.name === 'thumbnail');
-            expect(thumbnail.widget).toBe('image');
-            expect(thumbnail.required).toBe(false);
-          });
-
-          it('bodyフィールドがmarkdownウィジェット', () => {
-            const body = fields.find((f) => f.name === 'body');
-            expect(body.widget).toBe('markdown');
-          });
+        it('bodyフィールドがmarkdownウィジェット', () => {
+          const body = fields.find((f) => f.name === 'body');
+          expect(body.widget).toBe('markdown');
         });
       });
-    }
+    });
   });
 });
