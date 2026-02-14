@@ -5,6 +5,171 @@
     <meta name="robots" content="noindex" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Content Manager</title>
+    <style>
+      /*
+       * モバイル縦画面対応CSS
+       * Based on: https://github.com/hithismani/responsive-decap
+       */
+
+      /* iOS入力フォームの自動ズーム防止（font-size 16px以上で抑制） */
+      [data-slate-editor="true"], input, textarea, select {
+        font-size: 16px !important;
+      }
+
+      /* box-sizing統一でレイアウト崩れ防止 */
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      @media (max-width: 799px) {
+        /* --- アプリ全体のレイアウト --- */
+        [class*=AppHeaderContent],
+        [class*=AppMainContainer] {
+          margin-right: 0 !important;
+          margin-left: 0 !important;
+          min-width: calc(100vw - 24px) !important;
+          max-width: 100vw !important;
+        }
+
+        [class*=AppHeaderContent] {
+          display: flex !important;
+          justify-content: space-between !important;
+        }
+
+        [class*=AppHeaderQuickNewButton] {
+          width: 100% !important;
+        }
+
+        [class*=AppHeaderButton] {
+          padding-left: 4px !important;
+          padding-right: 4px !important;
+        }
+
+        /* --- サイドバー --- */
+        [class*=SidebarContainer] {
+          position: initial !important;
+          width: initial !important;
+        }
+
+        [class*=CollectionContainer] {
+          display: flex !important;
+          flex-direction: column !important;
+        }
+
+        [class*=CollectionMain] {
+          padding-left: 0 !important;
+          margin-top: 20px !important;
+        }
+
+        /* --- エディタ・ツールバー --- */
+        [class*=EditorContainer],
+        [class*=ToolbarContainer] {
+          min-width: initial !important;
+          overflow-x: auto !important;
+        }
+
+        [class*=EditorControlBar] [class*=ToolbarContainer] {
+          display: flex !important;
+          flex-direction: column !important;
+        }
+
+        [class*=ToolbarSubSectionFirst] {
+          display: flex !important;
+          flex-direction: row !important;
+        }
+
+        [class*=PublishedToolbarButton] {
+          padding: 0 8px !important;
+        }
+
+        [class*=PublishedToolbarButton]::after {
+          display: none !important;
+        }
+
+        /* --- コントロールパネル --- */
+        [class*=ControlPaneContainer] {
+          padding: 0px 10px !important;
+          max-width: 100vw !important;
+        }
+
+        [class*=PreviewPaneContainer-ControlPaneContainer] {
+          padding: 0 !important;
+        }
+
+        /* --- ドロップダウン --- */
+        [class*=DropdownList] {
+          position: fixed !important;
+          min-width: 20% !important;
+          width: 90% !important;
+          margin: auto !important;
+          height: fit-content !important;
+          top: auto !important;
+          left: 0 !important;
+          right: 0 !important;
+          bottom: 10px !important;
+          background: #e6f4fd !important;
+          border: 2px solid #3a69c7 !important;
+        }
+
+        /* --- モーダル（画像アップロード等） --- */
+        [class*=StyledModal] {
+          width: 90dvw !important;
+          width: 90% !important;
+        }
+
+        /* --- メディアライブラリ --- */
+        [class*=LibraryTitle] {
+          display: none !important;
+        }
+
+        [class*=LibraryTop] {
+          overflow-x: auto !important;
+          height: fit-content !important;
+          padding-bottom: 10px !important;
+          flex-wrap: wrap !important;
+        }
+
+        /* メディアライブラリのカードグリッドを縦画面に合わせる */
+        [class*=CardGrid] {
+          grid-template-columns: repeat(2, 1fr) !important;
+          gap: 8px !important;
+        }
+
+        /* メディアライブラリのカード画像を縮小表示 */
+        [class*=CardImage] {
+          height: 100px !important;
+        }
+
+        /* メディアライブラリのフッター（適用ボタン等）を確実に表示 */
+        [class*=ModalFooter],
+        [class*=LibraryFooter] {
+          flex-wrap: wrap !important;
+          gap: 8px !important;
+          padding: 10px !important;
+        }
+
+        /* --- 新規投稿ボタン --- */
+        [class*=CollectionTopNewButton] {
+          padding: 0px 10px !important;
+          height: auto !important;
+        }
+
+        /* --- ナビゲーション簡素化 --- */
+        [class*=BackCollection],
+        [class*=BackStatus] {
+          font-size: .6rem !important;
+        }
+
+        /* --- 検索・ビューコントロール --- */
+        [class*=SearchInput] {
+          margin-top: 5px !important;
+        }
+
+        [class*=ViewControls] {
+          position: initial !important;
+        }
+      }
+    </style>
   </head>
   <body>
     <script src="https://unpkg.com/decap-cms@^3.10.0/dist/decap-cms.js"></script>
@@ -25,6 +190,20 @@
           childList: true,
           subtree: true
         });
+
+        // iOSでのpull-to-refresh（引っ張って更新）を無効化
+        // 編集中の誤リロードを防止
+        let startY = 0;
+        document.addEventListener('touchstart', function(e) {
+          startY = e.touches[0].pageY;
+        }, { passive: true });
+
+        document.addEventListener('touchmove', function(e) {
+          const y = e.touches[0].pageY;
+          if (document.scrollingElement.scrollTop === 0 && y > startY) {
+            e.preventDefault();
+          }
+        }, { passive: false });
       });
     </script>
   </body>
