@@ -13,5 +13,8 @@
     "decap-cms-app": "^3.10.0",
     "hastscript": "^9.0.1",
     "unist-util-visit": "^5.1.0"
+  },
+  "devDependencies": {
+    "sharp": "^0.34.5"
   }
 }
