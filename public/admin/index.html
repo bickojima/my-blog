@@ -113,8 +113,22 @@
 
         /* --- モーダル（画像アップロード等） --- */
         [class*=StyledModal] {
-          width: 90dvw !important;
-          width: 90% !important;
+          width: 95vw !important;
+          max-width: 95vw !important;
+          margin-left: auto !important;
+          margin-right: auto !important;
+          left: 2.5vw !important;
+          right: 2.5vw !important;
+        }
+
+        /* モーダル内部の全要素を幅制限 */
+        [class*=StyledModal] > div,
+        [class*=StyledModal] > div > div,
+        [class*=MediaLibrary] {
+          width: 100% !important;
+          max-width: 100% !important;
+          min-width: 0 !important;
+          overflow-x: hidden !important;
         }
 
         /* --- メディアライブラリ --- */
@@ -122,17 +136,36 @@
           display: none !important;
         }
 
+        /* メディアライブラリのヘッダーを縦並びにしてアップロードボタンを確実に表示 */
         [class*=LibraryTop] {
-          overflow-x: auto !important;
+          display: flex !important;
+          flex-direction: column !important;
+          align-items: stretch !important;
           height: fit-content !important;
-          padding-bottom: 10px !important;
-          flex-wrap: wrap !important;
+          padding: 10px !important;
+          gap: 8px !important;
+          overflow-x: hidden !important;
+        }
+
+        /* アップロードボタンを目立たせて全幅表示 */
+        [class*=LibraryTop] button,
+        [class*=UploadButton] {
+          width: 100% !important;
+          min-height: 44px !important;
+          font-size: 16px !important;
+        }
+
+        /* 検索入力も全幅 */
+        [class*=LibraryTop] [class*=SearchInput],
+        [class*=LibraryTop] input {
+          width: 100% !important;
         }
 
         /* メディアライブラリのカードグリッドを縦画面に合わせる */
         [class*=CardGrid] {
           grid-template-columns: repeat(2, 1fr) !important;
           gap: 8px !important;
+          padding: 8px !important;
         }
 
         /* メディアライブラリのカード画像を縮小表示 */
@@ -140,12 +173,43 @@
           height: 100px !important;
         }
 
-        /* メディアライブラリのフッター（適用ボタン等）を確実に表示 */
+        /* メディアライブラリのフッター（適用/挿入ボタン等）を確実に表示 */
         [class*=ModalFooter],
-        [class*=LibraryFooter] {
+        [class*=LibraryFooter],
+        [class*=StyledModal] footer {
+          display: flex !important;
           flex-wrap: wrap !important;
           gap: 8px !important;
           padding: 10px !important;
+          position: sticky !important;
+          bottom: 0 !important;
+          background: white !important;
+          z-index: 10 !important;
+        }
+
+        /* フッターのボタンも全幅にしてタップしやすく */
+        [class*=ModalFooter] button,
+        [class*=LibraryFooter] button,
+        [class*=StyledModal] footer button {
+          flex: 1 1 auto !important;
+          min-height: 44px !important;
+          font-size: 16px !important;
+        }
+
+        /* --- 画像ウィジェット（サムネイル画像フィールド）--- */
+        [class*=FileWidget],
+        [class*=ImageWidget] {
+          max-width: 100% !important;
+          overflow-x: hidden !important;
+        }
+
+        /* 画像選択ボタンを縦並びに */
+        [class*=FileWidgetButton],
+        [class*=ImageWidgetButton] {
+          display: block !important;
+          width: 100% !important;
+          margin-bottom: 4px !important;
+          min-height: 44px !important;
         }
 
         /* --- 新規投稿ボタン --- */
