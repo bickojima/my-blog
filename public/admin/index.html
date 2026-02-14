@@ -290,10 +290,121 @@
           position: initial !important;
         }
       }
+
+      /* --- コレクション一覧：日付とタイトルの分離表示 --- */
+      .entry-date {
+        display: inline-block;
+        background: #e8f0fe;
+        color: #1a73e8;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 0.8em;
+        font-family: monospace;
+        margin-right: 10px;
+        white-space: nowrap;
+        vertical-align: middle;
+      }
+
+      .entry-title {
+        vertical-align: middle;
+      }
+
+      /* --- 画像ウィジェットの選択解除ボタン --- */
+      .cms-deselect-btn {
+        background: #f5f5f5 !important;
+        color: #555 !important;
+        border: 1px solid #ccc !important;
+      }
+
+      /* --- メディアライブラリの完全削除ボタン --- */
+      .cms-full-delete-btn {
+        background: #d32f2f !important;
+        color: white !important;
+        border: none !important;
+      }
     </style>
   </head>
   <body>
     <script src="https://unpkg.com/decap-cms@^3.10.0/dist/decap-cms.js"></script>
+    <script>
+      // Decap CMS UI カスタマイズ
+      (function() {
+        function initCustomizations() {
+          var observer = new MutationObserver(function() {
+            formatCollectionEntries();
+            relabelImageButtons();
+          });
+
+          observer.observe(document.body, {
+            childList: true,
+            subtree: true
+          });
+
+          // 初回実行
+          formatCollectionEntries();
+          relabelImageButtons();
+        }
+
+        // コレクション一覧：日付とタイトルを分離表示
+        function formatCollectionEntries() {
+          var elements = document.querySelectorAll(
+            '[class*="ListCard"] h2, [class*="ListCardTitle"], [class*="CardBody"] h2'
+          );
+          elements.forEach(function(el) {
+            if (el.dataset.formatted) return;
+            var text = el.textContent || '';
+            var match = text.match(/^(\d{4}-\d{2}-\d{2})\s*\|\s*(.+)$/);
+            if (match) {
+              el.dataset.formatted = 'true';
+              var dateSpan = document.createElement('span');
+              dateSpan.className = 'entry-date';
+              dateSpan.textContent = match[1];
+              var titleSpan = document.createElement('span');
+              titleSpan.className = 'entry-title';
+              titleSpan.textContent = match[2];
+              el.textContent = '';
+              el.appendChild(dateSpan);
+              el.appendChild(titleSpan);
+            }
+          });
+        }
+
+        // 画像ウィジェットのボタンラベル変更
+        function relabelImageButtons() {
+          var buttons = document.querySelectorAll('button');
+          buttons.forEach(function(btn) {
+            if (btn.dataset.relabeled) return;
+            var text = btn.textContent.trim();
+
+            if (text === '削除') {
+              // メディアライブラリ内かどうか判定
+              var inMediaLibrary = btn.closest(
+                '[class*="StyledModal"], [class*="MediaLibrary"], [class*="LibraryFooter"]'
+              );
+
+              if (inMediaLibrary) {
+                // メディアライブラリ内：「完全削除」に変更
+                btn.textContent = '完全削除';
+                btn.classList.add('cms-full-delete-btn');
+              } else {
+                // エディタのフィールド内：「選択解除」に変更
+                btn.textContent = '選択解除';
+                btn.classList.add('cms-deselect-btn');
+              }
+              btn.dataset.relabeled = 'true';
+            }
+          });
+        }
+
+        // CMS読み込み後にカスタマイズを初期化
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', initCustomizations);
+        } else {
+          // decap-cms.jsの読み込み完了を少し待つ
+          setTimeout(initCustomizations, 1000);
+        }
+      })();
+    </script>
     <script>
       // iPhoneからのHEICファイルを自動的にJPEGに変換させるための設定
       // 画像input要素のaccept属性をJPEGのみに制限
