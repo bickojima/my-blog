@@ -309,6 +309,19 @@
         vertical-align: middle;
       }
 
+      .entry-draft {
+        display: inline-block;
+        background: #fff3e0;
+        color: #e65100;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 0.75em;
+        font-weight: bold;
+        margin-right: 8px;
+        white-space: nowrap;
+        vertical-align: middle;
+      }
+
       /* --- 画像ウィジェットの選択解除ボタン --- */
       .cms-deselect-btn {
         background: #f5f5f5 !important;
@@ -357,7 +370,7 @@
           updateDeleteButtonState();
         }
 
-        // コレクション一覧：日付とタイトルを分離表示
+        // コレクション一覧：日付・下書き状態・タイトルを分離表示
         function formatCollectionEntries() {
           var elements = document.querySelectorAll(
             '[class*="ListCard"] h2, [class*="ListCardTitle"], [class*="CardBody"] h2'
@@ -365,17 +378,24 @@
           elements.forEach(function(el) {
             if (el.dataset.formatted) return;
             var text = el.textContent || '';
-            var match = text.match(/^(\d{4}-\d{2}-\d{2})\s*\|\s*(.+)$/);
+            // summary: "{{date}} | {{draft}} | {{title}}"
+            var match = text.match(/^(\d{4}-\d{2}-\d{2})\s*\|\s*(true|false)\s*\|\s*(.+)$/);
             if (match) {
               el.dataset.formatted = 'true';
               var dateSpan = document.createElement('span');
               dateSpan.className = 'entry-date';
               dateSpan.textContent = match[1];
-              var titleSpan = document.createElement('span');
-              titleSpan.className = 'entry-title';
-              titleSpan.textContent = match[2];
               el.textContent = '';
               el.appendChild(dateSpan);
+              if (match[2] === 'true') {
+                var draftSpan = document.createElement('span');
+                draftSpan.className = 'entry-draft';
+                draftSpan.textContent = '下書き';
+                el.appendChild(draftSpan);
+              }
+              var titleSpan = document.createElement('span');
+              titleSpan.className = 'entry-title';
+              titleSpan.textContent = match[3];
               el.appendChild(titleSpan);
             }
           });
