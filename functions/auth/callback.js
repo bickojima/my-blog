@@ -61,28 +61,37 @@ export async function onRequest(context) {
         return;
       }
 
-      statusEl.textContent = "Token received. Sending to parent window...";
+      statusEl.textContent = "Token received. Initiating handshake...";
       debugEl.textContent = "Token length: " + token.length;
 
-      // Send message in the format Decap CMS expects (object format)
-      const message = {
-        type: 'authorization',
-        provider: provider,
-        token: token
-      };
+      if (!window.opener) {
+        statusEl.textContent = "Error: No parent window found";
+        return;
+      }
 
-      console.log("Sending message:", JSON.stringify(message));
+      // Step 1: Send authorizing message
+      window.opener.postMessage("authorizing:github", "*");
+      console.log("Sent: authorizing:github");
 
-      if (window.opener) {
-        window.opener.postMessage(message, "*");
-        statusEl.textContent = "Message sent! Closing window...";
+      // Step 2: Wait for acknowledgment from parent
+      window.addEventListener("message", function(event) {
+        console.log("Received message from parent:", event.data);
+        statusEl.textContent = "Received acknowledgment. Sending token...";
+
+        // Step 3: Send success message with token
+        const message = "authorization:github:success:" + JSON.stringify({
+          token: token,
+          provider: provider
+        });
+
+        console.log("Sending message:", message);
+        window.opener.postMessage(message, event.origin);
+        statusEl.textContent = "Token sent! Closing window...";
 
         setTimeout(function() {
           window.close();
-        }, 2000);
-      } else {
-        statusEl.textContent = "Error: No parent window found";
-      }
+        }, 1000);
+      }, { once: true });
     })();
   </script>
 </body>
