@@ -18,10 +18,10 @@ slug:
   clean_accents: false
 
 collections:
-  - name: "devices"
-    label: "デバイス"
-    label_singular: "デバイス記事"
-    folder: "src/content/posts/devices"
+  - name: "posts"
+    label: "記事"
+    label_singular: "記事"
+    folder: "src/content/posts"
     create: true
     slug: "{{fields.date}}-{{slug}}"
     extension: "md"
@@ -32,31 +32,6 @@ collections:
       - { label: "タイトル", name: "title", widget: "string" }
       - { label: "日付", name: "date", widget: "datetime", format: "YYYY-MM-DD", date_format: "YYYY-MM-DD", time_format: false }
       - { label: "下書き", name: "draft", widget: "boolean", default: false }
-      - { name: "category", widget: "hidden", default: "devices" }
-      - label: "タグ"
-        name: "tags"
-        widget: "list"
-        required: false
-        default: []
-      - { label: "サムネイル画像", name: "thumbnail", widget: "image", required: false }
-      - { label: "概要", name: "summary", widget: "text", required: false }
-      - { label: "本文", name: "body", widget: "markdown" }
-
-  - name: "finance"
-    label: "ファイナンス"
-    label_singular: "ファイナンス記事"
-    folder: "src/content/posts/finance"
-    create: true
-    slug: "{{fields.date}}-{{slug}}"
-    extension: "md"
-    format: "frontmatter"
-    summary: "{{date}} | {{draft}} | {{title}}"
-    sortable_fields: ["date", "title"]
-    fields:
-      - { label: "タイトル", name: "title", widget: "string" }
-      - { label: "日付", name: "date", widget: "datetime", format: "YYYY-MM-DD", date_format: "YYYY-MM-DD", time_format: false }
-      - { label: "下書き", name: "draft", widget: "boolean", default: false }
-      - { name: "category", widget: "hidden", default: "finance" }
       - label: "タグ"
         name: "tags"
         widget: "list"
