@@ -62,7 +62,19 @@ wrangler pages deploy dist
 
 ### 環境変数
 
-Decap CMSを使用する場合は、Cloudflare Pagesダッシュボードで必要な環境変数を設定してください。
+Decap CMSを使用する場合は、Cloudflare Pagesダッシュボードで以下の環境変数を設定してください：
+- `OAUTH_CLIENT_ID` - GitHub OAuth AppのClient ID
+- `OAUTH_CLIENT_SECRET` - GitHub OAuth AppのClient Secret
+
+## 📚 詳細ドキュメント
+
+プロジェクトの詳細な設定、トラブルシューティング、技術仕様については **[DOCUMENTATION.md](./DOCUMENTATION.md)** を参照してください。
+
+## 🔑 管理画面
+
+- **URL**: https://reiwa.casa/admin
+- **認証**: GitHubアカウント
+- **CMS**: Decap CMS
 
 ## 👀 もっと学ぶ
 
