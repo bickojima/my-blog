@@ -1,6 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
+import { getPostUrl } from '../lib/posts';
 
 const allPosts = await getCollection('posts');
 const posts = allPosts
@@ -18,7 +19,7 @@ const posts = allPosts
     {posts.map(post => (
       <article class="post-card">
         {post.data.thumbnail && (
-          <a href={`/posts/${post.slug}`}>
+          <a href={getPostUrl(post, allPosts)}>
             <img src={post.data.thumbnail} alt={post.data.title} class="post-thumbnail" loading="lazy" decoding="async" />
           </a>
         )}
@@ -26,7 +27,7 @@ const posts = allPosts
           <div class="post-meta">
             <time datetime={post.data.date}>{post.data.date}</time>
           </div>
-          <a href={`/posts/${post.slug}`} class="post-title">{post.data.title}</a>
+          <a href={getPostUrl(post, allPosts)} class="post-title">{post.data.title}</a>
           {post.data.summary && (
             <p class="post-summary">{post.data.summary}</p>
           )}

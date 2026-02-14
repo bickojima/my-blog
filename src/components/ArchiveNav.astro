@@ -1,0 +1,63 @@
+---
+import { getCollection } from 'astro:content';
+
+const allPosts = await getCollection('posts');
+const nonDraftPosts = allPosts.filter(post => !post.data.draft);
+
+const archiveMap = new Map<string, Set<string>>();
+nonDraftPosts.forEach(post => {
+  const [year, month] = post.data.date.split('-');
+  if (!archiveMap.has(year)) archiveMap.set(year, new Set());
+  archiveMap.get(year)!.add(month);
+});
+
+const years = Array.from(archiveMap.keys()).sort((a, b) => b.localeCompare(a));
+---
+
+<nav class="archive-nav">
+  <h3>アーカイブ</h3>
+  {years.map(year => (
+    <div class="archive-year">
+      <a href={`/posts/${year}`}>{year}年</a>
+      <span class="archive-months">
+        {Array.from(archiveMap.get(year)!).sort().map(month => (
+          <a href={`/posts/${year}/${month}`}>{parseInt(month)}月</a>
+        ))}
+      </span>
+    </div>
+  ))}
+</nav>
+
+<style>
+  .archive-nav {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #eee;
+  }
+  .archive-nav h3 {
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+  }
+  .archive-year {
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+  }
+  .archive-year > a {
+    font-weight: bold;
+    font-size: 0.9rem;
+  }
+  .archive-months {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .archive-months a {
+    font-size: 0.85rem;
+    color: #888;
+  }
+  .archive-months a:hover {
+    color: #333;
+  }
+</style>
