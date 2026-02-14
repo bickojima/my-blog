@@ -8,7 +8,6 @@ const posts = defineCollection({
       val instanceof Date ? val.toISOString().split('T')[0] : val
     ),
     draft: z.boolean().default(false),
-    category: z.string().optional(),
     tags: z.array(z.string()).default([]),
     thumbnail: z.string().optional(),
     summary: z.string().optional(),
