@@ -1,9 +1,6 @@
 backend:
-  name: github
-  repo: bickojima/my-blog
+  name: git-gateway  # ← githubから変更（最重要！）
   branch: main
-  base_url: https://api.netlify.com  # Netlify OAuth経由
-  auth_endpoint: auth
 
 media_folder: "public/images/uploads"
 public_folder: "/images/uploads"
@@ -11,7 +8,6 @@ public_folder: "/images/uploads"
 locale: 'ja'
 
 collections:
-  # デバイスレビュー記事
   - name: "devices"
     label: "Devices"
     folder: "src/content/posts/devices"
@@ -28,7 +24,6 @@ collections:
       - { label: "概要", name: "summary", widget: "text" }
       - { label: "本文", name: "body", widget: "markdown" }
 
-  # 資産運用メモ記事
   - name: "finance"
     label: "Finance"
     folder: "src/content/posts/finance"
