@@ -26,7 +26,7 @@ collections:
     slug: "{{fields.date}}-{{slug}}"
     extension: "md"
     format: "frontmatter"
-    summary: "{{date}} | {{title}}"
+    summary: "{{date}} | {{draft}} | {{title}}"
     sortable_fields: ["date", "title"]
     fields:
       - { label: "タイトル", name: "title", widget: "string" }
@@ -50,7 +50,7 @@ collections:
     slug: "{{fields.date}}-{{slug}}"
     extension: "md"
     format: "frontmatter"
-    summary: "{{date}} | {{title}}"
+    summary: "{{date}} | {{draft}} | {{title}}"
     sortable_fields: ["date", "title"]
     fields:
       - { label: "タイトル", name: "title", widget: "string" }
