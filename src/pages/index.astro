@@ -2,11 +2,6 @@
 import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
 
-const categoryLabels: Record<string, string> = {
-  devices: 'デバイス',
-  finance: 'ファイナンス',
-};
-
 const allPosts = await getCollection('posts');
 const posts = allPosts
   .filter(post => !post.data.draft)
@@ -30,9 +25,6 @@ const posts = allPosts
         <div class="post-body">
           <div class="post-meta">
             <time datetime={post.data.date}>{post.data.date}</time>
-            {post.data.category && (
-              <a href={`/category/${post.data.category}`} class="category">{categoryLabels[post.data.category] ?? post.data.category}</a>
-            )}
           </div>
           <a href={`/posts/${post.slug}`} class="post-title">{post.data.title}</a>
           {post.data.summary && (
@@ -83,17 +75,6 @@ const posts = allPosts
     .post-meta time {
       font-size: 0.85rem;
       color: #999;
-    }
-    .category {
-      font-size: 0.75rem;
-      color: #888;
-      background: #f5f5f5;
-      padding: 0.1rem 0.5rem;
-      border-radius: 3px;
-    }
-    .category:hover {
-      background: #eee;
-      color: #333;
     }
     .post-title {
       display: block;
