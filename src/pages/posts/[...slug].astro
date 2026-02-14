@@ -15,21 +15,13 @@ const { Content } = await post.render();
 ---
 
 <Base title={post.data.title}>
-  <article class="post">
+  <article>
     <header class="post-header">
-      <div class="post-meta">
-        <time datetime={post.data.date}>{post.data.date}</time>
-        {post.data.category && (
-          <span class="category">{post.data.category}</span>
-        )}
-      </div>
+      <time datetime={post.data.date}>{post.data.date}</time>
       <h1>{post.data.title}</h1>
-      {post.data.summary && (
-        <p class="post-summary">{post.data.summary}</p>
-      )}
       {post.data.tags && post.data.tags.length > 0 && (
         <div class="post-tags">
-          {post.data.tags.map((tag) => (
+          {post.data.tags.map((tag: string) => (
             <a href={`/tags/${tag}`} class="tag">{tag}</a>
           ))}
         </div>
@@ -41,120 +33,96 @@ const { Content } = await post.render();
     </div>
 
     <footer class="post-footer">
-      <a href="/" class="back-link">← 記事一覧に戻る</a>
+      <a href="/">&larr; 記事一覧に戻る</a>
     </footer>
   </article>
 
   <style>
-    .post {
-      max-width: 800px;
-      margin: 0 auto;
-    }
     .post-header {
       margin-bottom: 2rem;
-      padding-bottom: 1.5rem;
-      border-bottom: 2px solid #e0e0e0;
     }
-    .post-meta {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      margin-bottom: 0.75rem;
+    .post-header time {
+      font-size: 0.85rem;
+      color: #999;
     }
-    .post-meta time {
-      font-size: 0.9rem;
-      color: #888;
-    }
-    .category {
-      font-size: 0.8rem;
-      background: #e8f0fe;
-      color: #1a73e8;
-      padding: 0.2rem 0.7rem;
-      border-radius: 12px;
-    }
-    .post h1 {
-      font-size: 2rem;
-      margin-bottom: 0.75rem;
-      line-height: 1.3;
-    }
-    .post-summary {
-      font-size: 1.1rem;
-      color: #666;
-      margin-bottom: 1rem;
-    }
-    .post-tags {
-      display: flex;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-    }
-    .tag {
-      font-size: 0.8rem;
-      background: #f0f0f0;
-      color: #555;
-      padding: 0.2rem 0.7rem;
-      border-radius: 4px;
-      text-decoration: none;
-      display: inline-block;
-      transition: background-color 0.2s, color 0.2s;
-    }
-    .tag:hover {
-      background: #333;
-      color: #fff;
+    .post-header h1 {
+      font-size: 1.6rem;
+      margin-top: 0.25rem;
+      line-height: 1.4;
     }
     .post-content {
-      font-size: 1.05rem;
-      line-height: 1.8;
-      color: #333;
+      line-height: 1.9;
     }
     .post-content :global(h2) {
-      font-size: 1.6rem;
-      margin-top: 2rem;
-      margin-bottom: 1rem;
-      padding-bottom: 0.5rem;
-      border-bottom: 1px solid #e0e0e0;
-    }
-    .post-content :global(h3) {
       font-size: 1.3rem;
-      margin-top: 1.5rem;
+      margin-top: 2rem;
       margin-bottom: 0.75rem;
     }
+    .post-content :global(h3) {
+      font-size: 1.1rem;
+      margin-top: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
     .post-content :global(p) {
-      margin-bottom: 1.2rem;
+      margin-bottom: 1rem;
+    }
+    .post-content :global(figure) {
+      margin: 1.5rem 0;
+    }
+    .post-content :global(figure img) {
+      border-radius: 4px;
+    }
+    .post-content :global(figcaption) {
+      font-size: 0.85rem;
+      color: #888;
+      text-align: center;
+      margin-top: 0.5rem;
     }
     .post-content :global(img) {
-      max-width: 100%;
-      height: auto;
-      border-radius: 8px;
-      margin: 1.5rem 0;
+      border-radius: 4px;
+      margin: 1rem 0;
     }
     .post-content :global(code) {
       background: #f5f5f5;
-      padding: 0.2rem 0.4rem;
-      border-radius: 4px;
+      padding: 0.15rem 0.3rem;
+      border-radius: 3px;
       font-size: 0.9em;
     }
     .post-content :global(pre) {
       background: #f5f5f5;
       padding: 1rem;
-      border-radius: 8px;
+      border-radius: 4px;
       overflow-x: auto;
-      margin: 1.5rem 0;
+      margin: 1rem 0;
+    }
+    .post-tags {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-top: 0.5rem;
+    }
+    .tag {
+      font-size: 0.75rem;
+      background: #f0f0f0;
+      color: #555;
+      padding: 0.1rem 0.5rem;
+      border-radius: 3px;
+    }
+    .tag:hover {
+      background: #333;
+      color: #fff;
     }
     .post-footer {
       margin-top: 3rem;
-      padding-top: 2rem;
-      border-top: 2px solid #e0e0e0;
+      padding-top: 1.5rem;
+      border-top: 1px solid #eee;
     }
-    .back-link {
-      display: inline-block;
-      color: #1a73e8;
-      text-decoration: none;
-      font-size: 1rem;
-      transition: color 0.2s;
+    .post-footer a {
+      color: #888;
+      font-size: 0.9rem;
     }
-    .back-link:hover {
-      color: #0d47a1;
-      text-decoration: underline;
+    .post-footer a:hover {
+      color: #333;
     }
   </style>
 </Base>

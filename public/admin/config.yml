@@ -23,16 +23,22 @@ collections:
     label_singular: "デバイス記事"
     folder: "src/content/posts/devices"
     create: true
-    slug: "{{slug}}"
+    slug: "{{fields.date}}-{{slug}}"
     extension: "md"
     format: "frontmatter"
-    summary: "{{title}} - {{date}}"
+    summary: "{{date}} | {{title}}"
     sortable_fields: ["date", "title"]
     fields:
       - { label: "タイトル", name: "title", widget: "string" }
-      - { label: "公開日", name: "date", widget: "datetime", format: "YYYY-MM-DD", date_format: "YYYY-MM-DD", time_format: false }
+      - { label: "日付", name: "date", widget: "datetime", format: "YYYY-MM-DD", date_format: "YYYY-MM-DD", time_format: false }
       - { label: "下書き", name: "draft", widget: "boolean", default: false }
-      - { label: "カテゴリ", name: "category", widget: "string", default: "devices" }
+      - label: "カテゴリ"
+        name: "category"
+        widget: "select"
+        options:
+          - { label: "デバイス", value: "devices" }
+          - { label: "ファイナンス", value: "finance" }
+        default: "devices"
       - label: "タグ"
         name: "tags"
         widget: "list"
@@ -47,16 +53,22 @@ collections:
     label_singular: "ファイナンス記事"
     folder: "src/content/posts/finance"
     create: true
-    slug: "{{slug}}"
+    slug: "{{fields.date}}-{{slug}}"
     extension: "md"
     format: "frontmatter"
-    summary: "{{title}} - {{date}}"
+    summary: "{{date}} | {{title}}"
     sortable_fields: ["date", "title"]
     fields:
       - { label: "タイトル", name: "title", widget: "string" }
-      - { label: "公開日", name: "date", widget: "datetime", format: "YYYY-MM-DD", date_format: "YYYY-MM-DD", time_format: false }
+      - { label: "日付", name: "date", widget: "datetime", format: "YYYY-MM-DD", date_format: "YYYY-MM-DD", time_format: false }
       - { label: "下書き", name: "draft", widget: "boolean", default: false }
-      - { label: "カテゴリ", name: "category", widget: "string", default: "finance" }
+      - label: "カテゴリ"
+        name: "category"
+        widget: "select"
+        options:
+          - { label: "デバイス", value: "devices" }
+          - { label: "ファイナンス", value: "finance" }
+        default: "finance"
       - label: "タグ"
         name: "tags"
         widget: "list"

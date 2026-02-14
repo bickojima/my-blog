@@ -2,35 +2,41 @@
 import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 
+const categoryLabels: Record<string, string> = {
+  devices: 'デバイス',
+  finance: 'ファイナンス',
+};
+
 export async function getStaticPaths() {
   const allPosts = await getCollection('posts');
-  const tags = new Set<string>();
+  const categories = new Set<string>();
 
   allPosts.forEach(post => {
-    if (post.data.tags && !post.data.draft) {
-      post.data.tags.forEach((tag: string) => tags.add(tag));
+    if (post.data.category && !post.data.draft) {
+      categories.add(post.data.category);
     }
   });
 
-  return Array.from(tags).map(tag => ({
-    params: { tag },
+  return Array.from(categories).map(category => ({
+    params: { category },
   }));
 }
 
-const { tag } = Astro.params;
+const { category } = Astro.params;
+const label = categoryLabels[category ?? ''] ?? category;
 
 const allPosts = await getCollection('posts');
 const posts = allPosts
-  .filter(post => !post.data.draft && post.data.tags?.includes(tag))
+  .filter(post => !post.data.draft && post.data.category === category)
   .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime());
 
 ---
 
-<Base title={`${tag} - tbiのブログ`}>
-  <h1>タグ: {tag}</h1>
+<Base title={`${label} - tbiのブログ`}>
+  <h1>{label}</h1>
   <a href="/" class="back-link">&larr; 記事一覧に戻る</a>
 
-  {posts.length === 0 && <p class="no-posts">このタグの記事はありません。</p>}
+  {posts.length === 0 && <p class="no-posts">このカテゴリの記事はありません。</p>}
 
   <ul class="post-list">
     {posts.map(post => (
