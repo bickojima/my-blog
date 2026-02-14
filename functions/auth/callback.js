@@ -64,13 +64,14 @@ export async function onRequest(context) {
       statusEl.textContent = "Token received. Sending to parent window...";
       debugEl.textContent = "Token length: " + token.length;
 
-      // Send message in the format Decap CMS expects
-      const message = "authorization:github:success:" + JSON.stringify({
-        token: token,
-        provider: provider
-      });
+      // Send message in the format Decap CMS expects (object format)
+      const message = {
+        type: 'authorization',
+        provider: provider,
+        token: token
+      };
 
-      console.log("Sending message:", message);
+      console.log("Sending message:", JSON.stringify(message));
 
       if (window.opener) {
         window.opener.postMessage(message, "*");
