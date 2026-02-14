@@ -1,0 +1,6 @@
+# Cloudflare Pages Headers Configuration
+# https://developers.cloudflare.com/pages/platform/headers/
+
+# Decap CMS admin page should not be indexed
+/admin/*
+  X-Robots-Tag: noindex

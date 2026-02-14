@@ -1,10 +1,6 @@
-# Astro Starter Kit: Minimal
+# My Blog
 
-```sh
-npm create astro@latest -- --template minimal
-```
-
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+Astro + Decap CMS を使用したブログサイト（Cloudflare Pages向け）
 
 ## 🚀 Project Structure
 
@@ -38,6 +34,38 @@ All commands are run from the root of the project, from a terminal:
 | `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
 | `npm run astro -- --help` | Get help using the Astro CLI                     |
 
-## 👀 Want to learn more?
+## 🚀 Cloudflare Pagesへのデプロイ
 
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+### 初回デプロイ
+
+1. [Cloudflare Pages](https://pages.cloudflare.com/)にログイン
+2. "Create a project" をクリック
+3. GitHubリポジトリを接続
+4. ビルド設定:
+   - **Build command**: `npm run build`
+   - **Build output directory**: `dist`
+   - **Node version**: 18以上を推奨
+
+### Wranglerを使用したデプロイ（オプション）
+
+```sh
+# Wranglerをインストール
+npm install -g wrangler
+
+# ログイン
+wrangler login
+
+# デプロイ
+npm run build
+wrangler pages deploy dist
+```
+
+### 環境変数
+
+Decap CMSを使用する場合は、Cloudflare Pagesダッシュボードで必要な環境変数を設定してください。
+
+## 👀 もっと学ぶ
+
+- [Astro Documentation](https://docs.astro.build)
+- [Cloudflare Pages Documentation](https://developers.cloudflare.com/pages/)
+- [Decap CMS Documentation](https://decapcms.org/docs/)
