@@ -1,110 +1,60 @@
-# My Blog - プロジェクトドキュメント
+# My Blog - 技術ドキュメント
 
-## 📋 目次
+## 目次
 
-1. [プロジェクト概要](#プロジェクト概要)
-2. [技術スタック](#技術スタック)
-3. [ディレクトリ構造](#ディレクトリ構造)
-4. [セットアップ手順](#セットアップ手順)
-5. [Decap CMS設定](#decap-cms設定)
-6. [GitHub OAuth設定](#github-oauth設定)
-7. [Cloudflare Pages設定](#cloudflare-pages設定)
+1. [技術スタック](#技術スタック)
+2. [セットアップ手順](#セットアップ手順)
+3. [Decap CMS 設定詳細](#decap-cms-設定詳細)
+4. [管理画面UIカスタマイズ詳細](#管理画面uiカスタマイズ詳細)
+5. [ビルド時画像最適化](#ビルド時画像最適化)
+6. [GitHub OAuth 認証](#github-oauth-認証)
+7. [Cloudflare Pages 設定](#cloudflare-pages-設定)
 8. [トラブルシューティング](#トラブルシューティング)
 9. [今後の拡張](#今後の拡張)
 
 ---
 
-## プロジェクト概要
-
-Astro + Decap CMSを使用した静的ブログサイト。Cloudflare Pagesでホスティングし、GitHubアカウントでログインしてコンテンツを管理できます。
-
-- **本番URL**: https://reiwa.casa
-- **管理画面**: https://reiwa.casa/admin
-- **リポジトリ**: https://github.com/bickojima/my-blog
-
----
-
 ## 技術スタック
 
-### フロントエンド
-- **Astro** v5.17.1 - 静的サイトジェネレーター
-- **Decap CMS** v3.10.0 - ヘッドレスCMS
-
-### ホスティング & デプロイ
-- **Cloudflare Pages** - 静的サイトホスティング
-- **Cloudflare Functions** - サーバーレス関数（OAuth認証）
-
-### バージョン管理 & 認証
-- **GitHub** - コード管理 + コンテンツストレージ
-- **GitHub OAuth App** - 認証プロバイダー
-
----
-
-## ディレクトリ構造
-
-```
-my-blog/
-├── functions/              # Cloudflare Functions
-│   └── auth/
-│       ├── index.js        # OAuth認証開始エンドポイント
-│       └── callback.js     # OAuthコールバック処理
-│
-├── public/                 # 静的アセット
-│   ├── admin/             # Decap CMS管理画面
-│   │   ├── index.html     # 管理画面HTML
-│   │   └── config.yml     # Decap CMS設定
-│   ├── images/            # 画像ファイル
-│   └── _headers           # Cloudflare Pagesヘッダー設定
-│
-├── src/                   # Astroソースコード
-│   ├── content/           # コンテンツファイル（Markdown）
-│   │   └── posts/
-│   │       ├── devices/   # デバイスカテゴリ
-│   │       └── finance/   # ファイナンスカテゴリ
-│   ├── layouts/           # レイアウトコンポーネント
-│   ├── pages/             # ページファイル
-│   ├── styles/            # スタイルシート
-│   └── content.config.ts  # コンテンツコレクション設定
-│
-├── astro.config.mjs       # Astro設定
-├── wrangler.toml          # Cloudflare Workers設定
-├── package.json           # 依存関係
-└── tsconfig.json          # TypeScript設定
-```
+| 分類 | 技術 | バージョン/備考 |
+| :--- | :--- | :--- |
+| 静的サイトジェネレーター | Astro | v5.17.1 |
+| CMS | Decap CMS | v3.10.0 |
+| ホスティング | Cloudflare Pages | 静的サイト + Functions |
+| 認証 | GitHub OAuth App | Cloudflare Functions で処理 |
+| 画像最適化 | sharp | v0.34.5（devDependencies） |
+| コンテンツ形式 | Markdown | frontmatter 形式 |
 
 ---
 
 ## セットアップ手順
 
-### 1. ローカル開発環境
+### ローカル開発
 
 ```bash
-# リポジトリをクローン
 git clone https://github.com/bickojima/my-blog.git
 cd my-blog
-
-# 依存関係をインストール
 npm install
-
-# 開発サーバーを起動
 npm run dev
 ```
 
 開発サーバーは `http://localhost:4321` で起動します。
 
-### 2. ビルド
+### ビルド
 
 ```bash
 npm run build
 ```
 
-ビルド成果物は `dist/` ディレクトリに生成されます。
+ビルド成果物は `dist/` ディレクトリに出力されます。ビルド完了後、画像最適化が自動実行されます。
 
 ---
 
-## Decap CMS設定
+## Decap CMS 設定詳細
 
-### 設定ファイル: `public/admin/config.yml`
+設定ファイル: `public/admin/config.yml`
+
+### バックエンド
 
 ```yaml
 backend:
@@ -113,286 +63,323 @@ backend:
   branch: main
   base_url: https://reiwa.casa
   auth_endpoint: /auth
-
-media_folder: "public/images/uploads"
-public_folder: "/images/uploads"
-
-locale: "ja"
-
-collections:
-  - name: "devices"
-    label: "デバイス"
-    folder: "src/content/posts/devices"
-    create: true
-    fields:
-      - { label: "タイトル", name: "title", widget: "string" }
-      - { label: "公開日", name: "date", widget: "datetime" }
-      - { label: "本文", name: "body", widget: "markdown" }
-      # ... その他のフィールド
-
-  - name: "finance"
-    label: "ファイナンス"
-    folder: "src/content/posts/finance"
-    create: true
-    fields:
-      # ... 同様のフィールド定義
 ```
 
-### 重要な設定項目
+- `base_url`: OAuth認証サーバーのURL（本番ドメイン）
+- `auth_endpoint`: Cloudflare Functions の認証エンドポイント
 
-- **`base_url`**: OAuth認証サーバーのベースURL（本番ドメイン）
-- **`auth_endpoint`**: 認証エンドポイントのパス（`/auth`）
-- **`media_folder`**: 画像アップロード先（Git管理下）
-- **`public_folder`**: 公開時の画像パス
+### メディア設定
+
+```yaml
+media_folder: "public/images/uploads"
+public_folder: "/images/uploads"
+```
+
+- アップロード画像はGit管理下の `public/images/uploads/` に保存
+- HEIC/HEIF形式はiOS側で自動的にJPEGに変換される
+
+### スラグ設定
+
+```yaml
+locale: "ja"
+slug:
+  encoding: "unicode"
+  clean_accents: false
+```
+
+- 日本語タイトルがそのままスラグに使用される
+- ファイル名形式: `{日付}-{タイトル}.md`（例: `2026-02-14-ブラザープリンターを買った話.md`）
+
+### コレクション定義
+
+各コレクションは独立したフォルダに保存され、カテゴリは `hidden` ウィジェットで自動設定されます。
+
+#### デバイス
+
+```yaml
+- name: "devices"
+  label: "デバイス"
+  folder: "src/content/posts/devices"
+  slug: "{{fields.date}}-{{slug}}"
+  summary: "{{date}} | {{title}}"
+  fields:
+    - { label: "タイトル", name: "title", widget: "string" }
+    - { label: "日付", name: "date", widget: "datetime", format: "YYYY-MM-DD" }
+    - { label: "下書き", name: "draft", widget: "boolean", default: false }
+    - { name: "category", widget: "hidden", default: "devices" }
+    - { label: "タグ", name: "tags", widget: "list", required: false }
+    - { label: "サムネイル画像", name: "thumbnail", widget: "image", required: false }
+    - { label: "概要", name: "summary", widget: "text", required: false }
+    - { label: "本文", name: "body", widget: "markdown" }
+```
+
+#### ファイナンス
+
+`devices` と同じフィールド構成。`folder` が `src/content/posts/finance`、`category` のデフォルト値が `"finance"` になります。
+
+### カテゴリの仕組み
+
+カテゴリは `hidden` ウィジェットを使用しており、編集画面には表示されません。コレクションごとにデフォルト値が異なるため、記事がどのコレクションに属しているかに応じて自動的に正しいカテゴリが設定されます。
 
 ---
 
-## GitHub OAuth設定
+## 管理画面UIカスタマイズ詳細
 
-### 1. OAuth Appの作成
+すべてのカスタマイズは `public/admin/index.html` に実装されています。
 
-1. [GitHub Settings > Developer settings > OAuth Apps](https://github.com/settings/developers)
-2. 「New OAuth App」をクリック
-3. 以下を入力：
+### CSSカスタマイズ
+
+#### モバイルレスポンシブ対応（799px以下）
+
+Decap CMS はデフォルトではモバイル対応が不十分なため、以下のCSSで対応しています。
+
+| 対象 | カスタマイズ内容 |
+| :--- | :--- |
+| アプリ全体 | ビューポート幅に収まるよう `max-width: 100vw` |
+| ヘッダー | flexboxで左右配置 |
+| サイドバー | `position: initial` で通常フローに変更 |
+| エディタ制御バー | `position: sticky; top: 0` で上部固定 |
+| 保存/公開ボタン | `flex-shrink: 0; min-height: 44px` で縮小防止・タップ領域確保 |
+| 戻るリンク | `text-overflow: ellipsis` で省略表示 |
+| ドロップダウン | `position: fixed; bottom: 10px` で画面下部に固定 |
+| モーダル | `width: 95vw` で画面幅いっぱいに表示 |
+| メディアライブラリ | ヘッダー縦並び、カードグリッド2列、スクロール可能 |
+| 画像ウィジェット | ボタン縦並び・全幅表示 |
+
+#### iOS自動ズーム防止
+
+```css
+[data-slate-editor="true"], input, textarea, select {
+  font-size: 16px !important;
+}
+```
+
+iOSでは16px未満のフォントサイズの入力欄にフォーカスすると自動ズームが発生するため、全入力要素を16px以上に設定しています。
+
+#### 一覧表示の日付ラベル
+
+コレクション一覧の `2026-02-14 | タイトル` という表示を、青いバッジの日付とタイトルに分離します。
+
+```css
+.entry-date {
+  background: #e8f0fe;
+  color: #1a73e8;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-family: monospace;
+}
+```
+
+#### 削除ボタンのスタイル
+
+```css
+/* 選択解除ボタン（エディタ内） */
+.cms-deselect-btn {
+  background: #f5f5f5 !important;
+  color: #555 !important;
+  border: 1px solid #ccc !important;
+}
+
+/* 完全削除ボタン（メディアライブラリ内） */
+.cms-full-delete-btn {
+  background: #d32f2f !important;
+  color: white !important;
+}
+```
+
+### JavaScriptカスタマイズ
+
+#### コレクション一覧の日付・タイトル分離（`formatCollectionEntries`）
+
+`MutationObserver` でDOM変更を監視し、`YYYY-MM-DD | タイトル` 形式のテキストを検出してスタイル付きの要素に変換します。
+
+#### 削除ボタンのリネーム（`relabelImageButtons`）
+
+全 `<button>` 要素を監視し、テキストが「削除」または「削除する」（日本語locale対応）のボタンを検出します。
+
+- **メディアライブラリ内**（`StyledModal`, `MediaLibrary`, `LibraryFooter` の子孫）: 「完全削除」に変更（赤色スタイル適用）
+- **エディタフィールド内**（上記以外）: 「選択解除」に変更（グレースタイル適用）
+
+#### HEIC画像の自動変換対応
+
+`MutationObserver` で `input[type="file"]` 要素を監視し、accept属性を `image/jpeg,image/jpg,image/png,image/webp,image/gif` に制限します。iOSではこの制限により、HEIC画像が自動的にJPEG形式で送信されます。
+
+#### pull-to-refresh 無効化
+
+iOSでページ上部から下方向にスワイプした際のリロードを防止します。モーダル内やスクロール可能な要素内でのスクロールは妨害しません。
+
+---
+
+## ビルド時画像最適化
+
+`src/integrations/image-optimize.mjs` で Astro のビルドフック `astro:build:done` を使用しています。
+
+### 処理内容
+
+1. `dist/images/uploads/` ディレクトリを走査
+2. JPEG、PNG、WebP ファイルを検出
+3. 幅が1200pxを超える画像をリサイズ
+4. 各形式に応じた圧縮を適用
+5. 元ファイルを上書き保存
+
+### 設定値
 
 | 項目 | 値 |
-|------|-----|
-| **Application name** | `My Blog CMS` |
-| **Homepage URL** | `https://reiwa.casa` |
-| **Authorization callback URL** | `https://reiwa.casa/auth/callback` |
+| :--- | :--- |
+| 最大幅 | 1200px |
+| JPEG品質 | 80%（mozjpeg） |
+| PNG品質 | 80%（compressionLevel: 9） |
+| WebP品質 | 80% |
 
-4. 「Register application」をクリック
-5. **Client ID** をコピー
-6. 「Generate a new client secret」をクリックして **Client Secret** をコピー
+### Astro設定（astro.config.mjs）
 
-### 2. 認証フロー
+```javascript
+import imageOptimize from './src/integrations/image-optimize.mjs';
+
+export default defineConfig({
+  output: 'static',
+  integrations: [imageOptimize()],
+  markdown: {
+    rehypePlugins: [rehypeImageCaption],
+  },
+});
+```
+
+---
+
+## GitHub OAuth 認証
+
+### OAuth App の作成手順
+
+1. [GitHub > Settings > Developer settings > OAuth Apps](https://github.com/settings/developers) を開く
+2. 「New OAuth App」をクリック
+3. 以下を入力:
+
+| 項目 | 値 |
+| :--- | :--- |
+| Application name | `My Blog CMS` |
+| Homepage URL | `https://reiwa.casa` |
+| Authorization callback URL | `https://reiwa.casa/auth/callback` |
+
+4. Client ID と Client Secret を取得
+
+### 認証フロー
 
 ```
-1. ユーザーが「GitHubでログインする」をクリック
+1. 管理画面で「GitHubでログイン」をクリック
 2. /auth にリダイレクト（Cloudflare Function）
-3. GitHubの認証画面に遷移
+3. GitHubの認可画面に遷移
 4. ユーザーが承認
 5. /auth/callback にリダイレクト（Cloudflare Function）
 6. アクセストークンを取得
-7. postMessageでDecap CMSにトークンを送信
+7. postMessage でDecap CMSにトークンを送信
 8. ログイン完了
+```
+
+### Cloudflare Functions の実装
+
+#### `/auth` エンドポイント（`functions/auth/index.js`）
+
+GitHubの認可URLにリダイレクトします。`redirect_uri` はリクエストのオリジンから自動構築されます。
+
+#### `/auth/callback` エンドポイント（`functions/auth/callback.js`）
+
+GitHubからアクセストークンを取得し、Decap CMSのハンドシェイクプロトコルに従ってトークンを送信します。
+
+```javascript
+// ハンドシェイクプロトコル
+window.opener.postMessage("authorizing:github", "*");
+// 親ウィンドウからの応答を待ってからトークンを送信
+window.opener.postMessage(
+  "authorization:github:success:" + JSON.stringify({ token, provider: "github" }),
+  event.origin
+);
 ```
 
 ---
 
-## Cloudflare Pages設定
+## Cloudflare Pages 設定
 
-### 1. ビルド設定
+### ビルド設定
 
 | 項目 | 値 |
-|------|-----|
-| **Framework preset** | Astro |
-| **Build command** | `npm run build` |
-| **Build output directory** | `dist` |
-| **Root directory** | `/` |
-| **Node version** | 18以上 |
+| :--- | :--- |
+| フレームワーク | Astro |
+| ビルドコマンド | `npm run build` |
+| 出力ディレクトリ | `dist` |
+| ルートディレクトリ | `/` |
+| Node.js バージョン | 18以上 |
 
-### 2. 環境変数
+### 環境変数
 
-**Settings > Environment variables** で以下を設定：
+| 変数名 | 説明 | 設定環境 |
+| :--- | :--- | :--- |
+| `OAUTH_CLIENT_ID` | GitHub OAuth App の Client ID | Production + Preview |
+| `OAUTH_CLIENT_SECRET` | GitHub OAuth App の Client Secret | Production + Preview |
 
-| 変数名 | 値 | 環境 |
-|--------|-----|------|
-| `OAUTH_CLIENT_ID` | GitHub OAuth AppのClient ID | Production + Preview |
-| `OAUTH_CLIENT_SECRET` | GitHub OAuth AppのClient Secret | Production + Preview |
+環境変数を変更した場合は再デプロイが必要です。
 
-**重要**: 環境変数を追加・変更した後は、必ず再デプロイが必要です。
+### カスタムドメイン
 
-### 3. カスタムドメイン
-
-1. Cloudflare Pages ダッシュボード > my-blog
-2. 「カスタムドメイン」タブ
-3. `reiwa.casa` を追加
-4. DNSレコードを設定（Cloudflareが自動設定）
+1. Cloudflare Pages ダッシュボードの「カスタムドメイン」タブを開く
+2. `reiwa.casa` を追加
+3. DNSレコードが自動設定される
 
 ---
 
 ## トラブルシューティング
 
-### 問題1: 「OAuth client ID not configured」エラー
+### 「OAuth client ID not configured」エラー
 
-**原因**: Cloudflare Pagesの環境変数が設定されていない
+**原因**: Cloudflare Pagesの環境変数が未設定
 
-**解決策**:
-1. Cloudflare Pages > 設定 > 環境変数
-2. `OAUTH_CLIENT_ID` と `OAUTH_CLIENT_SECRET` を確認
+**対処**:
+1. Cloudflare Pages > 設定 > 環境変数を確認
+2. `OAUTH_CLIENT_ID` と `OAUTH_CLIENT_SECRET` を設定
 3. 再デプロイを実行
 
----
+### 「redirect_uri is not associated」エラー
 
-### 問題2: GitHubで「redirect_uri is not associated」エラー
+**原因**: GitHub OAuth AppのCallback URLが不正
 
-**原因**: GitHub OAuth AppのCallback URLが間違っている
+**対処**:
+1. GitHub OAuth App 設定を開く
+2. Authorization callback URL が `https://reiwa.casa/auth/callback` であることを確認
+3. 末尾スラッシュなし、`https://` であることを確認
 
-**解決策**:
-1. GitHub OAuth App設定を開く
-2. **Authorization callback URL** が `https://reiwa.casa/auth/callback` になっているか確認
-3. 末尾にスラッシュがないこと、`https://` であることを確認
+### 認証後にログインできない
 
----
+**原因**: postMessage のハンドシェイクが正しく動作していない
 
-### 問題3: 認証後、管理画面に戻るがログインできない
+**対処**: `functions/auth/callback.js` が以下のプロトコルを正しく実装しているか確認
+1. `window.opener.postMessage("authorizing:github", "*")` を送信
+2. 親ウィンドウからの応答を待機
+3. トークンを含むメッセージを `event.origin` 宛に送信
 
-**原因**: postMessageの形式が間違っている、またはハンドシェイクが実装されていない
+### キャッシュが残っている
 
-**解決策**:
-Decap CMSは以下の認証フローを期待しています：
-
-1. **Step 1**: `window.opener.postMessage("authorizing:github", "*")`
-2. **Step 2**: 親ウィンドウからの応答を待つ
-3. **Step 3**: `window.opener.postMessage("authorization:github:success:" + JSON.stringify({token, provider}), event.origin)`
-
-この実装は `functions/auth/callback.js` で行われています。
-
----
-
-### 問題4: 古いキャッシュが残っている
-
-**原因**: ブラウザが古いJavaScriptをキャッシュしている
-
-**解決策**:
-- Chrome/Edge: `Ctrl + Shift + Delete` (Windows) / `Cmd + Shift + Delete` (Mac)
-- または、シークレット/プライベートモードで開く
-
----
-
-### 問題5: Netlify Identityとの競合
-
-**原因**: `public/admin/index.html` に `netlify-identity-widget.js` が残っている
-
-**解決策**:
-```html
-<!-- ❌ 削除すべき -->
-<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
-
-<!-- ✅ これのみでOK -->
-<script src="https://unpkg.com/decap-cms@^3.10.0/dist/decap-cms.js"></script>
-```
-
----
-
-## Cloudflare Functions実装の詳細
-
-### `/auth` エンドポイント (`functions/auth/index.js`)
-
-認証を開始し、GitHubの認可URLにリダイレクトします。
-
-```javascript
-// ポイント1: redirect_uri を正しく構築
-const redirectUri = `${origin}/auth/callback`;
-
-// ポイント2: GitHub認可URLにリダイレクト
-const githubAuthUrl = new URL('https://github.com/login/oauth/authorize');
-githubAuthUrl.searchParams.set('client_id', clientId);
-githubAuthUrl.searchParams.set('redirect_uri', redirectUri);
-githubAuthUrl.searchParams.set('scope', 'repo,user');
-```
-
-### `/auth/callback` エンドポイント (`functions/auth/callback.js`)
-
-GitHub認証後のコールバックを処理し、アクセストークンを取得してDecap CMSに送信します。
-
-**重要なポイント**:
-
-1. **GitHubからアクセストークンを取得**
-```javascript
-const tokenResponse = await fetch('https://github.com/login/oauth/access_token', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-  },
-  body: JSON.stringify({
-    client_id: clientId,
-    client_secret: clientSecret,
-    code: code,
-  }),
-});
-```
-
-2. **OAuth ハンドシェイクプロトコルの実装**
-```javascript
-// Step 1: 認可開始を通知
-window.opener.postMessage("authorizing:github", "*");
-
-// Step 2: 親ウィンドウからの応答を待つ
-window.addEventListener("message", function(event) {
-  // Step 3: トークンを送信
-  const message = "authorization:github:success:" + JSON.stringify({
-    token: token,
-    provider: "github"
-  });
-  window.opener.postMessage(message, event.origin);
-});
-```
-
-このハンドシェイクプロトコルは、Netlify CMS / Decap CMSの公式仕様に準拠しています。
-
-**参考**:
-- [netlify-cms-github-oauth-provider](https://github.com/vencax/netlify-cms-github-oauth-provider)
-- [Decap CMS External OAuth Clients](https://decapcms.org/docs/external-oauth-clients/)
+**対処**:
+- ブラウザのキャッシュをクリア（Ctrl+Shift+Delete / Cmd+Shift+Delete）
+- またはシークレットモードで開く
 
 ---
 
 ## 今後の拡張
 
-### 1. コンテンツコレクションの追加
+### コレクションの追加
 
-新しいカテゴリを追加する場合：
-
-1. `public/admin/config.yml` に新しいコレクションを追加
+1. `public/admin/config.yml` に新しいコレクション定義を追加
 2. `src/content/posts/` に対応するディレクトリを作成
-3. コミット & プッシュ
+3. コミット・プッシュで反映
 
-### 2. 画像最適化
+### 検索機能
 
-Astroの画像最適化機能を活用：
+Algolia等の検索サービスを統合してサイト内検索を追加できます。
 
-```bash
-npm install @astrojs/image
-```
-
-### 3. カスタムウィジェット
-
-Decap CMSでカスタムウィジェットを追加して、より高度な入力フォームを実装できます。
-
-### 4. プレビュー機能
+### プレビュー機能
 
 Cloudflare PagesのPreview環境を活用して、記事のプレビューを実装できます。
 
-### 5. 検索機能
-
-Algoliaなどの検索サービスを統合して、サイト内検索を追加できます。
-
 ---
 
-## まとめ
-
-このプロジェクトは以下の構成で動作しています：
-
-- **Astro**: 静的サイト生成
-- **Decap CMS**: コンテンツ管理
-- **Cloudflare Pages**: ホスティング & デプロイ
-- **Cloudflare Functions**: OAuth認証処理
-- **GitHub**: コード & コンテンツ管理 + OAuth認証プロバイダー
-
-全ての設定が正しく行われていれば、`https://reiwa.casa/admin` でログインして記事を作成・編集でき、変更は自動的にGitHubにコミットされ、Cloudflare Pagesで自動デプロイされます。
-
----
-
-## 参考リンク
-
-- [Astro Documentation](https://docs.astro.build)
-- [Decap CMS Documentation](https://decapcms.org/docs/)
-- [Cloudflare Pages Documentation](https://developers.cloudflare.com/pages/)
-- [GitHub OAuth Apps Documentation](https://docs.github.com/en/developers/apps/building-oauth-apps)
-
----
-
-**作成日**: 2026年2月14日
 **最終更新**: 2026年2月14日

@@ -1,83 +1,133 @@
 # My Blog
 
-Astro + Decap CMS を使用したブログサイト（Cloudflare Pages向け）
+Astro + Decap CMS を使用したブログサイト（Cloudflare Pages でホスティング）
 
-## 🚀 Project Structure
+## プロジェクト概要
 
-Inside of your Astro project, you'll see the following folders and files:
+- **本番URL**: https://reiwa.casa
+- **管理画面**: https://reiwa.casa/admin
+- **認証方式**: GitHub OAuth
+- **CMS**: Decap CMS v3.10.0
 
-```text
-/
+## プロジェクト構成
+
+```
+my-blog/
+├── functions/                    # Cloudflare Functions（OAuth認証）
+│   └── auth/
+│       ├── index.js              # 認証開始エンドポイント
+│       └── callback.js           # コールバック処理
 ├── public/
+│   ├── admin/
+│   │   ├── index.html            # 管理画面（UIカスタマイズ含む）
+│   │   └── config.yml            # Decap CMS設定
+│   └── images/uploads/           # アップロード画像
 ├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
+│   ├── content/posts/
+│   │   ├── devices/              # デバイスカテゴリ記事
+│   │   └── finance/              # ファイナンスカテゴリ記事
+│   ├── integrations/
+│   │   └── image-optimize.mjs    # ビルド時画像最適化
+│   ├── plugins/
+│   │   └── rehype-image-caption.mjs  # 画像キャプションプラグイン
+│   ├── layouts/                  # レイアウト
+│   ├── pages/                    # ページ
+│   ├── styles/                   # スタイル
+│   └── content.config.ts         # コンテンツコレクション定義
+├── astro.config.mjs
+├── package.json
+└── wrangler.toml
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+## コマンド
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+| コマンド | 説明 |
+| :--- | :--- |
+| `npm install` | 依存関係のインストール |
+| `npm run dev` | 開発サーバー起動（localhost:4321） |
+| `npm run build` | 本番ビルド（`./dist/` に出力） |
+| `npm run preview` | ビルド結果のローカルプレビュー |
 
-Any static assets, like images, can be placed in the `public/` directory.
+## 管理画面のUIカスタマイズ
 
-## 🧞 Commands
+`public/admin/index.html` で以下のカスタマイズを実装しています。
 
-All commands are run from the root of the project, from a terminal:
+### モバイル対応（799px以下）
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+- アプリ全体のレイアウトをビューポートに収める
+- サイドバーを通常フローに変更
+- エディタのコントロールバーを上部固定（sticky）
+- 保存・公開ボタンのタップ領域を44px以上に確保
+- ドロップダウンメニューを画面下部に固定表示
+- モーダル（メディアライブラリ等）を画面幅95%で表示
+- メディアライブラリのカードグリッドを2列表示
+- 画像選択ボタンを縦並び・全幅表示
 
-## 🚀 Cloudflare Pagesへのデプロイ
+### 削除ボタンのラベル改善
 
-### 初回デプロイ
+- エディタ内の画像「削除」/「削除する」ボタン → **「選択解除」**（グレー、安全な操作）
+- メディアライブラリ内の削除ボタン → **「完全削除」**（赤色、危険操作を明示）
 
-1. [Cloudflare Pages](https://pages.cloudflare.com/)にログイン
-2. "Create a project" をクリック
-3. GitHubリポジトリを接続
-4. ビルド設定:
-   - **Build command**: `npm run build`
-   - **Build output directory**: `dist`
-   - **Node version**: 18以上を推奨
+### 一覧表示の改善
 
-### Wranglerを使用したデプロイ（オプション）
+- コレクション一覧で `2026-02-14 | タイトル` 形式の表示を日付ラベル（青バッジ）とタイトルに分離
 
-```sh
-# Wranglerをインストール
-npm install -g wrangler
+### iOS対応
 
-# ログイン
-wrangler login
+- HEIC画像アップロード時に自動的にJPEG変換されるよう、accept属性を制限
+- pull-to-refresh（引っ張って更新）を無効化し、編集中の誤リロードを防止
+- 入力フォームのfont-sizeを16px以上に設定し、自動ズームを防止
 
-# デプロイ
-npm run build
-wrangler pages deploy dist
-```
+## CMS設定（config.yml）
+
+### コレクション
+
+| コレクション | フォルダ | カテゴリ（自動設定） |
+| :--- | :--- | :--- |
+| デバイス | `src/content/posts/devices` | `devices` |
+| ファイナンス | `src/content/posts/finance` | `finance` |
+
+### フィールド構成
+
+| フィールド | ウィジェット | 備考 |
+| :--- | :--- | :--- |
+| タイトル | string | 必須 |
+| 日付 | datetime | YYYY-MM-DD形式 |
+| 下書き | boolean | デフォルト: false |
+| カテゴリ | hidden | コレクションに応じて自動設定（編集画面には非表示） |
+| タグ | list | 任意 |
+| サムネイル画像 | image | 任意 |
+| 概要 | text | 任意 |
+| 本文 | markdown | 必須 |
+
+## ビルド時の画像最適化
+
+`src/integrations/image-optimize.mjs` により、ビルド完了後に `dist/images/uploads/` 内の画像を自動的に最適化します。
+
+- **対象形式**: JPEG、PNG、WebP
+- **最大幅**: 1200px（超える場合はリサイズ）
+- **圧縮品質**: 80%（JPEG: mozjpeg使用）
+- **依存パッケージ**: sharp（devDependencies）
+
+## デプロイ
+
+### Cloudflare Pages 設定
+
+| 項目 | 値 |
+| :--- | :--- |
+| ビルドコマンド | `npm run build` |
+| 出力ディレクトリ | `dist` |
+| Node.js バージョン | 18以上 |
 
 ### 環境変数
 
-Decap CMSを使用する場合は、Cloudflare Pagesダッシュボードで以下の環境変数を設定してください：
-- `OAUTH_CLIENT_ID` - GitHub OAuth AppのClient ID
-- `OAUTH_CLIENT_SECRET` - GitHub OAuth AppのClient Secret
+| 変数名 | 説明 |
+| :--- | :--- |
+| `OAUTH_CLIENT_ID` | GitHub OAuth App の Client ID |
+| `OAUTH_CLIENT_SECRET` | GitHub OAuth App の Client Secret |
 
-## 📚 詳細ドキュメント
+## 参考リンク
 
-プロジェクトの詳細な設定、トラブルシューティング、技術仕様については **[DOCUMENTATION.md](./DOCUMENTATION.md)** を参照してください。
-
-## 🔑 管理画面
-
-- **URL**: https://reiwa.casa/admin
-- **認証**: GitHubアカウント
-- **CMS**: Decap CMS
-
-## 👀 もっと学ぶ
-
-- [Astro Documentation](https://docs.astro.build)
-- [Cloudflare Pages Documentation](https://developers.cloudflare.com/pages/)
-- [Decap CMS Documentation](https://decapcms.org/docs/)
+- [Astro ドキュメント](https://docs.astro.build)
+- [Decap CMS ドキュメント](https://decapcms.org/docs/)
+- [Cloudflare Pages ドキュメント](https://developers.cloudflare.com/pages/)
