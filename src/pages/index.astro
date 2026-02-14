@@ -24,7 +24,7 @@ const posts = allPosts
       <article class="post-card">
         {post.data.thumbnail && (
           <a href={`/posts/${post.slug}`}>
-            <img src={post.data.thumbnail} alt={post.data.title} class="post-thumbnail" />
+            <img src={post.data.thumbnail} alt={post.data.title} class="post-thumbnail" loading="lazy" decoding="async" />
           </a>
         )}
         <div class="post-body">
