@@ -8,8 +8,6 @@ tags:
 thumbnail: /images/uploads/img_4642.jpg
 summary: これはテスト記事ですよ
 ---
-
-
 ## テスト記事
 
 これはテスト記事です。
@@ -17,5 +15,9 @@ summary: これはテスト記事ですよ
 ### 見出し2
 
 本文を書きます。よ
+
+![](/images/uploads/img_4637.jpeg)
+
+
 
 ![](/images/uploads/img_4642.jpg)
