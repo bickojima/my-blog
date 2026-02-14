@@ -1,14 +1,6 @@
 backend:
-  name: github
-  repo: bickojima/my-blog
-  branch: main
-
-  # ドメインだけ（ここ重要）
-  base_url: https://reiwa.casa
-
-  # Worker への入口（/oauth/auth）
-  auth_endpoint: oauth/auth
-
+  name: git-gateway
+  branch: main 
 
 
 # 画像アップロード先（Astroのpublic配下に置く）
