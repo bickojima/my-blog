@@ -36,7 +36,7 @@ export async function onRequest(context) {
     }
 
     // Return success page that sends token to parent window
-    const token = data.access_token.replace(/"/g, '\\"');
+    const token = data.access_token ? data.access_token.replace(/"/g, '\\"') : '';
 
     const html = `
 <!DOCTYPE html>
@@ -45,24 +45,43 @@ export async function onRequest(context) {
   <title>Authorizing...</title>
 </head>
 <body>
-  <p>Authorization successful. Closing...</p>
+  <h2>Authorization Status</h2>
+  <p id="status">Processing...</p>
+  <p id="debug"></p>
   <script>
     (function() {
       const token = "${token}";
       const provider = "github";
+      const statusEl = document.getElementById('status');
+      const debugEl = document.getElementById('debug');
+
+      if (!token) {
+        statusEl.textContent = "Error: No token received";
+        debugEl.textContent = "GitHub response: ${JSON.stringify(data).replace(/"/g, '\\"')}";
+        return;
+      }
+
+      statusEl.textContent = "Token received. Sending to parent window...";
+      debugEl.textContent = "Token length: " + token.length;
 
       // Send message in the format Decap CMS expects
-      window.opener.postMessage(
-        "authorization:github:success:" + JSON.stringify({
-          token: token,
-          provider: provider
-        }),
-        "*"
-      );
+      const message = "authorization:github:success:" + JSON.stringify({
+        token: token,
+        provider: provider
+      });
 
-      setTimeout(function() {
-        window.close();
-      }, 100);
+      console.log("Sending message:", message);
+
+      if (window.opener) {
+        window.opener.postMessage(message, "*");
+        statusEl.textContent = "Message sent! Closing window...";
+
+        setTimeout(function() {
+          window.close();
+        }, 2000);
+      } else {
+        statusEl.textContent = "Error: No parent window found";
+      }
     })();
   </script>
 </body>
