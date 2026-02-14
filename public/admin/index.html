@@ -322,6 +322,14 @@
         color: white !important;
         border: none !important;
       }
+
+      /* 完全削除ボタン：無効状態 */
+      .cms-full-delete-btn:disabled {
+        background: #ccc !important;
+        color: #888 !important;
+        cursor: not-allowed !important;
+        opacity: 0.6 !important;
+      }
     </style>
   </head>
   <body>
@@ -333,18 +341,20 @@
           var observer = new MutationObserver(function() {
             formatCollectionEntries();
             relabelImageButtons();
-            moveDeleteButtonToHeader();
+            updateDeleteButtonState();
           });
 
           observer.observe(document.body, {
             childList: true,
-            subtree: true
+            subtree: true,
+            attributes: true,
+            attributeFilter: ['class']
           });
 
           // 初回実行
           formatCollectionEntries();
           relabelImageButtons();
-          moveDeleteButtonToHeader();
+          updateDeleteButtonState();
         }
 
         // コレクション一覧：日付とタイトルを分離表示
@@ -399,50 +409,28 @@
           });
         }
 
-        // メディアライブラリ：完全削除ボタンをアップロードボタンの隣に移動
-        function moveDeleteButtonToHeader() {
+        // メディアライブラリ：オブジェクト未選択時は削除ボタンを無効化
+        function updateDeleteButtonState() {
           var modal = document.querySelector('[class*="StyledModal"], [class*="MediaLibrary"]');
           if (!modal) return;
 
-          // ヘッダー部分（アップロードボタンがある行）を探す
-          var libraryTop = modal.querySelector('[class*="LibraryTop"]');
-          if (!libraryTop) return;
-          if (libraryTop.dataset.deleteMoved) return;
-
-          // 完全削除ボタンを探す（モーダル内全体から）
+          // メディアライブラリ内の完全削除ボタンを探す
           var deleteBtn = null;
-          var allButtons = modal.querySelectorAll('button');
-          for (var i = 0; i < allButtons.length; i++) {
-            if (allButtons[i].textContent.trim() === '完全削除' ||
-                allButtons[i].textContent.trim().includes('削除')) {
-              // LibraryTop内のボタンは除外
-              if (!libraryTop.contains(allButtons[i])) {
-                deleteBtn = allButtons[i];
-                break;
-              }
+          var buttons = modal.querySelectorAll('button');
+          for (var i = 0; i < buttons.length; i++) {
+            if (buttons[i].classList.contains('cms-full-delete-btn')) {
+              deleteBtn = buttons[i];
+              break;
             }
           }
+          if (!deleteBtn) return;
 
-          if (deleteBtn) {
-            // アップロードボタンを探す
-            var uploadBtn = null;
-            var topButtons = libraryTop.querySelectorAll('button');
-            for (var j = 0; j < topButtons.length; j++) {
-              if (topButtons[j].textContent.trim().includes('アップロード')) {
-                uploadBtn = topButtons[j];
-                break;
-              }
-            }
+          // カードが選択されているか判定（selectedクラスやチェック状態）
+          var hasSelected = modal.querySelector(
+            '[class*="selected"], [class*="Selected"], [class*="isSelected"], [class*="CardGrid"] [class*="active"]'
+          );
 
-            if (uploadBtn) {
-              // アップロードボタンの直後に挿入
-              uploadBtn.parentNode.insertBefore(deleteBtn, uploadBtn.nextSibling);
-            } else {
-              // アップロードボタンが見つからなければヘッダー末尾に追加
-              libraryTop.appendChild(deleteBtn);
-            }
-            libraryTop.dataset.deleteMoved = 'true';
-          }
+          deleteBtn.disabled = !hasSelected;
         }
 
         // CMS読み込み後にカスタマイズを初期化
