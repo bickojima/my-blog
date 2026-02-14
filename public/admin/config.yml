@@ -1,0 +1,46 @@
+backend:
+  name: github
+  repo: bickojima/my-blog
+  branch: main
+  base_url: https://api.netlify.com  # Netlify OAuth経由
+  auth_endpoint: auth
+
+media_folder: "public/images/uploads"
+public_folder: "/images/uploads"
+
+locale: 'ja'
+
+collections:
+  # デバイスレビュー記事
+  - name: "devices"
+    label: "Devices"
+    folder: "src/content/posts/devices"
+    create: true
+    slug: "{{slug}}"
+    extension: "md"
+    format: "frontmatter"
+    fields:
+      - { label: "タイトル", name: "title", widget: "string" }
+      - { label: "公開日", name: "date", widget: "datetime", format: "YYYY-MM-DD" }
+      - { label: "カテゴリ", name: "category", widget: "hidden", default: "devices" }
+      - { label: "タグ", name: "tags", widget: "list", default: [] }
+      - { label: "下書き", name: "draft", widget: "boolean", default: false }
+      - { label: "概要", name: "summary", widget: "text" }
+      - { label: "本文", name: "body", widget: "markdown" }
+
+  # 資産運用メモ記事
+  - name: "finance"
+    label: "Finance"
+    folder: "src/content/posts/finance"
+    create: true
+    slug: "{{slug}}"
+    extension: "md"
+    format: "frontmatter"
+    fields:
+      - { label: "タイトル", name: "title", widget: "string" }
+      - { label: "公開日", name: "date", widget: "datetime", format: "YYYY-MM-DD" }
+      - { label: "カテゴリ", name: "category", widget: "hidden", default: "finance" }
+      - { label: "タグ", name: "tags", widget: "list", default: [] }
+      - { label: "下書き", name: "draft", widget: "boolean", default: false }
+      - { label: "概要", name: "summary", widget: "text" }
+      - { label: "本文", name: "body", widget: "markdown" }
