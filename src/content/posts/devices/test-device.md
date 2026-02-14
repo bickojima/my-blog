@@ -8,7 +8,7 @@ tags:
 thumbnail: /images/uploads/img_4642.jpg
 summary: これはテスト記事ですよ
 ---
-![](/images/uploads/img_4642.jpg)
+
 
 ## テスト記事
 
