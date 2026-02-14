@@ -1,10 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync, existsSync } from 'fs';
-import { join, extname } from 'path';
+import { join, extname, relative } from 'path';
 import matter from 'gray-matter';
 
 const POSTS_DIR = join(process.cwd(), 'src/content/posts');
-const VALID_CATEGORIES = ['devices', 'finance'];
 const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 
 /**
@@ -55,7 +54,6 @@ describe('コンテンツ（Markdownファイル）の検証', () => {
           ? frontmatter.date.toISOString().split('T')[0]
           : String(frontmatter.date);
       expect(dateStr).toMatch(DATE_REGEX);
-      // 日付として有効かチェック
       const parsed = new Date(dateStr);
       expect(parsed.toString()).not.toBe('Invalid Date');
     });
@@ -64,20 +62,25 @@ describe('コンテンツ（Markdownファイル）の検証', () => {
       expect(typeof frontmatter.draft).toBe('boolean');
     });
 
-    it('category（カテゴリ）が有効な値である', () => {
-      expect(frontmatter.category).toBeDefined();
-      expect(VALID_CATEGORIES).toContain(frontmatter.category);
+    it('categoryフィールドが存在しない', () => {
+      expect(frontmatter.category).toBeUndefined();
     });
 
-    it('categoryがファイルパスのディレクトリと一致する', () => {
-      const pathCategory = filePath.includes('/devices/')
-        ? 'devices'
-        : filePath.includes('/finance/')
-          ? 'finance'
-          : null;
-      if (pathCategory) {
-        expect(frontmatter.category).toBe(pathCategory);
-      }
+    it('ファイルがyyyy/mm/ディレクトリに配置されている', () => {
+      const relPath = relative(POSTS_DIR, filePath);
+      expect(relPath).toMatch(/^\d{4}\/\d{2}\/.+\.md$/);
+    });
+
+    it('ファイルのディレクトリがfrontmatterの日付と一致する', () => {
+      const relPath = relative(POSTS_DIR, filePath);
+      const [dirYear, dirMonth] = relPath.split('/');
+      const dateStr =
+        frontmatter.date instanceof Date
+          ? frontmatter.date.toISOString().split('T')[0]
+          : String(frontmatter.date);
+      const [fmYear, fmMonth] = dateStr.split('-');
+      expect(dirYear).toBe(fmYear);
+      expect(dirMonth).toBe(fmMonth);
     });
 
     it('tags（タグ）が配列である（存在する場合）', () => {
@@ -98,11 +101,6 @@ describe('コンテンツ（Markdownファイル）の検証', () => {
 
     it('本文が空でない', () => {
       expect(content.trim().length).toBeGreaterThan(0);
-    });
-
-    it('ファイル名がYYYY-MM-DD-で始まる規約に従っている', () => {
-      const fileName = filePath.split('/').pop();
-      expect(fileName).toMatch(/^\d{4}-\d{2}-\d{2}-.+\.md$/);
     });
   });
 });

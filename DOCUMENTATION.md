@@ -4,13 +4,16 @@
 
 1. [技術スタック](#技術スタック)
 2. [セットアップ手順](#セットアップ手順)
-3. [Decap CMS 設定詳細](#decap-cms-設定詳細)
-4. [管理画面UIカスタマイズ詳細](#管理画面uiカスタマイズ詳細)
-5. [ビルド時画像最適化](#ビルド時画像最適化)
-6. [GitHub OAuth 認証](#github-oauth-認証)
-7. [Cloudflare Pages 設定](#cloudflare-pages-設定)
-8. [トラブルシューティング](#トラブルシューティング)
-9. [今後の拡張](#今後の拡張)
+3. [コンテンツ管理](#コンテンツ管理)
+4. [URL構造とルーティング](#url構造とルーティング)
+5. [Decap CMS 設定詳細](#decap-cms-設定詳細)
+6. [管理画面UIカスタマイズ詳細](#管理画面uiカスタマイズ詳細)
+7. [ビルド時画像最適化](#ビルド時画像最適化)
+8. [ビルド時記事ファイル自動整理](#ビルド時記事ファイル自動整理)
+9. [GitHub OAuth 認証](#github-oauth-認証)
+10. [Cloudflare Pages 設定](#cloudflare-pages-設定)
+11. [トラブルシューティング](#トラブルシューティング)
+12. [今後の拡張](#今後の拡張)
 
 ---
 
@@ -46,7 +49,99 @@ npm run dev
 npm run build
 ```
 
-ビルド成果物は `dist/` ディレクトリに出力されます。ビルド完了後、画像最適化が自動実行されます。
+ビルド時に以下が自動実行されます:
+1. **記事ファイル自動整理**: frontmatterの日付に基づき `src/content/posts/yyyy/mm/` に自動配置
+2. **Astroビルド**: 静的ページ生成
+3. **画像最適化**: `dist/images/uploads/` 内の画像を圧縮・リサイズ
+
+---
+
+## コンテンツ管理
+
+### ディレクトリ構造
+
+記事ファイルは frontmatter の日付に基づき、年月ディレクトリに配置されます。
+
+```
+src/content/posts/
+├── 2026/
+│   ├── 01/
+│   │   ├── あああ.md
+│   │   └── あああ-3.md
+│   └── 02/
+│       ├── あああ-1.md
+│       ├── あああ-2.md
+│       ├── ああああああ.md
+│       └── ブラザープリンターを買った話.md
+```
+
+### Frontmatter スキーマ
+
+定義ファイル: `src/content.config.ts`
+
+| フィールド | 型 | 必須 | デフォルト | 説明 |
+| :--- | :--- | :--- | :--- | :--- |
+| `title` | string | はい | - | 記事タイトル（URLスラグにも使用） |
+| `date` | string | はい | - | 日付（`YYYY-MM-DD`形式、URLの年月に使用） |
+| `draft` | boolean | いいえ | `false` | 下書きフラグ |
+| `tags` | string[] | いいえ | `[]` | タグ（分類に使用） |
+| `thumbnail` | string | いいえ | - | サムネイル画像パス |
+| `summary` | string | いいえ | - | 記事概要 |
+
+### タグによる分類
+
+記事の分類にはタグを使用します（カテゴリ機能は廃止済み）。タグは各記事のfrontmatterに配列で定義し、タグページ (`/tags/タグ名`) で一覧できます。
+
+### 下書き機能
+
+| 表示箇所 | 下書きON時の挙動 |
+| :--- | :--- |
+| トップページ (`/`) | 一覧に表示されない |
+| 年別アーカイブ (`/posts/yyyy`) | 一覧に表示されない |
+| 月別アーカイブ (`/posts/yyyy/mm`) | 一覧に表示されない |
+| タグページ (`/tags/[tag]`) | 一覧に表示されない |
+| 個別記事ページ (`/posts/yyyy/mm/記事名`) | **URL直打ちでアクセス可能** |
+
+YouTubeの「限定公開」に近い挙動です。
+
+---
+
+## URL構造とルーティング
+
+### URL一覧
+
+| URL | ページ | ファイル |
+| :--- | :--- | :--- |
+| `/` | トップページ（記事一覧） | `src/pages/index.astro` |
+| `/posts/yyyy/mm/記事名` | 個別記事 | `src/pages/posts/[year]/[month]/[slug].astro` |
+| `/posts/yyyy` | 年別アーカイブ | `src/pages/posts/[year]/index.astro` |
+| `/posts/yyyy/mm` | 月別アーカイブ | `src/pages/posts/[year]/[month]/index.astro` |
+| `/tags/タグ名` | タグ別一覧 | `src/pages/tags/[tag].astro` |
+
+### URLスラグの生成ルール
+
+URLスラグはファイル名ではなく **記事タイトル** から生成されます。
+
+- 基本: `/posts/{年}/{月}/{タイトル}`
+- 同じ年月に同タイトルの記事がある場合: 日付の古い順に連番が付与される
+  - 1番目（最も古い日付）: `/posts/2026/02/あああ`
+  - 2番目: `/posts/2026/02/あああ-1`
+  - 3番目: `/posts/2026/02/あああ-2`
+
+実装: `src/lib/posts.ts` の `getPostUrl()` / `getPostUrlParts()`
+
+### 日付変更時の動作
+
+記事のfrontmatter日付を変更した場合:
+- **URL**: ビルド時に新しい日付の年月でURLが自動生成される
+- **ファイル位置**: prebuildスクリプトが正しい `yyyy/mm/` ディレクトリに自動移動する
+- **連番**: 移動先の年月内で再判定される
+
+### アーカイブナビゲーション
+
+全ページの下部に年別・月別アーカイブへのリンクが表示されます。
+
+実装: `src/components/ArchiveNav.astro`（`src/layouts/Base.astro` で読み込み）
 
 ---
 
@@ -88,58 +183,30 @@ slug:
 ```
 
 - 日本語タイトルがそのままスラグに使用される
-- ファイル名形式: `{日付}-{タイトル}.md`（例: `2026-02-14-ブラザープリンターを買った話.md`）
 
 ### コレクション定義
 
-各コレクションは独立したフォルダに保存され、カテゴリは `hidden` ウィジェットで自動設定されます。
-
-#### デバイス
+単一のコレクション「記事」で全記事を管理します。
 
 ```yaml
-- name: "devices"
-  label: "デバイス"
-  folder: "src/content/posts/devices"
-  slug: "{{fields.date}}-{{slug}}"
-  summary: "{{date}} | {{title}}"
-  fields:
-    - { label: "タイトル", name: "title", widget: "string" }
-    - { label: "日付", name: "date", widget: "datetime", format: "YYYY-MM-DD" }
-    - { label: "下書き", name: "draft", widget: "boolean", default: false }
-    - { name: "category", widget: "hidden", default: "devices" }
-    - { label: "タグ", name: "tags", widget: "list", required: false }
-    - { label: "サムネイル画像", name: "thumbnail", widget: "image", required: false }
-    - { label: "概要", name: "summary", widget: "text", required: false }
-    - { label: "本文", name: "body", widget: "markdown" }
+collections:
+  - name: "posts"
+    label: "記事"
+    folder: "src/content/posts"
+    create: true
+    slug: "{{year}}/{{month}}/{{slug}}"
+    fields:
+      - { label: "タイトル", name: "title", widget: "string" }
+      - { label: "日付", name: "date", widget: "datetime", format: "YYYY-MM-DD" }
+      - { label: "下書き", name: "draft", widget: "boolean", default: false }
+      - { label: "タグ", name: "tags", widget: "list", required: false }
+      - { label: "サムネイル画像", name: "thumbnail", widget: "image", required: false }
+      - { label: "概要", name: "summary", widget: "text", required: false }
+      - { label: "本文", name: "body", widget: "markdown" }
 ```
 
-#### ファイナンス
-
-`devices` と同じフィールド構成。`folder` が `src/content/posts/finance`、`category` のデフォルト値が `"finance"` になります。
-
-### カテゴリの仕組み
-
-カテゴリは `hidden` ウィジェットを使用しており、編集画面には表示されません。コレクションごとにデフォルト値が異なるため、記事がどのコレクションに属しているかに応じて自動的に正しいカテゴリが設定されます。
-
-### 下書き機能
-
-各コレクションには `draft` フィールド（booleanウィジェット、デフォルト: `false`）があり、編集画面のトグルで下書き状態を切り替えられます。
-
-#### 動作仕様
-
-| 表示箇所 | 下書きON時の挙動 |
-| :--- | :--- |
-| トップページ (`/`) | 一覧に表示されない |
-| カテゴリページ (`/category/[name]`) | 一覧に表示されない |
-| タグページ (`/tags/[tag]`) | 一覧に表示されない |
-| 個別記事ページ (`/posts/[slug]`) | **URL直打ちでアクセス可能** |
-
-#### 仕組み
-
-- ビルド時のフィルタリングで実現（サーバーサイドの認証は不要）
-- `src/pages/index.astro`、`src/pages/category/[category].astro`、`src/pages/tags/[tag].astro` で `!post.data.draft` によるフィルタリングを実施
-- `src/pages/posts/[...slug].astro` ではフィルタリングしていないため、個別ページは生成される
-- YouTubeの「限定公開」に近い挙動：リンクを知っていればアクセスできるが、一覧には表示されない
+- `slug: "{{year}}/{{month}}/{{slug}}"`: CMSから新規作成時、日付フィールドの年月に基づきサブディレクトリに自動配置される
+- 同タイトルの記事が既に存在する場合、CMSがファイル名に `-1`, `-2` 等のサフィックスを自動付与する（URLスラグには影響しない）
 
 ---
 
@@ -267,6 +334,38 @@ export default defineConfig({
 
 ---
 
+## ビルド時記事ファイル自動整理
+
+`scripts/organize-posts.mjs` がビルド前に自動実行され、記事ファイルを正しいディレクトリに配置します。
+
+### 動作
+
+1. `src/content/posts/` 以下の全 `.md` ファイルを再帰的に走査
+2. 各ファイルのfrontmatterから `date` フィールド（`YYYY-MM-DD`）を読み取り
+3. 年月に対応するディレクトリ (`yyyy/mm/`) にファイルを移動
+4. 空になったディレクトリを自動削除
+
+### 実行タイミング
+
+`package.json` の `build` / `dev` コマンドに組み込まれています。
+
+```json
+{
+  "scripts": {
+    "dev": "node scripts/organize-posts.mjs && astro dev",
+    "build": "node scripts/organize-posts.mjs && astro build"
+  }
+}
+```
+
+### ユースケース
+
+- **CMS経由の新規作成**: CMSのslugテンプレートが `{{year}}/{{month}}/{{slug}}` のため、通常は正しいディレクトリに作成される
+- **CMS経由の日付変更**: ファイルは元のディレクトリに残るが、次回ビルド時に自動移動される
+- **手動での日付変更**: 同上
+
+---
+
 ## GitHub OAuth 認証
 
 ### OAuth App の作成手順
@@ -385,12 +484,6 @@ window.opener.postMessage(
 ---
 
 ## 今後の拡張
-
-### コレクションの追加
-
-1. `public/admin/config.yml` に新しいコレクション定義を追加
-2. `src/content/posts/` に対応するディレクトリを作成
-3. コミット・プッシュで反映
 
 ### 検索機能
 
