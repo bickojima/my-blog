@@ -36,6 +36,11 @@ export async function onRequest(context) {
     }
 
     // Return success page that sends token to parent window
+    const content = JSON.stringify({
+      token: data.access_token,
+      provider: 'github'
+    });
+
     const html = `
 <!DOCTYPE html>
 <html>
@@ -46,10 +51,9 @@ export async function onRequest(context) {
   <p>Authorization successful. Closing...</p>
   <script>
     (function() {
-      window.opener.postMessage(
-        'authorization:github:success:${JSON.stringify({ token: data.access_token, provider: 'github' })}',
-        window.location.origin
-      );
+      const content = ${content};
+      const message = "authorization:github:success:" + JSON.stringify(content);
+      window.opener.postMessage(message, window.location.origin);
       window.close();
     })();
   </script>
