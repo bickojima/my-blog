@@ -10,7 +10,7 @@ export async function onRequest(context) {
 
   // Get the origin for callback URL
   const origin = url.origin;
-  const redirectUri = `${origin}/api/auth/callback`;
+  const redirectUri = `${origin}/auth/callback`;
 
   // Redirect to GitHub OAuth
   const githubAuthUrl = new URL('https://github.com/login/oauth/authorize');
