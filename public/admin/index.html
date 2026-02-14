@@ -376,7 +376,7 @@
             if (btn.dataset.relabeled) return;
             var text = btn.textContent.trim();
 
-            if (text === '削除') {
+            if (text === '削除' || text === '削除する') {
               // メディアライブラリ内かどうか判定
               var inMediaLibrary = btn.closest(
                 '[class*="StyledModal"], [class*="MediaLibrary"], [class*="LibraryFooter"]'
