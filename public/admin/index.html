@@ -8,5 +8,24 @@
   </head>
   <body>
     <script src="https://unpkg.com/decap-cms@^3.10.0/dist/decap-cms.js"></script>
+    <script>
+      // iPhoneからのHEICファイルを自動的にJPEGに変換させるための設定
+      // 画像input要素のaccept属性をJPEGのみに制限
+      window.addEventListener('load', function() {
+        // DecapCMSの読み込みを待つ
+        const observer = new MutationObserver(function(mutations) {
+          const imageInputs = document.querySelectorAll('input[type="file"][accept*="image"]');
+          imageInputs.forEach(function(input) {
+            // JPEG、PNG、WebP、GIFのみを受け付ける（iPhoneはHEICを自動的にJPEGに変換）
+            input.setAttribute('accept', 'image/jpeg,image/jpg,image/png,image/webp,image/gif');
+          });
+        });
+
+        observer.observe(document.body, {
+          childList: true,
+          subtree: true
+        });
+      });
+    </script>
   </body>
 </html>
