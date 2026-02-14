@@ -2,8 +2,10 @@ backend:
   name: github
   repo: bickojima/my-blog
   branch: main
-  base_url: https://my-blog-oauth.seima-tsuboi.workers.dev
-  auth_endpoint: /auth
+
+  # ★ここが重要：workers.dev じゃなく reiwa.casa/oauth を使う
+  base_url: https://reiwa.casa/oauth
+  auth_endpoint: auth
 
 # 画像アップロード先（Astroのpublic配下に置く）
 media_folder: "public/images/uploads"
