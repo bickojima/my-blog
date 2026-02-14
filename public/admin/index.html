@@ -378,19 +378,19 @@
 
             // 「削除」を含むボタンを検出（「削除」「削除する」等すべて対応）
             if (text.includes('削除')) {
-              // メディアライブラリ内かどうか判定
-              var inMediaLibrary = btn.closest(
-                '[class*="StyledModal"], [class*="MediaLibrary"], [class*="LibraryFooter"]'
+              // 画像/ファイルウィジェット内かどうか判定
+              var inFileWidget = btn.closest(
+                '[class*="FileWidget"], [class*="ImageWidget"], [class*="FileContent"], [class*="ImageContent"]'
               );
 
-              if (inMediaLibrary) {
-                // メディアライブラリ内：「完全削除」に変更
-                btn.textContent = '完全削除';
-                btn.classList.add('cms-full-delete-btn');
-              } else {
-                // エディタのフィールド内：「選択解除」に変更
+              if (inFileWidget) {
+                // 画像フィールドの参照解除：「選択解除」に変更
                 btn.textContent = '選択解除';
                 btn.classList.add('cms-deselect-btn');
+              } else {
+                // それ以外（メディアライブラリ、エディタツールバー等）：「完全削除」に変更
+                btn.textContent = '完全削除';
+                btn.classList.add('cms-full-delete-btn');
               }
               btn.dataset.relabeled = 'true';
             }
