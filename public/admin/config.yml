@@ -32,13 +32,7 @@ collections:
       - { label: "タイトル", name: "title", widget: "string" }
       - { label: "日付", name: "date", widget: "datetime", format: "YYYY-MM-DD", date_format: "YYYY-MM-DD", time_format: false }
       - { label: "下書き", name: "draft", widget: "boolean", default: false }
-      - label: "カテゴリ"
-        name: "category"
-        widget: "select"
-        options:
-          - { label: "デバイス", value: "devices" }
-          - { label: "ファイナンス", value: "finance" }
-        default: "devices"
+      - { name: "category", widget: "hidden", default: "devices" }
       - label: "タグ"
         name: "tags"
         widget: "list"
@@ -62,13 +56,7 @@ collections:
       - { label: "タイトル", name: "title", widget: "string" }
       - { label: "日付", name: "date", widget: "datetime", format: "YYYY-MM-DD", date_format: "YYYY-MM-DD", time_format: false }
       - { label: "下書き", name: "draft", widget: "boolean", default: false }
-      - label: "カテゴリ"
-        name: "category"
-        widget: "select"
-        options:
-          - { label: "デバイス", value: "devices" }
-          - { label: "ファイナンス", value: "finance" }
-        default: "finance"
+      - { name: "category", widget: "hidden", default: "finance" }
       - label: "タグ"
         name: "tags"
         widget: "list"
