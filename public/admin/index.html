@@ -191,10 +191,10 @@
           display: none !important;
         }
 
-        /* メディアライブラリのヘッダー */
+        /* メディアライブラリのヘッダーを縦並びにしてアップロードボタンを確実に表示 */
         [class*=LibraryTop] {
           display: flex !important;
-          flex-wrap: wrap !important;
+          flex-direction: column !important;
           align-items: stretch !important;
           flex-shrink: 0 !important;
           height: auto !important;
@@ -202,10 +202,10 @@
           gap: 8px !important;
         }
 
-        /* アップロード・削除ボタンを横並びで均等幅 */
+        /* アップロードボタンを目立たせて全幅表示 */
         [class*=LibraryTop] button,
         [class*=UploadButton] {
-          flex: 1 1 40% !important;
+          width: 100% !important;
           min-height: 44px !important;
           font-size: 16px !important;
         }
@@ -415,20 +415,29 @@
           if (!modal) return;
 
           // メディアライブラリ内の完全削除ボタンを探す
-          var deleteBtn = null;
-          var buttons = modal.querySelectorAll('button');
-          for (var i = 0; i < buttons.length; i++) {
-            if (buttons[i].classList.contains('cms-full-delete-btn')) {
-              deleteBtn = buttons[i];
-              break;
-            }
-          }
+          var deleteBtn = modal.querySelector('button.cms-full-delete-btn');
           if (!deleteBtn) return;
 
-          // カードが選択されているか判定（selectedクラスやチェック状態）
-          var hasSelected = modal.querySelector(
-            '[class*="selected"], [class*="Selected"], [class*="isSelected"], [class*="CardGrid"] [class*="active"]'
-          );
+          // カードグリッド内の子要素からborderColorで選択状態を判定
+          // styled-componentsはクラス名にselectedが出ないため、描画結果で判定
+          var grid = modal.querySelector('[class*="CardGrid"]');
+          var hasSelected = false;
+          if (grid) {
+            var cards = grid.querySelectorAll('[class*="Card"]');
+            for (var i = 0; i < cards.length; i++) {
+              var bc = window.getComputedStyle(cards[i]).borderColor;
+              if (!bc) continue;
+              var m = bc.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+              if (m) {
+                var r = +m[1], g = +m[2], b = +m[3];
+                // 青系ボーダー = 選択状態（グレーや白ではない色付きボーダー）
+                if (b > 150 && b - r > 40) {
+                  hasSelected = true;
+                  break;
+                }
+              }
+            }
+          }
 
           deleteBtn.disabled = !hasSelected;
         }
