@@ -1,6 +1,9 @@
 backend:
-  name: git-gateway  # ← githubから変更（最重要！）
+  name: github
+  repo: bickojima/my-blog
   branch: main
+  base_url: https://my-blog-oauth.seima-tsuboi.workers.dev
+  auth_endpoint: /auth
 
 media_folder: "public/images/uploads"
 public_folder: "/images/uploads"
