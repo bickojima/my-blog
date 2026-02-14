@@ -6,7 +6,7 @@ category: devices
 tags:
   - テスト
 thumbnail: /images/uploads/img_4642.jpg
-summary: これはテスト記事です
+summary: これはテスト記事ですよ
 ---
 ![](/images/uploads/img_4642.jpg)
 
@@ -16,6 +16,6 @@ summary: これはテスト記事です
 
 ### 見出し2
 
-本文を書きます。
+本文を書きます。よ
 
 ![](/images/uploads/img_4642.jpg)
