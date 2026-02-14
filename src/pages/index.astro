@@ -1,11 +1,11 @@
 ---
+import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
 
-const postFiles = import.meta.glob('../content/posts/**/*.md', { eager: true }) as Record<string, { frontmatter: Record<string, any> }>;
-const allPosts = Object.values(postFiles);
+const allPosts = await getCollection('posts');
 const posts = allPosts
-  .filter(post => !post.frontmatter.draft)
-  .sort((a, b) => new Date(b.frontmatter.date).getTime() - new Date(a.frontmatter.date).getTime());
+  .filter(post => !post.data.draft)
+  .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime());
 ---
 
 <Base title="My Blog">
@@ -15,25 +15,27 @@ const posts = allPosts
 
   <div class="post-list">
     {posts.map(post => (
-      <article class="post-card">
-        <div class="post-meta">
-          <time datetime={post.frontmatter.date}>{post.frontmatter.date}</time>
-          {post.frontmatter.category && (
-            <span class="category">{post.frontmatter.category}</span>
-          )}
-        </div>
-        <h2 class="post-title">{post.frontmatter.title}</h2>
-        {post.frontmatter.summary && (
-          <p class="post-summary">{post.frontmatter.summary}</p>
-        )}
-        {post.frontmatter.tags && post.frontmatter.tags.length > 0 && (
-          <div class="post-tags">
-            {post.frontmatter.tags.map((tag: string) => (
-              <span class="tag">{tag}</span>
-            ))}
+      <a href={`/posts/${post.id}`} class="post-link">
+        <article class="post-card">
+          <div class="post-meta">
+            <time datetime={post.data.date}>{post.data.date}</time>
+            {post.data.category && (
+              <span class="category">{post.data.category}</span>
+            )}
           </div>
-        )}
-      </article>
+          <h2 class="post-title">{post.data.title}</h2>
+          {post.data.summary && (
+            <p class="post-summary">{post.data.summary}</p>
+          )}
+          {post.data.tags && post.data.tags.length > 0 && (
+            <div class="post-tags">
+              {post.data.tags.map((tag: string) => (
+                <span class="tag">{tag}</span>
+              ))}
+            </div>
+          )}
+        </article>
+      </a>
     ))}
   </div>
 
@@ -54,11 +56,24 @@ const posts = allPosts
       flex-direction: column;
       gap: 1.5rem;
     }
+    .post-link {
+      text-decoration: none;
+      color: inherit;
+      display: block;
+      transition: transform 0.2s;
+    }
+    .post-link:hover {
+      transform: translateY(-2px);
+    }
     .post-card {
       background: #fff;
       padding: 1.5rem;
       border-radius: 8px;
       border: 1px solid #e0e0e0;
+      transition: box-shadow 0.2s;
+    }
+    .post-link:hover .post-card {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
     .post-meta {
       display: flex;
