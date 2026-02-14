@@ -6,7 +6,9 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "astro": "^5.17.1",
@@ -15,6 +17,9 @@
     "unist-util-visit": "^5.1.0"
   },
   "devDependencies": {
-    "sharp": "^0.34.5"
+    "gray-matter": "^4.0.3",
+    "js-yaml": "^4.1.1",
+    "sharp": "^0.34.5",
+    "vitest": "^4.0.18"
   }
 }
