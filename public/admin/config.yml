@@ -1,10 +1,14 @@
 backend:
-  name: github
+  name: git-gateway
   repo: bickojima/my-blog
   branch: main
 
-  # ★OAuth Gateway は auth_endpoint にフルで書く（これが一番確実）
-  auth_endpoint: https://reiwa.casa/oauth/auth
+  # OAuth Gateway(あなたのWorker)のURL
+  base_url: https://reiwa.casa/oauth
+
+  # /auth に飛ばす
+  auth_endpoint: auth
+
 
 # 画像アップロード先（Astroのpublic配下に置く）
 media_folder: "public/images/uploads"
