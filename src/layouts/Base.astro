@@ -7,7 +7,7 @@ const { title } = Astro.props;
 ---
 
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="ja" style="background-color:#ffffff;">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -19,10 +19,11 @@ const { title } = Astro.props;
       padding: 0;
       box-sizing: border-box;
     }
-    html, body {
-      background-color: #fff;
+    html {
+      background-color: #ffffff !important;
     }
     body {
+      background-color: #ffffff !important;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
       line-height: 1.8;
       color: #333;
@@ -70,7 +71,7 @@ const { title } = Astro.props;
     }
   </style>
 </head>
-<body>
+<body style="background-color:#ffffff;">
   <header>
     <nav>
       <a href="/" class="site-title">tbiのブログ</a>
