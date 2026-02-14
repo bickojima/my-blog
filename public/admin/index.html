@@ -61,25 +61,37 @@
           margin-top: 20px !important;
         }
 
-        /* --- エディタ・ツールバー --- */
-        [class*=EditorContainer],
-        [class*=ToolbarContainer] {
+        /* --- エディタ・ツールバー（保存ボタン常時表示） --- */
+        [class*=EditorContainer] {
           min-width: initial !important;
-          overflow-x: auto !important;
+        }
+
+        [class*=EditorControlBar] {
+          position: sticky !important;
+          top: 0 !important;
+          z-index: 300 !important;
+          background: #fff !important;
         }
 
         [class*=EditorControlBar] [class*=ToolbarContainer] {
           display: flex !important;
-          flex-direction: column !important;
+          flex-wrap: wrap !important;
+          align-items: center !important;
+          gap: 4px !important;
+          min-width: 0 !important;
+          overflow: visible !important;
+          padding: 4px 8px !important;
         }
 
         [class*=ToolbarSubSectionFirst] {
-          display: flex !important;
-          flex-direction: row !important;
+          flex: 1 1 auto !important;
+          min-width: 0 !important;
         }
 
+        [class*=ToolbarButton],
         [class*=PublishedToolbarButton] {
-          padding: 0 8px !important;
+          min-height: 44px !important;
+          padding: 0 12px !important;
         }
 
         [class*=PublishedToolbarButton]::after {
