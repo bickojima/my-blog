@@ -37,6 +37,13 @@ const posts = allPosts
           {post.data.summary && (
             <p class="post-summary">{post.data.summary}</p>
           )}
+          {post.data.tags && post.data.tags.length > 0 && (
+            <div class="post-tags">
+              {post.data.tags.map((tag: string) => (
+                <a href={`/tags/${tag}`} class="tag">{tag}</a>
+              ))}
+            </div>
+          )}
         </div>
       </article>
     ))}
@@ -100,6 +107,23 @@ const posts = allPosts
       font-size: 0.9rem;
       color: #666;
       line-height: 1.6;
+    }
+    .post-tags {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-top: 0.5rem;
+    }
+    .tag {
+      font-size: 0.75rem;
+      background: #f0f0f0;
+      color: #555;
+      padding: 0.1rem 0.5rem;
+      border-radius: 3px;
+    }
+    .tag:hover {
+      background: #333;
+      color: #fff;
     }
   </style>
 </Base>
