@@ -2,13 +2,16 @@ backend:
   name: github
   repo: bickojima/my-blog
   branch: main
-  base_url: https://my-blog-oauth.seima-tsuboi.workers.dev
+
+  # OAuth Proxy（あとで作るWorkerのURLを入れる）
+  base_url: https://YOUR-WORKER.your-subdomain.workers.dev
   auth_endpoint: /auth
 
+# 画像アップロード先（Astroのpublic配下に置く）
 media_folder: "public/images/uploads"
 public_folder: "/images/uploads"
 
-locale: 'ja'
+locale: "ja"
 
 collections:
   - name: "devices"
@@ -21,10 +24,8 @@ collections:
     fields:
       - { label: "タイトル", name: "title", widget: "string" }
       - { label: "公開日", name: "date", widget: "datetime", format: "YYYY-MM-DD" }
-      - { label: "カテゴリ", name: "category", widget: "hidden", default: "devices" }
-      - { label: "タグ", name: "tags", widget: "list", default: [] }
       - { label: "下書き", name: "draft", widget: "boolean", default: false }
-      - { label: "概要", name: "summary", widget: "text" }
+      - { label: "概要", name: "summary", widget: "text", required: false }
       - { label: "本文", name: "body", widget: "markdown" }
 
   - name: "finance"
@@ -37,8 +38,6 @@ collections:
     fields:
       - { label: "タイトル", name: "title", widget: "string" }
       - { label: "公開日", name: "date", widget: "datetime", format: "YYYY-MM-DD" }
-      - { label: "カテゴリ", name: "category", widget: "hidden", default: "finance" }
-      - { label: "タグ", name: "tags", widget: "list", default: [] }
       - { label: "下書き", name: "draft", widget: "boolean", default: false }
-      - { label: "概要", name: "summary", widget: "text" }
+      - { label: "概要", name: "summary", widget: "text", required: false }
       - { label: "本文", name: "body", widget: "markdown" }
