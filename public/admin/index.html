@@ -115,20 +115,35 @@
         [class*=StyledModal] {
           width: 95vw !important;
           max-width: 95vw !important;
+          max-height: 90vh !important;
           margin-left: auto !important;
           margin-right: auto !important;
           left: 2.5vw !important;
           right: 2.5vw !important;
+          display: flex !important;
+          flex-direction: column !important;
         }
 
-        /* モーダル内部の全要素を幅制限 */
-        [class*=StyledModal] > div,
-        [class*=StyledModal] > div > div,
-        [class*=MediaLibrary] {
+        /* モーダル内部をflex列レイアウトに（スクロール可能にする） */
+        [class*=StyledModal] > div {
           width: 100% !important;
           max-width: 100% !important;
           min-width: 0 !important;
-          overflow-x: hidden !important;
+          display: flex !important;
+          flex-direction: column !important;
+          max-height: 90vh !important;
+          overflow: hidden !important;
+        }
+
+        [class*=StyledModal] > div > div {
+          width: 100% !important;
+          max-width: 100% !important;
+          min-width: 0 !important;
+          display: flex !important;
+          flex-direction: column !important;
+          overflow: hidden !important;
+          flex: 1 !important;
+          min-height: 0 !important;
         }
 
         /* --- メディアライブラリ --- */
@@ -141,10 +156,10 @@
           display: flex !important;
           flex-direction: column !important;
           align-items: stretch !important;
-          height: fit-content !important;
+          flex-shrink: 0 !important;
+          height: auto !important;
           padding: 10px !important;
           gap: 8px !important;
-          overflow-x: hidden !important;
         }
 
         /* アップロードボタンを目立たせて全幅表示 */
@@ -161,11 +176,21 @@
           width: 100% !important;
         }
 
-        /* メディアライブラリのカードグリッドを縦画面に合わせる */
+        /* メディアライブラリのカードグリッド：スクロール可能エリア */
+        [class*=CardGridContainer],
+        [class*=MediaLibraryCard] {
+          flex: 1 !important;
+          min-height: 0 !important;
+          overflow-y: auto !important;
+          -webkit-overflow-scrolling: touch !important;
+        }
+
         [class*=CardGrid] {
           grid-template-columns: repeat(2, 1fr) !important;
           gap: 8px !important;
           padding: 8px !important;
+          overflow-y: auto !important;
+          -webkit-overflow-scrolling: touch !important;
         }
 
         /* メディアライブラリのカード画像を縮小表示 */
@@ -173,18 +198,17 @@
           height: 100px !important;
         }
 
-        /* メディアライブラリのフッター（適用/挿入ボタン等）を確実に表示 */
+        /* メディアライブラリのフッター（適用/挿入ボタン等） */
         [class*=ModalFooter],
         [class*=LibraryFooter],
         [class*=StyledModal] footer {
           display: flex !important;
           flex-wrap: wrap !important;
+          flex-shrink: 0 !important;
           gap: 8px !important;
           padding: 10px !important;
-          position: sticky !important;
-          bottom: 0 !important;
           background: white !important;
-          z-index: 10 !important;
+          border-top: 1px solid #ddd !important;
         }
 
         /* フッターのボタンも全幅にしてタップしやすく */
@@ -200,7 +224,6 @@
         [class*=FileWidget],
         [class*=ImageWidget] {
           max-width: 100% !important;
-          overflow-x: hidden !important;
         }
 
         /* 画像選択ボタンを縦並びに */
@@ -256,14 +279,29 @@
         });
 
         // iOSでのpull-to-refresh（引っ張って更新）を無効化
-        // 編集中の誤リロードを防止
+        // 編集中の誤リロードを防止（モーダル内のスクロールは許可）
         let startY = 0;
         document.addEventListener('touchstart', function(e) {
           startY = e.touches[0].pageY;
         }, { passive: true });
 
         document.addEventListener('touchmove', function(e) {
-          const y = e.touches[0].pageY;
+          // モーダル内のスクロールは妨害しない
+          var target = e.target;
+          while (target && target !== document.body) {
+            if (target.className && typeof target.className === 'string' &&
+                (target.className.indexOf('Modal') !== -1 ||
+                 target.className.indexOf('Library') !== -1 ||
+                 target.className.indexOf('CardGrid') !== -1)) {
+              return; // モーダル内はそのまま通す
+            }
+            // スクロール可能な要素の中なら許可
+            if (target.scrollHeight > target.clientHeight) {
+              return;
+            }
+            target = target.parentElement;
+          }
+          var y = e.touches[0].pageY;
           if (document.scrollingElement.scrollTop === 0 && y > startY) {
             e.preventDefault();
           }
