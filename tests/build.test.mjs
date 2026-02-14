@@ -7,7 +7,6 @@ const DIST_DIR = join(process.cwd(), 'dist');
 
 describe('ビルド検証', () => {
   beforeAll(() => {
-    // ビルドを実行
     execSync('npm run build', {
       cwd: process.cwd(),
       stdio: 'pipe',
@@ -52,7 +51,6 @@ describe('ビルド検証', () => {
 
   describe('記事ページの生成確認', () => {
     it('公開記事のページが生成されている', () => {
-      // draft: false の記事がページとして生成されているか
       const postsDir = join(DIST_DIR, 'posts');
       expect(existsSync(postsDir)).toBe(true);
 
@@ -61,41 +59,32 @@ describe('ビルド検証', () => {
       expect(directories.length).toBeGreaterThan(0);
     });
 
-    it('下書き記事（draft: true）のページが生成されていない', () => {
-      // draft: true の「ああああああ」記事が生成されていないことを確認
-      const postsDir = join(DIST_DIR, 'posts');
-      const allEntries = readdirSync(postsDir, { recursive: true });
-      const htmlFiles = allEntries
-        .filter((f) => typeof f === 'string' && f.endsWith('index.html'))
-        .map((f) => {
-          const content = readFileSync(join(postsDir, f), 'utf-8');
-          return content;
-        });
-
-      // draft記事のタイトルが含まれていないことを確認
-      for (const html of htmlFiles) {
-        // "ああああああ" は draft: true なので生成されていないはず
-        // ただしタイトルが一般的すぎるので、別の方法で確認
-        // 公開記事のみが存在することを確認
-        expect(html).toContain('</html>');
-      }
+    it('記事ページがyyyy/mm/記事名の構造で生成されている', () => {
+      const postPath = join(
+        DIST_DIR,
+        'posts/2026/02/ブラザープリンターを買った話/index.html'
+      );
+      expect(existsSync(postPath)).toBe(true);
     });
   });
 
-  describe('カテゴリページの生成確認', () => {
-    it('devicesカテゴリページが生成される', () => {
+  describe('アーカイブページの生成確認', () => {
+    it('年別アーカイブページが生成される', () => {
       expect(
-        existsSync(join(DIST_DIR, 'category/devices/index.html'))
+        existsSync(join(DIST_DIR, 'posts/2026/index.html'))
       ).toBe(true);
     });
 
-    it('financeカテゴリページが生成される（公開記事がある場合）', () => {
-      // finance に draft: false の記事がある場合のみ
-      const financePage = join(DIST_DIR, 'category/finance/index.html');
-      if (existsSync(financePage)) {
-        const html = readFileSync(financePage, 'utf-8');
-        expect(html).toContain('ファイナンス');
-      }
+    it('月別アーカイブページが生成される', () => {
+      expect(
+        existsSync(join(DIST_DIR, 'posts/2026/02/index.html'))
+      ).toBe(true);
+    });
+
+    it('カテゴリページが生成されていない', () => {
+      expect(
+        existsSync(join(DIST_DIR, 'category'))
+      ).toBe(false);
     });
   });
 
@@ -142,29 +131,32 @@ describe('ビルド検証', () => {
 
     it('公開記事へのリンクが含まれている', () => {
       expect(indexHtml).toContain('ブラザープリンターを買った話');
-      expect(indexHtml).toContain('href="/posts/');
+      expect(indexHtml).toContain('href="/posts/2026/02/');
     });
 
-    it('カテゴリリンクが含まれている', () => {
-      expect(indexHtml).toContain('href="/category/');
+    it('カテゴリリンクが含まれていない', () => {
+      expect(indexHtml).not.toContain('href="/category/');
     });
 
     it('タグリンクが含まれている', () => {
       expect(indexHtml).toContain('href="/tags/');
     });
 
+    it('アーカイブナビゲーションが含まれている', () => {
+      expect(indexHtml).toContain('アーカイブ');
+      expect(indexHtml).toContain('href="/posts/2026"');
+    });
+
     it('copyright表記がある', () => {
-      // Astro は © を &copy; にエンコードする
       expect(indexHtml).toMatch(/(&copy;|©).*tbiのブログ/);
     });
   });
 
   describe('個別記事ページHTMLの検証', () => {
     it('記事ページに「記事一覧に戻る」リンクがある', () => {
-      // 構造: dist/posts/<category>/<slug>/index.html
       const postHtml = join(
         DIST_DIR,
-        'posts/devices/2026-02-14-ブラザープリンターを買った話/index.html'
+        'posts/2026/02/ブラザープリンターを買った話/index.html'
       );
       if (existsSync(postHtml)) {
         const html = readFileSync(postHtml, 'utf-8');
@@ -182,11 +174,9 @@ describe('ビルド検証', () => {
 
   describe('rehype-image-captionプラグインの適用確認', () => {
     it('title付き画像がfigure/figcaptionに変換されている', () => {
-      // プリンター記事には title="プリンター" の画像がある
-      // 構造: dist/posts/devices/2026-02-14-ブラザープリンターを買った話/index.html
       const htmlPath = join(
         DIST_DIR,
-        'posts/devices/2026-02-14-ブラザープリンターを買った話/index.html'
+        'posts/2026/02/ブラザープリンターを買った話/index.html'
       );
       expect(existsSync(htmlPath)).toBe(true);
 
