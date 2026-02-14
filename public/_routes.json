@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "include": [
+    "/auth",
+    "/auth/*"
+  ],
+  "exclude": [
+    "/images/*",
+    "/admin/*",
+    "/*.ico",
+    "/*.svg",
+    "/*.txt",
+    "/*.html",
+    "/*.css",
+    "/*.js"
+  ]
+}
