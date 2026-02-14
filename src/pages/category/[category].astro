@@ -29,6 +29,7 @@ const allPosts = await getCollection('posts');
 const posts = allPosts
   .filter(post => !post.data.draft && post.data.category === category)
   .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime());
+
 ---
 
 <Base title={`${label} - tbiのブログ`}>
