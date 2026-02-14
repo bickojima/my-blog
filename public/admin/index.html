@@ -191,10 +191,10 @@
           display: none !important;
         }
 
-        /* メディアライブラリのヘッダーを縦並びにしてアップロードボタンを確実に表示 */
+        /* メディアライブラリのヘッダー */
         [class*=LibraryTop] {
           display: flex !important;
-          flex-direction: column !important;
+          flex-wrap: wrap !important;
           align-items: stretch !important;
           flex-shrink: 0 !important;
           height: auto !important;
@@ -202,10 +202,10 @@
           gap: 8px !important;
         }
 
-        /* アップロードボタンを目立たせて全幅表示 */
+        /* アップロード・削除ボタンを横並びで均等幅 */
         [class*=LibraryTop] button,
         [class*=UploadButton] {
-          width: 100% !important;
+          flex: 1 1 40% !important;
           min-height: 44px !important;
           font-size: 16px !important;
         }
@@ -376,7 +376,8 @@
             if (btn.dataset.relabeled) return;
             var text = btn.textContent.trim();
 
-            if (text === '削除' || text === '削除する') {
+            // 「削除」を含むボタンを検出（「削除」「削除する」等すべて対応）
+            if (text.includes('削除')) {
               // メディアライブラリ内かどうか判定
               var inMediaLibrary = btn.closest(
                 '[class*="StyledModal"], [class*="MediaLibrary"], [class*="LibraryFooter"]'
