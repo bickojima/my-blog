@@ -1,37 +1,34 @@
 ---
 import { getCollection } from 'astro:content';
-import Base from '../../layouts/Base.astro';
-import { getPostUrl } from '../../lib/posts';
+import Base from '../../../layouts/Base.astro';
+import { getPostUrl } from '../../../lib/posts';
 
 export async function getStaticPaths() {
   const allPosts = await getCollection('posts');
-  const tags = new Set<string>();
-
-  allPosts.forEach(post => {
-    if (post.data.tags && !post.data.draft) {
-      post.data.tags.forEach((tag: string) => tags.add(tag));
-    }
+  const years = new Set<string>();
+  allPosts.filter(p => !p.data.draft).forEach(post => {
+    const [year] = post.data.date.split('-');
+    years.add(year);
   });
-
-  return Array.from(tags).map(tag => ({
-    params: { tag },
-  }));
+  return Array.from(years).map(year => ({ params: { year } }));
 }
 
-const { tag } = Astro.params;
+const { year } = Astro.params;
 
 const allPosts = await getCollection('posts');
 const posts = allPosts
-  .filter(post => !post.data.draft && post.data.tags?.includes(tag))
+  .filter(post => {
+    const [y] = post.data.date.split('-');
+    return !post.data.draft && y === year;
+  })
   .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime());
-
 ---
 
-<Base title={`${tag} - tbiのブログ`}>
-  <h1>タグ: {tag}</h1>
+<Base title={`${year}年の記事 - tbiのブログ`}>
+  <h1>{year}年の記事</h1>
   <a href="/" class="back-link">&larr; 記事一覧に戻る</a>
 
-  {posts.length === 0 && <p class="no-posts">このタグの記事はありません。</p>}
+  {posts.length === 0 && <p class="no-posts">この年の記事はありません。</p>}
 
   <ul class="post-list">
     {posts.map(post => (
