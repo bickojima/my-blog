@@ -1,17 +1,37 @@
 ---
 import { getCollection } from 'astro:content';
-import Base from '../layouts/Base.astro';
+import Base from '../../layouts/Base.astro';
+
+export async function getStaticPaths() {
+  const allPosts = await getCollection('posts');
+  const tags = new Set<string>();
+
+  allPosts.forEach(post => {
+    if (post.data.tags && !post.data.draft) {
+      post.data.tags.forEach((tag: string) => tags.add(tag));
+    }
+  });
+
+  return Array.from(tags).map(tag => ({
+    params: { tag },
+  }));
+}
+
+const { tag } = Astro.params;
 
 const allPosts = await getCollection('posts');
 const posts = allPosts
-  .filter(post => !post.data.draft)
+  .filter(post => !post.data.draft && post.data.tags?.includes(tag))
   .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime());
 ---
 
-<Base title="tbiのブログ">
-  <h1>記事一覧</h1>
+<Base title={`${tag} - tbiのブログ`}>
+  <div class="tag-header">
+    <h1>タグ: {tag}</h1>
+    <a href="/" class="back-link">← 記事一覧に戻る</a>
+  </div>
 
-  {posts.length === 0 && <p class="no-posts">まだ記事がありません。</p>}
+  {posts.length === 0 && <p class="no-posts">このタグの記事はありません。</p>}
 
   <div class="post-list">
     {posts.map(post => (
@@ -32,8 +52,8 @@ const posts = allPosts
           )}
           {post.data.tags && post.data.tags.length > 0 && (
             <div class="post-tags">
-              {post.data.tags.map((tag: string) => (
-                <a href={`/tags/${tag}`} class="tag">{tag}</a>
+              {post.data.tags.map((t: string) => (
+                <span class="tag" class:list={{ active: t === tag }}>{t}</span>
               ))}
             </div>
           )}
@@ -43,11 +63,26 @@ const posts = allPosts
   </div>
 
   <style>
-    h1 {
-      font-size: 1.8rem;
+    .tag-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       margin-bottom: 1.5rem;
       padding-bottom: 0.5rem;
       border-bottom: 2px solid #333;
+    }
+    h1 {
+      font-size: 1.8rem;
+      margin: 0;
+    }
+    .back-link {
+      text-decoration: none;
+      color: #666;
+      font-size: 0.9rem;
+      transition: color 0.2s;
+    }
+    .back-link:hover {
+      color: #333;
     }
     .no-posts {
       color: #999;
@@ -122,13 +157,11 @@ const posts = allPosts
       color: #555;
       padding: 0.15rem 0.6rem;
       border-radius: 4px;
-      text-decoration: none;
-      display: inline-block;
-      transition: background-color 0.2s, color 0.2s;
     }
-    .tag:hover {
+    .tag.active {
       background: #333;
       color: #fff;
+      font-weight: bold;
     }
   </style>
 </Base>

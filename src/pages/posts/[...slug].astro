@@ -30,7 +30,7 @@ const { Content } = await post.render();
       {post.data.tags && post.data.tags.length > 0 && (
         <div class="post-tags">
           {post.data.tags.map((tag) => (
-            <span class="tag">{tag}</span>
+            <a href={`/tags/${tag}`} class="tag">{tag}</a>
           ))}
         </div>
       )}
@@ -93,6 +93,13 @@ const { Content } = await post.render();
       color: #555;
       padding: 0.2rem 0.7rem;
       border-radius: 4px;
+      text-decoration: none;
+      display: inline-block;
+      transition: background-color 0.2s, color 0.2s;
+    }
+    .tag:hover {
+      background: #333;
+      color: #fff;
     }
     .post-content {
       font-size: 1.05rem;
