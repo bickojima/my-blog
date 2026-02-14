@@ -21,6 +21,12 @@
         box-sizing: border-box;
       }
 
+      /* 横はみ出し防止 */
+      html, body {
+        overflow-x: hidden;
+        max-width: 100vw;
+      }
+
       @media (max-width: 799px) {
         /* --- アプリ全体のレイアウト --- */
         [class*=AppHeaderContent],
@@ -62,34 +68,56 @@
         }
 
         /* --- エディタ・ツールバー（保存ボタン常時表示） --- */
+
+        /* sticky有効化のため祖先のoverflow制御 */
+        [class*=AppMainContainer],
         [class*=EditorContainer] {
-          min-width: initial !important;
+          min-width: 0 !important;
+          overflow: visible !important;
         }
 
+        /* コントロールバーを上部固定 */
         [class*=EditorControlBar] {
           position: sticky !important;
           top: 0 !important;
           z-index: 300 !important;
           background: #fff !important;
+          border-bottom: 1px solid #e0e0e0 !important;
         }
 
+        /* ツールバーをビューポート内に収める */
         [class*=EditorControlBar] [class*=ToolbarContainer] {
           display: flex !important;
           flex-wrap: wrap !important;
+          justify-content: space-between !important;
           align-items: center !important;
-          gap: 4px !important;
           min-width: 0 !important;
+          max-width: 100vw !important;
           overflow: visible !important;
           padding: 4px 8px !important;
+          gap: 4px !important;
         }
 
+        /* 左セクション（戻るリンク等）は縮小可能に */
         [class*=ToolbarSubSectionFirst] {
-          flex: 1 1 auto !important;
+          flex: 1 1 0 !important;
           min-width: 0 !important;
+          overflow: hidden !important;
         }
 
+        /* 戻るリンクが長い場合に省略表示 */
+        [class*=BackCollection],
+        [class*=BackStatus] {
+          font-size: .6rem !important;
+          overflow: hidden !important;
+          text-overflow: ellipsis !important;
+          white-space: nowrap !important;
+        }
+
+        /* 保存・公開ボタンは絶対に縮小しない */
         [class*=ToolbarButton],
         [class*=PublishedToolbarButton] {
+          flex-shrink: 0 !important;
           min-height: 44px !important;
           padding: 0 12px !important;
         }
@@ -251,12 +279,6 @@
         [class*=CollectionTopNewButton] {
           padding: 0px 10px !important;
           height: auto !important;
-        }
-
-        /* --- ナビゲーション簡素化 --- */
-        [class*=BackCollection],
-        [class*=BackStatus] {
-          font-size: .6rem !important;
         }
 
         /* --- 検索・ビューコントロール --- */
