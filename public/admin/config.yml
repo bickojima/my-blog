@@ -2,9 +2,7 @@ backend:
   name: github
   repo: bickojima/my-blog
   branch: main
-
-  # OAuth Proxy（あとで作るWorkerのURLを入れる）
-  base_url: https://YOUR-WORKER.your-subdomain.workers.dev
+  base_url: https://my-blog-oauth.seima-tsuboi.workers.dev
   auth_endpoint: /auth
 
 # 画像アップロード先（Astroのpublic配下に置く）
