@@ -687,24 +687,17 @@
         function hideCodeBlockOnMobile() {
           if (window.innerWidth > 799) return;
 
-          // ツールバー内の「＋」ボタン（エディタコンポーネント追加メニュー）を探す
-          // Decap CMSはcode-blockをeditor componentとしてツールバーに配置する
-          var buttons = document.querySelectorAll('[class*=ToolbarToggle], [class*=ToolbarPluginForm]');
-          buttons.forEach(function(btn) {
-            if (btn.dataset.mobileHidden) return;
-            // code-blockプラグインのトグルボタン（「＋」アイコン）
-            btn.dataset.mobileHidden = 'true';
-            btn.style.display = 'none';
-          });
-
-          // エディタコンポーネントのドロップダウン内のcode-blockオプションも非表示
-          var pluginBtns = document.querySelectorAll('[class*=ComponentMenuBtn], [class*=ToolbarComponentsMenu] button, [class*=ToolbarPluginsMenu] button');
-          pluginBtns.forEach(function(btn) {
-            if (btn.dataset.mobileHidden) return;
-            var text = (btn.textContent || '').toLowerCase();
-            if (text.indexOf('code') !== -1 || text.indexOf('コード') !== -1) {
-              btn.dataset.mobileHidden = 'true';
-              btn.style.display = 'none';
+          // 「＋」メニュー内の「Code Block」項目をテキスト内容で検索して非表示にする
+          // styled-componentsのクラス名は動的生成で不安定なため、テキストマッチで判定
+          var candidates = document.querySelectorAll('button, li, [role="menuitem"], [role="option"]');
+          candidates.forEach(function(el) {
+            if (el.dataset.mobileHidden) return;
+            // エディタコンテンツ内のラベル（「CODE BLOCK」）は対象外
+            if (el.closest && el.closest('[data-slate-editor]')) return;
+            var text = (el.textContent || '').trim();
+            if (text === 'Code Block') {
+              el.dataset.mobileHidden = 'true';
+              el.style.display = 'none';
             }
           });
         }
