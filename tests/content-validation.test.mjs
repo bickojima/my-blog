@@ -104,3 +104,49 @@ describe('コンテンツ（Markdownファイル）の検証', () => {
     });
   });
 });
+
+describe('画像回転（EXIF orientation）対応の検証', () => {
+  it('ソース画像にEXIF回転が残っていない（ピクセルデータに反映済み）', async () => {
+    const sharp = (await import('sharp')).default;
+    const uploadsDir = join(process.cwd(), 'public/images/uploads');
+    if (!existsSync(uploadsDir)) return;
+
+    const files = readdirSync(uploadsDir).filter(
+      (f) => /\.(jpe?g|png|webp)$/i.test(f)
+    );
+
+    for (const file of files) {
+      const meta = await sharp(join(uploadsDir, file)).metadata();
+      expect(
+        meta.orientation === undefined || meta.orientation === 1,
+        `${file}: EXIF orientation=${meta.orientation}（ソース画像の回転が未修正）`
+      ).toBe(true);
+    }
+  });
+
+  it('image-optimize.mjs で .rotate() が呼ばれている', () => {
+    const src = readFileSync(
+      join(process.cwd(), 'src/integrations/image-optimize.mjs'),
+      'utf-8'
+    );
+    expect(src).toContain('.rotate()');
+  });
+
+  it('image-optimize.mjs でEXIF orientationによる幅の補正がある', () => {
+    const src = readFileSync(
+      join(process.cwd(), 'src/integrations/image-optimize.mjs'),
+      'utf-8'
+    );
+    // orientation >= 5 で width/height を入れ替える処理
+    expect(src).toContain('orientation');
+    expect(src).toContain('effectiveWidth');
+  });
+
+  it('Base.astro に image-orientation: from-image が設定されている', () => {
+    const src = readFileSync(
+      join(process.cwd(), 'src/layouts/Base.astro'),
+      'utf-8'
+    );
+    expect(src).toContain('image-orientation: from-image');
+  });
+});
