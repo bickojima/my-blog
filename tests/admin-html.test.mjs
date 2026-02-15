@@ -85,9 +85,9 @@ describe('管理画面HTML（public/admin/index.html）の検証', () => {
       expect(adminHtml).toContain('min-height: 44px');
     });
 
-    it('ドロップダウンがボタン付近にfixed表示される', () => {
+    it('ドロップダウンがボタン付近にabsolute表示される', () => {
       expect(adminHtml).toContain('[class*=DropdownList]');
-      expect(adminHtml).toContain('position: fixed');
+      expect(adminHtml).toContain('position: absolute');
       expect(adminHtml).toContain('z-index: 9999');
     });
 
