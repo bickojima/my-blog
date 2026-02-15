@@ -310,6 +310,14 @@
         }
       }
 
+      /* --- Slate void node（codeblock等）のiOS Safari選択クラッシュ防止 --- */
+      /* iOS SafariがcontentEditable=false要素に不正な選択を作成し、
+         SlateのtoSlatePoint変換でsetEnd()が失敗するのを防ぐ */
+      [data-slate-void="true"] {
+        -webkit-user-select: none;
+        user-select: none;
+      }
+
       /* --- iPhone画像のEXIF回転をCMSプレビューで正しく反映 --- */
       /* img要素全体 + Decap CMSのReactコンポーネント内の画像にも適用 */
       img,
@@ -396,18 +404,47 @@
     </style>
   </head>
   <body>
+    <script>
+      // Slate エディタの toSlatePoint/toSlateRange クラッシュを抑止
+      // Decap CMS の古い Slate v0.47 が iOS Safari で void node（codeblock等）の
+      // DOM選択をSlate内部表現に変換する際に setEnd() が失敗する既知バグへの対策
+      // React Error Boundary でキャッチされる前にエラーを握りつぶし、
+      // クラッシュ画面（「エラーが発生しました」）の表示を防止する
+      window.addEventListener('error', function(e) {
+        if (e && e.error && e.error.stack &&
+            (e.error.stack.indexOf('toSlatePoint') !== -1 ||
+             e.error.stack.indexOf('toSlateRange') !== -1 ||
+             e.error.stack.indexOf('setEnd') !== -1)) {
+          console.warn('[CMS] Slate selection error suppressed:', e.error.message);
+          e.preventDefault();
+          return true;
+        }
+      });
+    </script>
     <script src="https://unpkg.com/decap-cms@^3.10.0/dist/decap-cms.js"></script>
     <script>
       // Decap CMS UI カスタマイズ
       (function() {
         function initCustomizations() {
-          var observer = new MutationObserver(function() {
+          // MutationObserverコールバックをデバウンス（requestAnimationFrame）
+          // codeblock挿入等で大量DOM変更が発生した際の過負荷クラッシュを防止
+          var rafPending = false;
+          function runCustomizations() {
             addSiteLink();
             formatCollectionEntries();
             relabelImageButtons();
             updateDeleteButtonState();
             showPublicUrl();
             manageDropdownOverlay();
+          }
+
+          var observer = new MutationObserver(function() {
+            if (rafPending) return;
+            rafPending = true;
+            requestAnimationFrame(function() {
+              rafPending = false;
+              runCustomizations();
+            });
           });
 
           observer.observe(document.body, {
@@ -418,12 +455,7 @@
           });
 
           // 初回実行
-          addSiteLink();
-          formatCollectionEntries();
-          relabelImageButtons();
-          updateDeleteButtonState();
-          showPublicUrl();
-          manageDropdownOverlay();
+          runCustomizations();
         }
 
         // サイドバーに本番サイトへのリンクを追加（コレクション＞記事の下）
@@ -758,14 +790,24 @@
         }, { passive: true });
 
         document.addEventListener('touchmove', function(e) {
-          // モーダル内のスクロールは妨害しない
+          // エディタ内（Slate / CodeMirror）のタッチ操作は妨害しない
+          // codeblock挿入時等にpreventDefaultでクラッシュするのを防止
           var target = e.target;
           while (target && target !== document.body) {
+            // Slateエディタ内
+            if (target.getAttribute && target.getAttribute('data-slate-editor') === 'true') {
+              return;
+            }
+            // CodeMirrorエディタ内（codeblockウィジェット）
+            if (target.classList && target.classList.contains('CodeMirror')) {
+              return;
+            }
+            // モーダル・メディアライブラリ内
             if (target.className && typeof target.className === 'string' &&
                 (target.className.indexOf('Modal') !== -1 ||
                  target.className.indexOf('Library') !== -1 ||
                  target.className.indexOf('CardGrid') !== -1)) {
-              return; // モーダル内はそのまま通す
+              return;
             }
             // スクロール可能な要素の中なら許可
             if (target.scrollHeight > target.clientHeight) {

@@ -49,10 +49,11 @@ tests/
 - アップロード時にcanvasでEXIF正規化、ビルド時にsharp `.rotate()` で二重保証
 
 ### CMS管理画面 (admin/index.html)
-- Decap CMS v3.10.0 をDOM操作でカスタマイズ（MutationObserver）
+- Decap CMS v3.10.0 をDOM操作でカスタマイズ（MutationObserver、RAFデバウンス済み）
 - モバイル: ドロップダウンは `position: fixed; bottom: 0` のボトムシート形式
 - 主要JS関数: `addSiteLink`, `formatCollectionEntries`, `relabelImageButtons`, `updateDeleteButtonState`, `showPublicUrl`, `manageDropdownOverlay`
 - `hashchange` イベントで画面遷移時に公開URLバーを更新
+- **Slate codeblockクラッシュ対策**: void node `user-select:none`、`toSlatePoint`エラーハンドラ、touchmoveエディタ除外
 
 ### ビルドパイプライン
 `normalize-images.mjs` → `organize-posts.mjs` → `astro build` → `image-optimize.mjs`（Astro integration）

@@ -25,6 +25,7 @@ Astro + Decap CMS によるブログサイト。Cloudflare Pages でホスティ
 | 2026-02-15 夕方 | Playwright E2Eテスト導入（PC/iPad/iPhone 3デバイス×30テスト=90テスト） | - |
 | 2026-02-15 夜 | EXIF画像回転修正（fixPreviewImageOrientation削除）、公開URLバーhashchange対応、ドロップダウンボトムシート化 | - |
 | 2026-02-15 夜 | CMS管理画面ヘッダーに本番サイトリンク追加 | - |
+| 2026-02-15 夜 | iPhone codeblockクラッシュ対策（MutationObserverデバウンス、touchmoveエディタ除外） | - |
 
 ---
 
@@ -148,13 +149,14 @@ my-blog/
 
 - HEIC画像アップロード時にJPEGへ自動変換されるよう、accept属性を制限
 - アップロード時にcanvas APIでEXIF回転をピクセルに反映（capture phase）
-- pull-to-refresh を無効化し、編集中の誤リロードを防止
+- pull-to-refresh を無効化し、編集中の誤リロードを防止（Slateエディタ・CodeMirror内はtouchmove除外）
 - 入力フォームのfont-sizeを16px以上に設定し、自動ズームを防止
 - 画像表示は CSS `image-orientation: from-image` でEXIF回転を自動適用
+- MutationObserverコールバックを`requestAnimationFrame`でデバウンスし、codeblock等の大量DOM変更による過負荷を防止
 
 ### 5.4 本番サイトリンク
 
-- CMSヘッダーに「ブログを見る」リンクを表示
+- CMSサイドバーに「ブログを見る」リンクを表示
 - 本番サイト（https://reiwa.casa）を新規タブで開く
 
 ### 5.5 公開URL表示

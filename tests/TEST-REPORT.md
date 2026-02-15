@@ -10,6 +10,7 @@
 | 1.3 | 2026-02-15 | Playwright E2Eテスト実装（PC/iPad/iPhone 3デバイス×30テスト=90テスト）、テスト実行結果を更新 |
 | 1.4 | 2026-02-15 | admin-htmlテスト更新（ドロップダウンボトムシート化・EXIF修正に対応）、テスト実行結果を更新（237テスト全PASS） |
 | 1.5 | 2026-02-15 | admin-htmlテストに本番サイトリンク検証を追加（CMS-11対応） |
+| 1.6 | 2026-02-15 | Slate codeblockクラッシュ対策テスト追加（void node CSS、エラーハンドラ、デバウンス、touchmove除外）、172テスト全PASS |
 
 ## テスト基盤の変更履歴
 
@@ -621,7 +622,7 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 | 1 | image-orientation: from-image が設定されている | M-02 | CSS内に`image-orientation: from-image`が含まれる |
 | 2 | ドロップダウン表示時にURLバーとの重なりをJSで制御している | M-02 | `manageDropdownOverlay`関数と`cms-public-url`要素が含まれる |
 
-### 12.5 iPhone固有対応（4件）
+### 12.5 iPhone固有対応（5件）
 
 | No. | テストケース | テスト手法 | 期待結果 |
 | :--- | :--- | :--- | :--- |
@@ -629,6 +630,15 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 | 2 | HEIC画像アップロード時のaccept属性制限がある | M-02 | JS内にaccept属性の書き換え処理が含まれる |
 | 3 | pull-to-refresh無効化スクリプトがある | M-02 | `touchstart`または`touchmove`のpreventDefault処理が含まれる |
 | 4 | モーダル内のスクロールは許可されている | M-02 | モーダル内のタッチイベント伝搬許可処理が含まれる |
+| 5 | touchmoveハンドラがSlateエディタとCodeMirrorを除外している | M-02 | `data-slate-editor`と`CodeMirror`のホワイトリストチェックが含まれる |
+
+### 12.5b Slate codeblockクラッシュ対策（3件）
+
+| No. | テストケース | テスト手法 | 期待結果 |
+| :--- | :--- | :--- | :--- |
+| 1 | void node（codeblock等）にuser-select: noneが設定されている | M-02 | `[data-slate-void="true"]`にCSS `user-select: none`が適用されている |
+| 2 | Slateエラー（toSlatePoint/toSlateRange）のグローバルハンドラがある | M-02 | `toSlatePoint`/`toSlateRange`をキャッチするwindow errorハンドラが含まれる |
+| 3 | MutationObserverがrequestAnimationFrameでデバウンスされている | M-02 | `requestAnimationFrame`と`rafPending`によるデバウンス処理が含まれる |
 
 ### 12.6 JavaScriptカスタマイズ（9件）
 
@@ -726,6 +736,7 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 | CMS-07 | メディアライブラリ | admin-html | 12.3章 #8,#10 | M-02 | 充足 |
 | CMS-08 | 保存ボタン常時表示 | admin-html | 12.3章 #4,#5, 12.8章 #1,#2 | M-02 | 充足 |
 | CMS-11 | 本番サイトリンク表示 | admin-html | 12.6章 #1b | M-02 | 充足 |
+| CMS-12 | Slate codeblockクラッシュ対策 | admin-html | 12.5b章 #1,#2,#3, 12.5章 #5 | M-02 | 充足 |
 
 ### 13.3 非機能要件 (NFR) → テストケース
 
