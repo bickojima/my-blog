@@ -5,14 +5,14 @@ function getFileSlug(post: CollectionEntry<'posts'>): string {
   return post.id.replace(/\.md$/, '').split('/').pop()!;
 }
 
-export function getPostUrl(post: CollectionEntry<'posts'>, _allPosts: CollectionEntry<'posts'>[]): string {
+export function getPostUrl(post: CollectionEntry<'posts'>): string {
   const [year, month] = post.data.date.split('-');
   const slug = getFileSlug(post);
   return `/posts/${year}/${month}/${slug}`;
 }
 
-export function getPostUrlParts(post: CollectionEntry<'posts'>, allPosts: CollectionEntry<'posts'>[]): { year: string; month: string; slug: string } {
-  const url = getPostUrl(post, allPosts);
+export function getPostUrlParts(post: CollectionEntry<'posts'>): { year: string; month: string; slug: string } {
+  const url = getPostUrl(post);
   const parts = url.split('/');
   return { year: parts[2], month: parts[3], slug: parts[4] };
 }
