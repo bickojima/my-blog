@@ -8,7 +8,8 @@
     "preview": "astro preview",
     "astro": "astro",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "astro": "^5.17.1",
@@ -17,8 +18,10 @@
     "unist-util-visit": "^5.1.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "gray-matter": "^4.0.3",
     "js-yaml": "^4.1.1",
+    "serve": "^14.2.5",
     "sharp": "^0.34.5",
     "vitest": "^4.0.18"
   }
