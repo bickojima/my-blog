@@ -16,7 +16,6 @@ const { title } = Astro.props;
   <title>{title}</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="icon" href="/favicon.ico" sizes="32x32" />
-  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js" is:inline></script>
   <style is:global>
     *, *::before, *::after {
       margin: 0;
@@ -100,16 +99,5 @@ const { title } = Astro.props;
     <p>&copy; {new Date().getFullYear()} tbiのブログ</p>
     <a href="/admin/" class="admin-link">管理</a>
   </footer>
-  <script is:inline>
-    if (window.netlifyIdentity) {
-      window.netlifyIdentity.on("init", user => {
-        if (!user) {
-          window.netlifyIdentity.on("login", () => {
-            document.location.href = "/admin/";
-          });
-        }
-      });
-    }
-  </script>
 </body>
 </html>

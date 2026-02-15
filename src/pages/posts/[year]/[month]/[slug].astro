@@ -6,7 +6,7 @@ import { getPostUrlParts } from '../../../../lib/posts';
 export async function getStaticPaths() {
   const posts = await getCollection('posts');
   return posts.map((post) => {
-    const { year, month, slug } = getPostUrlParts(post, posts);
+    const { year, month, slug } = getPostUrlParts(post);
     return {
       params: { year, month, slug },
       props: { post },

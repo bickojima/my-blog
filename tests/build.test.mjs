@@ -81,7 +81,7 @@ describe('ビルド検証', () => {
       ).toBe(true);
     });
 
-    it('カテゴリページが生成されていない', () => {
+    it('カテゴリページが生成されていない（カテゴリ機能は廃止済み）', () => {
       expect(
         existsSync(join(DIST_DIR, 'category'))
       ).toBe(false);
@@ -149,6 +149,11 @@ describe('ビルド検証', () => {
 
     it('copyright表記がある', () => {
       expect(indexHtml).toMatch(/(&copy;|©).*tbiのブログ/);
+    });
+
+    it('Netlify Identityスクリプトが含まれていない（GitHub OAuthに移行済み）', () => {
+      expect(indexHtml).not.toContain('identity.netlify.com');
+      expect(indexHtml).not.toContain('netlifyIdentity');
     });
   });
 

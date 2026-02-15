@@ -33,7 +33,7 @@ const posts = allPosts
   <ul class="post-list">
     {posts.map(post => (
       <li>
-        <a href={getPostUrl(post, allPosts)} class="post-link">
+        <a href={getPostUrl(post)} class="post-link">
           <time datetime={post.data.date}>{post.data.date}</time>
           <span class="post-title">{post.data.title}</span>
         </a>
