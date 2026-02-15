@@ -85,9 +85,10 @@ describe('管理画面HTML（public/admin/index.html）の検証', () => {
       expect(adminHtml).toContain('min-height: 44px');
     });
 
-    it('ドロップダウンのスタイルが定義されている', () => {
+    it('ドロップダウンがボタン付近にfixed表示される', () => {
       expect(adminHtml).toContain('[class*=DropdownList]');
-      expect(adminHtml).toContain('min-width: 160px');
+      expect(adminHtml).toContain('position: fixed');
+      expect(adminHtml).toContain('z-index: 9999');
     });
 
     it('モーダルが画面幅95%で表示される', () => {
