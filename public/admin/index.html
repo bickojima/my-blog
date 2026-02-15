@@ -355,6 +355,7 @@
             formatCollectionEntries();
             relabelImageButtons();
             updateDeleteButtonState();
+            showPublicUrl();
           });
 
           observer.observe(document.body, {
@@ -368,6 +369,7 @@
           formatCollectionEntries();
           relabelImageButtons();
           updateDeleteButtonState();
+          showPublicUrl();
         }
 
         // コレクション一覧：日付・下書き状態・タイトルを分離表示
@@ -460,6 +462,71 @@
           }
 
           deleteBtn.disabled = !hasSelected;
+        }
+
+        // エディタ画面に公開URLを表示
+        function showPublicUrl() {
+          // エディタのコントロールバーを検出
+          var controlBar = document.querySelector('[class*="EditorControlBar"]');
+          if (!controlBar) return;
+
+          // 既に表示済みなら更新のみ
+          var urlDisplay = document.getElementById('cms-public-url');
+
+          // タイトルと日付のフィールドを取得
+          var titleInput = null;
+          var dateInput = null;
+          var labels = document.querySelectorAll('[class*="ControlPaneContainer"] label, [class*="ControlPaneContainer"] [class*="FieldLabel"]');
+          labels.forEach(function(label) {
+            var text = label.textContent.trim();
+            var container = label.closest('[class*="ObjectWidgetTopBarContainer"]');
+            if (container) return; // ネストされたオブジェクト内はスキップ
+            var parent = label.closest('[class*="Field"]') || label.parentElement;
+            if (!parent) return;
+            if (text === 'タイトル' || text === 'title') {
+              titleInput = parent.querySelector('input[type="text"], input:not([type])');
+            }
+            if (text === '日付' || text === 'date') {
+              dateInput = parent.querySelector('input');
+            }
+          });
+
+          if (!titleInput || !dateInput) return;
+
+          var title = titleInput.value || '';
+          var dateVal = dateInput.value || '';
+
+          // 日付からyyyy/mmを抽出
+          var dateMatch = dateVal.match(/(\d{4})-(\d{2})/);
+          if (!dateMatch || !title) {
+            if (urlDisplay) urlDisplay.style.display = 'none';
+            return;
+          }
+
+          var year = dateMatch[1];
+          var month = dateMatch[2];
+          var url = 'https://reiwa.casa/posts/' + year + '/' + month + '/' + encodeURIComponent(title);
+
+          if (!urlDisplay) {
+            urlDisplay = document.createElement('div');
+            urlDisplay.id = 'cms-public-url';
+            urlDisplay.style.cssText = 'padding:4px 12px;background:#f0f7ff;border-bottom:1px solid #d0e3f7;font-size:0.8em;color:#555;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
+            controlBar.insertAdjacentElement('afterend', urlDisplay);
+          }
+
+          urlDisplay.style.display = '';
+          urlDisplay.innerHTML = '<span style="color:#888;margin-right:4px;">公開URL:</span><a href="' + url + '" target="_blank" rel="noopener" style="color:#1a73e8;text-decoration:underline;">' + decodeURIComponent(url) + '</a>';
+
+          // フィールド変更時にURLを更新
+          if (!titleInput.dataset.urlBound) {
+            titleInput.dataset.urlBound = 'true';
+            titleInput.addEventListener('input', function() { setTimeout(showPublicUrl, 100); });
+          }
+          if (!dateInput.dataset.urlBound) {
+            dateInput.dataset.urlBound = 'true';
+            dateInput.addEventListener('input', function() { setTimeout(showPublicUrl, 100); });
+            dateInput.addEventListener('change', function() { setTimeout(showPublicUrl, 100); });
+          }
         }
 
         // CMS読み込み後にカスタマイズを初期化
