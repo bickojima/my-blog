@@ -93,9 +93,14 @@ describe('コンテンツ（Markdownファイル）の検証', () => {
       }
     });
 
-    it('thumbnail（サムネイル）が/images/で始まるパスである（存在する場合）', () => {
+    it('thumbnail（サムネイル）が/images/で始まるパスであり画像ファイルが実在する', () => {
       if (frontmatter.thumbnail) {
         expect(frontmatter.thumbnail).toMatch(/^\/images\//);
+        const imagePath = join(process.cwd(), 'public', frontmatter.thumbnail);
+        expect(
+          existsSync(imagePath),
+          `サムネイル画像が見つかりません: ${frontmatter.thumbnail}`
+        ).toBe(true);
       }
     });
 

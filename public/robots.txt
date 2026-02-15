@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://myblog.com/sitemap.xml
+Sitemap: https://reiwa.casa/sitemap.xml
