@@ -473,31 +473,46 @@
           // 既に表示済みなら更新のみ
           var urlDisplay = document.getElementById('cms-public-url');
 
-          // タイトルと日付のフィールドを取得
           var titleInput = null;
           var dateInput = null;
-          var labels = document.querySelectorAll('[class*="ControlPaneContainer"] label, [class*="ControlPaneContainer"] [class*="FieldLabel"]');
-          labels.forEach(function(label) {
-            var text = label.textContent.trim();
-            var container = label.closest('[class*="ObjectWidgetTopBarContainer"]');
-            if (container) return; // ネストされたオブジェクト内はスキップ
-            var parent = label.closest('[class*="Field"]') || label.parentElement;
-            if (!parent) return;
-            if (text === 'タイトル' || text === 'title') {
-              titleInput = parent.querySelector('input[type="text"], input:not([type])');
+
+          // Strategy 1: ラベルテキストで検索（label, legend, span等すべて対象）
+          var labelEls = document.querySelectorAll('label, legend, [class*="FieldLabel"], [class*="Label"]');
+          for (var i = 0; i < labelEls.length; i++) {
+            var el = labelEls[i];
+            var text = (el.textContent || '').trim();
+            if (el.closest('[class*="ObjectWidgetTopBar"]')) continue;
+            var field = el.closest('fieldset, [class*="Field"]') || el.parentElement;
+            if (!field) continue;
+            if (!titleInput && text === 'タイトル') {
+              titleInput = field.querySelector('input');
             }
-            if (text === '日付' || text === 'date') {
-              dateInput = parent.querySelector('input');
+            if (!dateInput && text === '日付') {
+              dateInput = field.querySelector('input');
             }
-          });
+          }
+
+          // Strategy 2: Fallback - エディタ内のinputを順番に取得
+          if (!titleInput || !dateInput) {
+            var editorArea = controlBar.parentElement;
+            if (editorArea) {
+              var inputs = editorArea.querySelectorAll('input:not([type="file"]):not([type="checkbox"]):not([type="radio"]):not([type="hidden"])');
+              var textInputs = [];
+              for (var j = 0; j < inputs.length; j++) {
+                textInputs.push(inputs[j]);
+              }
+              if (!titleInput && textInputs.length > 0) titleInput = textInputs[0];
+              if (!dateInput && textInputs.length > 1) dateInput = textInputs[1];
+            }
+          }
 
           if (!titleInput || !dateInput) return;
 
           var title = titleInput.value || '';
           var dateVal = dateInput.value || '';
 
-          // 日付からyyyy/mmを抽出
-          var dateMatch = dateVal.match(/(\d{4})-(\d{2})/);
+          // YYYY-MM-DD と YYYY/MM/DD の両方に対応
+          var dateMatch = dateVal.match(/(\d{4})[-\/](\d{2})/);
           if (!dateMatch || !title) {
             if (urlDisplay) urlDisplay.style.display = 'none';
             return;
@@ -505,17 +520,22 @@
 
           var year = dateMatch[1];
           var month = dateMatch[2];
-          var url = 'https://reiwa.casa/posts/' + year + '/' + month + '/' + encodeURIComponent(title);
+          var publicUrl = 'https://reiwa.casa/posts/' + year + '/' + month + '/' + encodeURIComponent(title);
+          var displayUrl = 'https://reiwa.casa/posts/' + year + '/' + month + '/' + title;
 
           if (!urlDisplay) {
             urlDisplay = document.createElement('div');
             urlDisplay.id = 'cms-public-url';
-            urlDisplay.style.cssText = 'padding:4px 12px;background:#f0f7ff;border-bottom:1px solid #d0e3f7;font-size:0.8em;color:#555;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
+            urlDisplay.style.cssText = 'padding:6px 14px;background:#f0f7ff;border-bottom:1px solid #d0e3f7;font-size:0.85em;color:#555;';
             controlBar.insertAdjacentElement('afterend', urlDisplay);
           }
 
           urlDisplay.style.display = '';
-          urlDisplay.innerHTML = '<span style="color:#888;margin-right:4px;">公開URL:</span><a href="' + url + '" target="_blank" rel="noopener" style="color:#1a73e8;text-decoration:underline;">' + decodeURIComponent(url) + '</a>';
+          var newHtml = '<span style="color:#888;margin-right:6px;">公開URL:</span><a href="' + publicUrl + '" target="_blank" rel="noopener" style="color:#1a73e8;text-decoration:underline;word-break:break-all;">' + displayUrl + '</a>';
+          if (urlDisplay.dataset.lastUrl !== publicUrl) {
+            urlDisplay.innerHTML = newHtml;
+            urlDisplay.dataset.lastUrl = publicUrl;
+          }
 
           // フィールド変更時にURLを更新
           if (!titleInput.dataset.urlBound) {
