@@ -458,11 +458,16 @@
           deleteBtn.disabled = !hasSelected;
         }
 
-        // エディタ画面に公開予定URLを表示（タイトル・日付からリアルタイム生成）
+        // エディタ画面に公開URLを表示
+        // ファイル名 = URLスラグ（Decap CMSはタイトル変更してもファイル名は変わらない）
+        // 既存記事: ハッシュからファイル名を取得 → 固定URL
+        // 新規記事: タイトルから生成（作成時にファイル名=タイトルになるため）
         function showPublicUrl() {
           try {
             var hash = window.location.hash || '';
-            var isEditor = hash.indexOf('/entries/') !== -1 || /\/new\/?$/.test(hash);
+            var isNew = /\/new\/?$/.test(hash);
+            var entryMatch = hash.match(/\/entries\/(.+?)$/);
+            var isEditor = entryMatch || isNew;
 
             var urlDisplay = document.getElementById('cms-public-url');
 
@@ -471,69 +476,72 @@
               return;
             }
 
-            // ページ上の全inputを収集
-            var allInputs = document.querySelectorAll('input');
-            var candidates = [];
-            for (var i = 0; i < allInputs.length; i++) {
-              var t = (allInputs[i].type || 'text').toLowerCase();
-              if (t !== 'file' && t !== 'checkbox' && t !== 'radio' && t !== 'hidden') {
-                candidates.push(allInputs[i]);
+            var resolvedPath = null;
+
+            if (entryMatch) {
+              // 既存記事: ハッシュのパスがファイルパス = URLスラグ
+              // hash例: #/collections/posts/entries/2026/01/あああ
+              var entryPath = decodeURIComponent(entryMatch[1]);
+              resolvedPath = '/posts/' + entryPath;
+            } else {
+              // 新規記事: タイトル・日付からURL生成
+              var allInputs = document.querySelectorAll('input');
+              var candidates = [];
+              for (var i = 0; i < allInputs.length; i++) {
+                var t = (allInputs[i].type || 'text').toLowerCase();
+                if (t !== 'file' && t !== 'checkbox' && t !== 'radio' && t !== 'hidden') {
+                  candidates.push(allInputs[i]);
+                }
               }
-            }
+              if (candidates.length < 2) return;
 
-            if (candidates.length < 2) return;
-
-            // 日付inputを値パターンで特定
-            var dateInput = null;
-            var dateIndex = -1;
-            for (var k = 0; k < candidates.length; k++) {
-              var v = candidates[k].value || '';
-              if (v.match(/^\d{4}[-\/]\d{2}[-\/]\d{2}/)) {
-                dateInput = candidates[k];
-                dateIndex = k;
-                break;
+              var dateInput = null;
+              var dateIndex = -1;
+              for (var k = 0; k < candidates.length; k++) {
+                var v = candidates[k].value || '';
+                if (v.match(/^\d{4}[-\/]\d{2}[-\/]\d{2}/)) {
+                  dateInput = candidates[k];
+                  dateIndex = k;
+                  break;
+                }
               }
+
+              var titleInput = null;
+              if (dateInput && dateIndex > 0) {
+                titleInput = candidates[dateIndex - 1];
+              }
+              if (!titleInput || !dateInput) {
+                titleInput = candidates[0];
+                dateInput = candidates[1];
+              }
+
+              // 新規記事はタイトル変更でURL変わるのでリスナー登録
+              if (titleInput && !titleInput.dataset.urlBound) {
+                titleInput.dataset.urlBound = 'true';
+                titleInput.addEventListener('input', function() { setTimeout(showPublicUrl, 100); });
+              }
+              if (dateInput && !dateInput.dataset.urlBound) {
+                dateInput.dataset.urlBound = 'true';
+                dateInput.addEventListener('input', function() { setTimeout(showPublicUrl, 100); });
+                dateInput.addEventListener('change', function() { setTimeout(showPublicUrl, 100); });
+              }
+
+              var title = (titleInput && titleInput.value) || '';
+              var dateVal = (dateInput && dateInput.value) || '';
+              var dateMatch = dateVal.match(/(\d{4})[-\/](\d{2})/);
+              if (!dateMatch || !title) {
+                if (urlDisplay) urlDisplay.style.display = 'none';
+                return;
+              }
+              resolvedPath = '/posts/' + dateMatch[1] + '/' + dateMatch[2] + '/' + title;
             }
 
-            var titleInput = null;
-            if (dateInput && dateIndex > 0) {
-              titleInput = candidates[dateIndex - 1];
-            }
-            if (!titleInput || !dateInput) {
-              titleInput = candidates[0];
-              dateInput = candidates[1];
-            }
-
-            // イベントリスナー登録
-            if (titleInput && !titleInput.dataset.urlBound) {
-              titleInput.dataset.urlBound = 'true';
-              titleInput.addEventListener('input', function() { setTimeout(showPublicUrl, 100); });
-            }
-            if (dateInput && !dateInput.dataset.urlBound) {
-              dateInput.dataset.urlBound = 'true';
-              dateInput.addEventListener('input', function() { setTimeout(showPublicUrl, 100); });
-              dateInput.addEventListener('change', function() { setTimeout(showPublicUrl, 100); });
-            }
-
-            if (!titleInput || !dateInput) return;
-
-            var title = titleInput.value || '';
-            var dateVal = dateInput.value || '';
-            var dateMatch = dateVal.match(/(\d{4})[-\/](\d{2})/);
-            if (!dateMatch || !title) {
-              if (urlDisplay) urlDisplay.style.display = 'none';
-              return;
-            }
-
-            var year = dateMatch[1];
-            var month = dateMatch[2];
-
-            // 常にタイトル・日付から公開予定URLを生成
-            var resolvedPath = '/posts/' + year + '/' + month + '/' + title;
+            if (!resolvedPath) return;
 
             var parts = resolvedPath.split('/');
             var publicUrl = 'https://reiwa.casa' + parts.map(function(s) { return s ? encodeURIComponent(s) : s; }).join('/');
             var displayUrl = 'https://reiwa.casa' + resolvedPath;
+            var label = entryMatch ? '公開URL:' : '公開予定URL:';
 
             if (!urlDisplay) {
               urlDisplay = document.createElement('div');
@@ -543,7 +551,7 @@
             }
 
             urlDisplay.style.display = '';
-            var newHtml = '<span style="color:#666;margin-right:6px;">公開予定URL:</span><a href="' + publicUrl + '" target="_blank" rel="noopener" style="color:#1a73e8;text-decoration:underline;word-break:break-all;">' + displayUrl + '</a>';
+            var newHtml = '<span style="color:#666;margin-right:6px;">' + label + '</span><a href="' + publicUrl + '" target="_blank" rel="noopener" style="color:#1a73e8;text-decoration:underline;word-break:break-all;">' + displayUrl + '</a>';
             if (urlDisplay.dataset.lastUrl !== displayUrl) {
               urlDisplay.innerHTML = newHtml;
               urlDisplay.dataset.lastUrl = displayUrl;
