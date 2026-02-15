@@ -29,10 +29,13 @@ collections:
     format: "frontmatter"
     summary: "{{date}} | {{draft}} | {{title}}"
     sortable_fields: ["date", "title"]
+    # コレクション内の画像ウィジェットがグローバルのアップロード先を使うよう明示指定
+    media_folder: "/public/images/uploads"
+    public_folder: "/images/uploads"
     fields:
       - { label: "タイトル", name: "title", widget: "string" }
       - { label: "日付", name: "date", widget: "datetime", format: "YYYY-MM-DD", date_format: "YYYY-MM-DD", time_format: false }
-      - { label: "下書き", name: "draft", widget: "boolean", default: false }
+      - { label: "下書き", name: "draft", widget: "boolean", default: false, required: false }
       - label: "タグ"
         name: "tags"
         widget: "list"
