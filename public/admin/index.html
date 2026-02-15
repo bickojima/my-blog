@@ -402,6 +402,7 @@
       (function() {
         function initCustomizations() {
           var observer = new MutationObserver(function() {
+            addSiteLink();
             formatCollectionEntries();
             relabelImageButtons();
             updateDeleteButtonState();
@@ -417,11 +418,29 @@
           });
 
           // 初回実行
+          addSiteLink();
           formatCollectionEntries();
           relabelImageButtons();
           updateDeleteButtonState();
           showPublicUrl();
           manageDropdownOverlay();
+        }
+
+        // ヘッダーに本番サイトへのリンクを追加
+        function addSiteLink() {
+          var header = document.querySelector('[class*="AppHeaderContent"]');
+          if (!header || header.querySelector('#cms-site-link')) return;
+
+          var link = document.createElement('a');
+          link.id = 'cms-site-link';
+          link.href = 'https://reiwa.casa';
+          link.target = '_blank';
+          link.rel = 'noopener';
+          link.textContent = 'ブログを見る';
+          link.style.cssText = 'color:#fff;text-decoration:none;font-size:14px;opacity:0.8;padding:4px 12px;border:1px solid rgba(255,255,255,0.3);border-radius:4px;white-space:nowrap;margin-left:auto;';
+          link.addEventListener('mouseenter', function() { link.style.opacity = '1'; });
+          link.addEventListener('mouseleave', function() { link.style.opacity = '0.8'; });
+          header.appendChild(link);
         }
 
         // コレクション一覧：日付・下書き状態・タイトルを分離表示

@@ -161,6 +161,13 @@ describe('管理画面HTML（public/admin/index.html）の検証', () => {
       expect(adminHtml).toContain('observe(document.body');
     });
 
+    it('ヘッダーに本番サイトへのリンク追加機能がある', () => {
+      expect(adminHtml).toContain('addSiteLink');
+      expect(adminHtml).toContain('cms-site-link');
+      expect(adminHtml).toContain('https://reiwa.casa');
+      expect(adminHtml).toContain('target="_blank"');
+    });
+
     it('コレクション一覧の日付フォーマット処理がある', () => {
       // "YYYY-MM-DD | draft | タイトル" パターンの正規表現
       expect(adminHtml).toContain('formatCollectionEntries');
