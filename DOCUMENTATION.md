@@ -8,6 +8,7 @@
 | 1.1 | 2026-02-15 | JTC設計書体系に再構成（第1部〜第4部構成） |
 | 1.2 | 2026-02-15 | 認証基盤（第8章）を大幅拡充: Decap CMS連携詳細、認証アーキテクチャ図、シーケンス図、セキュリティ考慮事項、GitHub OAuth App設定を追加 |
 | 1.3 | 2026-02-15 | Playwright E2Eテスト導入（PC/iPad/iPhone対応）、システム変更履歴追加 |
+| 1.4 | 2026-02-15 | EXIF画像回転修正（fixPreviewImageOrientation削除）、ドロップダウンCSS位置制御、公開URLバーhashchange対応、テスト更新（237テスト） |
 
 ## システム変更履歴
 
@@ -27,7 +28,9 @@ PR履歴に基づく主要なシステム変更の記録である。
 | 2026-02-15 9〜10時 | **公開URL表示**: CMS エディタ内での公開URL表示機能の実装・改善（DOM検索方式変更、url-map.json連携） | #55, #58, #65, #66 |
 | 2026-02-15 13〜14時 | **EXIF回転対応**: iPhone撮影画像のEXIF回転をピクセルレベルで正規化する normalize-images.mjs を導入 | #73 |
 | 2026-02-15 14時頃 | **モバイル保存ボタン修正**: エディタの保存/公開ボタンがモバイルポートレートで非表示になる問題を修正 | #77 |
-| 2026-02-15 午後 | **包括的リファクタリング**: Netlify Identity残骸除去、robots.txtドメイン修正、壊れた画像参照修正、テスト追加（227テスト）、ドキュメント全面改訂 | #80（本PR） |
+| 2026-02-15 午後 | **包括的リファクタリング**: Netlify Identity残骸除去、robots.txtドメイン修正、壊れた画像参照修正、テスト追加（227テスト）、ドキュメント全面改訂 | #80 |
+| 2026-02-15 夕方 | **E2Eテスト導入**: Playwright によるブラウザ自動テスト（PC/iPad/iPhone 3デバイス×30テスト=90テスト） | - |
+| 2026-02-15 夜 | **EXIF画像回転修正**: CMS編集画面でEXIF回転が反転する問題を修正（fixPreviewImageOrientation削除）。ドロップダウンをCSSボトムシート化。公開URLバーのhashchange対応。テスト237件 | - |
 
 ---
 
@@ -183,6 +186,8 @@ PR履歴に基づく主要なシステム変更の記録である。
 | CMS-06 | エディタ公開URL表示 | `admin/index.html` JS | リアルタイム更新 |
 | CMS-07 | メディアライブラリ（2列グリッド, タッチスクロール） | `admin/index.html` CSS | モバイル対応 |
 | CMS-08 | 保存ボタン常時表示（sticky, min-height 44px） | `admin/index.html` CSS | Apple HIG準拠タップ領域 |
+| CMS-09 | ドロップダウンとURLバーの重なり防止 | `admin/index.html` JS | manageDropdownOverlay使用 |
+| CMS-10 | 画面遷移時の公開URLバー自動非表示 | `admin/index.html` JS | hashchangeリスナー使用 |
 
 ---
 
@@ -235,8 +240,13 @@ my-blog/
 │   ├── lib/posts.ts                    # 記事URL生成ロジック
 │   ├── pages/                          # ページルーティング
 │   └── content.config.ts              # コンテンツスキーマ定義
-├── tests/                              # 自動テスト（Vitest）
+├── tests/                              # 自動テスト
+│   ├── *.test.mjs                      # 単体・統合テスト（Vitest）
+│   └── e2e/                            # E2Eテスト（Playwright）
+├── CLAUDE.md                           # Claude Code向けプロジェクトガイド
 ├── astro.config.mjs                    # Astro設定
+├── playwright.config.ts                # Playwright E2E設定
+├── vitest.config.ts                    # Vitest設定
 ├── package.json                        # 依存関係・スクリプト定義
 └── wrangler.toml                       # Cloudflare設定
 ```
@@ -297,7 +307,8 @@ my-blog/
 | ホスティング | Cloudflare Pages | - | 静的配信 + Functions |
 | 認証 | GitHub OAuth App | - | CMS管理者認証 |
 | 画像処理 | sharp | v0.34.5 | 画像圧縮・回転・リサイズ |
-| テスト | Vitest | v4.0.18 | 自動テスト |
+| テスト（単体・統合） | Vitest | v4.0.18 | 単体テスト・統合テスト（237テスト） |
+| テスト（E2E） | Playwright | v1.58.2 | ブラウザE2Eテスト（PC/iPad/iPhone 90テスト） |
 | コンテンツ | Markdown | - | frontmatter形式 |
 
 ### 6.2 選定理由
@@ -639,7 +650,8 @@ GitHub Settings > Developer settings > OAuth Apps で作成する。
     "build": "node scripts/normalize-images.mjs && node scripts/organize-posts.mjs && astro build",
     "preview": "astro preview",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:e2e": "playwright test"
   }
 }
 ```
@@ -738,7 +750,7 @@ collections:
 
 ```
 ┌───────────────────────────────────────────────────────┐
-│                admin/index.html (628行)                │
+│                admin/index.html (801行)                │
 │                                                       │
 │  ┌─────────────────┐  ┌────────────────────────────┐ │
 │  │   CSS (Style)    │  │   JavaScript              │ │
@@ -746,17 +758,18 @@ collections:
 │  │ PC向けスタイル    │  │ MutationObserver          │ │
 │  │   日付バッジ     │  │   ├ formatCollectionEntries│ │
 │  │   削除ボタン色   │  │   ├ relabelImageButtons   │ │
-│  │                 │  │   ├ showPublicUrl          │ │
-│  │ モバイル         │  │   └ HEIC accept制御       │ │
-│  │   (≤799px)      │  │                            │ │
-│  │   sticky header │  │ pull-to-refresh無効化      │ │
-│  │   2列グリッド    │  │   touchstart/touchmove     │ │
-│  │   44pxタップ領域 │  └────────────────────────────┘ │
-│  │                 │                                 │
-│  │ iOS対応         │                                 │
-│  │   16px font     │                                 │
-│  │   image-orient. │                                 │
-│  └─────────────────┘                                 │
+│  │                 │  │   ├ updateDeleteButtonState│ │
+│  │ モバイル         │  │   ├ showPublicUrl          │ │
+│  │   (≤799px)      │  │   └ manageDropdownOverlay │ │
+│  │   sticky header │  │                            │ │
+│  │   ボトムシート   │  │ hashchange リスナー        │ │
+│  │   2列グリッド    │  │   └ showPublicUrl再実行    │ │
+│  │   44pxタップ領域 │  │                            │ │
+│  │                 │  │ HEIC accept制御            │ │
+│  │ iOS対応         │  │ EXIF canvas補正（upload時） │ │
+│  │   16px font     │  │ pull-to-refresh無効化      │ │
+│  │   image-orient. │  │   touchstart/touchmove     │ │
+│  └─────────────────┘  └────────────────────────────┘ │
 └───────────────────────────────────────────────────────┘
 ```
 
@@ -770,7 +783,7 @@ Decap CMSはデフォルトではモバイル対応が不十分であるため�
 | SidebarContainer | `position: initial` | サイドバーを通常フローに変更 |
 | EditorControlBar | `position: sticky; top: 0; z-index: 300` | 上部固定 |
 | ToolbarButton / PublishedToolbarButton | `flex-shrink: 0; min-height: 44px` | Apple HIG準拠タップ領域確保 |
-| DropdownList | `position: fixed; z-index: 9999` | EditorControlBar内に限定 |
+| DropdownList | `position: fixed; bottom: 0; z-index: 99999` | ボトムシート形式で画面下部に表示 |
 | StyledModal | `width: 95vw` | 画面幅に合わせる |
 | CardGrid | `grid-template-columns: repeat(2, 1fr)` | メディア2列表示 |
 | FileWidgetButton / ImageWidgetButton | `display: block; width: 100%` | ボタン全幅表示 |
@@ -794,7 +807,14 @@ Decap CMSはデフォルトではモバイル対応が不十分であるため�
 
 ### 13.5 公開URL表示
 
-記事編集画面で、エディタ制御バー直下に公開URLをリアルタイム表示する。タイトルと日付のフィールドを監視し、`https://reiwa.casa/posts/{年}/{月}/{タイトル}` 形式で動的生成する。
+記事編集画面で、画面下部に公開URLをリアルタイム表示する。タイトルと日付のフィールドを監視し、`https://reiwa.casa/posts/{年}/{月}/{タイトル}` 形式で動的生成する。
+
+- `hashchange` イベントで画面遷移を検知し、エディタ外では自動非表示
+- ドロップダウン（ボトムシート）表示中は `manageDropdownOverlay()` でURLバーを一時非表示にし、重なりを防止
+
+### 13.6 EXIF画像回転の方針
+
+CMS管理画面での画像表示はCSS `image-orientation: from-image` に委ねる。JavaScript による画像src書き換え（canvas経由の再生成）は、EXIF メタデータの消失と一部ブラウザでの `createImageBitmap` のEXIF非対応により逆効果になるため、廃止した（fixPreviewImageOrientation 削除）。
 
 ---
 
@@ -843,13 +863,15 @@ Decap CMSはデフォルトではモバイル対応が不十分であるため�
 
 ### 14.4 CSS フォールバック（Stage 3）
 
-`Base.astro`のグローバルCSSに以下を設定し、ブラウザ側のフォールバックとしている。
+`Base.astro`のグローバルCSS、および`admin/index.html`のCMSスタイルに以下を設定し、ブラウザ側のフォールバックとしている。
 
 ```css
 img {
   image-orientation: from-image;
 }
 ```
+
+CMS管理画面ではDecap CMSの各コンポーネント内画像にも `!important` 付きで適用している。JavaScript によるcanvas経由のEXIF補正は、EXIFメタデータ消失の副作用があるため廃止済み（CSS に委ねる方針）。
 
 ---
 
@@ -1050,4 +1072,4 @@ GitHubリポジトリが利用可能な場合、以下の手順でシステム�
 
 ---
 
-**最終更新**: 2026年2月15日
+**最終更新**: 2026年2月15日（v1.4）
