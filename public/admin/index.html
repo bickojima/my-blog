@@ -466,86 +466,78 @@
 
         // エディタ画面に公開URLを表示
         function showPublicUrl() {
-          // エディタのコントロールバーを検出
-          var controlBar = document.querySelector('[class*="EditorControlBar"]');
-          if (!controlBar) return;
-
-          // 既に表示済みなら更新のみ
-          var urlDisplay = document.getElementById('cms-public-url');
-
-          var titleInput = null;
-          var dateInput = null;
-
-          // Strategy 1: ラベルテキストで検索（label, legend, span等すべて対象）
-          var labelEls = document.querySelectorAll('label, legend, [class*="FieldLabel"], [class*="Label"]');
-          for (var i = 0; i < labelEls.length; i++) {
-            var el = labelEls[i];
-            var text = (el.textContent || '').trim();
-            if (el.closest('[class*="ObjectWidgetTopBar"]')) continue;
-            var field = el.closest('fieldset, [class*="Field"]') || el.parentElement;
-            if (!field) continue;
-            if (!titleInput && text === 'タイトル') {
-              titleInput = field.querySelector('input');
+          try {
+            // エディタのコントロールバーを検出（エディタ画面かどうかの判定）
+            var controlBar = document.querySelector('[class*="EditorControlBar"]');
+            if (!controlBar) {
+              var existing = document.getElementById('cms-public-url');
+              if (existing) existing.style.display = 'none';
+              return;
             }
-            if (!dateInput && text === '日付') {
-              dateInput = field.querySelector('input');
+
+            var urlDisplay = document.getElementById('cms-public-url');
+
+            // ページ全体からinputを収集（ツールバー・検索欄・ヘッダーを除外）
+            var allInputs = document.querySelectorAll('input');
+            var candidateInputs = [];
+            for (var i = 0; i < allInputs.length; i++) {
+              var inp = allInputs[i];
+              var t = (inp.type || '').toLowerCase();
+              if (t === 'file' || t === 'checkbox' || t === 'radio' || t === 'hidden') continue;
+              // ツールバー・ヘッダー・検索欄のinputを除外
+              if (inp.closest('[class*="EditorControlBar"]')) continue;
+              if (inp.closest('[class*="AppHeader"]')) continue;
+              if (inp.closest('[class*="SearchInput"]')) continue;
+              candidateInputs.push(inp);
             }
-          }
 
-          // Strategy 2: Fallback - エディタ内のinputを順番に取得
-          if (!titleInput || !dateInput) {
-            var editorArea = controlBar.parentElement;
-            if (editorArea) {
-              var inputs = editorArea.querySelectorAll('input:not([type="file"]):not([type="checkbox"]):not([type="radio"]):not([type="hidden"])');
-              var textInputs = [];
-              for (var j = 0; j < inputs.length; j++) {
-                textInputs.push(inputs[j]);
-              }
-              if (!titleInput && textInputs.length > 0) titleInput = textInputs[0];
-              if (!dateInput && textInputs.length > 1) dateInput = textInputs[1];
+            // config.ymlのフィールド順: 1=タイトル(string), 2=日付(datetime)
+            var titleInput = candidateInputs.length > 0 ? candidateInputs[0] : null;
+            var dateInput = candidateInputs.length > 1 ? candidateInputs[1] : null;
+
+            if (!titleInput || !dateInput) return;
+
+            var title = titleInput.value || '';
+            var dateVal = dateInput.value || '';
+
+            // YYYY-MM-DD / YYYY/MM/DD 両対応
+            var dateMatch = dateVal.match(/(\d{4})[-\/](\d{2})/);
+            if (!dateMatch || !title) {
+              if (urlDisplay) urlDisplay.style.display = 'none';
+              return;
             }
-          }
 
-          if (!titleInput || !dateInput) return;
+            var year = dateMatch[1];
+            var month = dateMatch[2];
+            var publicUrl = 'https://reiwa.casa/posts/' + year + '/' + month + '/' + encodeURIComponent(title);
+            var displayUrl = 'https://reiwa.casa/posts/' + year + '/' + month + '/' + title;
 
-          var title = titleInput.value || '';
-          var dateVal = dateInput.value || '';
+            if (!urlDisplay) {
+              urlDisplay = document.createElement('div');
+              urlDisplay.id = 'cms-public-url';
+              urlDisplay.style.cssText = 'padding:6px 14px;background:#f0f7ff;border-bottom:1px solid #d0e3f7;font-size:0.85em;color:#555;';
+              controlBar.insertAdjacentElement('afterend', urlDisplay);
+            }
 
-          // YYYY-MM-DD と YYYY/MM/DD の両方に対応
-          var dateMatch = dateVal.match(/(\d{4})[-\/](\d{2})/);
-          if (!dateMatch || !title) {
-            if (urlDisplay) urlDisplay.style.display = 'none';
-            return;
-          }
+            urlDisplay.style.display = '';
+            var newHtml = '<span style="color:#888;margin-right:6px;">公開URL:</span><a href="' + publicUrl + '" target="_blank" rel="noopener" style="color:#1a73e8;text-decoration:underline;word-break:break-all;">' + displayUrl + '</a>';
+            if (urlDisplay.dataset.lastUrl !== publicUrl) {
+              urlDisplay.innerHTML = newHtml;
+              urlDisplay.dataset.lastUrl = publicUrl;
+            }
 
-          var year = dateMatch[1];
-          var month = dateMatch[2];
-          var publicUrl = 'https://reiwa.casa/posts/' + year + '/' + month + '/' + encodeURIComponent(title);
-          var displayUrl = 'https://reiwa.casa/posts/' + year + '/' + month + '/' + title;
-
-          if (!urlDisplay) {
-            urlDisplay = document.createElement('div');
-            urlDisplay.id = 'cms-public-url';
-            urlDisplay.style.cssText = 'padding:6px 14px;background:#f0f7ff;border-bottom:1px solid #d0e3f7;font-size:0.85em;color:#555;';
-            controlBar.insertAdjacentElement('afterend', urlDisplay);
-          }
-
-          urlDisplay.style.display = '';
-          var newHtml = '<span style="color:#888;margin-right:6px;">公開URL:</span><a href="' + publicUrl + '" target="_blank" rel="noopener" style="color:#1a73e8;text-decoration:underline;word-break:break-all;">' + displayUrl + '</a>';
-          if (urlDisplay.dataset.lastUrl !== publicUrl) {
-            urlDisplay.innerHTML = newHtml;
-            urlDisplay.dataset.lastUrl = publicUrl;
-          }
-
-          // フィールド変更時にURLを更新
-          if (!titleInput.dataset.urlBound) {
-            titleInput.dataset.urlBound = 'true';
-            titleInput.addEventListener('input', function() { setTimeout(showPublicUrl, 100); });
-          }
-          if (!dateInput.dataset.urlBound) {
-            dateInput.dataset.urlBound = 'true';
-            dateInput.addEventListener('input', function() { setTimeout(showPublicUrl, 100); });
-            dateInput.addEventListener('change', function() { setTimeout(showPublicUrl, 100); });
+            // フィールド変更時にURLを更新
+            if (!titleInput.dataset.urlBound) {
+              titleInput.dataset.urlBound = 'true';
+              titleInput.addEventListener('input', function() { setTimeout(showPublicUrl, 100); });
+            }
+            if (!dateInput.dataset.urlBound) {
+              dateInput.dataset.urlBound = 'true';
+              dateInput.addEventListener('input', function() { setTimeout(showPublicUrl, 100); });
+              dateInput.addEventListener('change', function() { setTimeout(showPublicUrl, 100); });
+            }
+          } catch(e) {
+            // エラー時は静かに無視
           }
         }
 
