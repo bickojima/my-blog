@@ -83,6 +83,7 @@
           z-index: 300 !important;
           background: #fff !important;
           border-bottom: 1px solid #e0e0e0 !important;
+          overflow: visible !important;
         }
 
         /* ツールバーをビューポート内に収める */
@@ -137,14 +138,20 @@
         }
 
         /* --- ドロップダウン（公開ボタン等のメニュー: ボタン付近に表示） --- */
-        /* EditorControlBar内のドロップダウンのみfixed配置 */
+        /* EditorControlBar内のドロップダウンのみ表示 */
         /* エディタツールバーの「+」ドロップダウンには適用しない */
+        /* iOS Safari ではstickyコンテナ内のfixedが正しく動作しないため */
+        /* absoluteに変更し、親のoverflow:visibleで表示を確保する */
         [class*=EditorControlBar] [class*=DropdownList] {
           min-width: 160px !important;
           background: #e6f4fd !important;
           border: 2px solid #3a69c7 !important;
-          position: fixed !important;
+          position: absolute !important;
+          top: 100% !important;
+          right: 0 !important;
           z-index: 9999 !important;
+          -webkit-transform: translateZ(0) !important;
+          transform: translateZ(0) !important;
         }
 
         /* --- モーダル（画像アップロード等） --- */
@@ -288,7 +295,21 @@
       }
 
       /* --- iPhone画像のEXIF回転をCMSプレビューで正しく反映 --- */
-      img {
+      /* img要素全体 + Decap CMSのReactコンポーネント内の画像にも適用 */
+      img,
+      [class*=CardImage] img,
+      [class*=ImageWidget] img,
+      [class*=FileWidget] img,
+      [class*=PreviewPane] img,
+      [class*=MediaLibrary] img {
+        image-orientation: from-image !important;
+      }
+
+      /* canvas要素やbackground-imageでサムネイルが描画される場合の対策 */
+      /* Decap CMSのカード画像はobject-fitも合わせて制御 */
+      [class*=CardImage] img,
+      [class*=CardImageWrapper] img {
+        object-fit: contain !important;
         image-orientation: from-image !important;
       }
 
