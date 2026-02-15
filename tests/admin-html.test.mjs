@@ -162,10 +162,10 @@ describe('管理画面HTML（public/admin/index.html）の検証', () => {
   });
 
   describe('Slate codeblockクラッシュ対策（iOS Safari）', () => {
-    it('void node（codeblock等）にuser-select: noneが設定されている', () => {
-      // iOS Safariがvoid nodeに不正な選択を作成するのを防止
-      expect(adminHtml).toContain('[data-slate-void="true"]');
-      expect(adminHtml).toContain('user-select: none');
+    it('モバイルでcodeblockボタンを非表示にする関数がある', () => {
+      // Slate v0.47のvoid nodeクラッシュが根本修正不可能なため、モバイルでは機能自体を無効化
+      expect(adminHtml).toContain('hideCodeBlockOnMobile');
+      expect(adminHtml).toContain('window.innerWidth > 799');
     });
 
     it('Slateエラー（toSlatePoint/toSlateRange）のグローバルハンドラがある', () => {

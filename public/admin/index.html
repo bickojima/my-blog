@@ -310,14 +310,6 @@
         }
       }
 
-      /* --- Slate void node（codeblock等）のiOS Safari選択クラッシュ防止 --- */
-      /* iOS SafariがcontentEditable=false要素に不正な選択を作成し、
-         SlateのtoSlatePoint変換でsetEnd()が失敗するのを防ぐ */
-      [data-slate-void="true"] {
-        -webkit-user-select: none;
-        user-select: none;
-      }
-
       /* --- iPhone画像のEXIF回転をCMSプレビューで正しく反映 --- */
       /* img要素全体 + Decap CMSのReactコンポーネント内の画像にも適用 */
       img,
@@ -436,6 +428,7 @@
             updateDeleteButtonState();
             showPublicUrl();
             manageDropdownOverlay();
+            hideCodeBlockOnMobile();
           }
 
           var observer = new MutationObserver(function() {
@@ -685,6 +678,35 @@
             // ドロップダウンが閉じた: 公開URLバーを復元
             if (urlBar) urlBar.style.display = '';
           }
+        }
+
+        // モバイル（≤799px）でcodeblockボタンを非表示にする
+        // Decap CMSのSlate v0.47はiOS Safariでvoid node（codeblock）操作時に
+        // toSlatePoint/setEnd()がクラッシュする既知バグがあり、根本修正不可能なため
+        // モバイルではcodeblock機能自体を無効化する（PCでは引き続き利用可能）
+        function hideCodeBlockOnMobile() {
+          if (window.innerWidth > 799) return;
+
+          // ツールバー内の「＋」ボタン（エディタコンポーネント追加メニュー）を探す
+          // Decap CMSはcode-blockをeditor componentとしてツールバーに配置する
+          var buttons = document.querySelectorAll('[class*=ToolbarToggle], [class*=ToolbarPluginForm]');
+          buttons.forEach(function(btn) {
+            if (btn.dataset.mobileHidden) return;
+            // code-blockプラグインのトグルボタン（「＋」アイコン）
+            btn.dataset.mobileHidden = 'true';
+            btn.style.display = 'none';
+          });
+
+          // エディタコンポーネントのドロップダウン内のcode-blockオプションも非表示
+          var pluginBtns = document.querySelectorAll('[class*=ComponentMenuBtn], [class*=ToolbarComponentsMenu] button, [class*=ToolbarPluginsMenu] button');
+          pluginBtns.forEach(function(btn) {
+            if (btn.dataset.mobileHidden) return;
+            var text = (btn.textContent || '').toLowerCase();
+            if (text.indexOf('code') !== -1 || text.indexOf('コード') !== -1) {
+              btn.dataset.mobileHidden = 'true';
+              btn.style.display = 'none';
+            }
+          });
         }
 
         // CMS読み込み後にカスタマイズを初期化

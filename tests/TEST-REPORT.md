@@ -636,7 +636,7 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 
 | No. | テストケース | テスト手法 | 期待結果 |
 | :--- | :--- | :--- | :--- |
-| 1 | void node（codeblock等）にuser-select: noneが設定されている | M-02 | `[data-slate-void="true"]`にCSS `user-select: none`が適用されている |
+| 1 | モバイルでcodeblockボタンを非表示にする関数がある | M-02 | `hideCodeBlockOnMobile`関数と`window.innerWidth > 799`のモバイル判定が含まれる |
 | 2 | Slateエラー（toSlatePoint/toSlateRange）のグローバルハンドラがある | M-02 | `toSlatePoint`/`toSlateRange`をキャッチするwindow errorハンドラが含まれる |
 | 3 | MutationObserverがrequestAnimationFrameでデバウンスされている | M-02 | `requestAnimationFrame`と`rafPending`によるデバウンス処理が含まれる |
 

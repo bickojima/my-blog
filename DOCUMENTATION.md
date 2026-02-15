@@ -191,7 +191,7 @@ PR履歴に基づく主要なシステム変更の記録である。
 | CMS-09 | ドロップダウンとURLバーの重なり防止 | `admin/index.html` JS | manageDropdownOverlay使用 |
 | CMS-10 | 画面遷移時の公開URLバー自動非表示 | `admin/index.html` JS | hashchangeリスナー使用 |
 | CMS-11 | サイドバーに本番サイトへのリンク表示 | `admin/index.html` JS | addSiteLink関数 |
-| CMS-12 | iPhone codeblockクラッシュ対策 | `admin/index.html` CSS/JS | void node user-select:none、Slateエラーハンドラ、MutationObserverデバウンス、touchmoveエディタ除外 |
+| CMS-12 | iPhone codeblockクラッシュ対策 | `admin/index.html` CSS/JS | モバイルcodeblockボタン非表示、Slateエラーハンドラ、MutationObserverデバウンス、touchmoveエディタ除外 |
 
 ---
 
@@ -813,6 +813,8 @@ Decap CMSはデフォルトではモバイル対応が不十分であるため�
 | pull-to-refresh無効化 | touchstart/touchmove の preventDefault | 編集中の誤リロード防止 |
 | エディタtouchmove除外 | Slate(`data-slate-editor`) / CodeMirror をホワイトリスト | codeblock挿入時のクラッシュ防止 |
 | MutationObserverデバウンス | `requestAnimationFrame` で1フレームに1回に制限 | codeblock等の大量DOM変更による過負荷防止 |
+| codeblockボタン非表示 | `hideCodeBlockOnMobile()` でモバイル（≤799px）時に非表示 | Slate v0.47 void nodeクラッシュが根本修正不可能なため機能自体を無効化 |
+| Slateエラーハンドラ | `window.addEventListener('error')` で `toSlatePoint` 等を握りつぶし | 既存codeblock記事を開いた際のクラッシュ画面を回避 |
 
 ### 13.5 本番サイトリンク
 
