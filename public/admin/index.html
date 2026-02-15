@@ -137,17 +137,37 @@
           padding: 0 !important;
         }
 
-        /* --- ドロップダウン（公開ボタン等のメニュー: iOS Safari対応） --- */
-        /* iOS SafariではstickyコンテナのCSS positioningが壊れるため */
-        /* JSで位置制御する。CSSでは表示可視性のみ保証する */
+        /* --- ドロップダウン → ボトムシート（iOS Safari対応） --- */
+        /* stickyコンテナ内のabsolute配置問題を回避するため */
+        /* position:fixedのボトムシートとして画面下部に表示 */
         [class*=DropdownList] {
-          min-width: 200px !important;
+          position: fixed !important;
+          bottom: 0 !important;
+          left: 0 !important;
+          right: 0 !important;
+          top: auto !important;
+          width: 100% !important;
+          min-width: 100% !important;
+          max-height: 50vh !important;
+          overflow-y: auto !important;
           background: #fff !important;
-          border: 2px solid #3a69c7 !important;
-          box-shadow: 0 4px 16px rgba(0,0,0,0.25) !important;
+          border: none !important;
+          border-top: 2px solid #3a69c7 !important;
+          border-radius: 16px 16px 0 0 !important;
+          box-shadow: 0 -4px 20px rgba(0,0,0,0.3) !important;
           z-index: 99999 !important;
-          visibility: visible !important;
-          opacity: 1 !important;
+          padding: 12px 0 !important;
+          -webkit-overflow-scrolling: touch !important;
+        }
+
+        /* ボトムシートの項目をタップしやすく */
+        [class*=DropdownList] li,
+        [class*=DropdownList] a,
+        [class*=DropdownList] button,
+        [class*=DropdownList] [class*=DropdownItem] {
+          min-height: 48px !important;
+          padding: 12px 20px !important;
+          font-size: 16px !important;
         }
 
         /* --- モーダル（画像アップロード等） --- */
@@ -386,7 +406,7 @@
             relabelImageButtons();
             updateDeleteButtonState();
             showPublicUrl();
-            fixDropdownPosition();
+            manageDropdownOverlay();
           });
 
           observer.observe(document.body, {
@@ -401,7 +421,7 @@
           relabelImageButtons();
           updateDeleteButtonState();
           showPublicUrl();
-          fixDropdownPosition();
+          manageDropdownOverlay();
         }
 
         // コレクション一覧：日付・下書き状態・タイトルを分離表示
@@ -597,35 +617,28 @@
           } catch(e) {}
         }
 
-        // iOS Safari: ドロップダウンの位置をJS制御
-        // sticky要素内ではfixed/absoluteが正しく動作しないため
-        // ドロップダウン表示中はstickyを一時解除し、閉じたら復元する
-        function fixDropdownPosition() {
+        // iOS Safari: ドロップダウン表示時にオーバーレイを追加
+        // ボトムシート表示時の背景暗転とタップで閉じる機能
+        function manageDropdownOverlay() {
           if (window.innerWidth > 799) return;
 
           var dropdown = document.querySelector('[class*="DropdownList"]');
-          var controlBar = document.querySelector('[class*="EditorControlBar"]');
-          if (!controlBar) return;
+          var overlay = document.getElementById('cms-dropdown-overlay');
 
           if (dropdown) {
-            // ドロップダウン表示中: stickyを解除してabsoluteが正しく動作するようにする
-            controlBar.style.setProperty('position', 'relative', 'important');
-
-            if (!dropdown.dataset.positioned) {
-              dropdown.dataset.positioned = 'true';
-              // ドロップダウンの親ボタンをposition:relativeに
-              var parent = dropdown.closest('[class*="DropdownButton"], [class*="ToolbarDropdown"], [class*="StyledDropdownButton"]');
-              if (parent) {
-                parent.style.setProperty('position', 'relative', 'important');
-              }
-              dropdown.style.setProperty('position', 'absolute', 'important');
-              dropdown.style.setProperty('top', '100%', 'important');
-              dropdown.style.setProperty('right', '0', 'important');
-              dropdown.style.setProperty('left', 'auto', 'important');
+            if (!overlay) {
+              overlay = document.createElement('div');
+              overlay.id = 'cms-dropdown-overlay';
+              overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.4);z-index:99998;';
+              overlay.addEventListener('click', function() {
+                document.body.click();
+              });
+              document.body.appendChild(overlay);
             }
           } else {
-            // ドロップダウンが閉じた: stickyに復元
-            controlBar.style.setProperty('position', 'sticky', 'important');
+            if (overlay) {
+              overlay.remove();
+            }
           }
         }
 
@@ -655,6 +668,69 @@
           childList: true,
           subtree: true
         });
+
+        // 画像アップロード時にEXIF回転を補正（Canvas APIで正規化）
+        // iPhoneで撮影した写真のEXIF orientationを画像データに反映してからアップロード
+        document.addEventListener('change', function(e) {
+          var input = e.target;
+          if (!input || input.tagName !== 'INPUT' || input.type !== 'file') return;
+          if (input.dataset.exifFixed) {
+            delete input.dataset.exifFixed;
+            return; // 処理済みファイルの再トリガーを防止
+          }
+          if (!input.files || !input.files.length) return;
+
+          var file = input.files[0];
+          if (!file.type.match(/^image\/(jpeg|jpg|png|webp)$/i)) return;
+
+          // 元のイベントの伝播を止めて、補正後に再度発火させる
+          e.stopImmediatePropagation();
+
+          var reader = new FileReader();
+          reader.onload = function(ev) {
+            var img = new Image();
+            img.onload = function() {
+              var canvas = document.createElement('canvas');
+              canvas.width = img.naturalWidth;
+              canvas.height = img.naturalHeight;
+              var ctx = canvas.getContext('2d');
+              ctx.drawImage(img, 0, 0);
+
+              var outputType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+              var quality = outputType === 'image/jpeg' ? 0.92 : undefined;
+
+              canvas.toBlob(function(blob) {
+                if (!blob) {
+                  // Blob生成失敗時は元ファイルをそのまま使う
+                  input.dataset.exifFixed = 'true';
+                  input.dispatchEvent(new Event('change', { bubbles: true }));
+                  return;
+                }
+                var correctedFile = new File([blob], file.name, {
+                  type: outputType,
+                  lastModified: Date.now()
+                });
+                var dt = new DataTransfer();
+                dt.items.add(correctedFile);
+                input.files = dt.files;
+                input.dataset.exifFixed = 'true';
+                input.dispatchEvent(new Event('change', { bubbles: true }));
+              }, outputType, quality);
+            };
+            img.onerror = function() {
+              // 画像読み込み失敗時は元ファイルをそのまま使う
+              input.dataset.exifFixed = 'true';
+              input.dispatchEvent(new Event('change', { bubbles: true }));
+            };
+            img.src = ev.target.result;
+          };
+          reader.onerror = function() {
+            // FileReader失敗時は元ファイルをそのまま使う
+            input.dataset.exifFixed = 'true';
+            input.dispatchEvent(new Event('change', { bubbles: true }));
+          };
+          reader.readAsDataURL(file);
+        }, true); // capture phaseで最初に処理
 
         // iOSでのpull-to-refresh（引っ張って更新）を無効化
         // 編集中の誤リロードを防止（モーダル内のスクロールは許可）
