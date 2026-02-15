@@ -8,6 +8,7 @@ Astro + Decap CMS によるブログサイト。Cloudflare Pages でホスティ
 | :--- | :--- | :--- |
 | 1.0 | 2026-02-15 | 初版作成 |
 | 1.1 | 2026-02-15 | カテゴリ記載を削除しタグ構造に更新、ドキュメント体系セクション追加、章番号付与 |
+| 1.2 | 2026-02-15 | EXIF画像回転修正、ドロップダウンボトムシート化、公開URLバーhashchange対応、E2Eテスト導入（Playwright）、CLAUDE.md追加 |
 
 ## システム変更履歴（主要マイルストーン）
 
@@ -21,6 +22,8 @@ Astro + Decap CMS によるブログサイト。Cloudflare Pages でホスティ
 | 2026-02-15 8時 | URL構造変更（/posts/yyyy/mm/slug）・アーカイブ追加 | #42 |
 | 2026-02-15 13〜14時 | EXIF回転正規化（normalize-images.mjs） | #73 |
 | 2026-02-15 午後 | 包括的リファクタリング・ドキュメント全面改訂 | #80 |
+| 2026-02-15 夕方 | Playwright E2Eテスト導入（PC/iPad/iPhone 3デバイス×30テスト=90テスト） | - |
+| 2026-02-15 夜 | EXIF画像回転修正（fixPreviewImageOrientation削除）、公開URLバーhashchange対応、ドロップダウンボトムシート化 | - |
 
 ---
 
@@ -94,8 +97,16 @@ my-blog/
 │   │   └── posts.ts              # 記事URL生成ロジック
 │   ├── pages/                    # ページルーティング
 │   └── content.config.ts         # コンテンツコレクション定義
-├── tests/                        # 自動テスト（Vitest）
+├── tests/                        # 自動テスト
+│   ├── *.test.mjs                # 単体・統合テスト（Vitest）
+│   ├── e2e/                      # E2Eテスト（Playwright）
+│   │   ├── site.spec.ts          # 静的サイトE2Eテスト
+│   │   └── cms.spec.ts           # CMS管理画面E2Eテスト
+│   └── TEST-REPORT.md            # テスト仕様書
+├── CLAUDE.md                     # Claude Code向けプロジェクトガイド
 ├── astro.config.mjs
+├── playwright.config.ts          # Playwright設定（PC/iPad/iPhone）
+├── vitest.config.ts              # Vitest設定（E2E除外）
 ├── package.json
 └── wrangler.toml
 ```
@@ -108,8 +119,9 @@ my-blog/
 | `npm run dev` | 開発サーバー起動（localhost:4321） |
 | `npm run build` | 本番ビルド（`./dist/` に出力） |
 | `npm run preview` | ビルド結果のローカルプレビュー |
-| `npm test` | 自動テスト実行（Vitest） |
+| `npm test` | 単体・統合テスト実行（Vitest / 237テスト） |
 | `npm run test:watch` | ウォッチモードでテスト実行 |
+| `npm run test:e2e` | E2Eテスト実行（Playwright / PC・iPad・iPhone 90テスト） |
 
 ## 5. 管理画面のUIカスタマイズ
 
@@ -121,7 +133,7 @@ my-blog/
 - サイドバーを通常フローに変更
 - エディタのコントロールバーを上部固定（sticky）
 - 保存・公開ボタンのタップ領域を44px以上に確保
-- ドロップダウンメニューをボタン付近に固定表示
+- ドロップダウンメニューを画面下部のボトムシートとして表示（`position: fixed`）
 - モーダル（メディアライブラリ等）を画面幅95%で表示
 - メディアライブラリのカードグリッドを2列表示
 - 画像選択ボタンを縦並び・全幅表示
@@ -134,8 +146,17 @@ my-blog/
 ### 5.3 iOS対応
 
 - HEIC画像アップロード時にJPEGへ自動変換されるよう、accept属性を制限
+- アップロード時にcanvas APIでEXIF回転をピクセルに反映（capture phase）
 - pull-to-refresh を無効化し、編集中の誤リロードを防止
 - 入力フォームのfont-sizeを16px以上に設定し、自動ズームを防止
+- 画像表示は CSS `image-orientation: from-image` でEXIF回転を自動適用
+
+### 5.4 公開URL表示
+
+- エディタ画面の下部に公開URLをリアルタイム表示
+- タイトル・日付フィールドの変更を監視し動的に生成
+- `hashchange` イベントでエディタ↔一覧遷移時に表示/非表示を切替
+- ドロップダウン表示中は公開URLバーを一時的に非表示（重なり防止）
 
 ## 6. CMS設定
 
@@ -167,6 +188,7 @@ my-blog/
 | `README.md`（本文書） | プロジェクト概要・構成・コマンド |
 | `DOCUMENTATION.md` | システム設計書（要件定義・基本設計・詳細設計・運用設計） |
 | `tests/TEST-REPORT.md` | テスト仕様書（テストケース一覧・要件トレーサビリティ） |
+| `CLAUDE.md` | Claude Code向けプロジェクトガイド（開発規約・注意事項） |
 
 ## 9. 参考リンク
 
