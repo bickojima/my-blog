@@ -83,10 +83,14 @@ describe('CMS設定（config.yml）の検証', () => {
         expect(collection.format).toBe('frontmatter');
       });
 
-      it('スラッグパターンに年月パスが含まれている', () => {
-        expect(collection.slug).toContain('{{year}}');
-        expect(collection.slug).toContain('{{month}}');
-        expect(collection.slug).toContain('{{slug}}');
+      it('pathプロパティに年月パスが含まれている', () => {
+        expect(collection.path).toContain('{{year}}');
+        expect(collection.path).toContain('{{month}}');
+        expect(collection.path).toContain('{{slug}}');
+      });
+
+      it('slugがファイル名部分のみ（{{slug}}）に設定されている', () => {
+        expect(collection.slug).toBe('{{slug}}');
       });
 
       it('サマリー表示に日付とタイトルが含まれている', () => {
