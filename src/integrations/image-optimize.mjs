@@ -45,10 +45,15 @@ export default function imageOptimize() {
             const image = sharp(filePath);
             const metadata = await image.metadata();
 
-            let pipeline = sharp(filePath);
+            // Apply EXIF orientation (iPhone photos store rotation as EXIF metadata)
+            let pipeline = sharp(filePath).rotate();
+
+            // EXIF orientations 5-8 swap width/height (90°/270° rotations)
+            const isRotated = metadata.orientation && metadata.orientation >= 5;
+            const effectiveWidth = isRotated ? metadata.height : metadata.width;
 
             // Resize if wider than MAX_WIDTH
-            if (metadata.width && metadata.width > MAX_WIDTH) {
+            if (effectiveWidth && effectiveWidth > MAX_WIDTH) {
               pipeline = pipeline.resize(MAX_WIDTH, null, {
                 withoutEnlargement: true,
                 fit: 'inside',
@@ -72,8 +77,9 @@ export default function imageOptimize() {
             const reduction = Math.round((1 - buffer.length / originalSize) * 100);
             const origMB = (originalSize / 1024 / 1024).toFixed(1);
             const newMB = (buffer.length / 1024 / 1024).toFixed(1);
+            const displayWidth = effectiveWidth || MAX_WIDTH;
             console.log(
-              `  ${file}: ${origMB}MB → ${newMB}MB (-${reduction}%) [${metadata.width}px → ${Math.min(metadata.width || MAX_WIDTH, MAX_WIDTH)}px]`
+              `  ${file}: ${origMB}MB → ${newMB}MB (-${reduction}%) [${displayWidth}px → ${Math.min(displayWidth, MAX_WIDTH)}px]${isRotated ? ' (EXIF rotated)' : ''}`
             );
           } catch (err) {
             console.warn(`  [image-optimize] Failed to optimize ${file}:`, err.message);
