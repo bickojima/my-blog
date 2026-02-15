@@ -137,21 +137,17 @@
           padding: 0 !important;
         }
 
-        /* --- ドロップダウン（公開ボタン等のメニュー: ボタン付近に表示） --- */
-        /* EditorControlBar内のドロップダウンのみ表示 */
-        /* エディタツールバーの「+」ドロップダウンには適用しない */
-        /* iOS Safari ではstickyコンテナ内のfixedが正しく動作しないため */
-        /* absoluteに変更し、親のoverflow:visibleで表示を確保する */
-        [class*=EditorControlBar] [class*=DropdownList] {
-          min-width: 160px !important;
-          background: #e6f4fd !important;
+        /* --- ドロップダウン（公開ボタン等のメニュー: iOS Safari対応） --- */
+        /* iOS SafariではstickyコンテナのCSS positioningが壊れるため */
+        /* JSで位置制御する。CSSでは表示可視性のみ保証する */
+        [class*=DropdownList] {
+          min-width: 200px !important;
+          background: #fff !important;
           border: 2px solid #3a69c7 !important;
-          position: absolute !important;
-          top: 100% !important;
-          right: 0 !important;
-          z-index: 9999 !important;
-          -webkit-transform: translateZ(0) !important;
-          transform: translateZ(0) !important;
+          box-shadow: 0 4px 16px rgba(0,0,0,0.25) !important;
+          z-index: 99999 !important;
+          visibility: visible !important;
+          opacity: 1 !important;
         }
 
         /* --- モーダル（画像アップロード等） --- */
@@ -305,10 +301,22 @@
         image-orientation: from-image !important;
       }
 
-      /* canvas要素やbackground-imageでサムネイルが描画される場合の対策 */
-      /* Decap CMSのカード画像はobject-fitも合わせて制御 */
+      /* カード一覧のサムネイル */
       [class*=CardImage] img,
       [class*=CardImageWrapper] img {
+        object-fit: contain !important;
+        image-orientation: from-image !important;
+      }
+
+      /* エディタフォーム内の画像プレビュー：縦画像の縦横比を維持 */
+      [class*=FileContent] img,
+      [class*=ImageContent] img,
+      [class*=FileWidget] img,
+      [class*=ImageWidget] img {
+        max-width: 100% !important;
+        width: auto !important;
+        height: auto !important;
+        max-height: 50vh !important;
         object-fit: contain !important;
         image-orientation: from-image !important;
       }
@@ -378,6 +386,7 @@
             relabelImageButtons();
             updateDeleteButtonState();
             showPublicUrl();
+            fixDropdownPosition();
           });
 
           observer.observe(document.body, {
@@ -392,6 +401,7 @@
           relabelImageButtons();
           updateDeleteButtonState();
           showPublicUrl();
+          fixDropdownPosition();
         }
 
         // コレクション一覧：日付・下書き状態・タイトルを分離表示
@@ -585,6 +595,38 @@
               urlDisplay.dataset.lastUrl = displayUrl;
             }
           } catch(e) {}
+        }
+
+        // iOS Safari: ドロップダウンの位置をJS制御
+        // sticky要素内ではfixed/absoluteが正しく動作しないため
+        // ドロップダウン表示中はstickyを一時解除し、閉じたら復元する
+        function fixDropdownPosition() {
+          if (window.innerWidth > 799) return;
+
+          var dropdown = document.querySelector('[class*="DropdownList"]');
+          var controlBar = document.querySelector('[class*="EditorControlBar"]');
+          if (!controlBar) return;
+
+          if (dropdown) {
+            // ドロップダウン表示中: stickyを解除してabsoluteが正しく動作するようにする
+            controlBar.style.setProperty('position', 'relative', 'important');
+
+            if (!dropdown.dataset.positioned) {
+              dropdown.dataset.positioned = 'true';
+              // ドロップダウンの親ボタンをposition:relativeに
+              var parent = dropdown.closest('[class*="DropdownButton"], [class*="ToolbarDropdown"], [class*="StyledDropdownButton"]');
+              if (parent) {
+                parent.style.setProperty('position', 'relative', 'important');
+              }
+              dropdown.style.setProperty('position', 'absolute', 'important');
+              dropdown.style.setProperty('top', '100%', 'important');
+              dropdown.style.setProperty('right', '0', 'important');
+              dropdown.style.setProperty('left', 'auto', 'important');
+            }
+          } else {
+            // ドロップダウンが閉じた: stickyに復元
+            controlBar.style.setProperty('position', 'sticky', 'important');
+          }
         }
 
         // CMS読み込み後にカスタマイズを初期化
