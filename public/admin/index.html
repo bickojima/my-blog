@@ -137,7 +137,9 @@
         }
 
         /* --- ドロップダウン（公開ボタン等のメニュー: ボタン付近に表示） --- */
-        [class*=DropdownList] {
+        /* EditorControlBar内のドロップダウンのみfixed配置 */
+        /* エディタツールバーの「+」ドロップダウンには適用しない */
+        [class*=EditorControlBar] [class*=DropdownList] {
           min-width: 160px !important;
           background: #e6f4fd !important;
           border: 2px solid #3a69c7 !important;
@@ -283,6 +285,11 @@
         [class*=ViewControls] {
           position: initial !important;
         }
+      }
+
+      /* --- iPhone画像のEXIF回転をCMSプレビューで正しく反映 --- */
+      img {
+        image-orientation: from-image !important;
       }
 
       /* --- コレクション一覧：日付とタイトルの分離表示 --- */
