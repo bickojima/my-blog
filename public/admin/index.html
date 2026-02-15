@@ -467,40 +467,69 @@
         // エディタ画面に公開URLを表示
         function showPublicUrl() {
           try {
-            // エディタのコントロールバーを検出（エディタ画面かどうかの判定）
-            var controlBar = document.querySelector('[class*="EditorControlBar"]');
-            if (!controlBar) {
-              var existing = document.getElementById('cms-public-url');
-              if (existing) existing.style.display = 'none';
-              return;
-            }
+            // URLハッシュでエディタ画面を判定（クラス名に依存しない）
+            var hash = window.location.hash || '';
+            var isEditor = hash.indexOf('/entries/') !== -1 || /\/new\/?$/.test(hash);
 
             var urlDisplay = document.getElementById('cms-public-url');
 
-            // ページ全体からinputを収集（ツールバー・検索欄・ヘッダーを除外）
-            var allInputs = document.querySelectorAll('input');
-            var candidateInputs = [];
-            for (var i = 0; i < allInputs.length; i++) {
-              var inp = allInputs[i];
-              var t = (inp.type || '').toLowerCase();
-              if (t === 'file' || t === 'checkbox' || t === 'radio' || t === 'hidden') continue;
-              // ツールバー・ヘッダー・検索欄のinputを除外
-              if (inp.closest('[class*="EditorControlBar"]')) continue;
-              if (inp.closest('[class*="AppHeader"]')) continue;
-              if (inp.closest('[class*="SearchInput"]')) continue;
-              candidateInputs.push(inp);
+            if (!isEditor) {
+              if (urlDisplay) urlDisplay.style.display = 'none';
+              return;
             }
 
-            // config.ymlのフィールド順: 1=タイトル(string), 2=日付(datetime)
-            var titleInput = candidateInputs.length > 0 ? candidateInputs[0] : null;
-            var dateInput = candidateInputs.length > 1 ? candidateInputs[1] : null;
+            // ページ上の全inputを収集
+            var allInputs = document.querySelectorAll('input');
+            var candidates = [];
+            for (var i = 0; i < allInputs.length; i++) {
+              var t = (allInputs[i].type || 'text').toLowerCase();
+              if (t !== 'file' && t !== 'checkbox' && t !== 'radio' && t !== 'hidden') {
+                candidates.push(allInputs[i]);
+              }
+            }
+
+            if (candidates.length < 2) return;
+
+            // 日付inputを値パターン（YYYY-MM-DD / YYYY/MM/DD）で特定
+            var dateInput = null;
+            var dateIndex = -1;
+            for (var k = 0; k < candidates.length; k++) {
+              var v = candidates[k].value || '';
+              if (v.match(/^\d{4}[-\/]\d{2}[-\/]\d{2}/)) {
+                dateInput = candidates[k];
+                dateIndex = k;
+                break;
+              }
+            }
+
+            // タイトル = 日付inputの直前のinput
+            var titleInput = null;
+            if (dateInput && dateIndex > 0) {
+              titleInput = candidates[dateIndex - 1];
+            }
+
+            // 日付inputが見つからない場合、フィールド順で推定（1=タイトル, 2=日付）
+            if (!titleInput || !dateInput) {
+              titleInput = candidates[0];
+              dateInput = candidates[1];
+            }
+
+            // イベントリスナー登録（URL表示前でも登録してタイトル入力を検知）
+            if (titleInput && !titleInput.dataset.urlBound) {
+              titleInput.dataset.urlBound = 'true';
+              titleInput.addEventListener('input', function() { setTimeout(showPublicUrl, 100); });
+            }
+            if (dateInput && !dateInput.dataset.urlBound) {
+              dateInput.dataset.urlBound = 'true';
+              dateInput.addEventListener('input', function() { setTimeout(showPublicUrl, 100); });
+              dateInput.addEventListener('change', function() { setTimeout(showPublicUrl, 100); });
+            }
 
             if (!titleInput || !dateInput) return;
 
             var title = titleInput.value || '';
             var dateVal = dateInput.value || '';
 
-            // YYYY-MM-DD / YYYY/MM/DD 両対応
             var dateMatch = dateVal.match(/(\d{4})[-\/](\d{2})/);
             if (!dateMatch || !title) {
               if (urlDisplay) urlDisplay.style.display = 'none';
@@ -515,26 +544,15 @@
             if (!urlDisplay) {
               urlDisplay = document.createElement('div');
               urlDisplay.id = 'cms-public-url';
-              urlDisplay.style.cssText = 'padding:6px 14px;background:#f0f7ff;border-bottom:1px solid #d0e3f7;font-size:0.85em;color:#555;';
-              controlBar.insertAdjacentElement('afterend', urlDisplay);
+              urlDisplay.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:9999;padding:8px 14px;background:#e8f4fd;border-top:2px solid #1a73e8;font-size:0.85em;color:#333;text-align:center;';
+              document.body.appendChild(urlDisplay);
             }
 
             urlDisplay.style.display = '';
-            var newHtml = '<span style="color:#888;margin-right:6px;">公開URL:</span><a href="' + publicUrl + '" target="_blank" rel="noopener" style="color:#1a73e8;text-decoration:underline;word-break:break-all;">' + displayUrl + '</a>';
+            var newHtml = '<span style="color:#666;margin-right:6px;">公開URL:</span><a href="' + publicUrl + '" target="_blank" rel="noopener" style="color:#1a73e8;text-decoration:underline;word-break:break-all;">' + displayUrl + '</a>';
             if (urlDisplay.dataset.lastUrl !== publicUrl) {
               urlDisplay.innerHTML = newHtml;
               urlDisplay.dataset.lastUrl = publicUrl;
-            }
-
-            // フィールド変更時にURLを更新
-            if (!titleInput.dataset.urlBound) {
-              titleInput.dataset.urlBound = 'true';
-              titleInput.addEventListener('input', function() { setTimeout(showPublicUrl, 100); });
-            }
-            if (!dateInput.dataset.urlBound) {
-              dateInput.dataset.urlBound = 'true';
-              dateInput.addEventListener('input', function() { setTimeout(showPublicUrl, 100); });
-              dateInput.addEventListener('change', function() { setTimeout(showPublicUrl, 100); });
             }
           } catch(e) {
             // エラー時は静かに無視
