@@ -170,6 +170,41 @@ describe('ビルド検証', () => {
     it('アップロード画像ディレクトリが存在する', () => {
       expect(existsSync(join(DIST_DIR, 'images/uploads'))).toBe(true);
     });
+
+    it('ビルド後の画像にEXIF回転が残っていない（ピクセルデータに反映済み）', async () => {
+      const sharp = (await import('sharp')).default;
+      const uploadsDir = join(DIST_DIR, 'images/uploads');
+      const files = readdirSync(uploadsDir).filter(
+        (f) => /\.(jpe?g|png|webp)$/i.test(f)
+      );
+      expect(files.length).toBeGreaterThan(0);
+
+      for (const file of files) {
+        const meta = await sharp(join(uploadsDir, file)).metadata();
+        // orientation が 1（正常）または undefined（タグなし）であること
+        // 2〜8 の場合はEXIF回転が未適用
+        expect(
+          meta.orientation === undefined || meta.orientation === 1,
+          `${file}: EXIF orientation=${meta.orientation}（回転未適用）`
+        ).toBe(true);
+      }
+    });
+
+    it('ビルド後の画像がMAX_WIDTH（1200px）以下にリサイズされている', async () => {
+      const sharp = (await import('sharp')).default;
+      const uploadsDir = join(DIST_DIR, 'images/uploads');
+      const files = readdirSync(uploadsDir).filter(
+        (f) => /\.(jpe?g|png|webp)$/i.test(f)
+      );
+
+      for (const file of files) {
+        const meta = await sharp(join(uploadsDir, file)).metadata();
+        expect(
+          meta.width <= 1200,
+          `${file}: width=${meta.width}px（1200px以下であるべき）`
+        ).toBe(true);
+      }
+    });
   });
 
   describe('rehype-image-captionプラグインの適用確認', () => {
