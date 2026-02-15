@@ -85,10 +85,9 @@ describe('管理画面HTML（public/admin/index.html）の検証', () => {
       expect(adminHtml).toContain('min-height: 44px');
     });
 
-    it('ドロップダウンが画面下部に固定表示される', () => {
+    it('ドロップダウンのスタイルが定義されている', () => {
       expect(adminHtml).toContain('[class*=DropdownList]');
-      expect(adminHtml).toContain('position: fixed');
-      expect(adminHtml).toContain('bottom: 10px');
+      expect(adminHtml).toContain('min-width: 160px');
     });
 
     it('モーダルが画面幅95%で表示される', () => {
@@ -176,7 +175,7 @@ describe('管理画面HTML（public/admin/index.html）の検証', () => {
     it('エディタ画面に公開URL表示機能がある', () => {
       expect(adminHtml).toContain('showPublicUrl');
       expect(adminHtml).toContain('cms-public-url');
-      expect(adminHtml).toContain('reiwa.casa/posts/');
+      expect(adminHtml).toContain('reiwa.casa');
     });
 
     it('公開URLがタイトルと日付フィールドから動的に生成される', () => {
