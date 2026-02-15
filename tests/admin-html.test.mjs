@@ -85,10 +85,10 @@ describe('管理画面HTML（public/admin/index.html）の検証', () => {
       expect(adminHtml).toContain('min-height: 44px');
     });
 
-    it('ドロップダウンがボタン付近にabsolute表示される', () => {
+    it('ドロップダウンの可視性とJS位置制御が実装されている', () => {
       expect(adminHtml).toContain('[class*=DropdownList]');
-      expect(adminHtml).toContain('position: absolute');
-      expect(adminHtml).toContain('z-index: 9999');
+      expect(adminHtml).toContain('z-index: 99999');
+      expect(adminHtml).toContain('fixDropdownPosition');
     });
 
     it('モーダルが画面幅95%で表示される', () => {
@@ -118,25 +118,12 @@ describe('管理画面HTML（public/admin/index.html）の検証', () => {
       expect(adminHtml).toContain('image-orientation: from-image');
     });
 
-    it('エディタツールバーの「+」ドロップダウンにposition:fixedが適用されない', () => {
-      // EditorControlBar内のドロップダウンのみfixed配置
-      // [class*=DropdownList] 単独ではなく [class*=EditorControlBar] 内に限定
-      expect(adminHtml).toContain('[class*=EditorControlBar] [class*=DropdownList]');
-      // DropdownList単独でのposition:fixedが無いことを確認
-      // （EditorControlBar内でのみfixed配置される）
-      const lines = adminHtml.split('\n');
-      let inEditorControlBarBlock = false;
-      for (const line of lines) {
-        if (line.includes('[class*=EditorControlBar]') && line.includes('[class*=DropdownList]')) {
-          inEditorControlBarBlock = true;
-        }
-        // DropdownList単独のセレクタでposition:fixedがないことを確認
-        if (line.match(/\[class\*=DropdownList\]/) && !line.includes('EditorControlBar')) {
-          // この行がセレクタ行なら、DropdownList単独のルールが存在する
-          // 後続行にposition:fixedが無いことを期待（ただし簡易チェック）
-        }
-      }
-      expect(inEditorControlBarBlock).toBe(true);
+    it('ドロップダウンの位置がJSで動的に制御されている', () => {
+      // CSS単独のposition:fixedはiOS Safariで動作しないため
+      // JSのfixDropdownPositionでstickyを一時解除してabsolute配置する
+      expect(adminHtml).toContain('fixDropdownPosition');
+      expect(adminHtml).toContain("position', 'absolute'");
+      expect(adminHtml).toContain("position', 'sticky'");
     });
   });
 
@@ -287,17 +274,14 @@ describe('管理画面HTML（public/admin/index.html）の検証', () => {
       expect(adminHtml).toContain('z-index:9998');
     });
 
-    it('DropdownListのposition:fixedがEditorControlBar内に限定されている', () => {
-      // エディタ「+」ボタンのドロップダウンが上に飛ばないこと
-      expect(adminHtml).toContain('[class*=EditorControlBar] [class*=DropdownList]');
-      // DropdownList単独のセレクタでposition:fixedが設定されていないこと
+    it('DropdownListのCSS position:fixedが使われていない（iOS Safari対策）', () => {
+      // iOS SafariではstickyコンテナのCSS positioningが壊れるため
+      // CSSではposition:fixedを使わず、JSで動的制御する
       const cssBlock = adminHtml.match(/@media[^{]*\{([\s\S]*?)\n\s{6}\}/)?.[1] || '';
       const dropdownRules = cssBlock.match(/[^}]*\[class\*=DropdownList\][^{]*\{[^}]*\}/g) || [];
       for (const rule of dropdownRules) {
-        if (rule.includes('position: fixed') || rule.includes('position:fixed')) {
-          // fixedを使うルールはEditorControlBarスコープ内のみ
-          expect(rule).toContain('EditorControlBar');
-        }
+        expect(rule).not.toContain('position: fixed');
+        expect(rule).not.toContain('position:fixed');
       }
     });
   });
