@@ -23,7 +23,8 @@ collections:
     label_singular: "記事"
     folder: "src/content/posts"
     create: true
-    slug: "{{year}}/{{month}}/{{slug}}"
+    path: "{{year}}/{{month}}/{{slug}}"
+    slug: "{{slug}}"
     extension: "md"
     format: "frontmatter"
     summary: "{{date}} | {{draft}} | {{title}}"
