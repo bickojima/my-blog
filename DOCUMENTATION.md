@@ -9,6 +9,7 @@
 | 1.2 | 2026-02-15 | 認証基盤（第8章）を大幅拡充: Decap CMS連携詳細、認証アーキテクチャ図、シーケンス図、セキュリティ考慮事項、GitHub OAuth App設定を追加 |
 | 1.3 | 2026-02-15 | Playwright E2Eテスト導入（PC/iPad/iPhone対応）、システム変更履歴追加 |
 | 1.4 | 2026-02-15 | EXIF画像回転修正（fixPreviewImageOrientation削除）、ドロップダウンCSS位置制御、公開URLバーhashchange対応、テスト更新（237テスト） |
+| 1.5 | 2026-02-15 | CMS管理画面ヘッダーに本番サイトリンク追加（CMS-11） |
 
 ## システム変更履歴
 
@@ -188,6 +189,7 @@ PR履歴に基づく主要なシステム変更の記録である。
 | CMS-08 | 保存ボタン常時表示（sticky, min-height 44px） | `admin/index.html` CSS | Apple HIG準拠タップ領域 |
 | CMS-09 | ドロップダウンとURLバーの重なり防止 | `admin/index.html` JS | manageDropdownOverlay使用 |
 | CMS-10 | 画面遷移時の公開URLバー自動非表示 | `admin/index.html` JS | hashchangeリスナー使用 |
+| CMS-11 | ヘッダーに本番サイトへのリンク表示 | `admin/index.html` JS | addSiteLink関数 |
 
 ---
 
@@ -756,11 +758,12 @@ collections:
 │  │   CSS (Style)    │  │   JavaScript              │ │
 │  │                 │  │                            │ │
 │  │ PC向けスタイル    │  │ MutationObserver          │ │
-│  │   日付バッジ     │  │   ├ formatCollectionEntries│ │
-│  │   削除ボタン色   │  │   ├ relabelImageButtons   │ │
-│  │                 │  │   ├ updateDeleteButtonState│ │
-│  │ モバイル         │  │   ├ showPublicUrl          │ │
-│  │   (≤799px)      │  │   └ manageDropdownOverlay │ │
+│  │   日付バッジ     │  │   ├ addSiteLink            │ │
+│  │   削除ボタン色   │  │   ├ formatCollectionEntries│ │
+│  │                 │  │   ├ relabelImageButtons   │ │
+│  │ モバイル         │  │   ├ updateDeleteButtonState│ │
+│  │   (≤799px)      │  │   ├ showPublicUrl          │ │
+│  │   sticky header │  │   └ manageDropdownOverlay │ │
 │  │   sticky header │  │                            │ │
 │  │   ボトムシート   │  │ hashchange リスナー        │ │
 │  │   2列グリッド    │  │   └ showPublicUrl再実行    │ │
@@ -805,14 +808,22 @@ Decap CMSはデフォルトではモバイル対応が不十分であるため�
 | HEIC→JPEG変換 | `input[type="file"]` のaccept属性制限 | iOSはaccept制限によりHEICを自動変換する |
 | pull-to-refresh無効化 | touchstart/touchmove の preventDefault | 編集中の誤リロード防止 |
 
-### 13.5 公開URL表示
+### 13.5 本番サイトリンク
+
+CMSヘッダーに「ブログを見る」リンクを表示し、本番サイト（`https://reiwa.casa`）へのワンクリックアクセスを提供する。
+
+- `addSiteLink()` 関数が `[class*=AppHeaderContent]` に `<a>` 要素を動的注入
+- 新規タブで開く（`target="_blank"`）
+- 重複防止: `#cms-site-link` IDで既存チェック
+
+### 13.6 公開URL表示
 
 記事編集画面で、画面下部に公開URLをリアルタイム表示する。タイトルと日付のフィールドを監視し、`https://reiwa.casa/posts/{年}/{月}/{タイトル}` 形式で動的生成する。
 
 - `hashchange` イベントで画面遷移を検知し、エディタ外では自動非表示
 - ドロップダウン（ボトムシート）表示中は `manageDropdownOverlay()` でURLバーを一時非表示にし、重なりを防止
 
-### 13.6 EXIF画像回転の方針
+### 13.7 EXIF画像回転の方針
 
 CMS管理画面での画像表示はCSS `image-orientation: from-image` に委ねる。JavaScript による画像src書き換え（canvas経由の再生成）は、EXIF メタデータの消失と一部ブラウザでの `createImageBitmap` のEXIF非対応により逆効果になるため、廃止した（fixPreviewImageOrientation 削除）。
 

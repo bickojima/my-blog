@@ -24,6 +24,7 @@ Astro + Decap CMS によるブログサイト。Cloudflare Pages でホスティ
 | 2026-02-15 午後 | 包括的リファクタリング・ドキュメント全面改訂 | #80 |
 | 2026-02-15 夕方 | Playwright E2Eテスト導入（PC/iPad/iPhone 3デバイス×30テスト=90テスト） | - |
 | 2026-02-15 夜 | EXIF画像回転修正（fixPreviewImageOrientation削除）、公開URLバーhashchange対応、ドロップダウンボトムシート化 | - |
+| 2026-02-15 夜 | CMS管理画面ヘッダーに本番サイトリンク追加 | - |
 
 ---
 
@@ -151,7 +152,12 @@ my-blog/
 - 入力フォームのfont-sizeを16px以上に設定し、自動ズームを防止
 - 画像表示は CSS `image-orientation: from-image` でEXIF回転を自動適用
 
-### 5.4 公開URL表示
+### 5.4 本番サイトリンク
+
+- CMSヘッダーに「ブログを見る」リンクを表示
+- 本番サイト（https://reiwa.casa）を新規タブで開く
+
+### 5.5 公開URL表示
 
 - エディタ画面の下部に公開URLをリアルタイム表示
 - タイトル・日付フィールドの変更を監視し動的に生成

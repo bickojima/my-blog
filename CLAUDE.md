@@ -51,7 +51,7 @@ tests/
 ### CMS管理画面 (admin/index.html)
 - Decap CMS v3.10.0 をDOM操作でカスタマイズ（MutationObserver）
 - モバイル: ドロップダウンは `position: fixed; bottom: 0` のボトムシート形式
-- 主要JS関数: `formatCollectionEntries`, `relabelImageButtons`, `updateDeleteButtonState`, `showPublicUrl`, `manageDropdownOverlay`
+- 主要JS関数: `addSiteLink`, `formatCollectionEntries`, `relabelImageButtons`, `updateDeleteButtonState`, `showPublicUrl`, `manageDropdownOverlay`
 - `hashchange` イベントで画面遷移時に公開URLバーを更新
 
 ### ビルドパイプライン
