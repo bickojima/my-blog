@@ -641,6 +641,11 @@
           // decap-cms.jsの読み込み完了を少し待つ
           setTimeout(initCustomizations, 1000);
         }
+
+        // ハッシュ変更時に公開URLバーを更新（エディタ↔一覧の遷移対応）
+        window.addEventListener('hashchange', function() {
+          showPublicUrl();
+        });
       })();
     </script>
     <script>
