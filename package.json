@@ -3,13 +3,23 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
+    "dev": "node scripts/organize-posts.mjs && astro dev",
+    "build": "node scripts/organize-posts.mjs && astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "astro": "^5.17.1",
-    "decap-cms-app": "^3.10.0"
+    "decap-cms-app": "^3.10.0",
+    "hastscript": "^9.0.1",
+    "unist-util-visit": "^5.1.0"
+  },
+  "devDependencies": {
+    "gray-matter": "^4.0.3",
+    "js-yaml": "^4.1.1",
+    "sharp": "^0.34.5",
+    "vitest": "^4.0.18"
   }
 }
