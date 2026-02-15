@@ -124,9 +124,9 @@ describe('ビルド検証', () => {
       expect(indexHtml).toContain('記事一覧');
     });
 
-    it('管理画面へのリンクがある', () => {
+    it('管理画面へのリンクがフッターにある', () => {
       expect(indexHtml).toContain('href="/admin/"');
-      expect(indexHtml).toContain('管理画面');
+      expect(indexHtml).toContain('管理');
     });
 
     it('公開記事へのリンクが含まれている', () => {

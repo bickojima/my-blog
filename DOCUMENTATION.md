@@ -143,6 +143,10 @@ URLスラグはファイル名ではなく **記事タイトル** から生成�
 
 実装: `src/components/ArchiveNav.astro`（`src/layouts/Base.astro` で読み込み）
 
+### 管理画面リンク
+
+管理画面（`/admin/`）へのリンクはフッター最下部に小さく配置されています（`Base.astro`）。一般の閲覧者には目立たない設計です。
+
 ---
 
 ## Decap CMS 設定詳細
@@ -194,7 +198,8 @@ collections:
     label: "記事"
     folder: "src/content/posts"
     create: true
-    slug: "{{year}}/{{month}}/{{slug}}"
+    path: "{{year}}/{{month}}/{{slug}}"
+    slug: "{{slug}}"
     fields:
       - { label: "タイトル", name: "title", widget: "string" }
       - { label: "日付", name: "date", widget: "datetime", format: "YYYY-MM-DD" }
@@ -205,7 +210,8 @@ collections:
       - { label: "本文", name: "body", widget: "markdown" }
 ```
 
-- `slug: "{{year}}/{{month}}/{{slug}}"`: CMSから新規作成時、日付フィールドの年月に基づきサブディレクトリに自動配置される
+- `path: "{{year}}/{{month}}/{{slug}}"`: ファイルの保存パスと読み取りパスを定義。CMS がサブディレクトリ `yyyy/mm/` 内の既存記事を正しく認識・一覧表示できるようにする（depth=3 で再帰スキャン）
+- `slug: "{{slug}}"`: ファイル名部分のみ（タイトルベース）
 - 同タイトルの記事が既に存在する場合、CMSがファイル名に `-1`, `-2` 等のサフィックスを自動付与する（URLスラグには影響しない）
 
 ---
@@ -290,6 +296,14 @@ iOSでは16px未満のフォントサイズの入力欄にフォーカスする�
 #### HEIC画像の自動変換対応
 
 `MutationObserver` で `input[type="file"]` 要素を監視し、accept属性を `image/jpeg,image/jpg,image/png,image/webp,image/gif` に制限します。iOSではこの制限により、HEIC画像が自動的にJPEG形式で送信されます。
+
+#### 公開URL表示（`showPublicUrl`）
+
+記事の編集画面・新規作成画面で、エディタ制御バーの直下に公開URLをリアルタイム表示します。
+
+- タイトルと日付のフィールドを監視し、`https://reiwa.casa/posts/{年}/{月}/{タイトル}` 形式でURLを表示
+- フィールド変更時に自動更新される（`input` / `change` イベント監視）
+- URLはクリック可能なリンクとして表示される（新規タブで開く）
 
 #### pull-to-refresh 無効化
 
