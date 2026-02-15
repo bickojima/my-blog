@@ -8,13 +8,15 @@
 | 1.1 | 2026-02-15 | JTCテスト計画書体系に再構成、テスト手法を追加 |
 | 1.2 | 2026-02-15 | テスト手法の実装詳細を追記、E2Eテスト提案を追加、テスト実行結果を追記 |
 | 1.3 | 2026-02-15 | Playwright E2Eテスト実装（PC/iPad/iPhone 3デバイス×30テスト=90テスト）、テスト実行結果を更新 |
+| 1.4 | 2026-02-15 | admin-htmlテスト更新（ドロップダウンボトムシート化・EXIF修正に対応）、テスト実行結果を更新（237テスト全PASS） |
 
 ## テスト基盤の変更履歴
 
 | 時期 | 主な変更 | 関連PR |
 | :--- | :--- | :--- |
 | 2026-02-14 | **自動テスト基盤構築**: Vitest導入、設定検証・コンテンツ検証・機能テスト・統合テスト計151テストケースを実装 | #40 |
-| 2026-02-15 | **テスト拡充・ドキュメント改訂**: サムネイル画像実在チェック追加、Netlify Identity非含有検証追加、リグレッションテスト実施。テスト計画書をJTC体系に全面書き直し。計227テストケース | #80（本PR） |
+| 2026-02-15 | **テスト拡充・ドキュメント改訂**: サムネイル画像実在チェック追加、Netlify Identity非含有検証追加、リグレッションテスト実施。テスト計画書をJTC体系に全面書き直し。計227テストケース | #80 |
+| 2026-02-15 | **テスト更新**: admin-htmlテストをドロップダウンボトムシート化・EXIF fixPreviewImageOrientation削除に対応、ドロップダウンオーバーレイ管理テスト追加。計237テスト | - |
 
 ---
 
@@ -409,7 +411,7 @@ admin-html.test.mjs              -     ●     -     -     -     -     -     -  
 
 | No. | 基準 |
 | :--- | :--- |
-| 1 | 全テストケース（227件）がPASSであること |
+| 1 | 全テストケース（237件）がPASSであること |
 | 2 | `npm run build` が正常に完了すること |
 | 3 | 要件トレーサビリティマトリクス（第13章）において、FR-10を除く全要件が「充足」であること |
 
@@ -605,7 +607,7 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 | 3 | サイドバーがposition: initialに変更されている | M-02 | `position: initial`が含まれる |
 | 4 | エディタのコントロールバーがstickyに設定されている | M-02 | `position: sticky`が含まれる |
 | 5 | 保存・公開ボタンのタップ領域が44px以上確保されている | M-02 | `min-height: 44px`が含まれる |
-| 6 | ドロップダウンがボタン付近にfixed表示される | M-02 | `position: fixed`がEditorControlBar関連に含まれる |
+| 6 | ドロップダウンがボトムシート形式でfixed表示される | M-02 | `position: fixed` `z-index: 99999` `bottom: 0`がDropdownListに含まれる |
 | 7 | モーダルが画面幅95%で表示される | M-02 | `95vw`が含まれる |
 | 8 | メディアライブラリのカードグリッドが2列表示である | M-02 | `repeat(2, 1fr)`が含まれる |
 | 9 | 画像選択ボタンが縦並び・全幅表示である | M-02 | `width: 100%`がボタンに適用されている |
@@ -616,7 +618,7 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 | No. | テストケース | テスト手法 | 期待結果 |
 | :--- | :--- | :--- | :--- |
 | 1 | image-orientation: from-image が設定されている | M-02 | CSS内に`image-orientation: from-image`が含まれる |
-| 2 | ドロップダウンのposition:fixedがEditorControlBar内に限定されている | M-02 | CSSセレクタが`EditorControlBar`スコープに限定されている |
+| 2 | ドロップダウン表示時にURLバーとの重なりをJSで制御している | M-02 | `manageDropdownOverlay`関数と`cms-public-url`要素が含まれる |
 
 ### 12.5 iPhone固有対応（4件）
 
@@ -666,7 +668,7 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 | :--- | :--- | :--- | :--- |
 | 1 | ドロップダウンがz-index: 9999で最前面に表示される | M-02 | `z-index: 9999`がDropdownListに適用されている |
 | 2 | 公開URLバーがz-index: 9998で表示される | M-02 | `z-index: 9998`が公開URLバーに適用されている |
-| 3 | DropdownListのfixedがEditorControlBar内に限定されている | M-02 | CSSセレクタが`EditorControlBar`配下に限定されている |
+| 3 | DropdownListがボトムシートとしてposition:fixedで表示される | M-02 | DropdownListに`position: fixed`と`border-radius: 16px 16px 0 0`が適用されている |
 
 ### 12.10 ドロップダウン重なり防止: モバイル（8件）
 
@@ -893,9 +895,9 @@ npm run build
 | `admin-html.test.mjs` | 56 | PASS | 5ms |
 | `rehype-image-caption.test.mjs` | 8 | PASS | 2ms |
 | `auth-functions.test.mjs` | 10 | PASS | 25ms |
-| `content-validation.test.mjs` | 95 | PASS | 21ms |
-| `build.test.mjs` | 31 | PASS | 1183ms |
-| **合計** | **227** | **全PASS** | **1239ms** |
+| `content-validation.test.mjs` | 105 | PASS | 21ms |
+| `build.test.mjs` | 31 | PASS | 1293ms |
+| **合計** | **237** | **全PASS** | **1358ms** |
 
 ### 16.3 E2Eテスト最新実行結果（Playwright）
 

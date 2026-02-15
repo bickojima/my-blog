@@ -85,10 +85,11 @@ describe('管理画面HTML（public/admin/index.html）の検証', () => {
       expect(adminHtml).toContain('min-height: 44px');
     });
 
-    it('ドロップダウンの可視性とJS位置制御が実装されている', () => {
+    it('ドロップダウンがボトムシート形式でfixed表示される', () => {
       expect(adminHtml).toContain('[class*=DropdownList]');
+      expect(adminHtml).toContain('position: fixed');
       expect(adminHtml).toContain('z-index: 99999');
-      expect(adminHtml).toContain('fixDropdownPosition');
+      expect(adminHtml).toContain('bottom: 0');
     });
 
     it('モーダルが画面幅95%で表示される', () => {
@@ -118,12 +119,10 @@ describe('管理画面HTML（public/admin/index.html）の検証', () => {
       expect(adminHtml).toContain('image-orientation: from-image');
     });
 
-    it('ドロップダウンの位置がJSで動的に制御されている', () => {
-      // CSS単独のposition:fixedはiOS Safariで動作しないため
-      // JSのfixDropdownPositionでstickyを一時解除してabsolute配置する
-      expect(adminHtml).toContain('fixDropdownPosition');
-      expect(adminHtml).toContain("position', 'absolute'");
-      expect(adminHtml).toContain("position', 'sticky'");
+    it('ドロップダウン表示時にURLバーとの重なりをJSで制御している', () => {
+      // ドロップダウン（ボトムシート）表示中に公開URLバーを非表示にする
+      expect(adminHtml).toContain('manageDropdownOverlay');
+      expect(adminHtml).toContain('cms-public-url');
     });
   });
 
@@ -274,15 +273,11 @@ describe('管理画面HTML（public/admin/index.html）の検証', () => {
       expect(adminHtml).toContain('z-index:9998');
     });
 
-    it('DropdownListのCSS position:fixedが使われていない（iOS Safari対策）', () => {
-      // iOS SafariではstickyコンテナのCSS positioningが壊れるため
-      // CSSではposition:fixedを使わず、JSで動的制御する
-      const cssBlock = adminHtml.match(/@media[^{]*\{([\s\S]*?)\n\s{6}\}/)?.[1] || '';
-      const dropdownRules = cssBlock.match(/[^}]*\[class\*=DropdownList\][^{]*\{[^}]*\}/g) || [];
-      for (const rule of dropdownRules) {
-        expect(rule).not.toContain('position: fixed');
-        expect(rule).not.toContain('position:fixed');
-      }
+    it('DropdownListがボトムシートとしてposition:fixedで表示される', () => {
+      // モバイルではドロップダウンを画面下部のボトムシートとして表示
+      expect(adminHtml).toContain('[class*=DropdownList]');
+      expect(adminHtml).toContain('position: fixed');
+      expect(adminHtml).toContain('border-radius: 16px 16px 0 0');
     });
   });
 
