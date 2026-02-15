@@ -710,9 +710,26 @@
           setTimeout(initCustomizations, 1000);
         }
 
-        // ハッシュ変更時に公開URLバーを更新（エディタ↔一覧の遷移対応）
+        // 画面遷移時に公開URLバーを更新（エディタ↔一覧の遷移対応）
+        // hashchange: 通常のハッシュ遷移
+        // popstate: ブラウザの戻るボタンやReact Router経由の遷移
+        // click: Decap CMSの「←」戻るリンク押下時（hashchangeが遅延する場合の補完）
         window.addEventListener('hashchange', function() {
           showPublicUrl();
+        });
+        window.addEventListener('popstate', function() {
+          setTimeout(showPublicUrl, 50);
+        });
+        document.addEventListener('click', function(e) {
+          var target = e.target;
+          while (target && target !== document.body) {
+            if (target.className && typeof target.className === 'string' &&
+                target.className.indexOf('BackCollection') !== -1) {
+              setTimeout(showPublicUrl, 100);
+              return;
+            }
+            target = target.parentElement;
+          }
         });
       })();
     </script>
