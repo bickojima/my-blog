@@ -153,6 +153,33 @@ describe('管理画面HTML（public/admin/index.html）の検証', () => {
       expect(adminHtml).toContain("indexOf('Library')");
       expect(adminHtml).toContain("indexOf('CardGrid')");
     });
+
+    it('touchmoveハンドラがSlateエディタとCodeMirrorを除外している', () => {
+      // codeblock挿入時のクラッシュ防止: エディタ内のタッチ操作を妨害しない
+      expect(adminHtml).toContain("data-slate-editor");
+      expect(adminHtml).toContain("CodeMirror");
+    });
+  });
+
+  describe('Slate codeblockクラッシュ対策（iOS Safari）', () => {
+    it('void node（codeblock等）にuser-select: noneが設定されている', () => {
+      // iOS Safariがvoid nodeに不正な選択を作成するのを防止
+      expect(adminHtml).toContain('[data-slate-void="true"]');
+      expect(adminHtml).toContain('user-select: none');
+    });
+
+    it('Slateエラー（toSlatePoint/toSlateRange）のグローバルハンドラがある', () => {
+      // Slate v0.47のsetEnd()クラッシュをReact Error Boundaryの前でキャッチ
+      expect(adminHtml).toContain('toSlatePoint');
+      expect(adminHtml).toContain('toSlateRange');
+      expect(adminHtml).toContain('e.preventDefault()');
+    });
+
+    it('MutationObserverがrequestAnimationFrameでデバウンスされている', () => {
+      // 大量DOM変更時（codeblock挿入等）にコールバックの過負荷を防止
+      expect(adminHtml).toContain('requestAnimationFrame');
+      expect(adminHtml).toContain('rafPending');
+    });
   });
 
   describe('JavaScript カスタマイズ機能', () => {
