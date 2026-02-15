@@ -72,6 +72,15 @@ const { title } = Astro.props;
       font-size: 0.8rem;
       margin-top: 3rem;
     }
+    .admin-link {
+      display: inline-block;
+      margin-top: 0.5rem;
+      font-size: 0.65rem;
+      color: #ccc;
+    }
+    .admin-link:hover {
+      color: #999;
+    }
   </style>
 </head>
 <body>
@@ -79,7 +88,6 @@ const { title } = Astro.props;
     <nav>
       <a href="/" class="site-title">tbiのブログ</a>
       <div class="nav-links">
-        <a href="/admin/">管理画面</a>
       </div>
     </nav>
   </header>
@@ -89,6 +97,7 @@ const { title } = Astro.props;
   </main>
   <footer>
     <p>&copy; {new Date().getFullYear()} tbiのブログ</p>
+    <a href="/admin/" class="admin-link">管理</a>
   </footer>
   <script is:inline>
     if (window.netlifyIdentity) {
