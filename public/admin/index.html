@@ -136,11 +136,13 @@
           padding: 0 !important;
         }
 
-        /* --- ドロップダウン（公開ボタン等のメニュー: ボタン直下に表示） --- */
+        /* --- ドロップダウン（公開ボタン等のメニュー: ボタン付近に表示） --- */
         [class*=DropdownList] {
           min-width: 160px !important;
           background: #e6f4fd !important;
           border: 2px solid #3a69c7 !important;
+          position: fixed !important;
+          z-index: 9999 !important;
         }
 
         /* --- モーダル（画像アップロード等） --- */
@@ -456,26 +458,16 @@
           deleteBtn.disabled = !hasSelected;
         }
 
-        // URLマッピングのキャッシュ
-        var _urlMapCache = null;
-        var _urlMapLoading = false;
-
-        function loadUrlMap(callback) {
-          if (_urlMapCache) { callback(_urlMapCache); return; }
-          if (_urlMapLoading) return;
-          _urlMapLoading = true;
-          fetch('/admin/url-map.json?t=' + Date.now())
-            .then(function(r) { return r.ok ? r.json() : {}; })
-            .then(function(data) { _urlMapCache = data; callback(data); })
-            .catch(function() { _urlMapCache = {}; callback({}); })
-            .finally(function() { _urlMapLoading = false; });
-        }
-
-        // エディタ画面に公開URLを表示（ビルド後の実URLをurl-map.jsonから取得）
+        // エディタ画面に公開URLを表示
+        // ファイル名 = URLスラグ（Decap CMSはタイトル変更してもファイル名は変わらない）
+        // 既存記事: ハッシュからファイル名を取得 → 固定URL
+        // 新規記事: タイトルから生成（作成時にファイル名=タイトルになるため）
         function showPublicUrl() {
           try {
             var hash = window.location.hash || '';
-            var isEditor = hash.indexOf('/entries/') !== -1 || /\/new\/?$/.test(hash);
+            var isNew = /\/new\/?$/.test(hash);
+            var entryMatch = hash.match(/\/entries\/(.+?)$/);
+            var isEditor = entryMatch || isNew;
 
             var urlDisplay = document.getElementById('cms-public-url');
 
@@ -484,102 +476,86 @@
               return;
             }
 
-            // ページ上の全inputを収集
-            var allInputs = document.querySelectorAll('input');
-            var candidates = [];
-            for (var i = 0; i < allInputs.length; i++) {
-              var t = (allInputs[i].type || 'text').toLowerCase();
-              if (t !== 'file' && t !== 'checkbox' && t !== 'radio' && t !== 'hidden') {
-                candidates.push(allInputs[i]);
+            var resolvedPath = null;
+
+            if (entryMatch) {
+              // 既存記事: ハッシュのパスがファイルパス = URLスラグ
+              // hash例: #/collections/posts/entries/2026/01/あああ
+              var entryPath = decodeURIComponent(entryMatch[1]);
+              resolvedPath = '/posts/' + entryPath;
+            } else {
+              // 新規記事: タイトル・日付からURL生成
+              var allInputs = document.querySelectorAll('input');
+              var candidates = [];
+              for (var i = 0; i < allInputs.length; i++) {
+                var t = (allInputs[i].type || 'text').toLowerCase();
+                if (t !== 'file' && t !== 'checkbox' && t !== 'radio' && t !== 'hidden') {
+                  candidates.push(allInputs[i]);
+                }
               }
-            }
+              if (candidates.length < 2) return;
 
-            if (candidates.length < 2) return;
-
-            // 日付inputを値パターンで特定
-            var dateInput = null;
-            var dateIndex = -1;
-            for (var k = 0; k < candidates.length; k++) {
-              var v = candidates[k].value || '';
-              if (v.match(/^\d{4}[-\/]\d{2}[-\/]\d{2}/)) {
-                dateInput = candidates[k];
-                dateIndex = k;
-                break;
-              }
-            }
-
-            var titleInput = null;
-            if (dateInput && dateIndex > 0) {
-              titleInput = candidates[dateIndex - 1];
-            }
-            if (!titleInput || !dateInput) {
-              titleInput = candidates[0];
-              dateInput = candidates[1];
-            }
-
-            // イベントリスナー登録
-            if (titleInput && !titleInput.dataset.urlBound) {
-              titleInput.dataset.urlBound = 'true';
-              titleInput.addEventListener('input', function() { setTimeout(showPublicUrl, 100); });
-            }
-            if (dateInput && !dateInput.dataset.urlBound) {
-              dateInput.dataset.urlBound = 'true';
-              dateInput.addEventListener('input', function() { setTimeout(showPublicUrl, 100); });
-              dateInput.addEventListener('change', function() { setTimeout(showPublicUrl, 100); });
-            }
-
-            if (!titleInput || !dateInput) return;
-
-            var title = titleInput.value || '';
-            var dateVal = dateInput.value || '';
-            var dateMatch = dateVal.match(/(\d{4})[-\/](\d{2})/);
-            if (!dateMatch || !title) {
-              if (urlDisplay) urlDisplay.style.display = 'none';
-              return;
-            }
-
-            var year = dateMatch[1];
-            var month = dateMatch[2];
-
-            // 既存記事: ハッシュからエントリスラグを取得してurl-mapを参照
-            var entryMatch = hash.match(/\/entries\/(.+?)$/);
-            var entrySlug = entryMatch ? decodeURIComponent(entryMatch[1]) : null;
-
-            loadUrlMap(function(urlMap) {
-              var resolvedPath = null;
-
-              // url-mapから実URLを検索
-              if (entrySlug && urlMap[entrySlug]) {
-                resolvedPath = urlMap[entrySlug];
+              var dateInput = null;
+              var dateIndex = -1;
+              for (var k = 0; k < candidates.length; k++) {
+                var v = candidates[k].value || '';
+                if (v.match(/^\d{4}[-\/]\d{2}[-\/]\d{2}/)) {
+                  dateInput = candidates[k];
+                  dateIndex = k;
+                  break;
+                }
               }
 
-              // url-mapにない場合（新規記事等）はタイトルから生成
-              if (!resolvedPath) {
-                resolvedPath = '/posts/' + year + '/' + month + '/' + title;
+              var titleInput = null;
+              if (dateInput && dateIndex > 0) {
+                titleInput = candidates[dateIndex - 1];
+              }
+              if (!titleInput || !dateInput) {
+                titleInput = candidates[0];
+                dateInput = candidates[1];
               }
 
-              var publicUrl = 'https://reiwa.casa' + resolvedPath.replace(/[^\/]+/g, function(seg, idx) {
-                return idx === 0 ? seg : encodeURIComponent(decodeURIComponent(seg));
-              });
-              // シンプルにencodeURIComponentで各パスセグメントを処理
-              var parts = resolvedPath.split('/');
-              publicUrl = 'https://reiwa.casa' + parts.map(function(s) { return s ? encodeURIComponent(s) : s; }).join('/');
-              var displayUrl = 'https://reiwa.casa' + resolvedPath;
-
-              if (!urlDisplay) {
-                urlDisplay = document.createElement('div');
-                urlDisplay.id = 'cms-public-url';
-                urlDisplay.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:9999;padding:8px 14px;background:#e8f4fd;border-top:2px solid #1a73e8;font-size:0.85em;color:#333;text-align:center;';
-                document.body.appendChild(urlDisplay);
+              // 新規記事はタイトル変更でURL変わるのでリスナー登録
+              if (titleInput && !titleInput.dataset.urlBound) {
+                titleInput.dataset.urlBound = 'true';
+                titleInput.addEventListener('input', function() { setTimeout(showPublicUrl, 100); });
+              }
+              if (dateInput && !dateInput.dataset.urlBound) {
+                dateInput.dataset.urlBound = 'true';
+                dateInput.addEventListener('input', function() { setTimeout(showPublicUrl, 100); });
+                dateInput.addEventListener('change', function() { setTimeout(showPublicUrl, 100); });
               }
 
-              urlDisplay.style.display = '';
-              var newHtml = '<span style="color:#666;margin-right:6px;">公開URL:</span><a href="' + publicUrl + '" target="_blank" rel="noopener" style="color:#1a73e8;text-decoration:underline;word-break:break-all;">' + displayUrl + '</a>';
-              if (urlDisplay.dataset.lastUrl !== displayUrl) {
-                urlDisplay.innerHTML = newHtml;
-                urlDisplay.dataset.lastUrl = displayUrl;
+              var title = (titleInput && titleInput.value) || '';
+              var dateVal = (dateInput && dateInput.value) || '';
+              var dateMatch = dateVal.match(/(\d{4})[-\/](\d{2})/);
+              if (!dateMatch || !title) {
+                if (urlDisplay) urlDisplay.style.display = 'none';
+                return;
               }
-            });
+              resolvedPath = '/posts/' + dateMatch[1] + '/' + dateMatch[2] + '/' + title;
+            }
+
+            if (!resolvedPath) return;
+
+            var parts = resolvedPath.split('/');
+            var publicUrl = 'https://reiwa.casa' + parts.map(function(s) { return s ? encodeURIComponent(s) : s; }).join('/');
+            var displayUrl = 'https://reiwa.casa' + resolvedPath;
+            var label = entryMatch ? '公開URL:' : '公開予定URL:';
+
+            if (!urlDisplay) {
+              urlDisplay = document.createElement('div');
+              urlDisplay.id = 'cms-public-url';
+              urlDisplay.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:9998;padding:8px 14px;background:#e8f4fd;border-top:2px solid #1a73e8;font-size:0.85em;color:#333;text-align:center;';
+              document.body.appendChild(urlDisplay);
+            }
+
+            urlDisplay.style.display = '';
+            var newHtml = '<span style="color:#666;margin-right:6px;">' + label + '</span><a href="' + publicUrl + '" target="_blank" rel="noopener" style="color:#1a73e8;text-decoration:underline;word-break:break-all;">' + displayUrl + '</a>';
+            if (urlDisplay.dataset.lastUrl !== displayUrl) {
+              urlDisplay.innerHTML = newHtml;
+              urlDisplay.dataset.lastUrl = displayUrl;
+            }
           } catch(e) {}
         }
 

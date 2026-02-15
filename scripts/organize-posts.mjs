@@ -69,33 +69,15 @@ if (moved > 0) {
 }
 
 // --- 2. URLマッピングJSON生成 ---
-// posts.ts の getPostUrl ロジックと同じ: 同年月・同タイトルの記事に連番付与
+// ファイル名 = URLスラグ（posts.ts と同じロジック）
 const allFiles = findMdFiles(POSTS_DIR);
-const posts = [];
+const urlMap = {};
 for (const filePath of allFiles) {
   const fm = extractFrontmatter(filePath);
   if (!fm) continue;
   const relPath = path.relative(POSTS_DIR, filePath).replace(/\.md$/, '');
-  posts.push({ relPath, filePath, ...fm });
-}
-
-const urlMap = {};
-for (const post of posts) {
-  const baseSlug = post.title;
-  const dupes = posts.filter(p => p.year === post.year && p.month === post.month && p.title === baseSlug);
-
-  let slug = baseSlug;
-  if (dupes.length > 1) {
-    dupes.sort((a, b) => {
-      const dateDiff = new Date(a.date).getTime() - new Date(b.date).getTime();
-      if (dateDiff !== 0) return dateDiff;
-      return a.relPath.localeCompare(b.relPath);
-    });
-    const idx = dupes.findIndex(p => p.relPath === post.relPath);
-    if (idx > 0) slug = `${baseSlug}-${idx}`;
-  }
-
-  urlMap[post.relPath] = `/posts/${post.year}/${post.month}/${slug}`;
+  const fileSlug = path.basename(filePath, '.md');
+  urlMap[relPath] = `/posts/${fm.year}/${fm.month}/${fileSlug}`;
 }
 
 const urlMapPath = path.join('public', 'admin', 'url-map.json');
