@@ -427,20 +427,25 @@
         }
 
         // ヘッダーに本番サイトへのリンクを追加
+        // 既存ナビリンク（コンテンツ、メディア）の隣に挿入
         function addSiteLink() {
-          var header = document.querySelector('[class*="AppHeaderContent"]');
-          if (!header || header.querySelector('#cms-site-link')) return;
+          if (document.getElementById('cms-site-link')) return;
 
+          var navLink = document.querySelector('[class*="AppHeaderNavLink"]');
+          if (!navLink || !navLink.parentElement) return;
+
+          var nav = navLink.parentElement;
           var link = document.createElement('a');
           link.id = 'cms-site-link';
           link.href = 'https://reiwa.casa';
           link.target = '_blank';
           link.rel = 'noopener';
           link.textContent = 'ブログを見る';
-          link.style.cssText = 'color:#fff;text-decoration:none;font-size:14px;opacity:0.8;padding:4px 12px;border:1px solid rgba(255,255,255,0.3);border-radius:4px;white-space:nowrap;margin-left:auto;';
-          link.addEventListener('mouseenter', function() { link.style.opacity = '1'; });
-          link.addEventListener('mouseleave', function() { link.style.opacity = '0.8'; });
-          header.appendChild(link);
+          // 既存ナビリンクと同じ高さ・配置で、控えめな区別スタイル
+          link.style.cssText = 'color:rgba(255,255,255,0.7);text-decoration:none;font-size:14px;padding:8px 12px;white-space:nowrap;border-left:1px solid rgba(255,255,255,0.2);margin-left:4px;';
+          link.addEventListener('mouseenter', function() { link.style.color = '#fff'; });
+          link.addEventListener('mouseleave', function() { link.style.color = 'rgba(255,255,255,0.7)'; });
+          nav.appendChild(link);
         }
 
         // コレクション一覧：日付・下書き状態・タイトルを分離表示
