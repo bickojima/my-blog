@@ -407,6 +407,7 @@
             updateDeleteButtonState();
             showPublicUrl();
             manageDropdownOverlay();
+            fixPreviewImageOrientation();
           });
 
           observer.observe(document.body, {
@@ -422,6 +423,7 @@
           updateDeleteButtonState();
           showPublicUrl();
           manageDropdownOverlay();
+          fixPreviewImageOrientation();
         }
 
         // コレクション一覧：日付・下書き状態・タイトルを分離表示
@@ -617,29 +619,62 @@
           } catch(e) {}
         }
 
-        // iOS Safari: ドロップダウン表示時にオーバーレイを追加
-        // ボトムシート表示時の背景暗転とタップで閉じる機能
+        // iOS Safari: ドロップダウン表示時にURLバーを退避
+        // ボトムシートと公開URLバーの重なりを防止
         function manageDropdownOverlay() {
           if (window.innerWidth > 799) return;
 
           var dropdown = document.querySelector('[class*="DropdownList"]');
-          var overlay = document.getElementById('cms-dropdown-overlay');
+          var urlBar = document.getElementById('cms-public-url');
 
           if (dropdown) {
-            if (!overlay) {
-              overlay = document.createElement('div');
-              overlay.id = 'cms-dropdown-overlay';
-              overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.4);z-index:99998;';
-              overlay.addEventListener('click', function() {
-                document.body.click();
-              });
-              document.body.appendChild(overlay);
-            }
+            // ドロップダウン表示中: 公開URLバーを一時的に隠す（重なり防止）
+            if (urlBar) urlBar.style.display = 'none';
           } else {
-            if (overlay) {
-              overlay.remove();
-            }
+            // ドロップダウンが閉じた: 公開URLバーを復元
+            if (urlBar) urlBar.style.display = '';
           }
+        }
+
+        // CMS編集画面の画像プレビューのEXIF回転を補正
+        // blob:やdata: URLの画像をcreateImageBitmapで正規化して差し替え
+        function fixPreviewImageOrientation() {
+          if (typeof createImageBitmap === 'undefined') return;
+
+          var images = document.querySelectorAll(
+            '[class*="FileContent"] img, [class*="ImageContent"] img, ' +
+            '[class*="FileWidget"] img, [class*="ImageWidget"] img, ' +
+            '[class*="CardImage"] img'
+          );
+          images.forEach(function(img) {
+            if (img.dataset.orientFixed) return;
+            var src = img.src || '';
+            if (!src || src.startsWith('data:image/svg')) return;
+            // blob: または http(s): のみ処理
+            if (!src.startsWith('blob:') && !src.match(/^https?:\/\//)) return;
+            img.dataset.orientFixed = 'true';
+
+            fetch(src)
+              .then(function(r) { return r.blob(); })
+              .then(function(blob) {
+                return createImageBitmap(blob);
+              })
+              .then(function(bitmap) {
+                var canvas = document.createElement('canvas');
+                canvas.width = bitmap.width;
+                canvas.height = bitmap.height;
+                var ctx = canvas.getContext('2d');
+                ctx.drawImage(bitmap, 0, 0);
+                canvas.toBlob(function(newBlob) {
+                  if (newBlob) {
+                    img.src = URL.createObjectURL(newBlob);
+                  }
+                }, 'image/jpeg', 0.92);
+              })
+              .catch(function() {
+                // CORS等のエラー時は何もしない
+              });
+          });
         }
 
         // CMS読み込み後にカスタマイズを初期化
