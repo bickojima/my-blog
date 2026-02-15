@@ -810,9 +810,9 @@ Decap CMSはデフォルトではモバイル対応が不十分であるため�
 
 ### 13.5 本番サイトリンク
 
-CMSヘッダーに「ブログを見る」リンクを表示し、本番サイト（`https://reiwa.casa`）へのワンクリックアクセスを提供する。
+サイドバーのコレクション一覧の下に「ブログを見る」リンクを表示し、本番サイト（`https://reiwa.casa`）へのワンクリックアクセスを提供する。
 
-- `addSiteLink()` 関数が `[class*=AppHeaderContent]` に `<a>` 要素を動的注入
+- `addSiteLink()` 関数が `[class*=SidebarContainer]` に `<a>` 要素を動的注入
 - 新規タブで開く（`target="_blank"`）
 - 重複防止: `#cms-site-link` IDで既存チェック
 
