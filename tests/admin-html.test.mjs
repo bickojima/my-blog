@@ -149,10 +149,10 @@ describe('管理画面HTML（public/admin/index.html）の検証', () => {
     });
 
     it('コレクション一覧の日付フォーマット処理がある', () => {
-      // "YYYY-MM-DD | タイトル" パターンの正規表現
+      // "YYYY-MM-DD | draft | タイトル" パターンの正規表現
       expect(adminHtml).toContain('formatCollectionEntries');
       expect(adminHtml).toContain(
-        String.raw`/^(\d{4}-\d{2}-\d{2})\s*\|\s*(.+)$/`
+        String.raw`/^(\d{4}-\d{2}-\d{2})\s*\|\s*(true|false)\s*\|\s*(.+)$/`
       );
     });
 
@@ -171,6 +171,18 @@ describe('管理画面HTML（public/admin/index.html）の検証', () => {
     it('メディアライブラリの選択状態による削除ボタンの有効/無効制御がある', () => {
       expect(adminHtml).toContain('updateDeleteButtonState');
       expect(adminHtml).toContain('deleteBtn.disabled');
+    });
+
+    it('エディタ画面に公開URL表示機能がある', () => {
+      expect(adminHtml).toContain('showPublicUrl');
+      expect(adminHtml).toContain('cms-public-url');
+      expect(adminHtml).toContain('reiwa.casa/posts/');
+    });
+
+    it('公開URLがタイトルと日付フィールドから動的に生成される', () => {
+      expect(adminHtml).toContain('titleInput');
+      expect(adminHtml).toContain('dateInput');
+      expect(adminHtml).toContain('urlBound');
     });
 
     it('選択状態の判定がborderColor（青系）で行われている', () => {
