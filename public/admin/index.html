@@ -803,8 +803,12 @@
           var target = e.target;
           while (target && target !== document.body) {
             if (target.className && typeof target.className === 'string' &&
-                target.className.indexOf('BackCollection') !== -1) {
-              setTimeout(showPublicUrl, 100);
+                (target.className.indexOf('BackCollection') !== -1 ||
+                 target.className.indexOf('BackStatus') !== -1)) {
+              // 即座に非表示（iPhoneではhashchange発火が遅延するため）
+              var urlBar = document.getElementById('cms-public-url');
+              if (urlBar) urlBar.style.display = 'none';
+              setTimeout(showPublicUrl, 300);
               return;
             }
             target = target.parentElement;
