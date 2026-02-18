@@ -835,6 +835,18 @@ Decap CMSはデフォルトではモバイル対応が不十分であるため�
 
 CMS管理画面での画像表示はCSS `image-orientation: from-image` に委ねる。JavaScript による画像src書き換え（canvas経由の再生成）は、EXIF メタデータの消失と一部ブラウザでの `createImageBitmap` のEXIF非対応により逆効果になるため、廃止した（fixPreviewImageOrientation 削除）。
 
+### 13.8 プレビュースタイルの本番再現
+
+`CMS.registerPreviewStyle()` で本番サイト相当のCSSをプレビューiframeに注入し、編集中のプレビュー表示を本番に近づける。注入するスタイルは `Base.astro` のグローバルスタイルと `[slug].astro` の `.post-content` スタイルを統合したもの。
+
+**注入対象:**
+- フォントファミリー（-apple-system, ヒラギノ角ゴ等）、行間（1.9）、文字色（#333）
+- 画像: `max-width: 100%`, `border-radius: 4px`, `margin: 1rem 0`, `image-orientation: from-image`
+- 見出し: h2（1.3rem）、h3（1.1rem）と適切なマージン
+- コードブロック: `background: #f5f5f5`, `border-radius: 4px`
+- figure/figcaption: キャプション付き画像のスタイル（中央揃え、グレーテキスト）
+- コンテンツ幅: `max-width: 700px`（本番のmainと同一）
+
 ---
 
 ## 14. 画像処理パイプライン

@@ -315,6 +315,30 @@ describe('管理画面HTML（public/admin/index.html）の検証', () => {
     });
   });
 
+  describe('プレビュースタイル（本番サイト再現）', () => {
+    it('CMS.registerPreviewStyle が呼び出されている', () => {
+      expect(adminHtml).toContain('CMS.registerPreviewStyle');
+    });
+
+    it('本番サイト相当のフォントファミリーが設定されている', () => {
+      expect(adminHtml).toContain('-apple-system');
+      expect(adminHtml).toContain('Hiragino Kaku Gothic ProN');
+    });
+
+    it('本番サイト相当の行間（line-height: 1.9）が設定されている', () => {
+      expect(adminHtml).toContain('line-height: 1.9');
+    });
+
+    it('画像スタイル（border-radius, margin）が設定されている', () => {
+      expect(adminHtml).toContain('border-radius: 4px');
+      expect(adminHtml).toContain('margin: 1rem 0');
+    });
+
+    it('コードブロックスタイルが設定されている', () => {
+      expect(adminHtml).toContain('background: #f5f5f5');
+    });
+  });
+
   describe('ドロップダウン・タブの重なり防止（iPad・iPhone想定: max-width 799px）', () => {
     it('EditorControlBarがz-index: 300でstickyヘッダーとして表示される', () => {
       // ドロップダウンやモーダルと干渉しない適切なz-index階層
