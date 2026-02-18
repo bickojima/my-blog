@@ -647,17 +647,20 @@
         // 新規記事: タイトルから生成（作成時にファイル名=タイトルになるため）
         function showPublicUrl() {
           try {
-            var hash = window.location.hash || '';
-            var isNew = /\/new\/?$/.test(hash);
-            var entryMatch = hash.match(/\/entries\/(.+?)$/);
-            var isEditor = entryMatch || isNew;
-
             var urlDisplay = document.getElementById('cms-public-url');
+
+            // エディタ画面の判定: DOMにEditorControlBarが存在するかで確実に判定
+            // （hashベースの判定はiPhoneで遷移後にhashが残るケースがあり不安定）
+            var isEditor = !!document.querySelector('[class*="EditorControlBar"]');
 
             if (!isEditor) {
               if (urlDisplay) urlDisplay.style.display = 'none';
               return;
             }
+
+            var hash = window.location.hash || '';
+            var isNew = /\/new\/?$/.test(hash);
+            var entryMatch = hash.match(/\/entries\/(.+?)$/);
 
             var resolvedPath = null;
 
@@ -805,10 +808,7 @@
             if (target.className && typeof target.className === 'string' &&
                 (target.className.indexOf('BackCollection') !== -1 ||
                  target.className.indexOf('BackStatus') !== -1)) {
-              // 即座に非表示（iPhoneではhashchange発火が遅延するため）
-              var urlBar = document.getElementById('cms-public-url');
-              if (urlBar) urlBar.style.display = 'none';
-              setTimeout(showPublicUrl, 300);
+              setTimeout(showPublicUrl, 100);
               return;
             }
             target = target.parentElement;
