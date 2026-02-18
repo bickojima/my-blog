@@ -575,7 +575,7 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 
 ---
 
-## 12. 管理画面HTML検証 (`admin-html.test.mjs`) — 57件
+## 12. 管理画面HTML検証 (`admin-html.test.mjs`) — 62件
 
 `public/admin/index.html`のHTML/CSS/JavaScript内容を文字列パターンマッチングで検証する。
 
@@ -694,6 +694,16 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 | 6 | AppMainContainerのmin-widthが0である | M-02 | `min-width: 0`が適用されている |
 | 7 | コントロールパネルがmax-width: 100vwである | M-02 | `max-width: 100vw`が適用されている |
 | 8 | PublishedToolbarButtonの::after疑似要素が非表示である | M-02 | `::after`に`display: none`が適用されている |
+
+### 12.11 プレビュースタイル: 本番サイト再現（5件）
+
+| No. | テストケース | テスト手法 | 期待結果 |
+| :--- | :--- | :--- | :--- |
+| 1 | CMS.registerPreviewStyle が呼び出されている | M-02 | `CMS.registerPreviewStyle`が含まれる |
+| 2 | 本番サイト相当のフォントファミリーが設定されている | M-02 | `-apple-system`と`Hiragino Kaku Gothic ProN`が含まれる |
+| 3 | 本番サイト相当の行間（line-height: 1.9）が設定されている | M-02 | `line-height: 1.9`が含まれる |
+| 4 | 画像スタイル（border-radius, margin）が設定されている | M-02 | `border-radius: 4px`と`margin: 1rem 0`が含まれる |
+| 5 | コードブロックスタイルが設定されている | M-02 | `background: #f5f5f5`が含まれる |
 
 ---
 
@@ -906,7 +916,7 @@ npm run build
 | テストファイル | テスト数 | 結果 | 実行時間 |
 | :--- | :--- | :--- | :--- |
 | `cms-config.test.mjs` | 27 | PASS | 3ms |
-| `admin-html.test.mjs` | 56 | PASS | 5ms |
+| `admin-html.test.mjs` | 66 | PASS | 4ms |
 | `rehype-image-caption.test.mjs` | 8 | PASS | 2ms |
 | `auth-functions.test.mjs` | 10 | PASS | 25ms |
 | `content-validation.test.mjs` | 105 | PASS | 21ms |
