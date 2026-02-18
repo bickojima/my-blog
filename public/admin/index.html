@@ -415,6 +415,85 @@
     </script>
     <script src="https://unpkg.com/decap-cms@^3.10.0/dist/decap-cms.js"></script>
     <script>
+      // プレビューペインに本番サイト相当のスタイルを適用
+      // Base.astro のグローバルスタイル + [slug].astro の .post-content スタイルを統合
+      CMS.registerPreviewStyle(`
+        /* Base.astro グローバルスタイル相当 */
+        *, *::before, *::after {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
+        html, body {
+          background-color: #fff;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+          line-height: 1.8;
+          color: #333;
+        }
+        a { color: inherit; text-decoration: none; }
+        img {
+          max-width: 100%;
+          height: auto;
+          image-orientation: from-image;
+        }
+
+        /* [slug].astro .post-content スタイル相当 */
+        body {
+          line-height: 1.9;
+          padding: 1rem;
+          max-width: 700px;
+        }
+        h2 {
+          font-size: 1.3rem;
+          margin-top: 2rem;
+          margin-bottom: 0.75rem;
+        }
+        h3 {
+          font-size: 1.1rem;
+          margin-top: 1.5rem;
+          margin-bottom: 0.5rem;
+        }
+        p {
+          margin-bottom: 1rem;
+        }
+        figure {
+          margin: 1.5rem 0;
+        }
+        figure img {
+          border-radius: 4px;
+        }
+        figcaption {
+          font-size: 0.85rem;
+          color: #888;
+          text-align: center;
+          margin-top: 0.5rem;
+        }
+        img {
+          border-radius: 4px;
+          margin: 1rem 0;
+        }
+        code {
+          background: #f5f5f5;
+          padding: 0.15rem 0.3rem;
+          border-radius: 3px;
+          font-size: 0.9em;
+        }
+        pre {
+          background: #f5f5f5;
+          padding: 1rem;
+          border-radius: 4px;
+          overflow-x: auto;
+          margin: 1rem 0;
+        }
+        pre code {
+          background: none;
+          padding: 0;
+          border-radius: 0;
+          font-size: inherit;
+        }
+      `, { raw: true });
+    </script>
+    <script>
       // Decap CMS UI カスタマイズ
       (function() {
         function initCustomizations() {
