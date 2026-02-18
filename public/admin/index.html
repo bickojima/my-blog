@@ -649,9 +649,11 @@
           try {
             var urlDisplay = document.getElementById('cms-public-url');
 
-            // エディタ画面の判定: DOMにEditorControlBarが存在するかで確実に判定
-            // （hashベースの判定はiPhoneで遷移後にhashが残るケースがあり不安定）
-            var isEditor = !!document.querySelector('[class*="EditorControlBar"]');
+            // エディタ画面の判定: EditorControlBarが実際に画面に表示されているかで判定
+            // Decap CMSはReact SPAのため、ページ遷移後も非表示のDOMが残ることがある
+            // 要素の存在だけでなく描画サイズで判定し、コレクション一覧では確実に非表示にする
+            var editorBar = document.querySelector('[class*="EditorControlBar"]');
+            var isEditor = editorBar && editorBar.getBoundingClientRect().height > 0;
 
             if (!isEditor) {
               if (urlDisplay) urlDisplay.style.display = 'none';
