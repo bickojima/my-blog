@@ -757,10 +757,17 @@
 
           if (dropdown) {
             // ドロップダウン表示中: 公開URLバーを一時的に隠す（重なり防止）
-            if (urlBar) urlBar.style.display = 'none';
+            if (urlBar) {
+              urlBar.dataset.hiddenByDropdown = 'true';
+              urlBar.style.display = 'none';
+            }
           } else {
-            // ドロップダウンが閉じた: 公開URLバーを復元
-            if (urlBar) urlBar.style.display = '';
+            // ドロップダウンが閉じた: ドロップダウンで隠した場合のみ復元
+            // （showPublicUrlが非表示にした場合は復元しない）
+            if (urlBar && urlBar.dataset.hiddenByDropdown === 'true') {
+              delete urlBar.dataset.hiddenByDropdown;
+              urlBar.style.display = '';
+            }
           }
         }
 
