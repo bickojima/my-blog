@@ -16,7 +16,7 @@
 | 1.9 | 2026-02-20 | FR-10充足化（url-map.jsonテスト6件追加）、CMS-14追加（コレクション表示順序テスト1件）、全要件トレーサビリティ充足、コレクション順序変更（posts先頭） |
 | 1.10 | 2026-02-21 | テスト動的化（ハードコードコンテンツ排除）、ヘッダーナビ条件分岐テスト11件追加、境界値・一意性テスト6件追加、ビルドテストをソースデータ動的参照に改修（242テスト） |
 | 1.11 | 2026-02-21 | 固定ページ番号バッジフォーマットテスト追加（admin-html 68件）、テスト件数更新（243テスト） |
-| 1.12 | 2026-02-21 | 固定ページ下書きバッジテスト更新（#10説明更新）、sortable_fieldsデフォルトソートテスト追加 |
+| 1.12 | 2026-02-21 | 固定ページ下書きバッジテスト更新（#10説明更新）、Decap CMS v3.10.0互換性テスト追加（sortable_fields文字列配列検証、244テスト） |
 
 ## テスト基盤の変更履歴
 
@@ -555,7 +555,7 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 
 ---
 
-## 2.4. CMS設定検証 (`cms-config.test.mjs`) — 40件
+## 2.4. CMS設定検証 (`cms-config.test.mjs`) — 41件
 
 `public/admin/config.yml`をパースし、設定値の正当性を検証する。
 
@@ -599,8 +599,9 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 | 35 | pagesのdraftフィールドがbooleanウィジェットでデフォルトfalseである | pages フィールド | M-04 | `widget === "boolean"`, `default === false` |
 | 36 | pagesのbodyフィールドがmarkdownウィジェットである | pages フィールド | M-04 | `widget === "markdown"` |
 | 37 | pagesコレクションのフォーマットがfrontmatterに設定されている | pages | M-03 | `format === "frontmatter"` |
-| 38 | pagesのサマリー表示にorderとtitleが含まれている | pages | M-03, M-02 | `summary`に`{{order}}`と`{{title}}`が含まれる |
+| 38 | pagesのサマリー表示にorder・draft・titleが含まれている | pages | M-03, M-02 | `summary`に`{{order}}`、`{{draft}}`、`{{title}}`が含まれる |
 | 39 | pagesのソート可能フィールドにorderとtitleが含まれている | pages | M-04 | `sortable_fields`に`order`と`title`が含まれる |
+| 40 | 全コレクションのsortable_fieldsが文字列配列である | 互換性 | M-03 | Decap CMS v3.10.0はオブジェクト形式非対応のため、全要素が`typeof === "string"` |
 
 ---
 
@@ -866,7 +867,7 @@ OAuth認証はGitHub実環境が必要なため、postMessage APIによるシミ
 
 | No. | テストケース | 検証内容 | テスト手法 |
 | :--- | :--- | :--- | :--- |
-| E-07 | CMS管理画面読込 | HTMLロード、Decap CMS初期化、GitHubログインボタン表示 | DOM検証 |
+| E-07 | CMS管理画面読込 | HTMLロード、Decap CMS初期化、GitHubログインボタン表示、config.ymlスキーマエラー非表示 | DOM検証 |
 | E-08 | 認証シミュレーション | OAuthポップアップ起動（GitHub リダイレクト対応）、postMessageトークン送信のシミュレーション | モック/シミュレーション |
 | E-09 | 記事作成フォーム | 新規記事ハッシュルート (`#/collections/posts/new`) への遷移 | ルーティング検証 |
 | E-10 | 記事編集 | 記事編集ハッシュルート (`#/collections/posts/entries/...`) への遷移 | ルーティング検証 |
@@ -889,7 +890,7 @@ OAuth認証はGitHub実環境が必要なため、postMessage APIによるシミ
 
 ### 4.1.4 デバイス別テスト
 
-全テストケースを以下の3デバイスで実行する（合計237テスト）。
+全テストケースを以下の3デバイスで実行する（合計240テスト）。
 
 | デバイス | ビューポート | 用途 |
 | :--- | :--- | :--- |
@@ -975,29 +976,29 @@ npm run build
 
 | テストファイル | テスト数 | 結果 | 実行時間 |
 | :--- | :--- | :--- | :--- |
-| `cms-config.test.mjs` | 40 | PASS | 5ms |
-| `admin-html.test.mjs` | 68 | PASS | 7ms |
+| `cms-config.test.mjs` | 41 | PASS | 4ms |
+| `admin-html.test.mjs` | 68 | PASS | 5ms |
 | `rehype-image-caption.test.mjs` | 8 | PASS | 2ms |
-| `auth-functions.test.mjs` | 10 | PASS | 25ms |
-| `content-validation.test.mjs` | 67 | PASS | 43ms |
-| `build.test.mjs` | 50 | PASS | 1577ms |
-| **合計** | **243** | **全PASS** | **1.75s** |
+| `auth-functions.test.mjs` | 10 | PASS | 26ms |
+| `content-validation.test.mjs` | 67 | PASS | 21ms |
+| `build.test.mjs` | 50 | PASS | 1332ms |
+| **合計** | **244** | **全PASS** | **1.49s** |
 
 ### 4.3.3 E2Eテスト最新実行結果（Playwright）
 
 | 項目 | 結果 |
 | :--- | :--- |
-| 実行日時 | 2026-02-20 13:00 |
+| 実行日時 | 2026-02-21 07:21 |
 | Playwright バージョン | v1.58.2 |
-| 実行時間 | 96s |
+| 実行時間 | 52s |
 | 合否判定 | **合格** |
 
 | テストファイル | PC | iPad | iPhone | 合計 |
 | :--- | :--- | :--- | :--- | :--- |
 | `site.spec.ts`（E-01〜E-06, E-20〜E-21） | 30 PASS | 30 PASS | 30 PASS | 90 |
-| `cms.spec.ts`（E-07〜E-12） | 11 PASS | 11 PASS | 11 PASS | 33 |
+| `cms.spec.ts`（E-07〜E-12） | 12 PASS | 12 PASS | 12 PASS | 36 |
 | `cms-customizations.spec.ts`（E-13〜E-19） | 38 PASS | 38 PASS | 38 PASS | 114 |
-| **合計** | **79** | **79** | **79** | **237 全PASS** |
+| **合計** | **80** | **80** | **80** | **240 全PASS** |
 
 ### 4.3.4 ビルド実行結果
 

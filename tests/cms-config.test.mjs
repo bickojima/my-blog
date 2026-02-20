@@ -75,6 +75,18 @@ describe('CMS設定（config.yml）の検証', () => {
       expect(config.collections[1].name).toBe('pages');
     });
 
+    describe('Decap CMS v3.10.0 互換性', () => {
+      it('全コレクションのsortable_fieldsが文字列配列である（オブジェクト形式はv3.10.0非対応）', () => {
+        config.collections.forEach(collection => {
+          if (collection.sortable_fields) {
+            collection.sortable_fields.forEach(field => {
+              expect(typeof field).toBe('string');
+            });
+          }
+        });
+      });
+    });
+
     describe('pages コレクション', () => {
       const collection = config.collections.find(c => c.name === 'pages');
 
