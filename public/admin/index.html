@@ -756,8 +756,9 @@
           var urlBar = document.getElementById('cms-public-url');
 
           if (dropdown) {
-            // ドロップダウン表示中: 公開URLバーを一時的に隠す（重なり防止）
-            if (urlBar) {
+            // ドロップダウン表示中: 公開URLバーが表示中の場合のみ一時的に隠す
+            // 既にshowPublicUrlで非表示の場合はフラグを立てない（閉じた時に誤復元しない）
+            if (urlBar && urlBar.style.display !== 'none') {
               urlBar.dataset.hiddenByDropdown = 'true';
               urlBar.style.display = 'none';
             }
