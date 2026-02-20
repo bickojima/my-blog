@@ -110,6 +110,43 @@ describe('コンテンツ（Markdownファイル）の検証', () => {
   });
 });
 
+describe('固定ページ（pages）コンテンツの検証', () => {
+  const PAGES_DIR = join(process.cwd(), 'src/content/pages');
+  const pageFiles = existsSync(PAGES_DIR)
+    ? readdirSync(PAGES_DIR).filter(f => extname(f) === '.md').map(f => join(PAGES_DIR, f))
+    : [];
+
+  it('固定ページファイルが1つ以上存在する', () => {
+    expect(pageFiles.length).toBeGreaterThan(0);
+  });
+
+  describe.each(
+    pageFiles.map(f => [f.replace(process.cwd() + '/', ''), f])
+  )('%s', (_relativePath, filePath) => {
+    const raw = readFileSync(filePath, 'utf-8');
+    const { data: frontmatter, content } = matter(raw);
+
+    it('titleが文字列で存在する', () => {
+      expect(frontmatter.title).toBeDefined();
+      expect(typeof frontmatter.title).toBe('string');
+      expect(frontmatter.title.trim().length).toBeGreaterThan(0);
+    });
+
+    it('slugが半角英数字とハイフンのみである', () => {
+      expect(frontmatter.slug).toBeDefined();
+      expect(frontmatter.slug).toMatch(/^[a-z0-9-]+$/);
+    });
+
+    it('orderが数値である', () => {
+      expect(typeof frontmatter.order).toBe('number');
+    });
+
+    it('本文が空でない', () => {
+      expect(content.trim().length).toBeGreaterThan(0);
+    });
+  });
+});
+
 describe('画像回転（EXIF orientation）対応の検証', () => {
   it('ソース画像にEXIF回転が残っていない（ピクセルデータに反映済み）', async () => {
     const sharp = (await import('sharp')).default;

@@ -1,0 +1,108 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+
+export async function getStaticPaths() {
+  const reservedSlugs = ['posts', 'tags', 'admin'];
+  const pages = await getCollection('pages');
+  return pages
+    .filter(page => !page.data.draft)
+    .filter(page => {
+      if (reservedSlugs.includes(page.slug)) {
+        console.warn(`[pages] Reserved slug "${page.slug}" skipped`);
+        return false;
+      }
+      return true;
+    })
+    .map(page => ({
+      params: { slug: page.slug },
+      props: { page },
+    }));
+}
+
+const { page } = Astro.props;
+const { Content } = await page.render();
+---
+
+<Base title={page.data.title}>
+  <article>
+    <header class="page-header">
+      <h1>{page.data.title}</h1>
+    </header>
+
+    <div class="page-content">
+      <Content />
+    </div>
+
+    <footer class="page-footer">
+      <a href="/">&larr; 記事一覧に戻る</a>
+    </footer>
+  </article>
+
+  <style>
+    .page-header {
+      margin-bottom: 2rem;
+    }
+    .page-header h1 {
+      font-size: 1.6rem;
+      line-height: 1.4;
+    }
+    .page-content {
+      line-height: 1.9;
+    }
+    .page-content :global(h2) {
+      font-size: 1.3rem;
+      margin-top: 2rem;
+      margin-bottom: 0.75rem;
+    }
+    .page-content :global(h3) {
+      font-size: 1.1rem;
+      margin-top: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .page-content :global(p) {
+      margin-bottom: 1rem;
+    }
+    .page-content :global(figure) {
+      margin: 1.5rem 0;
+    }
+    .page-content :global(figure img) {
+      border-radius: 4px;
+    }
+    .page-content :global(figcaption) {
+      font-size: 0.85rem;
+      color: #888;
+      text-align: center;
+      margin-top: 0.5rem;
+    }
+    .page-content :global(img) {
+      border-radius: 4px;
+      margin: 1rem 0;
+    }
+    .page-content :global(code) {
+      background: #f5f5f5;
+      padding: 0.15rem 0.3rem;
+      border-radius: 3px;
+      font-size: 0.9em;
+    }
+    .page-content :global(pre) {
+      background: #f5f5f5;
+      padding: 1rem;
+      border-radius: 4px;
+      overflow-x: auto;
+      margin: 1rem 0;
+    }
+    .page-footer {
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid #eee;
+    }
+    .page-footer a {
+      color: #888;
+      font-size: 0.9rem;
+    }
+    .page-footer a:hover {
+      color: #333;
+    }
+  </style>
+</Base>
