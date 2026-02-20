@@ -115,9 +115,9 @@ my-blog/
 | `npm run dev` | 開発サーバー起動（localhost:4321） |
 | `npm run build` | 本番ビルド（`./dist/` に出力） |
 | `npm run preview` | ビルド結果のローカルプレビュー |
-| `npm test` | 単体・統合テスト実行（Vitest / 243テスト、記事数により変動） |
+| `npm test` | 単体・統合テスト実行（Vitest / 244テスト、記事数により変動） |
 | `npm run test:watch` | ウォッチモードでテスト実行 |
-| `npm run test:e2e` | E2Eテスト実行（Playwright / PC・iPad・iPhone 237テスト） |
+| `npm run test:e2e` | E2Eテスト実行（Playwright / PC・iPad・iPhone 240テスト） |
 
 ## 5. 管理画面のUIカスタマイズ
 
