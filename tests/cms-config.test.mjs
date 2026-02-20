@@ -85,6 +85,12 @@ describe('CMS設定（config.yml）の検証', () => {
         expect(collection.extension).toBe('md');
       });
 
+      it('slugテンプレートがfields.slugを参照している（タイトルベースではない）', () => {
+        // {{slug}}はDecap CMSではタイトルの安全版を意味する
+        // {{fields.slug}}でフロントマターのslugフィールド値をファイル名に使用する
+        expect(collection.slug).toBe('{{fields.slug}}');
+      });
+
       describe('フィールド定義', () => {
         const fields = collection.fields;
         const fieldNames = fields.map(f => f.name);
