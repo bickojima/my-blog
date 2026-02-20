@@ -5,6 +5,11 @@
     <meta name="robots" content="noindex" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Content Manager</title>
+    <script>
+      if (window.location.hostname.startsWith('staging.') || window.location.hostname.includes('.pages.dev')) {
+        document.title = '[STAGING] ' + document.title;
+      }
+    </script>
     <style>
       /*
        * モバイル縦画面対応CSS
@@ -542,7 +547,8 @@
           link.href = window.location.origin;
           link.target = '_blank';
           link.rel = 'noopener';
-          link.textContent = 'ブログを見る \u2197';
+          var isStaging = window.location.hostname.startsWith('staging.') || window.location.hostname.includes('.pages.dev');
+          link.textContent = (isStaging ? '[STAGING] ' : '') + 'ブログを見る \u2197';
           link.style.cssText = 'display:block;padding:12px 20px;color:#1a73e8;text-decoration:none;font-size:14px;border-top:1px solid #eee;margin-top:8px;';
           link.addEventListener('mouseenter', function() { link.style.background = '#f5f5f5'; });
           link.addEventListener('mouseleave', function() { link.style.background = ''; });

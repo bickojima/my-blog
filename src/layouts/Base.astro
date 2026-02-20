@@ -6,6 +6,8 @@ interface Props {
 }
 
 const { title } = Astro.props;
+const isStaging = import.meta.env.CF_PAGES_BRANCH === 'staging';
+const siteTitle = isStaging ? '[STAGING] tbiのブログ' : 'tbiのブログ';
 ---
 
 <!DOCTYPE html>
@@ -86,7 +88,7 @@ const { title } = Astro.props;
 <body>
   <header>
     <nav>
-      <a href="/" class="site-title">tbiのブログ</a>
+      <a href="/" class="site-title">{siteTitle}</a>
       <div class="nav-links">
       </div>
     </nav>
@@ -96,7 +98,7 @@ const { title } = Astro.props;
     <ArchiveNav />
   </main>
   <footer>
-    <p>&copy; {new Date().getFullYear()} tbiのブログ</p>
+    <p>&copy; {new Date().getFullYear()} {siteTitle}</p>
     <a href="/admin/" class="admin-link">管理</a>
   </footer>
 </body>
