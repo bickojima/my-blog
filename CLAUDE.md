@@ -13,6 +13,8 @@
 
 - `admin/index.html` のサイトURL参照は `window.location.origin` で動的取得（環境非依存）
 - `config.yml` の `base_url` / `branch` は各ブランチで手動管理
+- staging環境では [STAGING] ラベルを表示（Base.astro: `CF_PAGES_BRANCH`、admin/index.html: hostname判定）
+- テスト環境ドメインはDNS CNAME（`staging` → `staging.my-blog-3cg.pages.dev`）で接続
 - 新機能: `feature/*` → `staging` PR → テスト → `main` PR
 
 ## コマンド
@@ -20,9 +22,9 @@
 ```bash
 npm run dev          # 開発サーバー起動（前処理含む）
 npm run build        # 本番ビルド（normalize-images → organize-posts → astro build → image-optimize）
-npm test             # Vitest 全テスト実行（177テスト、記事数により変動）
+npm test             # Vitest 全テスト実行（218テスト、記事数により変動）
 npm run test:watch   # Vitest ウォッチモード
-npm run test:e2e     # Playwright E2Eテスト（要: npm run build 済み、204テスト）
+npm run test:e2e     # Playwright E2Eテスト（要: npm run build 済み、237テスト）
 ```
 
 ## ディレクトリ構成
@@ -30,8 +32,9 @@ npm run test:e2e     # Playwright E2Eテスト（要: npm run build 済み、204
 ```
 src/
 ├── content/posts/YYYY/MM/   # 記事Markdown（frontmatter: title, date, draft, tags, thumbnail）
-├── pages/                   # Astroルーティング（/posts/[year]/[month]/[slug]）
-├── layouts/Base.astro       # 共通レイアウト（CSS image-orientation: from-image）
+├── content/pages/           # 固定ページMarkdown（frontmatter: title, slug, order, draft）
+├── pages/                   # Astroルーティング（/posts/[year]/[month]/[slug], /[slug]）
+├── layouts/Base.astro       # 共通レイアウト（CSS image-orientation: from-image、ヘッダーナビ動的生成）
 ├── plugins/rehype-image-caption.mjs  # img → figure/figcaption 変換プラグイン
 ├── integrations/image-optimize.mjs   # ビルド後画像リサイズ（sharp, MAX_WIDTH: 1200）
 ├── lib/posts.ts             # URL生成ユーティリティ
@@ -64,7 +67,7 @@ tests/
 - モバイル: ドロップダウンは `position: fixed; bottom: 0` のボトムシート形式
 - プレビュースタイル: `CMS.registerPreviewStyle()` で本番サイト相当のCSSをプレビューiframeに注入
 - 主要JS関数: `addSiteLink`, `formatCollectionEntries`, `relabelImageButtons`, `updateDeleteButtonState`, `showPublicUrl`, `manageDropdownOverlay`, `hideCodeBlockOnMobile`
-- `showPublicUrl`: EditorControlBarの表示状態（`getBoundingClientRect`）でエディタ画面を判定し、コレクション一覧では確実に非表示
+- `showPublicUrl`: EditorControlBarの表示状態（`getBoundingClientRect`）でエディタ画面を判定。ハッシュURLからコレクション種別（posts/pages）を判定し、記事は`/posts/年/月/タイトル`、固定ページは`/slug`形式でURL生成
 - `manageDropdownOverlay`: ドロップダウン表示時のみURLバーを退避（`hiddenByDropdown`フラグで誤復元を防止）
 - **Slate codeblockクラッシュ対策**: モバイル（≤799px）でcodeblockボタン非表示、`toSlatePoint`エラーハンドラ、touchmoveエディタ除外
 
@@ -73,8 +76,8 @@ tests/
 
 ## テスト
 
-- **Vitest**: 設定検証、コンテンツ検証、単体テスト、ビルド統合テスト（177テスト、記事数により変動）
-- **Playwright**: PC/iPad/iPhone 3デバイス × 68テスト = 204テスト（ローカルのみ、CIでは未実行）
+- **Vitest**: 設定検証、コンテンツ検証、単体テスト、ビルド統合テスト（218テスト、記事数により変動）
+- **Playwright**: PC/iPad/iPhone 3デバイス × 79テスト = 237テスト（ローカルのみ、CIでは未実行）
 - コンテンツ検証テストは記事数に応じて動的展開される
 
 ## ドキュメント

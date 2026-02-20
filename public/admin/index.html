@@ -5,6 +5,11 @@
     <meta name="robots" content="noindex" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Content Manager</title>
+    <script>
+      if (window.location.hostname.startsWith('staging.') || window.location.hostname.includes('.pages.dev')) {
+        document.title = '[STAGING] ' + document.title;
+      }
+    </script>
     <style>
       /*
        * モバイル縦画面対応CSS
@@ -542,7 +547,8 @@
           link.href = window.location.origin;
           link.target = '_blank';
           link.rel = 'noopener';
-          link.textContent = 'ブログを見る \u2197';
+          var isStaging = window.location.hostname.startsWith('staging.') || window.location.hostname.includes('.pages.dev');
+          link.textContent = (isStaging ? '[STAGING] ' : '') + 'ブログを見る \u2197';
           link.style.cssText = 'display:block;padding:12px 20px;color:#1a73e8;text-decoration:none;font-size:14px;border-top:1px solid #eee;margin-top:8px;';
           link.addEventListener('mouseenter', function() { link.style.background = '#f5f5f5'; });
           link.addEventListener('mouseleave', function() { link.style.background = ''; });
@@ -662,10 +668,36 @@
 
             var hash = window.location.hash || '';
             var entryMatch = hash.match(/\/entries\/(.+?)$/);
+            var isPages = hash.indexOf('/collections/pages/') !== -1;
 
             var resolvedPath = null;
 
-            if (entryMatch) {
+            if (isPages) {
+              // 固定ページ: URL = /{slug}
+              if (entryMatch) {
+                // 既存ページ: ハッシュのエントリパス = ファイル名 = slug
+                resolvedPath = '/' + decodeURIComponent(entryMatch[1]);
+              } else {
+                // 新規ページ: slugフィールド（2番目のテキスト入力）から取得
+                var allInputs = document.querySelectorAll('input');
+                var candidates = [];
+                for (var i = 0; i < allInputs.length; i++) {
+                  var t = (allInputs[i].type || 'text').toLowerCase();
+                  if (t !== 'file' && t !== 'checkbox' && t !== 'radio' && t !== 'hidden') {
+                    candidates.push(allInputs[i]);
+                  }
+                }
+                // pages: candidates[0]=title, candidates[1]=slug
+                var slugInput = candidates.length >= 2 ? candidates[1] : null;
+                if (slugInput && slugInput.value) {
+                  resolvedPath = '/' + slugInput.value;
+                  if (!slugInput.dataset.urlBound) {
+                    slugInput.dataset.urlBound = 'true';
+                    slugInput.addEventListener('input', function() { setTimeout(showPublicUrl, 100); });
+                  }
+                }
+              }
+            } else if (entryMatch) {
               // 既存記事: ハッシュのパスがファイルパス = URLスラグ
               // hash例: #/collections/posts/entries/2026/01/あああ
               var entryPath = decodeURIComponent(entryMatch[1]);
