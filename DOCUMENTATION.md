@@ -12,6 +12,8 @@
 | 1.5 | 2026-02-15 | CMS管理画面ヘッダーに本番サイトリンク追加（CMS-11） |
 | 1.6 | 2026-02-15 | iPhone codeblockクラッシュ対策（MutationObserverデバウンス、touchmoveエディタ除外） |
 | 1.7 | 2026-02-20 | 本番/テスト環境分離（staging.reiwa.casa）、admin/index.htmlサイトURL動的化、テスト環境セクション（9.4章）追加 |
+| 1.8 | 2026-02-20 | [STAGING]ラベル実装（9.4.3章追加）、CNAME方式ドメイン接続（9.3章更新）、CMS-11/13.5/13.6を環境動的化 |
+| 1.9 | 2026-02-20 | 固定ページシステム導入（FR-14/CMS-13追加、pagesコレクション、ヘッダーナビ動的生成） |
 
 ## システム変更履歴
 
@@ -34,6 +36,10 @@ PR履歴に基づく主要なシステム変更の記録である。
 | 2026-02-15 午後 | **包括的リファクタリング**: Netlify Identity残骸除去、robots.txtドメイン修正、壊れた画像参照修正、テスト追加（227テスト）、ドキュメント全面改訂 | #80 |
 | 2026-02-15 夕方 | **E2Eテスト導入**: Playwright によるブラウザ自動テスト（PC/iPad/iPhone 3デバイス×30テスト=90テスト） | - |
 | 2026-02-15 夜 | **EXIF画像回転修正**: CMS編集画面でEXIF回転が反転する問題を修正（fixPreviewImageOrientation削除）。ドロップダウンをCSSボトムシート化。公開URLバーのhashchange対応。テスト237件 | - |
+| 2026-02-20 | **CMSプレビュースタイル**: `CMS.registerPreviewStyle()` で本番サイト相当のCSSをプレビューiframeに注入 | - |
+| 2026-02-20 | **公開URLバー改善**: visibility-based判定、ドロップダウン誤復元修正 | - |
+| 2026-02-20 | **E2Eテスト拡充**: CMS UIカスタマイズ検証34テスト追加（合計64テスト×3デバイス=204テスト） | - |
+| 2026-02-20 | **本番/テスト環境分離**: staging.reiwa.casa構築（CNAME方式）、admin/index.htmlサイトURL動的化、[STAGING]ラベル表示、専用OAuth App | - |
 
 ---
 
@@ -149,6 +155,7 @@ PR履歴に基づく主要なシステム変更の記録である。
 | FR-11 | HEIC→JPEG変換: iOS accept属性制限で自動変換 | `admin/index.html` | iOSのみ適用 |
 | FR-12 | CMS認証: GitHub OAuth + Cloudflare Functions | `functions/auth/` | Netlify Identityから移行済み |
 | FR-13 | 画像キャプション: title属性→`<figcaption>`, lazy loading自動付与 | `rehype-image-caption.mjs` | rehypeプラグイン |
+| FR-14 | 固定ページ管理: CMSから固定ページを作成・編集、ヘッダーナビに動的表示 | `src/content/pages/`, `src/pages/[slug].astro`, `Base.astro` | pagesコレクション |
 
 ### 2.2 各要件の詳細
 
@@ -191,8 +198,9 @@ PR履歴に基づく主要なシステム変更の記録である。
 | CMS-08 | 保存ボタン常時表示（sticky, min-height 44px） | `admin/index.html` CSS | Apple HIG準拠タップ領域 |
 | CMS-09 | ドロップダウンとURLバーの重なり防止 | `admin/index.html` JS | manageDropdownOverlay使用 |
 | CMS-10 | 画面遷移時の公開URLバー自動非表示 | `admin/index.html` JS | hashchangeリスナー使用 |
-| CMS-11 | サイドバーに本番サイトへのリンク表示 | `admin/index.html` JS | addSiteLink関数 |
+| CMS-11 | サイドバーにサイトへのリンク表示（環境動的） | `admin/index.html` JS | addSiteLink関数、staging環境では[STAGING]ラベル付与 |
 | CMS-12 | iPhone codeblockクラッシュ対策 | `admin/index.html` CSS/JS | モバイルcodeblockボタン非表示、Slateエラーハンドラ、MutationObserverデバウンス、touchmoveエディタ除外 |
+| CMS-13 | 固定ページCMS編集 | `config.yml` pagesコレクション | タイトル・slug・表示順・本文をCMSから管理 |
 
 ---
 
@@ -584,13 +592,29 @@ return new Response(`
 
 ### 8.8 GitHub OAuth App の設定
 
-GitHub Settings > Developer settings > OAuth Apps で作成する。
+GitHub Settings > Developer settings > OAuth Apps で環境ごとに個別のアプリを作成する。
+
+#### 本番環境
 
 | 設定項目 | 値 |
 | :--- | :--- |
-| Application name | 任意（例: `tbiのブログ CMS`） |
+| Application name | `My Blog CMS` |
 | Homepage URL | `https://reiwa.casa` |
 | Authorization callback URL | `https://reiwa.casa/auth/callback` |
+| Client ID | `Ov23liNxCgnMDc7a1KJC` |
+| Cloudflare Pages 環境変数 | Production |
+
+#### テスト環境
+
+| 設定項目 | 値 |
+| :--- | :--- |
+| Application name | `tbiのブログ CMS (staging)` |
+| Homepage URL | `https://staging.reiwa.casa` |
+| Authorization callback URL | `https://staging.reiwa.casa/auth/callback` |
+| Client ID | `Ov23liv4hYxJQvNUZEgi` |
+| Cloudflare Pages 環境変数 | Preview |
+
+> **注意**: Client Secret は GitHub OAuth App 設定画面と Cloudflare Pages 環境変数でのみ管理する。ソースコードにコミットしない。
 
 ---
 
@@ -600,11 +624,26 @@ GitHub Settings > Developer settings > OAuth Apps で作成する。
 
 | 項目 | 値 |
 | :--- | :--- |
+| プロジェクト名 | `my-blog` |
 | フレームワーク | Astro |
 | ビルドコマンド | `npm run build` |
 | 出力ディレクトリ | `dist` |
 | ルートディレクトリ | `/` |
 | Node.js バージョン | 18以上 |
+
+#### ブランチコントロール
+
+| 項目 | 設定 |
+| :--- | :--- |
+| プロダクションブランチ | `main`（自動デプロイ有効） |
+| プレビューブランチ | カスタム: `staging` のみ |
+
+#### 環境変数
+
+| 変数名 | Production | Preview |
+| :--- | :--- | :--- |
+| `OAUTH_CLIENT_ID` | 本番OAuth App の Client ID | テストOAuth App の Client ID |
+| `OAUTH_CLIENT_SECRET` | 本番OAuth App の Client Secret | テストOAuth App の Client Secret |
 
 ### 9.2 HTTPヘッダー設定（`_headers`）
 
@@ -615,9 +654,17 @@ GitHub Settings > Developer settings > OAuth Apps で作成する。
   X-Robots-Tag: noindex
 ```
 
-### 9.3 カスタムドメイン
+### 9.3 カスタムドメインとDNS
 
-本番環境では`reiwa.casa`をカスタムドメインとして設定している。DNSレコードはCloudflare Pagesにより自動設定される。
+Cloudflare DNS（`reiwa.casa` ゾーン）で以下のレコードを管理している。
+
+| タイプ | 名前 | ターゲット | プロキシ | 用途 |
+| :--- | :--- | :--- | :--- | :--- |
+| CNAME | `reiwa.casa` | `my-blog-3cg.pages.dev` | ON | 本番サイト（Pages Production） |
+| CNAME | `staging` | `staging.my-blog-3cg.pages.dev` | ON | テストサイト（Pages Preview） |
+| CNAME | `blog` | `ghs.google...` | ON | （別用途） |
+
+テスト環境はCloudflare Pagesのカスタムドメイン機能がProductionブランチのみ対応のため、DNS CNAMEレコードでPreview deploymentのURL（`staging.my-blog-3cg.pages.dev`）に直接ルーティングしている。
 
 ### 9.4 テスト環境
 
@@ -649,6 +696,16 @@ main (本番)  ←── merge ── staging (テスト) ←── merge ──
 #### 9.4.2 サイトURL動的化
 
 `public/admin/index.html` 内のサイトURL参照（`addSiteLink`、`showPublicUrl`）は `window.location.origin` で動的取得する。これにより、本番（`reiwa.casa`）・テスト（`staging.reiwa.casa`）・ローカル開発（`localhost`）のいずれの環境でも正しいURLが表示される。
+
+#### 9.4.3 [STAGING]ラベル表示
+
+テスト環境を目視で区別するため、以下の箇所に `[STAGING]` プレフィックスを表示する。
+
+| 表示箇所 | 判定方法 | 実装ファイル |
+| :--- | :--- | :--- |
+| サイトタイトル（ヘッダー・フッター） | `import.meta.env.CF_PAGES_BRANCH === 'staging'` | `src/layouts/Base.astro` |
+| CMS管理画面 `<title>` タグ | `window.location.hostname.startsWith('staging.')` or `.pages.dev` | `public/admin/index.html` |
+| CMSサイドバー「ブログを見る」リンク | 同上 | `public/admin/index.html` |
 
 ---
 
@@ -849,17 +906,18 @@ Decap CMSはデフォルトではモバイル対応が不十分であるため�
 | codeblockボタン非表示 | `hideCodeBlockOnMobile()` でモバイル（≤799px）時に非表示 | Slate v0.47 void nodeクラッシュが根本修正不可能なため機能自体を無効化 |
 | Slateエラーハンドラ | `window.addEventListener('error')` で `toSlatePoint` 等を握りつぶし | 既存codeblock記事を開いた際のクラッシュ画面を回避 |
 
-### 13.5 本番サイトリンク
+### 13.5 サイトリンク
 
-サイドバーのコレクション一覧の下に「ブログを見る」リンクを表示し、本番サイト（`https://reiwa.casa`）へのワンクリックアクセスを提供する。
+サイドバーのコレクション一覧の下に「ブログを見る」リンクを表示し、サイトへのワンクリックアクセスを提供する。リンク先は `window.location.origin` で環境に応じたURLを動的生成する。
 
 - `addSiteLink()` 関数が `[class*=SidebarContainer]` に `<a>` 要素を動的注入
 - 新規タブで開く（`target="_blank"`）
 - 重複防止: `#cms-site-link` IDで既存チェック
+- staging環境では `[STAGING] ブログを見る` と表示（hostname判定）
 
 ### 13.6 公開URL表示
 
-記事編集画面で、画面下部に公開URLをリアルタイム表示する。タイトルと日付のフィールドを監視し、`https://reiwa.casa/posts/{年}/{月}/{タイトル}` 形式で動的生成する。
+記事編集画面で、画面下部に公開URLをリアルタイム表示する。タイトルと日付のフィールドを監視し、`{origin}/posts/{年}/{月}/{タイトル}` 形式で動的生成する（`origin` は `window.location.origin` により環境に応じたドメインを使用）。
 
 - `EditorControlBar` の `getBoundingClientRect().height > 0` でエディタ画面を判定し、コレクション一覧では確実に非表示
 - `hashchange` イベントで画面遷移時に `showPublicUrl()` を再実行
@@ -1080,7 +1138,7 @@ GitHubリポジトリが利用可能な場合、以下の手順でシステム�
 | 2 | `public/admin/config.yml` | `backend.base_url` | `https://reiwa.casa` | 本番ドメイン |
 | 3 | `src/layouts/Base.astro` | サイトタイトル | `tbiのブログ` | ヘッダー・フッターに表示される |
 | 4 | `public/robots.txt` | Sitemap URL | `https://reiwa.casa/sitemap.xml` | サイトマップURL |
-| 5 | `public/admin/index.html` | 公開URL表示のドメイン | `reiwa.casa` | JS内のハードコード値 |
+| 5 | `public/admin/index.html` | 公開URL表示のドメイン | `window.location.origin`（動的） | 変更不要（環境自動検出） |
 | 6 | Cloudflare環境変数 | `OAUTH_CLIENT_ID` / `SECRET` | - | 新サイト用のOAuth App |
 | 7 | GitHub OAuth App | Callback URL | `https://reiwa.casa/auth/callback` | 新ドメインに変更 |
 
@@ -1118,13 +1176,13 @@ GitHubリポジトリが利用可能な場合、以下の手順でシステム�
 
 **原因**: Cloudflare Pagesの環境変数が未設定である。
 
-**対処**: Cloudflare Pages > 設定 > 環境変数で`OAUTH_CLIENT_ID`と`OAUTH_CLIENT_SECRET`を設定し、再デプロイを実行する。
+**対処**: Cloudflare Pages > 設定 > 環境変数で`OAUTH_CLIENT_ID`と`OAUTH_CLIENT_SECRET`を設定し、再デプロイを実行する。本番環境はProduction、テスト環境はPreviewの環境変数をそれぞれ確認すること。
 
 ### 18.2 「redirect_uri is not associated」エラー
 
 **原因**: GitHub OAuth AppのCallback URLが不正である。
 
-**対処**: GitHub OAuth App設定で、Authorization callback URLが`https://reiwa.casa/auth/callback`であることを確認する（末尾スラッシュなし、`https://`）。
+**対処**: GitHub OAuth App設定で、Authorization callback URLが環境に対応するURLであることを確認する（末尾スラッシュなし、`https://`）。本番: `https://reiwa.casa/auth/callback`、テスト: `https://staging.reiwa.casa/auth/callback`。
 
 ### 18.3 認証後にログインできない
 

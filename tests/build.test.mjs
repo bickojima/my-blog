@@ -88,6 +88,31 @@ describe('ビルド検証', () => {
     });
   });
 
+  describe('固定ページの生成確認', () => {
+    it('プロフィールページが生成される', () => {
+      expect(existsSync(join(DIST_DIR, 'profile/index.html'))).toBe(true);
+    });
+
+    it('プロフィールページにタイトルが含まれている', () => {
+      const html = readFileSync(join(DIST_DIR, 'profile/index.html'), 'utf-8');
+      expect(html).toContain('プロフィール');
+    });
+
+    it('プロフィールページに「記事一覧に戻る」リンクがある', () => {
+      const html = readFileSync(join(DIST_DIR, 'profile/index.html'), 'utf-8');
+      expect(html).toContain('記事一覧に戻る');
+      expect(html).toContain('href="/"');
+    });
+  });
+
+  describe('ヘッダーナビゲーションの検証', () => {
+    it('トップページのヘッダーにプロフィールリンクがある', () => {
+      const html = readFileSync(join(DIST_DIR, 'index.html'), 'utf-8');
+      expect(html).toContain('href="/profile"');
+      expect(html).toContain('プロフィール');
+    });
+  });
+
   describe('タグページの生成確認', () => {
     it('タグページディレクトリが生成される', () => {
       const tagsDir = join(DIST_DIR, 'tags');

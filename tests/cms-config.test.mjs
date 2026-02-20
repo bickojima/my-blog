@@ -63,13 +63,56 @@ describe('CMS設定（config.yml）の検証', () => {
   });
 
   describe('コレクション設定', () => {
-    it('コレクションが1つ（posts）定義されている', () => {
-      expect(config.collections).toHaveLength(1);
-      expect(config.collections[0].name).toBe('posts');
+    it('コレクションが2つ（pages, posts）定義されている', () => {
+      expect(config.collections).toHaveLength(2);
+      const names = config.collections.map(c => c.name);
+      expect(names).toContain('pages');
+      expect(names).toContain('posts');
+    });
+
+    describe('pages コレクション', () => {
+      const collection = config.collections.find(c => c.name === 'pages');
+
+      it('フォルダが正しいパスに設定されている', () => {
+        expect(collection.folder).toBe('src/content/pages');
+      });
+
+      it('新規作成が有効になっている', () => {
+        expect(collection.create).toBe(true);
+      });
+
+      it('拡張子がmdに設定されている', () => {
+        expect(collection.extension).toBe('md');
+      });
+
+      describe('フィールド定義', () => {
+        const fields = collection.fields;
+        const fieldNames = fields.map(f => f.name);
+
+        it('必須フィールドがすべて定義されている', () => {
+          expect(fieldNames).toContain('title');
+          expect(fieldNames).toContain('slug');
+          expect(fieldNames).toContain('order');
+          expect(fieldNames).toContain('body');
+        });
+
+        it('slugフィールドにバリデーションパターンがある', () => {
+          const slug = fields.find(f => f.name === 'slug');
+          expect(slug.widget).toBe('string');
+          expect(slug.pattern).toBeDefined();
+          expect(slug.pattern[0]).toBe('^[a-z0-9-]+$');
+        });
+
+        it('orderフィールドがnumberウィジェット', () => {
+          const order = fields.find(f => f.name === 'order');
+          expect(order.widget).toBe('number');
+          expect(order.value_type).toBe('int');
+        });
+      });
     });
 
     describe('posts コレクション', () => {
-      const collection = config.collections[0];
+      const collection = config.collections.find(c => c.name === 'posts');
 
       it('フォルダが正しいパスに設定されている', () => {
         expect(collection.folder).toBe('src/content/posts');

@@ -9,6 +9,8 @@ Astro + Decap CMS によるブログサイト。Cloudflare Pages でホスティ
 | 1.0 | 2026-02-15 | 初版作成 |
 | 1.1 | 2026-02-15 | カテゴリ記載を削除しタグ構造に更新、ドキュメント体系セクション追加、章番号付与 |
 | 1.2 | 2026-02-15 | EXIF画像回転修正、ドロップダウンボトムシート化、公開URLバーhashchange対応、E2Eテスト導入（Playwright）、CLAUDE.md追加 |
+| 1.3 | 2026-02-20 | 本番/テスト環境分離（staging.reiwa.casa）、[STAGING]ラベル表示、CMS URL動的化、テスト環境セクション追加 |
+| 1.4 | 2026-02-20 | 固定ページシステム導入（pages コレクション、プロフィールページ、ヘッダーナビ） |
 
 ## システム変更履歴（主要マイルストーン）
 
@@ -30,6 +32,8 @@ Astro + Decap CMS によるブログサイト。Cloudflare Pages でホスティ
 | 2026-02-20 | 公開URLバーの表示制御を改善（visibility-based判定、ドロップダウン誤復元修正） | - |
 | 2026-02-20 | E2Eテスト大幅拡充（CMS UIカスタマイズ検証34テスト追加、合計64テスト×3デバイス=204テスト） | - |
 | 2026-02-20 | 本番/テスト環境分離（staging.reiwa.casa）、admin/index.htmlのサイトURL動的化 | - |
+| 2026-02-20 | staging環境: CNAME方式でカスタムドメイン接続、[STAGING]ラベル表示（サイト・CMS） | - |
+| 2026-02-20 | 固定ページシステム導入（pagesコレクション、/profileページ、ヘッダーナビ動的生成） | - |
 
 ---
 
@@ -92,6 +96,7 @@ my-blog/
 │   └── organize-posts.mjs        # 記事ファイル自動整理（prebuild）
 ├── src/
 │   ├── content/posts/            # 記事（yyyy/mm/ディレクトリ構造）
+│   ├── content/pages/            # 固定ページ（profile.md 等）
 │   ├── components/
 │   │   └── ArchiveNav.astro      # アーカイブナビゲーション
 │   ├── integrations/
@@ -127,7 +132,7 @@ my-blog/
 | `npm run dev` | 開発サーバー起動（localhost:4321） |
 | `npm run build` | 本番ビルド（`./dist/` に出力） |
 | `npm run preview` | ビルド結果のローカルプレビュー |
-| `npm test` | 単体・統合テスト実行（Vitest / 177テスト、記事数により変動） |
+| `npm test` | 単体・統合テスト実行（Vitest / 192テスト、記事数により変動） |
 | `npm run test:watch` | ウォッチモードでテスト実行 |
 | `npm run test:e2e` | E2Eテスト実行（Playwright / PC・iPad・iPhone 204テスト） |
 
@@ -160,17 +165,24 @@ my-blog/
 - 画像表示は CSS `image-orientation: from-image` でEXIF回転を自動適用
 - MutationObserverコールバックを`requestAnimationFrame`でデバウンスし、codeblock等の大量DOM変更による過負荷を防止
 
-### 5.4 本番サイトリンク
+### 5.4 サイトリンク
 
-- CMSサイドバーに「ブログを見る」リンクを表示
-- 本番サイト（https://reiwa.casa）を新規タブで開く
+- CMSサイドバーに「ブログを見る」リンクを表示（`window.location.origin` で動的URL）
+- staging環境では「[STAGING] ブログを見る」と表示
+- 新規タブで開く
 
 ### 5.5 公開URL表示
 
-- エディタ画面の下部に公開URLをリアルタイム表示
+- エディタ画面の下部に公開URLをリアルタイム表示（`window.location.origin` で環境に応じたURLを生成）
 - タイトル・日付フィールドの変更を監視し動的に生成
 - EditorControlBarの表示状態（`getBoundingClientRect`）でエディタ画面を判定し、コレクション一覧では確実に非表示
 - ドロップダウン表示中は公開URLバーを一時的に非表示（`hiddenByDropdown`フラグで誤復元を防止）
+
+### 5.7 [STAGING]ラベル
+
+- staging環境では以下の箇所に `[STAGING]` プレフィックスを表示:
+  - **ブログサイト**: サイトタイトル・フッターに `[STAGING] tbiのブログ`（`CF_PAGES_BRANCH` 環境変数で判定）
+  - **CMS管理画面**: `<title>` タグ・サイドバーリンクに `[STAGING]`（`window.location.hostname` で判定）
 
 ### 5.6 プレビュースタイル
 
@@ -179,7 +191,9 @@ my-blog/
 
 ## 6. CMS設定
 
-単一のコレクション「記事」で全記事を管理する。分類にはタグを使用する（カテゴリ機能は廃止済み）。
+2つのコレクション「記事」と「固定ページ」で管理する。
+
+### 記事（posts）
 
 | フィールド | ウィジェット | 備考 |
 | :--- | :--- | :--- |
@@ -189,6 +203,16 @@ my-blog/
 | タグ | list | 任意 |
 | サムネイル画像 | image | 任意 |
 | 概要 | text | 任意 |
+| 本文 | markdown | 必須 |
+
+### 固定ページ（pages）
+
+| フィールド | ウィジェット | 備考 |
+| :--- | :--- | :--- |
+| タイトル | string | 必須、ヘッダーナビのリンクテキスト |
+| URLスラグ | string | 必須、半角英数字とハイフンのみ（例: `profile` → `/profile`） |
+| 表示順 | number | ヘッダーナビの表示順（昇順） |
+| 下書き | boolean | デフォルト: false |
 | 本文 | markdown | 必須 |
 
 ## 7. ブランチ運用
@@ -210,12 +234,14 @@ main (本番)  ←── merge ── staging (テスト) ←── merge ──
 
 ## 8. デプロイ
 
-| 項目 | 値 |
-| :--- | :--- |
-| ホスティング | Cloudflare Pages |
-| ビルドコマンド | `npm run build` |
-| 出力ディレクトリ | `dist` |
-| 環境変数 | `OAUTH_CLIENT_ID`, `OAUTH_CLIENT_SECRET` |
+| 項目 | 本番 | テスト |
+| :--- | :--- | :--- |
+| ホスティング | Cloudflare Pages (Production) | Cloudflare Pages (Preview) |
+| URL | reiwa.casa | staging.reiwa.casa |
+| ドメイン接続 | Pages カスタムドメイン | DNS CNAME → `staging.my-blog-3cg.pages.dev` |
+| ビルドコマンド | `npm run build` | `npm run build` |
+| 出力ディレクトリ | `dist` | `dist` |
+| 環境変数 | Production: `OAUTH_CLIENT_ID`, `OAUTH_CLIENT_SECRET` | Preview: `OAUTH_CLIENT_ID`, `OAUTH_CLIENT_SECRET`（別OAuth App） |
 
 ## 9. ドキュメント体系
 

@@ -13,6 +13,8 @@
 
 - `admin/index.html` のサイトURL参照は `window.location.origin` で動的取得（環境非依存）
 - `config.yml` の `base_url` / `branch` は各ブランチで手動管理
+- staging環境では [STAGING] ラベルを表示（Base.astro: `CF_PAGES_BRANCH`、admin/index.html: hostname判定）
+- テスト環境ドメインはDNS CNAME（`staging` → `staging.my-blog-3cg.pages.dev`）で接続
 - 新機能: `feature/*` → `staging` PR → テスト → `main` PR
 
 ## コマンド
@@ -20,7 +22,7 @@
 ```bash
 npm run dev          # 開発サーバー起動（前処理含む）
 npm run build        # 本番ビルド（normalize-images → organize-posts → astro build → image-optimize）
-npm test             # Vitest 全テスト実行（177テスト、記事数により変動）
+npm test             # Vitest 全テスト実行（192テスト、記事数により変動）
 npm run test:watch   # Vitest ウォッチモード
 npm run test:e2e     # Playwright E2Eテスト（要: npm run build 済み、204テスト）
 ```
@@ -30,8 +32,9 @@ npm run test:e2e     # Playwright E2Eテスト（要: npm run build 済み、204
 ```
 src/
 ├── content/posts/YYYY/MM/   # 記事Markdown（frontmatter: title, date, draft, tags, thumbnail）
-├── pages/                   # Astroルーティング（/posts/[year]/[month]/[slug]）
-├── layouts/Base.astro       # 共通レイアウト（CSS image-orientation: from-image）
+├── content/pages/           # 固定ページMarkdown（frontmatter: title, slug, order, draft）
+├── pages/                   # Astroルーティング（/posts/[year]/[month]/[slug], /[slug]）
+├── layouts/Base.astro       # 共通レイアウト（CSS image-orientation: from-image、ヘッダーナビ動的生成）
 ├── plugins/rehype-image-caption.mjs  # img → figure/figcaption 変換プラグイン
 ├── integrations/image-optimize.mjs   # ビルド後画像リサイズ（sharp, MAX_WIDTH: 1200）
 ├── lib/posts.ts             # URL生成ユーティリティ
@@ -73,7 +76,7 @@ tests/
 
 ## テスト
 
-- **Vitest**: 設定検証、コンテンツ検証、単体テスト、ビルド統合テスト（177テスト、記事数により変動）
+- **Vitest**: 設定検証、コンテンツ検証、単体テスト、ビルド統合テスト（192テスト、記事数により変動）
 - **Playwright**: PC/iPad/iPhone 3デバイス × 68テスト = 204テスト（ローカルのみ、CIでは未実行）
 - コンテンツ検証テストは記事数に応じて動的展開される
 
