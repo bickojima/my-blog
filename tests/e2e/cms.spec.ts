@@ -149,6 +149,15 @@ test.describe('E-07: CMS管理画面読込', () => {
     await page.waitForTimeout(3000);
     await expect(page.locator('button:has-text("GitHub でログインする")')).toBeVisible();
   });
+
+  test('config.ymlのスキーマエラーが表示されない', async ({ page }) => {
+    await page.goto('/admin/');
+    await page.waitForTimeout(3000);
+    // Decap CMSはconfig.ymlの設定エラー時に「Config Errors」メッセージを表示する
+    const pageText = await page.textContent('body');
+    expect(pageText).not.toContain('Config Errors');
+    expect(pageText).not.toContain('Error loading the CMS configuration');
+  });
 });
 
 test.describe('E-08: 認証シミュレーション', () => {

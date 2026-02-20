@@ -1349,6 +1349,7 @@ GitHubリポジトリが利用可能な場合、以下の手順でシステム�
 | 13 | 2026-02-20 | 固定ページ公開URL表示: CMS上の固定ページに`/posts/タイトル`という間違ったURLが表示 | showPublicUrlが記事専用ロジックのみ | ハッシュURLから`/collections/pages/`を判定し`/{slug}`を生成 | admin-html 2.6.6章 #8 |
 | 14 | 2026-02-20 | ドロップダウン▾閉じない: ヘッダーナビの▾ボタンクリックでメニューが閉じない | CSS `:hover`ルールがJS `is-open`トグルと競合 | CSS `:hover`ルール削除、JSのmouseenter/mouseleaveに統一 | build 2.5章, E-21 |
 | 15 | 2026-02-20 | ドロップダウンメニューgap: ページ名にホバー後、メニューへマウス移動するとメニューが消える | menu `margin-top`がホバー判定の隙間を作る | `padding-top`に変更 + mouseleave 300ms遅延 | build 2.5章, E-21 |
+| 16 | 2026-02-21 | sortable_fieldsオブジェクト形式エラー: config.ymlのsortable_fieldsにオブジェクト形式`{field: order, default: true}`を設定したところCMS起動時にスキーマエラー | Decap CMS v3.10.0はsortable_fieldsに文字列配列のみ対応。Web検索結果が新バージョンの仕様だった | 文字列配列`["order", "title"]`に修正 | cms-config 2.4章 #40 |
 
 ---
 
