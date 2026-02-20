@@ -103,7 +103,7 @@ const navPages = (await getCollection('pages'))
       position: absolute;
       right: 0;
       top: 100%;
-      margin-top: 0.25rem;
+      padding-top: 0.25rem;
       background: #fff;
       border: 1px solid #eee;
       border-radius: 4px;
@@ -111,7 +111,6 @@ const navPages = (await getCollection('pages'))
       min-width: 120px;
       z-index: 100;
     }
-    .nav-dropdown:hover .nav-dropdown-menu,
     .nav-dropdown.is-open .nav-dropdown-menu {
       display: block;
     }
@@ -181,9 +180,23 @@ const navPages = (await getCollection('pages'))
     const dropdown = document.querySelector('.nav-dropdown');
     if (dropdown) {
       const toggle = dropdown.querySelector('.nav-dropdown-toggle');
+      // PC: ホバーで開閉（mouseleaveは遅延付きでメニューへの移動を許容）
+      let closeTimer: ReturnType<typeof setTimeout> | null = null;
+      dropdown.addEventListener('mouseenter', () => {
+        if (closeTimer) { clearTimeout(closeTimer); closeTimer = null; }
+        dropdown.classList.add('is-open');
+      });
+      dropdown.addEventListener('mouseleave', () => {
+        closeTimer = setTimeout(() => {
+          dropdown.classList.remove('is-open');
+          closeTimer = null;
+        }, 300);
+      });
+      // ▾ボタン: クリック/タップでトグル
       toggle?.addEventListener('click', () => {
         dropdown.classList.toggle('is-open');
       });
+      // 外側クリックで閉じる
       document.addEventListener('click', (e) => {
         if (!(e.target instanceof Node) || !dropdown.contains(e.target)) {
           dropdown.classList.remove('is-open');
