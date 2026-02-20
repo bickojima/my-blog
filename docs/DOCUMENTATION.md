@@ -19,7 +19,7 @@
 | 1.12 | 2026-02-21 | FR-10テスト充足化、CMS-14/CMS-15要件追加、要件トレーサビリティマトリクス追加（1.5章）、章番号を部ベース体系（1.x〜4.x）に再構成 |
 | 1.13 | 2026-02-21 | テスト動的化（ハードコードコンテンツ排除）、ヘッダーナビ条件分岐テスト追加（2.1.3章）、境界値・一意性テスト追加（2.1.4章）、FR-14トレーサビリティ更新 |
 | 1.14 | 2026-02-21 | ブランチマージ手順（4.6章）追加、3.3.4章コレクション順序修正（posts先頭）、CMS-05固定ページ番号バッジ追加、コードリファクタリング（image-optimize.mjs writeFile整理、テスト変数重複排除） |
-| 1.15 | 2026-02-21 | 固定ページ一覧に下書きバッジ表示追加（CMS-05更新）、sortable_fieldsオブジェクト形式非対応を確認しv3.10.0互換の文字列配列に修正 |
+| 1.15 | 2026-02-21 | 固定ページ一覧に下書きバッジ表示追加（CMS-05更新）、固定ページデフォルトソートをorder昇順に設定（`{field: order, default_sort: asc}`）、config.ymlスキーマエラー検知E2Eテスト追加 |
 
 ## システム変更履歴
 
@@ -950,11 +950,13 @@ collections:
     extension: "md"
     format: "frontmatter"
     summary: "{{order}} | {{draft}} | {{title}}"
-    sortable_fields: ["order", "title"]
+    sortable_fields:
+      - { field: order, default_sort: asc }
+      - title
 ```
 
 - `slug`（pages）: `{{fields.slug}}` でフロントマターのslugフィールド値をファイル名に使用（`{{slug}}` はDecap CMSではタイトルのURL安全版を意味するため不可）
-- `sortable_fields`（pages）: order と title でソート可能。Decap CMS v3.10.0 は文字列配列のみ対応（オブジェクト形式不可）
+- `sortable_fields`（pages）: orderフィールドをデフォルトで昇順ソートに設定（`{field: order, default_sort: asc}`形式）。Decap CMS v3.10.0は`field`+`default_sort`のオブジェクト形式に対応（`default`プロパティは非対応）
 - `path`（posts）: ファイルの保存・読み取りパスを定義。CMSがサブディレクトリ`yyyy/mm/`内の既存記事を再帰スキャンする
 - `slug`（posts）: ファイル名部分のみ（タイトルベース）
 
@@ -1349,7 +1351,7 @@ GitHubリポジトリが利用可能な場合、以下の手順でシステム�
 | 13 | 2026-02-20 | 固定ページ公開URL表示: CMS上の固定ページに`/posts/タイトル`という間違ったURLが表示 | showPublicUrlが記事専用ロジックのみ | ハッシュURLから`/collections/pages/`を判定し`/{slug}`を生成 | admin-html 2.6.6章 #8 |
 | 14 | 2026-02-20 | ドロップダウン▾閉じない: ヘッダーナビの▾ボタンクリックでメニューが閉じない | CSS `:hover`ルールがJS `is-open`トグルと競合 | CSS `:hover`ルール削除、JSのmouseenter/mouseleaveに統一 | build 2.5章, E-21 |
 | 15 | 2026-02-20 | ドロップダウンメニューgap: ページ名にホバー後、メニューへマウス移動するとメニューが消える | menu `margin-top`がホバー判定の隙間を作る | `padding-top`に変更 + mouseleave 300ms遅延 | build 2.5章, E-21 |
-| 16 | 2026-02-21 | sortable_fieldsオブジェクト形式エラー: config.ymlのsortable_fieldsにオブジェクト形式`{field: order, default: true}`を設定したところCMS起動時にスキーマエラー | Decap CMS v3.10.0はsortable_fieldsに文字列配列のみ対応。Web検索結果が新バージョンの仕様だった | 文字列配列`["order", "title"]`に修正 | cms-config 2.4章 #40 |
+| 16 | 2026-02-21 | sortable_fieldsプロパティ名エラー: `{field: order, default: true}`でCMS起動時にスキーマエラー | `default`プロパティが非対応。正しくは`default_sort: asc\|desc` | `{field: order, default_sort: asc}`に修正 | cms-config 2.4章 #40, #41, E-07 |
 
 ---
 
