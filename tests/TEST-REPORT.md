@@ -575,7 +575,7 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 
 ---
 
-## 12. 管理画面HTML検証 (`admin-html.test.mjs`) — 62件
+## 12. 管理画面HTML検証 (`admin-html.test.mjs`) — 66件
 
 `public/admin/index.html`のHTML/CSS/JavaScript内容を文字列パターンマッチングで検証する。
 
@@ -919,9 +919,9 @@ npm run build
 | `admin-html.test.mjs` | 66 | PASS | 4ms |
 | `rehype-image-caption.test.mjs` | 8 | PASS | 2ms |
 | `auth-functions.test.mjs` | 10 | PASS | 25ms |
-| `content-validation.test.mjs` | 105 | PASS | 21ms |
+| `content-validation.test.mjs` | 35 | PASS | 21ms |
 | `build.test.mjs` | 31 | PASS | 1293ms |
-| **合計** | **237** | **全PASS** | **1358ms** |
+| **合計** | **177** | **全PASS** | **1358ms** |
 
 ### 16.3 E2Eテスト最新実行結果（Playwright）
 

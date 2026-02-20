@@ -9,7 +9,7 @@
 ```bash
 npm run dev          # 開発サーバー起動（前処理含む）
 npm run build        # 本番ビルド（normalize-images → organize-posts → astro build → image-optimize）
-npm test             # Vitest 全テスト実行（237テスト）
+npm test             # Vitest 全テスト実行（177テスト、記事数により変動）
 npm run test:watch   # Vitest ウォッチモード
 npm run test:e2e     # Playwright E2Eテスト（要: npm run build 済み、90テスト）
 ```
@@ -27,7 +27,7 @@ src/
 └── content.config.ts        # Zodスキーマ定義
 
 public/
-├── admin/index.html         # Decap CMS管理画面（CSS/JS カスタマイズ含む、約800行）
+├── admin/index.html         # Decap CMS管理画面（CSS/JS カスタマイズ含む、約950行）
 ├── admin/config.yml         # CMS設定（GitHub backend, OAuth）
 └── images/uploads/          # アップロード画像
 
@@ -51,8 +51,10 @@ tests/
 ### CMS管理画面 (admin/index.html)
 - Decap CMS v3.10.0 をDOM操作でカスタマイズ（MutationObserver、RAFデバウンス済み）
 - モバイル: ドロップダウンは `position: fixed; bottom: 0` のボトムシート形式
+- プレビュースタイル: `CMS.registerPreviewStyle()` で本番サイト相当のCSSをプレビューiframeに注入
 - 主要JS関数: `addSiteLink`, `formatCollectionEntries`, `relabelImageButtons`, `updateDeleteButtonState`, `showPublicUrl`, `manageDropdownOverlay`, `hideCodeBlockOnMobile`
-- `hashchange` イベントで画面遷移時に公開URLバーを更新
+- `showPublicUrl`: EditorControlBarの表示状態（`getBoundingClientRect`）でエディタ画面を判定し、コレクション一覧では確実に非表示
+- `manageDropdownOverlay`: ドロップダウン表示時のみURLバーを退避（`hiddenByDropdown`フラグで誤復元を防止）
 - **Slate codeblockクラッシュ対策**: モバイル（≤799px）でcodeblockボタン非表示、`toSlatePoint`エラーハンドラ、touchmoveエディタ除外
 
 ### ビルドパイプライン
@@ -60,7 +62,7 @@ tests/
 
 ## テスト
 
-- **Vitest**: 設定検証、コンテンツ検証、単体テスト、ビルド統合テスト（237テスト）
+- **Vitest**: 設定検証、コンテンツ検証、単体テスト、ビルド統合テスト（177テスト、記事数により変動）
 - **Playwright**: PC/iPad/iPhone 3デバイス × 30テスト = 90テスト（ローカルのみ、CIでは未実行）
 - コンテンツ検証テストは記事数に応じて動的展開される
 
