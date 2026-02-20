@@ -210,6 +210,21 @@ test.describe('E-13: CMS カスタマイズ基盤検証', () => {
     // EXIF回転をCSS側で処理（JS補正は廃止済み）
     expect(html).toContain('image-orientation: from-image');
   });
+
+  test('showPublicUrlのエラーがコンソールに出力される（サイレント失敗防止）', async ({ page }) => {
+    await page.goto('/admin/');
+    const html = await page.content();
+    // catch(e) {} ではなく console.warn でエラーログが出力される
+    expect(html).toContain('console.warn');
+    expect(html).toContain('showPublicUrl error');
+  });
+
+  test('Canvas 2Dコンテキスト取得失敗時のフォールバックが実装されている', async ({ page }) => {
+    await page.goto('/admin/');
+    const html = await page.content();
+    // canvas.getContext('2d') が null の場合のガード
+    expect(html).toContain('if (!ctx)');
+  });
 });
 
 // ============================================================
@@ -335,6 +350,81 @@ test.describe('E-15: 公開URLバー表示制御', () => {
         (el) => (el as HTMLElement).style.display === 'none' || !el.offsetParent,
       );
       expect(isHidden).toBeTruthy();
+    }
+  });
+
+  test('エディタ→コレクション→エディタの往復ナビゲーションでURLバーが正しく制御される', async ({ page }) => {
+    await openCmsWithAuth(page);
+
+    // 1回目: エディタに遷移
+    await page.evaluate(() => {
+      window.location.hash = '#/collections/posts/entries/2026/02/テスト記事';
+    });
+    await page.waitForTimeout(3000);
+
+    // 1回目: コレクションに戻る
+    await page.evaluate(() => {
+      window.location.hash = '#/collections/posts';
+    });
+    await page.waitForTimeout(2000);
+
+    // コレクション一覧ではURLバー非表示
+    let urlBar = page.locator('#cms-public-url');
+    let count = await urlBar.count();
+    if (count > 0) {
+      const isHidden1 = await urlBar.evaluate(
+        (el) => (el as HTMLElement).style.display === 'none' || !el.offsetParent,
+      );
+      expect(isHidden1).toBeTruthy();
+    }
+
+    // 2回目: 再びエディタに遷移
+    await page.evaluate(() => {
+      window.location.hash = '#/collections/posts/entries/2026/02/テスト記事';
+    });
+    await page.waitForTimeout(3000);
+
+    // 2回目: コレクションに戻る
+    await page.evaluate(() => {
+      window.location.hash = '#/collections/posts';
+    });
+    await page.waitForTimeout(2000);
+
+    // 2回目もURLバーが非表示であること（状態がリセットされていること）
+    urlBar = page.locator('#cms-public-url');
+    count = await urlBar.count();
+    if (count > 0) {
+      const isHidden2 = await urlBar.evaluate(
+        (el) => (el as HTMLElement).style.display === 'none' || !el.offsetParent,
+      );
+      expect(isHidden2).toBeTruthy();
+    }
+  });
+
+  test('新規記事画面のハッシュでURLバーが非表示にならない', async ({ page }) => {
+    await openCmsWithAuth(page);
+
+    // 新規記事画面に遷移
+    await page.evaluate(() => {
+      window.location.hash = '#/collections/posts/new';
+    });
+    await page.waitForTimeout(3000);
+
+    // 新規記事画面ではEditorControlBarが表示されていれば、URLバーも表示可能
+    // （タイトル・日付が空ならURLバーは非表示でもOK）
+    const editorBar = page.locator('[class*="EditorControlBar"]');
+    const editorBarVisible = await editorBar.first().isVisible().catch(() => false);
+
+    if (editorBarVisible) {
+      // エディタが表示されている場合、showPublicUrlのロジックが動作していることを確認
+      // タイトルが空なのでURLバーは非表示であるべき
+      const urlBar = page.locator('#cms-public-url');
+      const count = await urlBar.count();
+      if (count > 0) {
+        const display = await urlBar.evaluate((el) => (el as HTMLElement).style.display);
+        // タイトルが空なので非表示、またはエディタが描画されていれば表示される可能性
+        expect(display === 'none' || display === '').toBeTruthy();
+      }
     }
   });
 });

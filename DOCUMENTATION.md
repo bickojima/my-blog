@@ -312,7 +312,7 @@ my-blog/
 | 認証 | GitHub OAuth App | - | CMS管理者認証 |
 | 画像処理 | sharp | v0.34.5 | 画像圧縮・回転・リサイズ |
 | テスト（単体・統合） | Vitest | v4.0.18 | 単体テスト・統合テスト（177テスト） |
-| テスト（E2E） | Playwright | v1.58.2 | ブラウザE2Eテスト（PC/iPad/iPhone 192テスト） |
+| テスト（E2E） | Playwright | v1.58.2 | ブラウザE2Eテスト（PC/iPad/iPhone 204テスト） |
 | コンテンツ | Markdown | - | frontmatter形式 |
 
 ### 6.2 選定理由
