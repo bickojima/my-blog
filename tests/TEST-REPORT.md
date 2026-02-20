@@ -16,7 +16,7 @@
 | 1.9 | 2026-02-20 | FR-10充足化（url-map.jsonテスト6件追加）、CMS-14追加（コレクション表示順序テスト1件）、全要件トレーサビリティ充足、コレクション順序変更（posts先頭） |
 | 1.10 | 2026-02-21 | テスト動的化（ハードコードコンテンツ排除）、ヘッダーナビ条件分岐テスト11件追加、境界値・一意性テスト6件追加、ビルドテストをソースデータ動的参照に改修（242テスト） |
 | 1.11 | 2026-02-21 | 固定ページ番号バッジフォーマットテスト追加（admin-html 68件）、テスト件数更新（243テスト） |
-| 1.12 | 2026-02-21 | 固定ページ下書きバッジテスト更新（#10説明更新）、Decap CMS v3.10.0互換性テスト追加（sortable_fields文字列配列検証、244テスト） |
+| 1.12 | 2026-02-21 | 固定ページ下書きバッジテスト更新（#10説明更新）、Decap CMS v3.10.0互換性テスト追加（sortable_fields形式検証）、orderデフォルトソート昇順テスト追加（245テスト） |
 
 ## テスト基盤の変更履歴
 
@@ -555,7 +555,7 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 
 ---
 
-## 2.4. CMS設定検証 (`cms-config.test.mjs`) — 41件
+## 2.4. CMS設定検証 (`cms-config.test.mjs`) — 42件
 
 `public/admin/config.yml`をパースし、設定値の正当性を検証する。
 
@@ -601,7 +601,8 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 | 37 | pagesコレクションのフォーマットがfrontmatterに設定されている | pages | M-03 | `format === "frontmatter"` |
 | 38 | pagesのサマリー表示にorder・draft・titleが含まれている | pages | M-03, M-02 | `summary`に`{{order}}`、`{{draft}}`、`{{title}}`が含まれる |
 | 39 | pagesのソート可能フィールドにorderとtitleが含まれている | pages | M-04 | `sortable_fields`に`order`と`title`が含まれる |
-| 40 | 全コレクションのsortable_fieldsが文字列配列である | 互換性 | M-03 | Decap CMS v3.10.0はオブジェクト形式非対応のため、全要素が`typeof === "string"` |
+| 40 | 全コレクションのsortable_fieldsが有効な形式である | 互換性 | M-03 | 文字列 or `{field, default_sort}`オブジェクト形式（Decap CMS v3.10.0互換） |
+| 41 | pagesのorderフィールドがデフォルトで昇順ソートに設定されている | pages | M-04 | `{field: "order", default_sort: "asc"}`形式で設定されている |
 
 ---
 
@@ -976,13 +977,13 @@ npm run build
 
 | テストファイル | テスト数 | 結果 | 実行時間 |
 | :--- | :--- | :--- | :--- |
-| `cms-config.test.mjs` | 41 | PASS | 4ms |
-| `admin-html.test.mjs` | 68 | PASS | 5ms |
+| `cms-config.test.mjs` | 42 | PASS | 4ms |
+| `admin-html.test.mjs` | 68 | PASS | 6ms |
 | `rehype-image-caption.test.mjs` | 8 | PASS | 2ms |
-| `auth-functions.test.mjs` | 10 | PASS | 26ms |
-| `content-validation.test.mjs` | 67 | PASS | 21ms |
-| `build.test.mjs` | 50 | PASS | 1332ms |
-| **合計** | **244** | **全PASS** | **1.49s** |
+| `auth-functions.test.mjs` | 10 | PASS | 29ms |
+| `content-validation.test.mjs` | 67 | PASS | 24ms |
+| `build.test.mjs` | 50 | PASS | 1521ms |
+| **合計** | **245** | **全PASS** | **1.67s** |
 
 ### 4.3.3 E2Eテスト最新実行結果（Playwright）
 
