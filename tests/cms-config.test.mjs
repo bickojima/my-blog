@@ -63,11 +63,16 @@ describe('CMS設定（config.yml）の検証', () => {
   });
 
   describe('コレクション設定', () => {
-    it('コレクションが2つ（pages, posts）定義されている', () => {
+    it('コレクションが2つ（posts, pages）定義されている', () => {
       expect(config.collections).toHaveLength(2);
       const names = config.collections.map(c => c.name);
-      expect(names).toContain('pages');
       expect(names).toContain('posts');
+      expect(names).toContain('pages');
+    });
+
+    it('postsコレクションが先頭に定義されている（CMS初期表示で記事が最初に表示される）', () => {
+      expect(config.collections[0].name).toBe('posts');
+      expect(config.collections[1].name).toBe('pages');
     });
 
     describe('pages コレクション', () => {
