@@ -11,7 +11,7 @@ npm run dev          # 開発サーバー起動（前処理含む）
 npm run build        # 本番ビルド（normalize-images → organize-posts → astro build → image-optimize）
 npm test             # Vitest 全テスト実行（177テスト、記事数により変動）
 npm run test:watch   # Vitest ウォッチモード
-npm run test:e2e     # Playwright E2Eテスト（要: npm run build 済み、192テスト）
+npm run test:e2e     # Playwright E2Eテスト（要: npm run build 済み、204テスト）
 ```
 
 ## ディレクトリ構成
@@ -63,7 +63,7 @@ tests/
 ## テスト
 
 - **Vitest**: 設定検証、コンテンツ検証、単体テスト、ビルド統合テスト（177テスト、記事数により変動）
-- **Playwright**: PC/iPad/iPhone 3デバイス × 64テスト = 192テスト（ローカルのみ、CIでは未実行）
+- **Playwright**: PC/iPad/iPhone 3デバイス × 68テスト = 204テスト（ローカルのみ、CIでは未実行）
 - コンテンツ検証テストは記事数に応じて動的展開される
 
 ## ドキュメント

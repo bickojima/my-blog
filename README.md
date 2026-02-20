@@ -28,7 +28,7 @@ Astro + Decap CMS によるブログサイト。Cloudflare Pages でホスティ
 | 2026-02-15 夜 | iPhone codeblockクラッシュ対策（MutationObserverデバウンス、touchmoveエディタ除外） | - |
 | 2026-02-20 | CMSプレビューに本番サイト相当のスタイルを適用（`CMS.registerPreviewStyle`） | - |
 | 2026-02-20 | 公開URLバーの表示制御を改善（visibility-based判定、ドロップダウン誤復元修正） | - |
-| 2026-02-20 | E2Eテスト大幅拡充（CMS UIカスタマイズ検証34テスト追加、合計64テスト×3デバイス=192テスト） | - |
+| 2026-02-20 | E2Eテスト大幅拡充（CMS UIカスタマイズ検証34テスト追加、合計64テスト×3デバイス=204テスト） | - |
 
 ---
 
@@ -127,7 +127,7 @@ my-blog/
 | `npm run preview` | ビルド結果のローカルプレビュー |
 | `npm test` | 単体・統合テスト実行（Vitest / 177テスト、記事数により変動） |
 | `npm run test:watch` | ウォッチモードでテスト実行 |
-| `npm run test:e2e` | E2Eテスト実行（Playwright / PC・iPad・iPhone 192テスト） |
+| `npm run test:e2e` | E2Eテスト実行（Playwright / PC・iPad・iPhone 204テスト） |
 
 ## 5. 管理画面のUIカスタマイズ
 
