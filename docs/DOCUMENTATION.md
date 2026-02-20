@@ -6,16 +6,18 @@
 | :--- | :--- | :--- |
 | 1.0 | 2026-02-15 | 初版作成（全PR履歴より抽出） |
 | 1.1 | 2026-02-15 | JTC設計書体系に再構成（第1部〜第4部構成） |
-| 1.2 | 2026-02-15 | 認証基盤（第8章）を大幅拡充: Decap CMS連携詳細、認証アーキテクチャ図、シーケンス図、セキュリティ考慮事項、GitHub OAuth App設定を追加 |
+| 1.2 | 2026-02-15 | 認証基盤（第2.4章）を大幅拡充: Decap CMS連携詳細、認証アーキテクチャ図、シーケンス図、セキュリティ考慮事項、GitHub OAuth App設定を追加 |
 | 1.3 | 2026-02-15 | Playwright E2Eテスト導入（PC/iPad/iPhone対応）、システム変更履歴追加 |
 | 1.4 | 2026-02-15 | EXIF画像回転修正（fixPreviewImageOrientation削除）、ドロップダウンCSS位置制御、公開URLバーhashchange対応、テスト更新（237テスト） |
 | 1.5 | 2026-02-15 | CMS管理画面ヘッダーに本番サイトリンク追加（CMS-11） |
 | 1.6 | 2026-02-15 | iPhone codeblockクラッシュ対策（MutationObserverデバウンス、touchmoveエディタ除外） |
-| 1.7 | 2026-02-20 | 本番/テスト環境分離（staging.reiwa.casa）、admin/index.htmlサイトURL動的化、テスト環境セクション（9.4章）追加 |
-| 1.8 | 2026-02-20 | [STAGING]ラベル実装（9.4.3章追加）、CNAME方式ドメイン接続（9.3章更新）、CMS-11/13.5/13.6を環境動的化 |
+| 1.7 | 2026-02-20 | 本番/テスト環境分離（staging.reiwa.casa）、admin/index.htmlサイトURL動的化、テスト環境セクション（2.5.4章）追加 |
+| 1.8 | 2026-02-20 | [STAGING]ラベル実装（2.5.4.3章追加）、CNAME方式ドメイン接続（2.5.3章更新）、CMS-11/3.4.5/3.4.6を環境動的化 |
 | 1.9 | 2026-02-20 | 固定ページシステム導入（FR-14/CMS-13追加、pagesコレクション、ヘッダーナビ動的生成） |
 | 1.10 | 2026-02-20 | 固定ページ不具合修正: CMS slugテンプレート修正（`{{slug}}`→`{{fields.slug}}`）、公開URL表示の固定ページ対応、ヘッダーナビドロップダウンUX改善（hover遅延閉じ・トグルボタン分離）、再発防止テスト追加（218テスト） |
-| 1.11 | 2026-02-20 | テスト・ドキュメント全面レビュー: Vitest 18件追加（218テスト）、E2E 11テストシナリオ追加（237テスト）、要件記述をふるまい中心に改訂、バグ一覧（19章）追加 |
+| 1.11 | 2026-02-20 | テスト・ドキュメント全面レビュー: Vitest 18件追加（218テスト）、E2E 11テストシナリオ追加（237テスト）、要件記述をふるまい中心に改訂、バグ一覧（4.5章）追加 |
+| 1.12 | 2026-02-21 | FR-10テスト充足化、CMS-14/CMS-15要件追加、要件トレーサビリティマトリクス追加（1.5章）、章番号を部ベース体系（1.x〜4.x）に再構成 |
+| 1.13 | 2026-02-21 | テスト動的化（ハードコードコンテンツ排除）、ヘッダーナビ条件分岐テスト追加（2.1.3章）、境界値・一意性テスト追加（2.1.4章）、FR-14トレーサビリティ更新 |
 
 ## システム変更履歴
 
@@ -64,50 +66,51 @@ PR履歴に基づく主要なシステム変更の記録である。
 
 ### 第1部 要件定義書
 
-1. [システム概要](#1-システム概要)
-2. [機能要件](#2-機能要件)
-3. [CMS管理画面要件](#3-cms管理画面要件)
-4. [非機能要件](#4-非機能要件)
+1.1. [システム概要](#11-システム概要)
+1.2. [機能要件](#12-機能要件)
+1.3. [CMS管理画面要件](#13-cms管理画面要件)
+1.4. [非機能要件](#14-非機能要件)
+1.5. [要件トレーサビリティマトリクス](#15-要件トレーサビリティマトリクス)
 
 ### 第2部 基本設計書
 
-5. [システム構成](#5-システム構成)
-6. [技術スタック](#6-技術スタック)
-7. [URL設計](#7-url設計)
-8. [認証基盤](#8-認証基盤)
-9. [インフラストラクチャ](#9-インフラストラクチャ)
+2.1. [システム構成](#21-システム構成)
+2.2. [技術スタック](#22-技術スタック)
+2.3. [URL設計](#23-url設計)
+2.4. [認証基盤](#24-認証基盤)
+2.5. [インフラストラクチャ](#25-インフラストラクチャ)
 
 ### 第3部 詳細設計書
 
-10. [ビルドパイプライン](#10-ビルドパイプライン)
-11. [コンテンツ管理](#11-コンテンツ管理)
-12. [CMS設定](#12-cms設定)
-13. [管理画面UIカスタマイズ](#13-管理画面uiカスタマイズ)
-14. [画像処理パイプライン](#14-画像処理パイプライン)
+3.1. [ビルドパイプライン](#31-ビルドパイプライン)
+3.2. [コンテンツ管理](#32-コンテンツ管理)
+3.3. [CMS設定](#33-cms設定)
+3.4. [管理画面UIカスタマイズ](#34-管理画面uiカスタマイズ)
+3.5. [画像処理パイプライン](#35-画像処理パイプライン)
 
 ### 第4部 運用設計書
 
-15. [移行設計](#15-移行設計)
-16. [バックアップ設計](#16-バックアップ設計)
-17. [フォーク転用ガイド](#17-フォーク転用ガイド)
-18. [トラブルシューティング](#18-トラブルシューティング)
-19. [バグ一覧](#19-バグ一覧)
+4.1. [移行設計](#41-移行設計)
+4.2. [バックアップ設計](#42-バックアップ設計)
+4.3. [フォーク転用ガイド](#43-フォーク転用ガイド)
+4.4. [トラブルシューティング](#44-トラブルシューティング)
+4.5. [バグ一覧](#45-バグ一覧)
 
 ---
 
 # 第1部 要件定義書
 
-本部では、システムが満たすべき要件を定義する。要件IDは後続のテスト仕様書（TEST-REPORT.md）にてトレーサビリティマトリクスの参照元として使用する。
+本部では、システムが満たすべき要件を定義する。要件IDは本部第1.5章の要件トレーサビリティマトリクス、および TEST-REPORT.md のテストケースにて参照する。
 
 ---
 
-## 1. システム概要
+## 1.1. システム概要
 
-### 1.1 目的
+### 1.1.1 目的
 
 本システムは、Astro（静的サイトジェネレーター）とDecap CMS（ヘッドレスCMS）を組み合わせたブログシステムである。Cloudflare Pages上で静的サイトとして配信し、GitHub OAuthによる認証を介してCMSから記事を管理する。
 
-### 1.2 システム全体像
+### 1.1.2 システム全体像
 
 ```
 ┌──────────┐    ┌───────────┐    ┌──────────────────┐
@@ -132,7 +135,7 @@ PR履歴に基づく主要なシステム変更の記録である。
                                   └──────────────┘
 ```
 
-### 1.3 利用者
+### 1.1.3 利用者
 
 | 種別 | 操作内容 | アクセス経路 |
 | :--- | :--- | :--- |
@@ -141,9 +144,9 @@ PR履歴に基づく主要なシステム変更の記録である。
 
 ---
 
-## 2. 機能要件
+## 1.2. 機能要件
 
-### 2.1 機能要件一覧 (FR)
+### 1.2.1 機能要件一覧 (FR)
 
 | ID | 要件 | 実装箇所 | 備考 |
 | :--- | :--- | :--- | :--- |
@@ -162,7 +165,7 @@ PR履歴に基づく主要なシステム変更の記録である。
 | FR-13 | 画像キャプション: 画像にタイトルを設定するとキャプション付きで表示される | `rehype-image-caption.mjs` | `<figcaption>` 変換 + lazy loading自動付与 |
 | FR-14 | 固定ページ管理: CMSから固定ページを作成・編集、ヘッダーナビに動的表示 | `src/content/pages/`, `src/pages/[slug].astro`, `Base.astro` | pagesコレクション |
 
-### 2.2 各要件の詳細
+### 1.2.2 各要件の詳細
 
 #### FR-01 記事管理
 
@@ -217,9 +220,9 @@ PR履歴に基づく主要なシステム変更の記録である。
 
 ---
 
-## 3. CMS管理画面要件
+## 1.3. CMS管理画面要件
 
-### 3.1 CMS管理画面要件一覧 (CMS)
+### 1.3.1 CMS管理画面要件一覧 (CMS)
 
 | ID | 要件 | 実装箇所 | 備考 |
 | :--- | :--- | :--- | :--- |
@@ -236,12 +239,14 @@ PR履歴に基づく主要なシステム変更の記録である。
 | CMS-11 | サイトリンク表示: 管理画面からワンクリックで公開サイトにアクセスできる | `admin/index.html` JS | addSiteLink関数、staging環境では[STAGING]ラベル付与 |
 | CMS-12 | codeblockクラッシュ防止: モバイルでcodeblock操作によるクラッシュが発生しない | `admin/index.html` CSS/JS | codeblockボタン非表示、Slateエラーハンドラ、デバウンス |
 | CMS-13 | 固定ページCMS編集: CMSから固定ページのタイトル・slug・表示順・本文を管理できる | `config.yml` pagesコレクション | `src/content/pages/` に保存 |
+| CMS-14 | コレクション表示順序: CMS管理画面で記事コレクションが最初に表示される | `config.yml` collections順序 | postsが先頭、pagesが2番目 |
+| CMS-15 | プレビュースタイル本番再現: エディタプレビューが本番サイトと同等のスタイルで表示される | `admin/index.html` JS | `CMS.registerPreviewStyle()` |
 
 ---
 
-## 4. 非機能要件
+## 1.4. 非機能要件
 
-### 4.1 非機能要件一覧 (NFR)
+### 1.4.1 非機能要件一覧 (NFR)
 
 | ID | 要件 | 実装箇所 | 備考 |
 | :--- | :--- | :--- | :--- |
@@ -252,15 +257,71 @@ PR履歴に基づく主要なシステム変更の記録である。
 
 ---
 
+## 1.5. 要件トレーサビリティマトリクス
+
+要件定義書（第1部）で定義された各要件とテストケース（TEST-REPORT.md）の対応関係を示す。要件追加時は本マトリクスも必ず更新し、充足状況を管理する。
+
+### 1.5.1 機能要件 (FR) → テストケース
+
+| 要件ID | 要件概要 | テストファイル | 対応テストケース | 主テスト手法 | 充足状況 |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| FR-01 | 記事管理 (frontmatter) | content-validation | 2.1章 #2〜#5, #9〜#11 | M-03, M-04 | 充足 |
+| FR-02 | URL生成 | build | 2.5章 #10 | M-01 | 充足 |
+| FR-03 | 下書き | content-validation | 2.1章 #5 | M-04 | 充足 |
+| FR-04 | タグ分類 | content-validation, build | 2.1章 #9, 2.5章 #14,#23 | M-04, M-01, M-02 | 充足 |
+| FR-05 | アーカイブ | build | 2.5章 #11,#12,#24 | M-01, M-02 | 充足 |
+| FR-06 | 画像アップロード | cms-config, build | 2.4章 #6,#7, 2.5章 #28 | M-03, M-01 | 充足 |
+| FR-07 | 画像最適化 | build | 2.5章 #30 | M-10, M-12 | 充足 |
+| FR-08 | EXIF回転正規化 | content-validation, build, admin-html | 2.1章 #12〜#15, 2.5章 #29, 2.6.4章 | M-10, M-11, M-02 | 充足 |
+| FR-09 | 記事自動整理 | content-validation | 2.1章 #7,#8 | M-01, M-03 | 充足 |
+| FR-10 | URLマッピングJSON | build | 2.5章 #45〜#50 | M-01, M-02, M-03 | 充足 |
+| FR-11 | HEIC→JPEG変換 | admin-html | 2.6.5章 #2 | M-02 | 充足 |
+| FR-12 | CMS認証 | auth-functions, build | 2.3章 #1〜#10, 2.5章 #26 | M-06, M-07, M-08 | 充足 |
+| FR-13 | 画像キャプション | rehype-image-caption, build | 2.2章 #1〜#8, 2.5章 #31 | M-05, M-02 | 充足 |
+| FR-14 | 固定ページ管理 | cms-config, content-validation, build, E2E site | 2.4章 #28〜#39, 2.1.2章 #16〜#23, 2.1.3章 #24〜#34, 2.1.4章 #35〜#40, 2.5章 #32〜#44, E-20, E-21 | M-03, M-04, M-01, M-02, M-11, DOM検証 | 充足 |
+
+### 1.5.2 CMS管理画面要件 (CMS) → テストケース
+
+| 要件ID | 要件概要 | テストファイル | 対応テストケース | 主テスト手法 | 充足状況 |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| CMS-01 | モバイルレスポンシブ | admin-html | 2.6.3章 #1〜#10 | M-02 | 充足 |
+| CMS-02 | iOS自動ズーム防止 | admin-html | 2.6.5章 #1 | M-02 | 充足 |
+| CMS-03 | pull-to-refresh無効化 | admin-html | 2.6.5章 #3,#4 | M-02 | 充足 |
+| CMS-04 | 削除ボタンラベル区別 | admin-html | 2.6.6章 #3,#4,#5 | M-02 | 充足 |
+| CMS-05 | 一覧表示改善 | admin-html | 2.6.2章 #3, 2.6.6章 #2 | M-02 | 充足 |
+| CMS-06 | エディタ公開URL表示 | admin-html | 2.6.6章 #6,#7 | M-02 | 充足 |
+| CMS-07 | メディアライブラリ | admin-html | 2.6.3章 #8,#10 | M-02 | 充足 |
+| CMS-08 | 保存ボタン常時表示 | admin-html | 2.6.3章 #4,#5, 2.6.8章 #1,#2 | M-02 | 充足 |
+| CMS-09 | ドロップダウン重なり防止 | admin-html | 2.6.9章 #1〜#3, 2.6.10章 #1〜#8 | M-02 | 充足 |
+| CMS-10 | 公開URLバー自動制御 | admin-html, E2E site | 2.6.6章 #6,#7, E-15 | M-02, DOM検証 | 充足 |
+| CMS-11 | サイトリンク表示（環境動的） | admin-html | 2.6.6章 #1b | M-02 | 充足 |
+| CMS-12 | Slate codeblockクラッシュ対策 | admin-html | 2.6.5b章 #1,#2,#3, 2.6.5章 #5 | M-02 | 充足 |
+| CMS-13 | 固定ページCMS編集 | cms-config, content-validation | 2.4章 #28〜#39, 2.1.2章 #16〜#23 | M-03, M-04 | 充足 |
+| CMS-14 | コレクション表示順序 | cms-config | 2.4章 #11b | M-03 | 充足 |
+| CMS-15 | プレビュースタイル本番再現 | admin-html | 2.6.11章 #1〜#5 | M-02 | 充足 |
+
+### 1.5.3 非機能要件 (NFR) → テストケース
+
+| 要件ID | 要件概要 | テストファイル | 対応テストケース | 主テスト手法 | 充足状況 |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| NFR-01 | 静的サイト生成 | build | 2.5章 #1〜#8 | M-01, M-12 | 充足 |
+| NFR-02 | Cloudflare Pagesホスティング | build | 2.5章 #6,#7,#8 | M-01 | 充足 |
+| NFR-03 | 管理画面SEO除外 | admin-html | 2.6.1章 #3 | M-02 | 充足 |
+| NFR-04 | 日本語URL | cms-config | 2.4章 #9,#10 | M-03 | 充足 |
+
+**充足状況: 全要件（FR-01〜FR-14, CMS-01〜CMS-15, NFR-01〜NFR-04）がテストで充足されている。未テスト要件なし。**
+
+---
+
 # 第2部 基本設計書
 
 本部では、要件定義に基づくシステムのアーキテクチャ設計を記述する。各コンポーネントの役割、技術選定、主要な設計判断を示す。
 
 ---
 
-## 5. システム構成
+## 2.1. システム構成
 
-### 5.1 ディレクトリ構成
+### 2.1.1 ディレクトリ構成
 
 ```
 my-blog/
@@ -299,7 +360,7 @@ my-blog/
 └── wrangler.toml                       # Cloudflare設定
 ```
 
-### 5.2 コンポーネント間依存関係
+### 2.1.2 コンポーネント間依存関係
 
 ```
                     astro.config.mjs
@@ -332,7 +393,7 @@ my-blog/
      └─────────────┘
 ```
 
-### 5.3 データフロー概要
+### 2.1.3 データフロー概要
 
 ```
 ┌────────┐    ┌──────────┐    ┌───────────────┐    ┌───────────────┐
@@ -344,9 +405,9 @@ my-blog/
 
 ---
 
-## 6. 技術スタック
+## 2.2. 技術スタック
 
-### 6.1 採用技術一覧
+### 2.2.1 採用技術一覧
 
 | 分類 | 技術 | バージョン | 用途 |
 | :--- | :--- | :--- | :--- |
@@ -355,11 +416,11 @@ my-blog/
 | ホスティング | Cloudflare Pages | - | 静的配信 + Functions |
 | 認証 | GitHub OAuth App | - | CMS管理者認証 |
 | 画像処理 | sharp | v0.34.5 | 画像圧縮・回転・リサイズ |
-| テスト（単体・統合） | Vitest | v4.0.18 | 単体テスト・統合テスト（218テスト） |
-| テスト（E2E） | Playwright | v1.58.2 | ブラウザE2Eテスト（PC/iPad/iPhone 204テスト） |
+| テスト（単体・統合） | Vitest | v4.0.18 | 単体テスト・統合テスト（242テスト） |
+| テスト（E2E） | Playwright | v1.58.2 | ブラウザE2Eテスト（PC/iPad/iPhone 237テスト） |
 | コンテンツ | Markdown | - | frontmatter形式 |
 
-### 6.2 選定理由
+### 2.2.2 選定理由
 
 | 技術 | 選定理由 |
 | :--- | :--- |
@@ -370,9 +431,9 @@ my-blog/
 
 ---
 
-## 7. URL設計
+## 2.3. URL設計
 
-### 7.1 URL体系
+### 2.3.1 URL体系
 
 | URL パターン | ページ種別 | ルーティングファイル |
 | :--- | :--- | :--- |
@@ -384,7 +445,7 @@ my-blog/
 | `/{slug}` | 固定ページ | `src/pages/[slug].astro` |
 | `/admin/` | CMS管理画面 | `public/admin/index.html` |
 
-### 7.2 URLスラグ生成規則
+### 2.3.2 URLスラグ生成規則
 
 URLスラグはファイル名（拡張子除く）をそのまま使用する。CMSで新規作成した場合、ファイル名はタイトルから自動生成される。
 
@@ -398,19 +459,19 @@ URL: /posts/2026/02/ブラザープリンターを買った話
 
 同タイトルの記事が同一年月に存在する場合、CMSがファイル名に `-1`, `-2` 等のサフィックスを自動付与する。
 
-### 7.3 日付変更時の挙動
+### 2.3.3 日付変更時の挙動
 
 frontmatterの日付を変更した場合、次回ビルド時に`organize-posts.mjs`が当該ファイルを正しい`yyyy/mm/`ディレクトリに自動移動する。URLも新しい日付に基づいて生成される。
 
 ---
 
-## 8. 認証基盤
+## 2.4. 認証基盤
 
-### 8.1 認証方式
+### 2.4.1 認証方式
 
 GitHub OAuth 2.0 を使用する。Decap CMS は CMS 自体に GitHub API へのアクセストークンを渡すことで認証を完了させるが、OAuth のトークン交換にはサーバーサイド処理（Client Secret の秘匿）が必要である。本システムでは Cloudflare Functions が OAuth プロキシとして動作し、Decap CMS 独自のハンドシェイクプロトコル（Post-Message API）に従いアクセストークンをブラウザに中継する。
 
-### 8.2 認証アーキテクチャ
+### 2.4.2 認証アーキテクチャ
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
@@ -446,7 +507,7 @@ GitHub OAuth 2.0 を使用する。Decap CMS は CMS 自体に GitHub API への
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
-### 8.3 認証フロー詳細
+### 2.4.3 認証フロー詳細
 
 以下のシーケンス図は、管理者がログインしてから CMS 操作が可能になるまでの全ステップを示す。
 
@@ -533,7 +594,7 @@ GitHub OAuth 2.0 を使用する。Decap CMS は CMS 自体に GitHub API への
      │                   │←──────────────────────────────────────│
 ```
 
-### 8.4 Decap CMS 側の認証処理
+### 2.4.4 Decap CMS 側の認証処理
 
 Decap CMS の認証処理は `config.yml` の `backend` 設定に基づいて自動的に行われる。カスタムコードは不要であり、以下の設定のみで動作する。
 
@@ -557,9 +618,9 @@ Decap CMS は以下の処理を内部的に実行する。
 | API通信 | `Authorization: Bearer {token}` ヘッダーを付与してリポジトリの読取・書込・commit を行う |
 | セッション管理 | ブラウザの localStorage にトークンが存在する限り認証済みとして扱う。トークン失効時は再ログインが必要である |
 
-### 8.5 Cloudflare Functions の実装
+### 2.4.5 Cloudflare Functions の実装
 
-#### 8.5.1 `/auth` エンドポイント（`functions/auth/index.js`）
+#### 2.4.5.1 `/auth` エンドポイント（`functions/auth/index.js`）
 
 GitHub の認可 URL にリダイレクトする。`redirect_uri` はリクエストのオリジンから自動構築される。
 
@@ -579,7 +640,7 @@ return Response.redirect(githubUrl, 302);
 | `redirect_uri` | `https://reiwa.casa/auth/callback` | コールバックURL（オリジンから自動構築） |
 | `scope` | `repo,user` | リポジトリ操作権限とユーザー情報 |
 
-#### 8.5.2 `/auth/callback` エンドポイント（`functions/auth/callback.js`）
+#### 2.4.5.2 `/auth/callback` エンドポイント（`functions/auth/callback.js`）
 
 GitHub から受け取った認可コードをアクセストークンに交換し、Decap CMS のハンドシェイクプロトコルに従い postMessage でトークンを返却する。
 
@@ -609,7 +670,7 @@ return new Response(`
 `);
 ```
 
-### 8.6 セキュリティ上の考慮事項
+### 2.4.6 セキュリティ上の考慮事項
 
 | 項目 | 対策 |
 | :--- | :--- |
@@ -619,14 +680,14 @@ return new Response(`
 | scope の最小化 | `repo,user` のみを要求し、不要な権限は取得しない |
 | トークンの保管 | ブラウザの localStorage に保管される。XSS 対策として管理画面に `noindex` を設定し外部からのアクセスを制限する |
 
-### 8.7 環境変数
+### 2.4.7 環境変数
 
 | 変数名 | 説明 | 設定環境 |
 | :--- | :--- | :--- |
 | `OAUTH_CLIENT_ID` | GitHub OAuth App の Client ID | Production + Preview |
 | `OAUTH_CLIENT_SECRET` | GitHub OAuth App の Client Secret | Production + Preview |
 
-### 8.8 GitHub OAuth App の設定
+### 2.4.8 GitHub OAuth App の設定
 
 GitHub Settings > Developer settings > OAuth Apps で環境ごとに個別のアプリを作成する。
 
@@ -654,9 +715,9 @@ GitHub Settings > Developer settings > OAuth Apps で環境ごとに個別のア
 
 ---
 
-## 9. インフラストラクチャ
+## 2.5. インフラストラクチャ
 
-### 9.1 Cloudflare Pages設定
+### 2.5.1 Cloudflare Pages設定
 
 | 項目 | 値 |
 | :--- | :--- |
@@ -681,7 +742,7 @@ GitHub Settings > Developer settings > OAuth Apps で環境ごとに個別のア
 | `OAUTH_CLIENT_ID` | 本番OAuth App の Client ID | テストOAuth App の Client ID |
 | `OAUTH_CLIENT_SECRET` | 本番OAuth App の Client Secret | テストOAuth App の Client Secret |
 
-### 9.2 HTTPヘッダー設定（`_headers`）
+### 2.5.2 HTTPヘッダー設定（`_headers`）
 
 管理画面に対して以下のヘッダーを設定し、検索エンジンからのインデックスを防止する。
 
@@ -690,7 +751,7 @@ GitHub Settings > Developer settings > OAuth Apps で環境ごとに個別のア
   X-Robots-Tag: noindex
 ```
 
-### 9.3 カスタムドメインとDNS
+### 2.5.3 カスタムドメインとDNS
 
 Cloudflare DNS（`reiwa.casa` ゾーン）で以下のレコードを管理している。
 
@@ -702,7 +763,7 @@ Cloudflare DNS（`reiwa.casa` ゾーン）で以下のレコードを管理し�
 
 テスト環境はCloudflare Pagesのカスタムドメイン機能がProductionブランチのみ対応のため、DNS CNAMEレコードでPreview deploymentのURL（`staging.my-blog-3cg.pages.dev`）に直接ルーティングしている。
 
-### 9.4 テスト環境
+### 2.5.4 テスト環境
 
 本番サイトへの影響なく新機能をテストするため、`staging`ブランチによるテスト環境を運用する。
 
@@ -717,7 +778,7 @@ Cloudflare DNS（`reiwa.casa` ゾーン）で以下のレコードを管理し�
 | CMS config.yml base_url | `https://reiwa.casa` | `https://staging.reiwa.casa` |
 | CMS config.yml branch | `main` | `staging` |
 
-#### 9.4.1 ブランチ運用
+#### 2.5.4.1 ブランチ運用
 
 ```
 main (本番)  ←── merge ── staging (テスト) ←── merge ── feature/*
@@ -729,11 +790,11 @@ main (本番)  ←── merge ── staging (テスト) ←── merge ──
 - コンテンツ同期: `main` の記事更新を `staging` に定期マージ
 - `config.yml` の `base_url` / `branch` は各ブランチで手動管理。staging → main マージ時は main の値を維持する。
 
-#### 9.4.2 サイトURL動的化
+#### 2.5.4.2 サイトURL動的化
 
 `public/admin/index.html` 内のサイトURL参照（`addSiteLink`、`showPublicUrl`）は `window.location.origin` で動的取得する。これにより、本番（`reiwa.casa`）・テスト（`staging.reiwa.casa`）・ローカル開発（`localhost`）のいずれの環境でも正しいURLが表示される。
 
-#### 9.4.3 [STAGING]ラベル表示
+#### 2.5.4.3 [STAGING]ラベル表示
 
 テスト環境を目視で区別するため、以下の箇所に `[STAGING]` プレフィックスを表示する。
 
@@ -751,9 +812,9 @@ main (本番)  ←── merge ── staging (テスト) ←── merge ──
 
 ---
 
-## 10. ビルドパイプライン
+## 3.1. ビルドパイプライン
 
-### 10.1 処理フロー
+### 3.1.1 処理フロー
 
 `npm run build` 実行時、以下の4段階で処理が実行される。
 
@@ -770,7 +831,7 @@ main (本番)  ←── merge ── staging (テスト) ←── merge ──
 └──────────────────┘    └──────────────────┘    └──────────────┘    └──────────────────┘
 ```
 
-### 10.2 package.json スクリプト定義
+### 3.1.2 package.json スクリプト定義
 
 ```json
 {
@@ -787,13 +848,13 @@ main (本番)  ←── merge ── staging (テスト) ←── merge ──
 
 ---
 
-## 11. コンテンツ管理
+## 3.2. コンテンツ管理
 
-### 11.1 記事ファイル配置規則
+### 3.2.1 記事ファイル配置規則
 
 記事ファイルはfrontmatterの`date`フィールドに基づき、`src/content/posts/{yyyy}/{mm}/`ディレクトリに配置される。この配置はビルド前処理（`organize-posts.mjs`）により自動的に強制される。
 
-### 11.2 コンテンツスキーマ定義
+### 3.2.2 コンテンツスキーマ定義
 
 定義ファイル: `src/content.config.ts`
 
@@ -820,7 +881,7 @@ const pages = defineCollection({
 });
 ```
 
-### 11.3 organize-posts.mjs の処理仕様
+### 3.2.3 organize-posts.mjs の処理仕様
 
 | 処理項目 | 内容 |
 | :--- | :--- |
@@ -833,13 +894,13 @@ const pages = defineCollection({
 
 ---
 
-## 12. CMS設定
+## 3.3. CMS設定
 
-### 12.1 設定ファイル
+### 3.3.1 設定ファイル
 
 設定ファイル: `public/admin/config.yml`
 
-### 12.2 バックエンド設定
+### 3.3.2 バックエンド設定
 
 ```yaml
 backend:
@@ -852,7 +913,7 @@ backend:
 
 `base_url`にはOAuth認証サーバーのURLを指定する。`auth_endpoint`はCloudflare Functionsの認証エンドポイントである。
 
-### 12.3 メディア設定
+### 3.3.3 メディア設定
 
 ```yaml
 media_folder: "public/images/uploads"
@@ -861,7 +922,7 @@ public_folder: "/images/uploads"
 
 アップロード画像はGit管理下の`public/images/uploads/`に保存される。HEIC/HEIF形式はiOS側で自動的にJPEGに変換される（管理画面カスタマイズによる）。
 
-### 12.4 コレクション定義
+### 3.3.4 コレクション定義
 
 「固定ページ」と「記事」の2コレクションで管理する。
 
@@ -889,11 +950,11 @@ collections:
 
 ---
 
-## 13. 管理画面UIカスタマイズ
+## 3.4. 管理画面UIカスタマイズ
 
 すべてのカスタマイズは`public/admin/index.html`に実装されている。
 
-### 13.1 カスタマイズ対象と処理方式
+### 3.4.1 カスタマイズ対象と処理方式
 
 ```
 ┌───────────────────────────────────────────────────────┐
@@ -924,7 +985,7 @@ collections:
 └───────────────────────────────────────────────────────┘
 ```
 
-### 13.2 モバイルレスポンシブ対応（≤799px）
+### 3.4.2 モバイルレスポンシブ対応（≤799px）
 
 Decap CMSはデフォルトではモバイル対応が不十分であるため、以下のCSS/JSカスタマイズを適用した。
 
@@ -939,7 +1000,7 @@ Decap CMSはデフォルトではモバイル対応が不十分であるため�
 | CardGrid | `grid-template-columns: repeat(2, 1fr)` | メディア2列表示 |
 | FileWidgetButton / ImageWidgetButton | `display: block; width: 100%` | ボタン全幅表示 |
 
-### 13.3 削除ボタンのラベル区別
+### 3.4.3 削除ボタンのラベル区別
 
 操作ミス防止のため、文脈に応じて削除ボタンのラベルを変更する。
 
@@ -948,7 +1009,7 @@ Decap CMSはデフォルトではモバイル対応が不十分であるため�
 | エディタ内画像ウィジェット | 削除 / 削除する | 選択解除 | グレー背景 |
 | メディアライブラリ | 削除 / 削除する | 完全削除 | 赤色背景 |
 
-### 13.4 iOS固有対応
+### 3.4.4 iOS固有対応
 
 | 対応内容 | 手法 | 理由 |
 | :--- | :--- | :--- |
@@ -960,7 +1021,7 @@ Decap CMSはデフォルトではモバイル対応が不十分であるため�
 | codeblockボタン非表示 | `hideCodeBlockOnMobile()` でモバイル（≤799px）時に非表示 | Slate v0.47 void nodeクラッシュが根本修正不可能なため機能自体を無効化 |
 | Slateエラーハンドラ | `window.addEventListener('error')` で `toSlatePoint` 等を握りつぶし | 既存codeblock記事を開いた際のクラッシュ画面を回避 |
 
-### 13.5 サイトリンク
+### 3.4.5 サイトリンク
 
 サイドバーのコレクション一覧の下に「ブログを見る」リンクを表示し、サイトへのワンクリックアクセスを提供する。リンク先は `window.location.origin` で環境に応じたURLを動的生成する。
 
@@ -969,7 +1030,7 @@ Decap CMSはデフォルトではモバイル対応が不十分であるため�
 - 重複防止: `#cms-site-link` IDで既存チェック
 - staging環境では `[STAGING] ブログを見る` と表示（hostname判定）
 
-### 13.6 公開URL表示
+### 3.4.6 公開URL表示
 
 エディタ画面で、画面下部に公開URLをリアルタイム表示する。コレクション種別をハッシュURLから判定し、それぞれ異なるURL形式で動的生成する（`origin` は `window.location.origin` により環境に応じたドメインを使用）。
 
@@ -985,11 +1046,11 @@ Decap CMSはデフォルトではモバイル対応が不十分であるため�
 - `hashchange` イベントで画面遷移時に `showPublicUrl()` を再実行
 - ドロップダウン（ボトムシート）表示中は `manageDropdownOverlay()` でURLバーを一時非表示にし、重なりを防止（`hiddenByDropdown` フラグで `showPublicUrl` による非表示との競合を回避）
 
-### 13.7 EXIF画像回転の方針
+### 3.4.7 EXIF画像回転の方針
 
 CMS管理画面での画像表示はCSS `image-orientation: from-image` に委ねる。JavaScript による画像src書き換え（canvas経由の再生成）は、EXIF メタデータの消失と一部ブラウザでの `createImageBitmap` のEXIF非対応により逆効果になるため、廃止した（fixPreviewImageOrientation 削除）。
 
-### 13.8 プレビュースタイルの本番再現
+### 3.4.8 プレビュースタイルの本番再現
 
 `CMS.registerPreviewStyle()` で本番サイト相当のCSSをプレビューiframeに注入し、編集中のプレビュー表示を本番に近づける。注入するスタイルは `Base.astro` のグローバルスタイルと `[slug].astro` の `.post-content` スタイルを統合したもの。
 
@@ -1003,9 +1064,9 @@ CMS管理画面での画像表示はCSS `image-orientation: from-image` に委�
 
 ---
 
-## 14. 画像処理パイプライン
+## 3.5. 画像処理パイプライン
 
-### 14.1 全体フロー
+### 3.5.1 全体フロー
 
 画像は3段階の処理パイプラインを経て表示される。
 
@@ -1024,7 +1085,7 @@ CMS管理画面での画像表示はCSS `image-orientation: from-image` に委�
 └────────────┘     └──────────────────┘     └──────────────────┘    └────────────┘
 ```
 
-### 14.2 normalize-images.mjs（Stage 1）
+### 3.5.2 normalize-images.mjs（Stage 1）
 
 | 項目 | 内容 |
 | :--- | :--- |
@@ -1034,7 +1095,7 @@ CMS管理画面での画像表示はCSS `image-orientation: from-image` に委�
 | 処理内容 | EXIF orientation値が1以外の場合、sharpの`.rotate()`でピクセルを回転し上書き保存 |
 | 背景 | iPhoneで撮影した写真はEXIF orientationタグで表示方向を指定しており、一部ブラウザでは正しく解釈されない |
 
-### 14.3 image-optimize.mjs（Stage 2）
+### 3.5.3 image-optimize.mjs（Stage 2）
 
 | 項目 | 内容 |
 | :--- | :--- |
@@ -1046,7 +1107,7 @@ CMS管理画面での画像表示はCSS `image-orientation: from-image` に委�
 | WebP品質 | 80% |
 | 追加処理 | `.rotate()`による回転再確認、EXIF orientation≥5の場合はwidth/height入替 |
 
-### 14.4 CSS フォールバック（Stage 3）
+### 3.5.4 CSS フォールバック（Stage 3）
 
 `Base.astro`のグローバルCSS、および`admin/index.html`のCMSスタイルに以下を設定し、ブラウザ側のフォールバックとしている。
 
@@ -1066,11 +1127,11 @@ CMS管理画面ではDecap CMSの各コンポーネント内画像にも `!impor
 
 ---
 
-## 15. 移行設計
+## 4.1. 移行設計
 
 本セクションは、サイトのコンテンツを維持しつつフロントエンド・バックエンドを全面的に作り直す場合の手順を定義するものである。
 
-### 15.1 移行対象の分類
+### 4.1.1 移行対象の分類
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
@@ -1093,7 +1154,7 @@ CMS管理画面ではDecap CMSの各コンポーネント内画像にも `!impor
 └──────────────────────────────────────────────────────────────┘
 ```
 
-### 15.2 コンテンツ移行手順
+### 4.1.2 コンテンツ移行手順
 
 | 手順 | 作業内容 | 備考 |
 | :--- | :--- | :--- |
@@ -1103,7 +1164,7 @@ CMS管理画面ではDecap CMSの各コンポーネント内画像にも `!impor
 | 4 | 画像パス（`/images/uploads/`）の互換性を確認 | 新システムで同一パスにて画像が配信されること |
 | 5 | URL構造の互換性を確認 | `/posts/{yyyy}/{mm}/{slug}` 形式が維持されること。変更する場合はリダイレクト設定を行う |
 
-### 15.3 CMS設定の移行
+### 4.1.3 CMS設定の移行
 
 `public/admin/config.yml` の以下の項目を新環境に合わせて更新する。
 
@@ -1114,7 +1175,7 @@ CMS管理画面ではDecap CMSの各コンポーネント内画像にも `!impor
 | `media_folder` | `public/images/uploads` | 画像保存先を変更する場合 |
 | `public_folder` | `/images/uploads` | 画像配信パスを変更する場合 |
 
-### 15.4 移行時の検証チェックリスト
+### 4.1.4 移行時の検証チェックリスト
 
 | No. | 検証項目 | 確認方法 |
 | :--- | :--- | :--- |
@@ -1127,13 +1188,13 @@ CMS管理画面ではDecap CMSの各コンポーネント内画像にも `!impor
 
 ---
 
-## 16. バックアップ設計
+## 4.2. バックアップ設計
 
-### 16.1 バックアップ方針
+### 4.2.1 バックアップ方針
 
 本システムの全データはGitHubリポジトリに格納されており、Gitの分散バージョン管理によりバックアップが担保されている。
 
-### 16.2 バックアップ対象
+### 4.2.2 バックアップ対象
 
 ```
 ┌──────────────────────────────────────────────┐
@@ -1156,7 +1217,7 @@ CMS管理画面ではDecap CMSの各コンポーネント内画像にも `!impor
 └──────────────────────────────────────────────┘
 ```
 
-### 16.3 バックアップ範囲と復元方法
+### 4.2.3 バックアップ範囲と復元方法
 
 | 対象 | 保管場所 | 復元方法 |
 | :--- | :--- | :--- |
@@ -1167,7 +1228,7 @@ CMS管理画面ではDecap CMSの各コンポーネント内画像にも `!impor
 | ビルド成果物 | Cloudflare Pages（デプロイ履歴） | Cloudflare Pagesダッシュボードから過去のデプロイにロールバック可能 |
 | 環境変数 | Cloudflare Pages設定 | 手動で再設定が必要（`OAUTH_CLIENT_ID`, `OAUTH_CLIENT_SECRET`） |
 
-### 16.4 バックアップ対象外
+### 4.2.4 バックアップ対象外
 
 | 対象 | 理由 | 対処 |
 | :--- | :--- | :--- |
@@ -1175,7 +1236,7 @@ CMS管理画面ではDecap CMSの各コンポーネント内画像にも `!impor
 | GitHub OAuth Appの設定 | GitHub Settingsで管理 | Client ID / Secret を安全な場所に記録しておく |
 | DNSレコード | Cloudflareで自動管理 | カスタムドメイン設定手順を本ドキュメントに記載済み |
 
-### 16.5 災害復旧手順
+### 4.2.5 災害復旧手順
 
 GitHubリポジトリが利用可能な場合、以下の手順でシステムを復旧する。
 
@@ -1188,11 +1249,11 @@ GitHubリポジトリが利用可能な場合、以下の手順でシステム�
 
 ---
 
-## 17. フォーク転用ガイド
+## 4.3. フォーク転用ガイド
 
 本プロジェクトを別サイト向けにフォークして転用する場合、以下の箇所を変更する必要がある。
 
-### 17.1 サイト固有の変更箇所一覧
+### 4.3.1 サイト固有の変更箇所一覧
 
 | No. | ファイル | 変更箇所 | 現在値 | 説明 |
 | :--- | :--- | :--- | :--- | :--- |
@@ -1204,7 +1265,7 @@ GitHubリポジトリが利用可能な場合、以下の手順でシステム�
 | 6 | Cloudflare環境変数 | `OAUTH_CLIENT_ID` / `SECRET` | - | 新サイト用のOAuth App |
 | 7 | GitHub OAuth App | Callback URL | `https://reiwa.casa/auth/callback` | 新ドメインに変更 |
 
-### 17.2 転用時に変更不要な箇所
+### 4.3.2 転用時に変更不要な箇所
 
 以下のスクリプト・設定はサイト固有の値を含まず、そのまま転用可能である。
 
@@ -1219,7 +1280,7 @@ GitHubリポジトリが利用可能な場合、以下の手順でシステム�
 | `functions/auth/callback.js` | 環境変数から取得 |
 | `tests/` | テストは設定値を動的に読み取る |
 
-### 17.3 転用手順
+### 4.3.3 転用手順
 
 1. リポジトリをフォークする
 2. 17.1 の変更箇所一覧に従い各ファイルを更新する
@@ -1232,21 +1293,21 @@ GitHubリポジトリが利用可能な場合、以下の手順でシステム�
 
 ---
 
-## 18. トラブルシューティング
+## 4.4. トラブルシューティング
 
-### 18.1 「OAuth client ID not configured」エラー
+### 4.4.1 「OAuth client ID not configured」エラー
 
 **原因**: Cloudflare Pagesの環境変数が未設定である。
 
 **対処**: Cloudflare Pages > 設定 > 環境変数で`OAUTH_CLIENT_ID`と`OAUTH_CLIENT_SECRET`を設定し、再デプロイを実行する。本番環境はProduction、テスト環境はPreviewの環境変数をそれぞれ確認すること。
 
-### 18.2 「redirect_uri is not associated」エラー
+### 4.4.2 「redirect_uri is not associated」エラー
 
 **原因**: GitHub OAuth AppのCallback URLが不正である。
 
 **対処**: GitHub OAuth App設定で、Authorization callback URLが環境に対応するURLであることを確認する（末尾スラッシュなし、`https://`）。本番: `https://reiwa.casa/auth/callback`、テスト: `https://staging.reiwa.casa/auth/callback`。
 
-### 18.3 認証後にログインできない
+### 4.4.3 認証後にログインできない
 
 **原因**: postMessageのハンドシェイクが正しく動作していない。
 
@@ -1257,28 +1318,28 @@ GitHubリポジトリが利用可能な場合、以下の手順でシステム�
 
 ---
 
-## 19. バグ一覧
+## 4.5. バグ一覧
 
 過去に発生したバグと対策の記録。再発防止のため、今後発見されたバグもすべて本一覧に追記する。
 
 | No. | 発生時期 | バグ概要 | 原因 | 対策 | 再発防止テスト |
 |:---|:---|:---|:---|:---|:---|
-| 1 | 2026-02-14 | モバイル保存ボタン非表示: iPhoneポートレートでCMS保存・公開ボタンが画面外に隠れる | Decap CMSデフォルトのCSS | `flex-shrink: 0`, `min-height: 44px`, sticky header | admin-html 12.8章 |
-| 2 | 2026-02-14 | iOS自動ズーム: iPhoneでinput/textareaフォーカス時に画面が自動ズーム | iOSは16px未満のフォントサイズで自動ズーム | `font-size: 16px !important` | admin-html 12.5章 #1 |
-| 3 | 2026-02-14 | pull-to-refresh誤発動: iPhoneで編集中にpull-to-refreshが発動しページがリロード | iOS Safariのデフォルト動作 | touchstart/touchmoveのpreventDefault（エディタ内は除外） | admin-html 12.5章 #3,#4,#5 |
-| 4 | 2026-02-14 | 削除ボタン誤操作: 画像ウィジェットの「削除」が画像選択解除なのかファイル削除なのか判別不能 | 同一ラベル | 「選択解除」/「完全削除」にラベル分離 | admin-html 12.6章 #3,#4,#5 |
-| 5 | 2026-02-15 | iPhone EXIF画像回転: iPhoneで撮影した画像が横向きに表示される | EXIF orientationタグが一部ブラウザで未解釈 | normalize-images.mjsでピクセル回転、image-optimize.mjsで再確認、CSS `image-orientation: from-image` | content-validation 7章 #12-#15, build 11章 #29 |
-| 6 | 2026-02-15 | fixPreviewImageOrientation副作用: CMS編集画面で画像が逆に回転する | JSでcanvas経由のEXIF補正がEXIFメタデータを消失させ二重補正 | JSによるcanvas補正を廃止しCSSに委ねる | admin-html 12.4章 #1 |
-| 7 | 2026-02-15 | ドロップダウン位置ずれ: CMSの公開ボタンドロップダウンがモバイルで画面外に表示 | position: absoluteがビューポート外 | ボトムシート化（position: fixed, bottom: 0） | admin-html 12.3章 #6 |
+| 1 | 2026-02-14 | モバイル保存ボタン非表示: iPhoneポートレートでCMS保存・公開ボタンが画面外に隠れる | Decap CMSデフォルトのCSS | `flex-shrink: 0`, `min-height: 44px`, sticky header | admin-html 2.6.8章 |
+| 2 | 2026-02-14 | iOS自動ズーム: iPhoneでinput/textareaフォーカス時に画面が自動ズーム | iOSは16px未満のフォントサイズで自動ズーム | `font-size: 16px !important` | admin-html 2.6.5章 #1 |
+| 3 | 2026-02-14 | pull-to-refresh誤発動: iPhoneで編集中にpull-to-refreshが発動しページがリロード | iOS Safariのデフォルト動作 | touchstart/touchmoveのpreventDefault（エディタ内は除外） | admin-html 2.6.5章 #3,#4,#5 |
+| 4 | 2026-02-14 | 削除ボタン誤操作: 画像ウィジェットの「削除」が画像選択解除なのかファイル削除なのか判別不能 | 同一ラベル | 「選択解除」/「完全削除」にラベル分離 | admin-html 2.6.6章 #3,#4,#5 |
+| 5 | 2026-02-15 | iPhone EXIF画像回転: iPhoneで撮影した画像が横向きに表示される | EXIF orientationタグが一部ブラウザで未解釈 | normalize-images.mjsでピクセル回転、image-optimize.mjsで再確認、CSS `image-orientation: from-image` | content-validation 2.1章 #12-#15, build 2.5章 #29 |
+| 6 | 2026-02-15 | fixPreviewImageOrientation副作用: CMS編集画面で画像が逆に回転する | JSでcanvas経由のEXIF補正がEXIFメタデータを消失させ二重補正 | JSによるcanvas補正を廃止しCSSに委ねる | admin-html 2.6.4章 #1 |
+| 7 | 2026-02-15 | ドロップダウン位置ずれ: CMSの公開ボタンドロップダウンがモバイルで画面外に表示 | position: absoluteがビューポート外 | ボトムシート化（position: fixed, bottom: 0） | admin-html 2.6.3章 #6 |
 | 8 | 2026-02-15 | 公開URLバー残留（iPhone）: エディタからコレクション一覧に戻った後も公開URLバーが残る | hashchange検知不足 | hashchange/popstateリスナーでshowPublicUrl再実行 | E-15 |
-| 9 | 2026-02-15 | Slate codeblockクラッシュ（iPhone）: iPhoneでcodeblockを挿入するとCMSがクラッシュ | Slate v0.47のvoid nodeバグ（根本修正不可） | モバイルでcodeblockボタン非表示、toSlatePointエラーハンドラ、MutationObserverデバウンス | admin-html 12.5b章 |
-| 10 | 2026-02-15 | サイトリンク注入先ミス: 「ブログを見る」リンクがヘッダーの不適切な位置に表示 | header rootに注入 | SidebarContainerに注入先変更 | admin-html 12.6章 #1b |
+| 9 | 2026-02-15 | Slate codeblockクラッシュ（iPhone）: iPhoneでcodeblockを挿入するとCMSがクラッシュ | Slate v0.47のvoid nodeバグ（根本修正不可） | モバイルでcodeblockボタン非表示、toSlatePointエラーハンドラ、MutationObserverデバウンス | admin-html 2.6.5b章 |
+| 10 | 2026-02-15 | サイトリンク注入先ミス: 「ブログを見る」リンクがヘッダーの不適切な位置に表示 | header rootに注入 | SidebarContainerに注入先変更 | admin-html 2.6.6章 #1b |
 | 11 | 2026-02-20 | 公開URLバー残留（コレクション一覧）: ソート用ドロップダウン操作後にURLバーが再表示 | EditorControlBar判定が不正確 | getBoundingClientRect().height > 0 による判定 | E-15 |
-| 12 | 2026-02-20 | CMS固定ページslugテンプレート: 固定ページのファイル名がタイトル（日本語）になる | config.ymlの`slug: "{{slug}}"`がDecap CMSではタイトルのURL安全版を意味 | `slug: "{{fields.slug}}"`に変更 | cms-config 10章 #31, content-validation 7.2章 #19 |
-| 13 | 2026-02-20 | 固定ページ公開URL表示: CMS上の固定ページに`/posts/タイトル`という間違ったURLが表示 | showPublicUrlが記事専用ロジックのみ | ハッシュURLから`/collections/pages/`を判定し`/{slug}`を生成 | admin-html 12.6章 #8 |
-| 14 | 2026-02-20 | ドロップダウン▾閉じない: ヘッダーナビの▾ボタンクリックでメニューが閉じない | CSS `:hover`ルールがJS `is-open`トグルと競合 | CSS `:hover`ルール削除、JSのmouseenter/mouseleaveに統一 | build 11章, E-21 |
-| 15 | 2026-02-20 | ドロップダウンメニューgap: ページ名にホバー後、メニューへマウス移動するとメニューが消える | menu `margin-top`がホバー判定の隙間を作る | `padding-top`に変更 + mouseleave 300ms遅延 | build 11章, E-21 |
+| 12 | 2026-02-20 | CMS固定ページslugテンプレート: 固定ページのファイル名がタイトル（日本語）になる | config.ymlの`slug: "{{slug}}"`がDecap CMSではタイトルのURL安全版を意味 | `slug: "{{fields.slug}}"`に変更 | cms-config 2.4章 #31, content-validation 2.1.2章 #19 |
+| 13 | 2026-02-20 | 固定ページ公開URL表示: CMS上の固定ページに`/posts/タイトル`という間違ったURLが表示 | showPublicUrlが記事専用ロジックのみ | ハッシュURLから`/collections/pages/`を判定し`/{slug}`を生成 | admin-html 2.6.6章 #8 |
+| 14 | 2026-02-20 | ドロップダウン▾閉じない: ヘッダーナビの▾ボタンクリックでメニューが閉じない | CSS `:hover`ルールがJS `is-open`トグルと競合 | CSS `:hover`ルール削除、JSのmouseenter/mouseleaveに統一 | build 2.5章, E-21 |
+| 15 | 2026-02-20 | ドロップダウンメニューgap: ページ名にホバー後、メニューへマウス移動するとメニューが消える | menu `margin-top`がホバー判定の隙間を作る | `padding-top`に変更 + mouseleave 300ms遅延 | build 2.5章, E-21 |
 
 ---
 
-**最終更新**: 2026年2月20日（v1.10）
+**最終更新**: 2026年2月21日（v1.12）
