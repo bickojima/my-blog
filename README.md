@@ -11,30 +11,9 @@ Astro + Decap CMS によるブログサイト。Cloudflare Pages でホスティ
 | 1.2 | 2026-02-15 | EXIF画像回転修正、ドロップダウンボトムシート化、公開URLバーhashchange対応、E2Eテスト導入（Playwright）、CLAUDE.md追加 |
 | 1.3 | 2026-02-20 | 本番/テスト環境分離（staging.reiwa.casa）、[STAGING]ラベル表示、CMS URL動的化、テスト環境セクション追加 |
 | 1.4 | 2026-02-20 | 固定ページシステム導入（pages コレクション、プロフィールページ、ヘッダーナビ） |
+| 1.5 | 2026-02-21 | 章番号再構成、セクション順序修正、テスト件数更新 |
 
-## システム変更履歴（主要マイルストーン）
-
-| 時期 (JST) | 主な変更 | 関連PR |
-| :--- | :--- | :--- |
-| 2026-02-14 16時 | 初期構築（Decap CMS + Astro + Netlify Identity） | #1 |
-| 2026-02-14 18〜20時 | CMS モバイル・iOS対応 | #2〜#6 |
-| 2026-02-14 21〜22時 | URL自動生成・画像最適化・UI大幅改善 | #13〜#17 |
-| 2026-02-14 23時 | 自動テスト導入（Vitest / 151テスト） | #40 |
-| 2026-02-15 7〜8時 | カテゴリ廃止→タグ構造に統合 | #41 |
-| 2026-02-15 8時 | URL構造変更（/posts/yyyy/mm/slug）・アーカイブ追加 | #42 |
-| 2026-02-15 13〜14時 | EXIF回転正規化（normalize-images.mjs） | #73 |
-| 2026-02-15 午後 | 包括的リファクタリング・ドキュメント全面改訂 | #80 |
-| 2026-02-15 夕方 | Playwright E2Eテスト導入（PC/iPad/iPhone 3デバイス×30テスト=90テスト） | - |
-| 2026-02-15 夜 | EXIF画像回転修正（fixPreviewImageOrientation削除）、公開URLバーhashchange対応、ドロップダウンボトムシート化 | - |
-| 2026-02-15 夜 | CMS管理画面ヘッダーに本番サイトリンク追加 | - |
-| 2026-02-15 夜 | iPhone codeblockクラッシュ対策（MutationObserverデバウンス、touchmoveエディタ除外） | - |
-| 2026-02-20 | CMSプレビューに本番サイト相当のスタイルを適用（`CMS.registerPreviewStyle`） | - |
-| 2026-02-20 | 公開URLバーの表示制御を改善（visibility-based判定、ドロップダウン誤復元修正） | - |
-| 2026-02-20 | E2Eテスト大幅拡充（CMS UIカスタマイズ検証34テスト追加、合計64テスト×3デバイス=204テスト） | - |
-| 2026-02-20 | 本番/テスト環境分離（staging.reiwa.casa）、admin/index.htmlのサイトURL動的化 | - |
-| 2026-02-20 | staging環境: CNAME方式でカスタムドメイン接続、[STAGING]ラベル表示（サイト・CMS） | - |
-| 2026-02-20 | 固定ページシステム導入（pagesコレクション、/profileページ、ヘッダーナビ動的生成） | - |
-| 2026-02-20 | 固定ページ不具合修正（slugテンプレート、公開URL表示、ドロップダウンUX）、テスト強化（Vitest 218件、E2E 237件） | - |
+詳細なシステム変更履歴は [DOCUMENTATION.md](docs/DOCUMENTATION.md) を参照。
 
 ---
 
@@ -110,6 +89,8 @@ my-blog/
 │   │   └── posts.ts              # 記事URL生成ロジック
 │   ├── pages/                    # ページルーティング
 │   └── content.config.ts         # コンテンツコレクション定義
+├── docs/
+│   └── DOCUMENTATION.md          # システム設計書（要件定義・設計・運用）
 ├── tests/                        # 自動テスト
 │   ├── *.test.mjs                # 単体・統合テスト（Vitest）
 │   ├── e2e/                      # E2Eテスト（Playwright）
@@ -133,7 +114,7 @@ my-blog/
 | `npm run dev` | 開発サーバー起動（localhost:4321） |
 | `npm run build` | 本番ビルド（`./dist/` に出力） |
 | `npm run preview` | ビルド結果のローカルプレビュー |
-| `npm test` | 単体・統合テスト実行（Vitest / 218テスト、記事数により変動） |
+| `npm test` | 単体・統合テスト実行（Vitest / 242テスト、記事数により変動） |
 | `npm run test:watch` | ウォッチモードでテスト実行 |
 | `npm run test:e2e` | E2Eテスト実行（Playwright / PC・iPad・iPhone 237テスト） |
 
@@ -179,16 +160,16 @@ my-blog/
 - EditorControlBarの表示状態（`getBoundingClientRect`）でエディタ画面を判定し、コレクション一覧では確実に非表示
 - ドロップダウン表示中は公開URLバーを一時的に非表示（`hiddenByDropdown`フラグで誤復元を防止）
 
+### 5.6 プレビュースタイル
+
+- `CMS.registerPreviewStyle()` で本番サイト相当のCSSをプレビューiframeに注入
+- フォント、行間、画像サイズ・角丸、コードブロック背景色など本番と同等の表示を実現
+
 ### 5.7 [STAGING]ラベル
 
 - staging環境では以下の箇所に `[STAGING]` プレフィックスを表示:
   - **ブログサイト**: サイトタイトル・フッターに `[STAGING] tbiのブログ`（`CF_PAGES_BRANCH` 環境変数で判定）
   - **CMS管理画面**: `<title>` タグ・サイドバーリンクに `[STAGING]`（`window.location.hostname` で判定）
-
-### 5.6 プレビュースタイル
-
-- `CMS.registerPreviewStyle()` で本番サイト相当のCSSをプレビューiframeに注入
-- フォント、行間、画像サイズ・角丸、コードブロック背景色など本番と同等の表示を実現
 
 ## 6. CMS設定
 
@@ -249,7 +230,7 @@ main (本番)  ←── merge ── staging (テスト) ←── merge ──
 | 文書 | 内容 |
 | :--- | :--- |
 | `README.md`（本文書） | プロジェクト概要・構成・コマンド |
-| `DOCUMENTATION.md` | システム設計書（要件定義・基本設計・詳細設計・運用設計） |
+| `docs/DOCUMENTATION.md` | システム設計書（要件定義・基本設計・詳細設計・運用設計） |
 | `tests/TEST-REPORT.md` | テスト仕様書（テストケース一覧・要件トレーサビリティ） |
 | `CLAUDE.md` | Claude Code向けプロジェクトガイド（開発規約・注意事項） |
 

@@ -23,6 +23,9 @@ pnpm-debug.log*
 # jetbrains setting folder
 .idea/
 
+# Cloudflare Wrangler
+.wrangler/
+
 # Playwright
 test-results/
 playwright-report/

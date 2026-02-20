@@ -168,6 +168,144 @@ describe('固定ページ（pages）コンテンツの検証', () => {
   });
 });
 
+describe('ヘッダーナビゲーション条件分岐の検証（Base.astroソース）', () => {
+  const baseAstro = readFileSync(
+    join(process.cwd(), 'src/layouts/Base.astro'),
+    'utf-8'
+  );
+
+  describe('3分岐テンプレートロジック', () => {
+    it('0件分岐: navPages.length === 0 → null が返る', () => {
+      // テンプレートに `: null}` が存在する（0件時は何も描画しない）
+      expect(baseAstro).toContain(': null}');
+    });
+
+    it('1件分岐: navPages.length === 1 → 直接<a>リンク（ドロップダウンなし）', () => {
+      // 1件分岐: navPages.length === 1 のチェックが存在する
+      expect(baseAstro).toContain('navPages.length === 1');
+      // nav-dropdown-linkクラスではなく素の<a>タグ
+      expect(baseAstro).toMatch(/navPages\.length === 1.*\n.*<a href/);
+    });
+
+    it('2件以上分岐: navPages.length > 1 → ドロップダウン構造', () => {
+      expect(baseAstro).toContain('navPages.length > 1');
+      expect(baseAstro).toContain('nav-dropdown');
+      expect(baseAstro).toContain('nav-dropdown-link');
+      expect(baseAstro).toContain('nav-dropdown-toggle');
+      expect(baseAstro).toContain('nav-dropdown-menu');
+    });
+  });
+
+  describe('navPagesデータ取得ロジック', () => {
+    it('draftフィルタ: 下書きページを除外している', () => {
+      expect(baseAstro).toContain('.filter(p => !p.data.draft)');
+    });
+
+    it('orderソート: 昇順で並べ替えている', () => {
+      expect(baseAstro).toContain('.sort((a, b) => a.data.order - b.data.order)');
+    });
+
+    it('pagesコレクションから取得している', () => {
+      expect(baseAstro).toContain("getCollection('pages')");
+    });
+  });
+
+  describe('ドロップダウンJS制御', () => {
+    it('dropdownがnullの場合のガード（if文）が存在する', () => {
+      expect(baseAstro).toContain("if (dropdown)");
+    });
+
+    it('mouseenter でis-openクラスを追加する', () => {
+      expect(baseAstro).toContain("addEventListener('mouseenter'");
+      expect(baseAstro).toContain("classList.add('is-open')");
+    });
+
+    it('mouseleave で300ms遅延後にis-openクラスを削除する', () => {
+      expect(baseAstro).toContain("addEventListener('mouseleave'");
+      expect(baseAstro).toContain('setTimeout');
+      expect(baseAstro).toContain('300');
+      expect(baseAstro).toContain("classList.remove('is-open')");
+    });
+
+    it('▾ボタンクリックでトグルする', () => {
+      expect(baseAstro).toContain("addEventListener('click'");
+      expect(baseAstro).toContain("classList.toggle('is-open')");
+    });
+
+    it('外側クリックで閉じる', () => {
+      expect(baseAstro).toContain("document.addEventListener('click'");
+      expect(baseAstro).toContain('dropdown.contains');
+    });
+  });
+});
+
+describe('固定ページフィールドの境界値・一意性検証', () => {
+  const PAGES_DIR = join(process.cwd(), 'src/content/pages');
+  const pageFiles = existsSync(PAGES_DIR)
+    ? readdirSync(PAGES_DIR).filter(f => extname(f) === '.md').map(f => join(PAGES_DIR, f))
+    : [];
+
+  const allPages = pageFiles.map(f => {
+    const raw = readFileSync(f, 'utf-8');
+    const { data } = matter(raw);
+    return { file: f.split('/').pop(), ...data };
+  });
+
+  it('全固定ページのorderが整数である', () => {
+    for (const page of allPages) {
+      expect(
+        Number.isInteger(page.order),
+        `${page.file}: order=${page.order} は整数ではない`
+      ).toBe(true);
+    }
+  });
+
+  it('全固定ページのorderが0以上である', () => {
+    for (const page of allPages) {
+      expect(
+        page.order >= 0,
+        `${page.file}: order=${page.order} は負の値`
+      ).toBe(true);
+    }
+  });
+
+  it('全固定ページのslugが空でない', () => {
+    for (const page of allPages) {
+      expect(
+        page.slug && page.slug.trim().length > 0,
+        `${page.file}: slugが空`
+      ).toBe(true);
+    }
+  });
+
+  it('slugが一意である（重複なし）', () => {
+    const slugs = allPages.map(p => p.slug);
+    const uniqueSlugs = new Set(slugs);
+    expect(
+      slugs.length,
+      `slug重複あり: ${slugs.filter((s, i) => slugs.indexOf(s) !== i).join(', ')}`
+    ).toBe(uniqueSlugs.size);
+  });
+
+  it('orderが一意である（同じ表示順のページがない）', () => {
+    const orders = allPages.map(p => p.order);
+    const uniqueOrders = new Set(orders);
+    expect(
+      orders.length,
+      `order重複あり: ${orders.filter((o, i) => orders.indexOf(o) !== i).join(', ')}`
+    ).toBe(uniqueOrders.size);
+  });
+
+  it('全固定ページのtitleが空でない', () => {
+    for (const page of allPages) {
+      expect(
+        page.title && page.title.trim().length > 0,
+        `${page.file}: titleが空`
+      ).toBe(true);
+    }
+  });
+});
+
 describe('画像回転（EXIF orientation）対応の検証', () => {
   it('ソース画像にEXIF回転が残っていない（ピクセルデータに反映済み）', async () => {
     const sharp = (await import('sharp')).default;
