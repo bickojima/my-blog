@@ -827,9 +827,23 @@ OAuth認証はGitHub実環境が必要なため、postMessage APIによるシミ
 | E-11 | 画像アップロードUI | CMS config.ymlのmedia_folder定義、HEIC→JPEG変換のaccept属性制限 | 構造検証 |
 | E-12 | 記事削除UI | 「選択解除」「完全削除」ラベル変更ロジック、無効化ロジックの実装確認 | 構造検証 |
 
+#### CMS UIカスタマイズ検証 (`tests/e2e/cms-customizations.spec.ts`)
+
+過去の不具合修正・手動打鍵テストの観点をE2Eテストに落とし込み、リグレッション検証する。
+
+| No. | テストケース | 検証内容 | テスト手法 |
+| :--- | :--- | :--- | :--- |
+| E-13 | CMS カスタマイズ基盤検証 | 全カスタマイズ関数の実装、RAFデバウンス、Slateエラーハンドラ、hashchange/popstate、BackCollection/BackStatus、getBoundingClientRect判定、hiddenByDropdownフラグ、image-orientation CSS | 構造検証 |
+| E-14 | プレビュースタイル本番再現 | registerPreviewStyleによる本番CSS注入（フォント、行間、画像、コードブロック）、CMSオブジェクトロード | 構造検証・JS検証 |
+| E-15 | 公開URLバー表示制御 | ログイン画面で非表示、コレクション一覧で非表示、エディタ→コレクション遷移で非表示、hashchange後の状態 | 動作検証（認証シミュレーション） |
+| E-16 | モバイル固有カスタマイズ | ボトムシートCSS、iOS自動ズーム防止16px、codeblockボタン非表示、タップ領域44px、pull-to-refresh防止、モーダル95vw、カードグリッド2列、stickyコントロールバー | 構造検証 |
+| E-17 | サイトリンク・コレクション表示 | 「ブログを見る」リンク表示・遷移先、エントリー日付バッジフォーマット、entry-date/entry-title/entry-draftクラス | 動作検証・構造検証 |
+| E-18 | EXIF画像処理・アップロード | Canvas EXIF正規化、HEIC制限accept属性、画像プレビューCSS（object-fit、max-height） | 構造検証 |
+| E-19 | 削除ボタン動作・メディアライブラリ | 選択解除ラベル・CSS、完全削除ラベル・CSS、無効化ロジック（borderColor判定）、disabled状態CSS | 構造検証 |
+
 ### 14.4 デバイス別テスト
 
-全テストケースを以下の3デバイスで実行する（合計90テスト）。
+全テストケースを以下の3デバイスで実行する（合計192テスト）。
 
 | デバイス | ビューポート | 用途 |
 | :--- | :--- | :--- |
@@ -927,16 +941,17 @@ npm run build
 
 | 項目 | 結果 |
 | :--- | :--- |
-| 実行日時 | 2026-02-15 17:19 |
+| 実行日時 | 2026-02-20 13:00 |
 | Playwright バージョン | v1.58.2 |
-| 実行時間 | 47.0s |
+| 実行時間 | 96s |
 | 合否判定 | **合格** |
 
 | テストファイル | PC | iPad | iPhone | 合計 |
 | :--- | :--- | :--- | :--- | :--- |
 | `site.spec.ts`（E-01〜E-06） | 19 PASS | 19 PASS | 19 PASS | 57 |
 | `cms.spec.ts`（E-07〜E-12） | 11 PASS | 11 PASS | 11 PASS | 33 |
-| **合計** | **30** | **30** | **30** | **90 全PASS** |
+| `cms-customizations.spec.ts`（E-13〜E-19） | 34 PASS | 34 PASS | 34 PASS | 102 |
+| **合計** | **64** | **64** | **64** | **192 全PASS** |
 
 ### 16.4 ビルド実行結果
 
