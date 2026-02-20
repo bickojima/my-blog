@@ -140,6 +140,14 @@ DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を�
 2. 改訂履歴に変更内容を追記する
 3. DOCUMENTATION.md の最終更新日を更新する
 
+### ブランチマージ時
+1. コード変更は必ず `staging` ブランチで先に実装・テスト・プッシュする
+2. staging.reiwa.casa で動作確認を行い、問題がないことを確認する
+3. ユーザーの明示的な承認を得てから `staging` → `main` にマージする（勝手にマージしない）
+4. マージ後、`config.yml` の `branch` / `base_url` が main の値（`main` / `https://reiwa.casa`）であることを確認する
+5. main ブランチでテストを実行し、全PASS を確認してからプッシュする
+6. 詳細手順は DOCUMENTATION.md 4.6章を参照
+
 ### やってはいけないこと
 - テストを削除・スキップして通す（必ず原因を修正する）
 - 要件IDなしに機能を追加する（必ず FR/CMS/NFR IDを付与する）
@@ -147,3 +155,5 @@ DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を�
 - ドキュメントを更新せずにコード変更をコミットする
 - ハードコードされたURL（`reiwa.casa`）を admin/index.html に追加する（`window.location.origin` を使用）
 - テストに特定のコンテンツ名をハードコードする（記事タイトル、固定ページ名等はソースから動的取得する）
+- staging で検証せずに直接 main にコード変更をプッシュする
+- ユーザーが明示的に指示しない限り main にマージする（自己判断でマージしない）
