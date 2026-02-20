@@ -80,17 +80,16 @@ const navPages = (await getCollection('pages'))
       font-size: 0.85rem;
       color: #888;
       cursor: pointer;
-      background: none;
-      border: none;
-      font-family: inherit;
-      padding: 0;
+      text-decoration: none;
     }
     .nav-dropdown-trigger:hover {
       color: #333;
     }
     .nav-dropdown-trigger::after {
-      content: '▾';
-      font-size: 0.85rem;
+      content: ' ▾';
+      display: inline-block;
+      font-size: 1rem;
+      padding: 0.2rem;
     }
     .nav-dropdown-menu {
       display: none;
@@ -106,7 +105,7 @@ const navPages = (await getCollection('pages'))
       z-index: 100;
     }
     .nav-dropdown:hover .nav-dropdown-menu,
-    .nav-dropdown:focus-within .nav-dropdown-menu {
+    .nav-dropdown.is-open .nav-dropdown-menu {
       display: block;
     }
     .nav-dropdown-menu a {
@@ -151,17 +150,14 @@ const navPages = (await getCollection('pages'))
         {navPages.length === 1 ? (
           <a href={`/${navPages[0].slug}`}>{navPages[0].data.title}</a>
         ) : navPages.length > 1 ? (
-          <>
-            <a href={`/${navPages[0].slug}`}>{navPages[0].data.title}</a>
-            <div class="nav-dropdown">
-              <button class="nav-dropdown-trigger" type="button" aria-label="他のページ"></button>
-              <div class="nav-dropdown-menu">
-                {navPages.slice(1).map(page => (
-                  <a href={`/${page.slug}`}>{page.data.title}</a>
-                ))}
-              </div>
+          <div class="nav-dropdown">
+            <a href={`/${navPages[0].slug}`} class="nav-dropdown-trigger">{navPages[0].data.title}</a>
+            <div class="nav-dropdown-menu">
+              {navPages.map(page => (
+                <a href={`/${page.slug}`}>{page.data.title}</a>
+              ))}
             </div>
-          </>
+          </div>
         ) : null}
       </div>
     </nav>
@@ -174,5 +170,28 @@ const navPages = (await getCollection('pages'))
     <p>&copy; {new Date().getFullYear()} {siteTitle}</p>
     <a href="/admin/" class="admin-link">管理</a>
   </footer>
+  <script>
+    const dropdown = document.querySelector('.nav-dropdown');
+    if (dropdown) {
+      const trigger = dropdown.querySelector('.nav-dropdown-trigger');
+      let isHovering = false;
+      dropdown.addEventListener('mouseenter', () => { isHovering = true; });
+      dropdown.addEventListener('mouseleave', () => { isHovering = false; });
+      trigger?.addEventListener('click', (e) => {
+        // PC: ホバー中ならメニュー表示済みなので即遷移
+        if (isHovering) return;
+        // モバイル: 1回目タップでメニュー開く、2回目で遷移
+        if (!dropdown.classList.contains('is-open')) {
+          e.preventDefault();
+          dropdown.classList.add('is-open');
+        }
+      });
+      document.addEventListener('click', (e) => {
+        if (!(e.target instanceof Node) || !dropdown.contains(e.target)) {
+          dropdown.classList.remove('is-open');
+        }
+      });
+    }
+  </script>
 </body>
 </html>
