@@ -16,6 +16,8 @@
 | 1.9 | 2026-02-20 | FR-10充足化（url-map.jsonテスト6件追加）、CMS-14追加（コレクション表示順序テスト1件）、全要件トレーサビリティ充足、コレクション順序変更（posts先頭） |
 | 1.10 | 2026-02-21 | テスト動的化（ハードコードコンテンツ排除）、ヘッダーナビ条件分岐テスト11件追加、境界値・一意性テスト6件追加、ビルドテストをソースデータ動的参照に改修（242テスト） |
 | 1.11 | 2026-02-21 | 固定ページ番号バッジフォーマットテスト追加（admin-html 68件）、テスト件数更新（243テスト） |
+| 1.12 | 2026-02-21 | 固定ページ下書きバッジテスト更新（#10説明更新）、Decap CMS v3.10.0互換性テスト追加（sortable_fields形式検証）、orderデフォルトソート昇順テスト追加（245テスト） |
+| 1.13 | 2026-02-21 | CMS-16要件追加、要件トレーサビリティ検証テスト2件追加（#42,#43）、テスト基盤変更履歴補完（247テスト） |
 
 ## テスト基盤の変更履歴
 
@@ -28,6 +30,7 @@
 | 2026-02-20 | **要件トレーサビリティ完全充足**: FR-10テスト6件追加（url-map.json検証）、CMS-14追加（コレクション表示順序）1件。コレクション順序変更（posts先頭）。計225 Vitest + 237 E2E = 462テスト | - |
 | 2026-02-21 | **テスト動的化・条件分岐網羅**: ハードコードコンテンツ排除（ソースから動的取得）、ヘッダーナビ3分岐テンプレートロジック・JS制御テスト11件、固定ページ境界値・一意性テスト6件追加。計242 Vitest + 237 E2E = 479テスト | - |
 | 2026-02-21 | **コードリファクタリング・テスト追加**: 固定ページ番号バッジフォーマットテスト1件追加（admin-html 67→68件）。image-optimize.mjs writeFile整理、テスト変数重複排除。計243 Vitest + 237 E2E = 480テスト | - |
+| 2026-02-21 | **固定ページ一覧改善・品質向上**: 下書きバッジテスト更新、sortable_fields互換性テスト追加（#40）、orderデフォルトソート昇順テスト追加（#41）、config.ymlスキーマエラー検知E2Eテスト追加（E-07）、要件トレーサビリティ検証テスト追加（#42,#43）。CMS-16要件追加。計247 Vitest + 240 E2E = 487テスト | - |
 
 ---
 
@@ -554,7 +557,7 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 
 ---
 
-## 2.4. CMS設定検証 (`cms-config.test.mjs`) — 40件
+## 2.4. CMS設定検証 (`cms-config.test.mjs`) — 44件
 
 `public/admin/config.yml`をパースし、設定値の正当性を検証する。
 
@@ -598,8 +601,12 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 | 35 | pagesのdraftフィールドがbooleanウィジェットでデフォルトfalseである | pages フィールド | M-04 | `widget === "boolean"`, `default === false` |
 | 36 | pagesのbodyフィールドがmarkdownウィジェットである | pages フィールド | M-04 | `widget === "markdown"` |
 | 37 | pagesコレクションのフォーマットがfrontmatterに設定されている | pages | M-03 | `format === "frontmatter"` |
-| 38 | pagesのサマリー表示にorderとtitleが含まれている | pages | M-03, M-02 | `summary`に`{{order}}`と`{{title}}`が含まれる |
+| 38 | pagesのサマリー表示にorder・draft・titleが含まれている | pages | M-03, M-02 | `summary`に`{{order}}`、`{{draft}}`、`{{title}}`が含まれる |
 | 39 | pagesのソート可能フィールドにorderとtitleが含まれている | pages | M-04 | `sortable_fields`に`order`と`title`が含まれる |
+| 40 | 全コレクションのsortable_fieldsが有効な形式である | 互換性 | M-03 | 文字列 or `{field, default_sort}`オブジェクト形式（Decap CMS v3.10.0互換） |
+| 41 | pagesのorderフィールドがデフォルトで昇順ソートに設定されている | pages | M-04 | `{field: "order", default_sort: "asc"}`形式で設定されている |
+| 42 | DOCUMENTATION.mdの全CMS要件IDがトレーサビリティマトリクスに記載されている | 全体 | M-03 | 要件一覧のCMS-XXがすべてトレーサビリティマトリクスに存在する |
+| 43 | config.ymlの全コレクションに対応する要件がDOCUMENTATION.mdに存在する | 全体 | M-03 | config.ymlの各コレクション名がDOCUMENTATION.mdに記載されている |
 
 ---
 
@@ -741,7 +748,7 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 | 7 | 記事の公開URLがタイトルと日付から動的生成される | M-02 | タイトル・日付フィールド監視と URL 構築処理が含まれる |
 | 8 | 固定ページの公開URLがslugフィールドから生成される | M-02 | `/collections/pages/`判定とslugInputによるURL構築処理が含まれる |
 | 9 | 選択状態の判定がborderColorで行われている | M-02 | `borderColor`による選択判定ロジックが含まれる |
-| 10 | 固定ページ一覧の番号フォーマット処理がある | M-02 | `pagesMatch`正規表現と`'#' + pagesMatch[1]`による番号バッジ表示処理が含まれる |
+| 10 | 固定ページ一覧の番号・下書きフォーマット処理がある | M-02 | `pagesMatch`正規表現（`番号 \| draft \| タイトル`形式）と番号バッジ・下書きバッジ表示処理が含まれる |
 
 ### 2.6.7 iPad対応（4件）
 
@@ -804,7 +811,7 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 
 要件トレーサビリティマトリクスは **docs/DOCUMENTATION.md 1.5章** に移動した。要件定義と同一ファイルで管理することで、要件追加時のトレース漏れを防止する。
 
-現在の充足状況: **全要件（FR-01〜FR-14, CMS-01〜CMS-15, NFR-01〜NFR-04）がテストで充足されている。未テスト要件なし。**
+現在の充足状況: **全要件（FR-01〜FR-14, CMS-01〜CMS-16, NFR-01〜NFR-04）がテストで充足されている。未テスト要件なし。**
 
 ---
 
@@ -865,7 +872,7 @@ OAuth認証はGitHub実環境が必要なため、postMessage APIによるシミ
 
 | No. | テストケース | 検証内容 | テスト手法 |
 | :--- | :--- | :--- | :--- |
-| E-07 | CMS管理画面読込 | HTMLロード、Decap CMS初期化、GitHubログインボタン表示 | DOM検証 |
+| E-07 | CMS管理画面読込 | HTMLロード、Decap CMS初期化、GitHubログインボタン表示、config.ymlスキーマエラー非表示 | DOM検証 |
 | E-08 | 認証シミュレーション | OAuthポップアップ起動（GitHub リダイレクト対応）、postMessageトークン送信のシミュレーション | モック/シミュレーション |
 | E-09 | 記事作成フォーム | 新規記事ハッシュルート (`#/collections/posts/new`) への遷移 | ルーティング検証 |
 | E-10 | 記事編集 | 記事編集ハッシュルート (`#/collections/posts/entries/...`) への遷移 | ルーティング検証 |
@@ -888,7 +895,7 @@ OAuth認証はGitHub実環境が必要なため、postMessage APIによるシミ
 
 ### 4.1.4 デバイス別テスト
 
-全テストケースを以下の3デバイスで実行する（合計237テスト）。
+全テストケースを以下の3デバイスで実行する（合計240テスト）。
 
 | デバイス | ビューポート | 用途 |
 | :--- | :--- | :--- |
@@ -974,29 +981,29 @@ npm run build
 
 | テストファイル | テスト数 | 結果 | 実行時間 |
 | :--- | :--- | :--- | :--- |
-| `cms-config.test.mjs` | 40 | PASS | 5ms |
-| `admin-html.test.mjs` | 68 | PASS | 7ms |
+| `cms-config.test.mjs` | 44 | PASS | 4ms |
+| `admin-html.test.mjs` | 68 | PASS | 6ms |
 | `rehype-image-caption.test.mjs` | 8 | PASS | 2ms |
-| `auth-functions.test.mjs` | 10 | PASS | 25ms |
-| `content-validation.test.mjs` | 67 | PASS | 43ms |
-| `build.test.mjs` | 50 | PASS | 1577ms |
-| **合計** | **243** | **全PASS** | **1.75s** |
+| `auth-functions.test.mjs` | 10 | PASS | 29ms |
+| `content-validation.test.mjs` | 67 | PASS | 24ms |
+| `build.test.mjs` | 50 | PASS | 1521ms |
+| **合計** | **247** | **全PASS** | **1.67s** |
 
 ### 4.3.3 E2Eテスト最新実行結果（Playwright）
 
 | 項目 | 結果 |
 | :--- | :--- |
-| 実行日時 | 2026-02-20 13:00 |
+| 実行日時 | 2026-02-21 07:21 |
 | Playwright バージョン | v1.58.2 |
-| 実行時間 | 96s |
+| 実行時間 | 52s |
 | 合否判定 | **合格** |
 
 | テストファイル | PC | iPad | iPhone | 合計 |
 | :--- | :--- | :--- | :--- | :--- |
 | `site.spec.ts`（E-01〜E-06, E-20〜E-21） | 30 PASS | 30 PASS | 30 PASS | 90 |
-| `cms.spec.ts`（E-07〜E-12） | 11 PASS | 11 PASS | 11 PASS | 33 |
+| `cms.spec.ts`（E-07〜E-12） | 12 PASS | 12 PASS | 12 PASS | 36 |
 | `cms-customizations.spec.ts`（E-13〜E-19） | 38 PASS | 38 PASS | 38 PASS | 114 |
-| **合計** | **79** | **79** | **79** | **237 全PASS** |
+| **合計** | **80** | **80** | **80** | **240 全PASS** |
 
 ### 4.3.4 ビルド実行結果
 

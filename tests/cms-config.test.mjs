@@ -7,6 +7,9 @@ const configPath = join(process.cwd(), 'public/admin/config.yml');
 const configRaw = readFileSync(configPath, 'utf-8');
 const config = yaml.load(configRaw);
 
+const docPath = join(process.cwd(), 'docs/DOCUMENTATION.md');
+const docContent = readFileSync(docPath, 'utf-8');
+
 describe('CMS設定（config.yml）の検証', () => {
   describe('バックエンド設定', () => {
     it('GitHubバックエンドが設定されている', () => {
@@ -75,6 +78,27 @@ describe('CMS設定（config.yml）の検証', () => {
       expect(config.collections[1].name).toBe('pages');
     });
 
+    describe('Decap CMS v3.10.0 互換性', () => {
+      it('全コレクションのsortable_fieldsが有効な形式である', () => {
+        // Decap CMS v3.10.0: 文字列 or { field: string, default_sort: "asc"|"desc" }
+        config.collections.forEach(collection => {
+          if (collection.sortable_fields) {
+            collection.sortable_fields.forEach(field => {
+              if (typeof field === 'object') {
+                expect(field).toHaveProperty('field');
+                expect(typeof field.field).toBe('string');
+                if (field.default_sort) {
+                  expect(['asc', 'desc']).toContain(field.default_sort);
+                }
+              } else {
+                expect(typeof field).toBe('string');
+              }
+            });
+          }
+        });
+      });
+    });
+
     describe('pages コレクション', () => {
       const collection = config.collections.find(c => c.name === 'pages');
 
@@ -136,14 +160,25 @@ describe('CMS設定（config.yml）の検証', () => {
         expect(collection.format).toBe('frontmatter');
       });
 
-      it('サマリー表示にorderとtitleが含まれている', () => {
+      it('サマリー表示にorder・draft・titleが含まれている', () => {
         expect(collection.summary).toContain('{{order}}');
+        expect(collection.summary).toContain('{{draft}}');
         expect(collection.summary).toContain('{{title}}');
       });
 
       it('ソート可能フィールドにorderとtitleが含まれている', () => {
-        expect(collection.sortable_fields).toContain('order');
-        expect(collection.sortable_fields).toContain('title');
+        const fields = collection.sortable_fields;
+        const fieldNames = fields.map(f => typeof f === 'object' ? f.field : f);
+        expect(fieldNames).toContain('order');
+        expect(fieldNames).toContain('title');
+      });
+
+      it('orderフィールドがデフォルトで昇順ソートに設定されている', () => {
+        const orderField = collection.sortable_fields.find(
+          f => typeof f === 'object' && f.field === 'order'
+        );
+        expect(orderField).toBeDefined();
+        expect(orderField.default_sort).toBe('asc');
       });
     });
 
@@ -237,5 +272,32 @@ describe('CMS設定（config.yml）の検証', () => {
         });
       });
     });
+  });
+});
+
+describe('要件トレーサビリティ検証', () => {
+  it('DOCUMENTATION.mdの全CMS要件IDがトレーサビリティマトリクスに記載されている', () => {
+    // 1.3章（CMS管理画面要件）からCMS-XX IDを抽出
+    const reqSectionMatch = docContent.match(/## 1\.3\. CMS管理画面要件[\s\S]*?(?=\n---|\n## 1\.4\.)/);
+    const reqSection = reqSectionMatch ? reqSectionMatch[0] : '';
+    const reqIds = [...new Set([...reqSection.matchAll(/\| (CMS-\d+) \|/g)].map(m => m[1]))];
+
+    // 1.5.2章（トレーサビリティマトリクス）からCMS-XX IDを抽出
+    const traceSectionMatch = docContent.match(/### 1\.5\.2[\s\S]*?(?=\n### 1\.5\.3|\n---)/);
+    const traceSection = traceSectionMatch ? traceSectionMatch[0] : '';
+    const traceIds = [...traceSection.matchAll(/\| (CMS-\d+) \|/g)].map(m => m[1]);
+
+    // 各要件IDがトレーサビリティに存在するか検証
+    expect(reqIds.length).toBeGreaterThan(0);
+    for (const id of reqIds) {
+      expect(traceIds, `${id} がトレーサビリティマトリクスに未記載`).toContain(id);
+    }
+  });
+
+  it('config.ymlの全コレクションに対応する要件がDOCUMENTATION.mdに存在する', () => {
+    const collectionNames = config.collections.map(c => c.name);
+    for (const name of collectionNames) {
+      expect(docContent, `コレクション "${name}" に対応する要件がDOCUMENTATION.mdに未記載`).toContain(name);
+    }
   });
 });

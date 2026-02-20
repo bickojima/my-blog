@@ -584,8 +584,8 @@
               el.appendChild(titleSpan);
               return;
             }
-            // 固定ページ: "番号 | タイトル" 形式（summary: "{{order}} | {{title}}"）
-            var pagesMatch = text.match(/^(\d+)\s*\|\s*(.+)$/);
+            // 固定ページ: "番号 | draft | タイトル" 形式（summary: "{{order}} | {{draft}} | {{title}}"）
+            var pagesMatch = text.match(/^(\d+)\s*\|\s*(true|false)\s*\|\s*(.+)$/);
             if (pagesMatch) {
               el.dataset.formatted = 'true';
               var orderSpan = document.createElement('span');
@@ -593,9 +593,15 @@
               orderSpan.textContent = '#' + pagesMatch[1];
               el.textContent = '';
               el.appendChild(orderSpan);
+              if (pagesMatch[2] === 'true') {
+                var pageDraftSpan = document.createElement('span');
+                pageDraftSpan.className = 'entry-draft';
+                pageDraftSpan.textContent = '下書き';
+                el.appendChild(pageDraftSpan);
+              }
               var pageTitleSpan = document.createElement('span');
               pageTitleSpan.className = 'entry-title';
-              pageTitleSpan.textContent = pagesMatch[2];
+              pageTitleSpan.textContent = pagesMatch[3];
               el.appendChild(pageTitleSpan);
             }
           });
