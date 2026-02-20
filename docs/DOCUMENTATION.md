@@ -19,6 +19,7 @@
 | 1.12 | 2026-02-21 | FR-10テスト充足化、CMS-14/CMS-15要件追加、要件トレーサビリティマトリクス追加（1.5章）、章番号を部ベース体系（1.x〜4.x）に再構成 |
 | 1.13 | 2026-02-21 | テスト動的化（ハードコードコンテンツ排除）、ヘッダーナビ条件分岐テスト追加（2.1.3章）、境界値・一意性テスト追加（2.1.4章）、FR-14トレーサビリティ更新 |
 | 1.14 | 2026-02-21 | ブランチマージ手順（4.6章）追加、3.3.4章コレクション順序修正（posts先頭）、CMS-05固定ページ番号バッジ追加、コードリファクタリング（image-optimize.mjs writeFile整理、テスト変数重複排除） |
+| 1.15 | 2026-02-21 | 固定ページ一覧に下書きバッジ表示追加（CMS-05更新）、固定ページデフォルトソートをorder順に設定 |
 
 ## システム変更履歴
 
@@ -232,7 +233,7 @@ PR履歴に基づく主要なシステム変更の記録である。
 | CMS-02 | iOS自動ズーム防止: iPhoneで入力フィールドにフォーカスしても画面がズームしない | `admin/index.html` CSS | font-size 16px以上を確保（iOS HIG準拠） |
 | CMS-03 | pull-to-refresh無効化: 編集中にスクロール操作でページがリロードされない | `admin/index.html` JS | touchstart/touchmoveのpreventDefault |
 | CMS-04 | 削除ボタンラベル区別: 画像の「選択解除」と「完全削除」が明確に区別できる | `admin/index.html` JS | 操作ミス防止 |
-| CMS-05 | 一覧表示改善: 記事一覧で日付・下書き状態、固定ページ一覧で番号が視認しやすく表示される | `admin/index.html` JS | MutationObserver使用 |
+| CMS-05 | 一覧表示改善: 記事一覧で日付・下書き状態、固定ページ一覧で番号・下書き状態が視認しやすく表示される | `admin/index.html` JS | MutationObserver使用 |
 | CMS-06 | エディタ公開URL表示: 編集中の記事・ページの公開URLがリアルタイムで表示される | `admin/index.html` JS | url-map.json連携 |
 | CMS-07 | メディアライブラリ: モバイルでもメディア一覧が見やすく操作しやすい | `admin/index.html` CSS | 2列グリッド、タッチスクロール対応 |
 | CMS-08 | 保存ボタン常時表示: モバイルでも保存・公開ボタンが常に画面内に表示される | `admin/index.html` CSS | sticky header、min-height 44px（Apple HIG準拠） |
@@ -948,9 +949,15 @@ collections:
     slug: "{{fields.slug}}"
     extension: "md"
     format: "frontmatter"
+    summary: "{{order}} | {{draft}} | {{title}}"
+    sortable_fields:
+      - field: order
+        default: true
+      - title
 ```
 
 - `slug`（pages）: `{{fields.slug}}` でフロントマターのslugフィールド値をファイル名に使用（`{{slug}}` はDecap CMSではタイトルのURL安全版を意味するため不可）
+- `sortable_fields`（pages）: orderフィールドをデフォルトソートに設定（`default: true`）。一覧画面を開いた時点で番号順に表示される
 - `path`（posts）: ファイルの保存・読み取りパスを定義。CMSがサブディレクトリ`yyyy/mm/`内の既存記事を再帰スキャンする
 - `slug`（posts）: ファイル名部分のみ（タイトルベース）
 
@@ -1419,4 +1426,4 @@ git push origin staging
 
 ---
 
-**最終更新**: 2026年2月21日（v1.14）
+**最終更新**: 2026年2月21日（v1.15）
