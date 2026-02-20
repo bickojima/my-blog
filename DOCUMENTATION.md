@@ -11,6 +11,7 @@
 | 1.4 | 2026-02-15 | EXIF画像回転修正（fixPreviewImageOrientation削除）、ドロップダウンCSS位置制御、公開URLバーhashchange対応、テスト更新（237テスト） |
 | 1.5 | 2026-02-15 | CMS管理画面ヘッダーに本番サイトリンク追加（CMS-11） |
 | 1.6 | 2026-02-15 | iPhone codeblockクラッシュ対策（MutationObserverデバウンス、touchmoveエディタ除外） |
+| 1.7 | 2026-02-20 | 本番/テスト環境分離（staging.reiwa.casa）、admin/index.htmlサイトURL動的化、テスト環境セクション（9.4章）追加 |
 
 ## システム変更履歴
 
@@ -617,6 +618,37 @@ GitHub Settings > Developer settings > OAuth Apps で作成する。
 ### 9.3 カスタムドメイン
 
 本番環境では`reiwa.casa`をカスタムドメインとして設定している。DNSレコードはCloudflare Pagesにより自動設定される。
+
+### 9.4 テスト環境
+
+本番サイトへの影響なく新機能をテストするため、`staging`ブランチによるテスト環境を運用する。
+
+| 項目 | 本番環境 | テスト環境 |
+| :--- | :--- | :--- |
+| URL | `https://reiwa.casa` | `https://staging.reiwa.casa` |
+| ブランチ | `main` | `staging` |
+| Cloudflare Pages | Production deployment | Preview deployment（カスタムドメイン） |
+| GitHub OAuth App | 本番用 | テスト用（別アプリ） |
+| OAUTH_CLIENT_ID | Production環境変数 | Preview環境変数 |
+| robots.txt | `Allow: /` | `Disallow: /`（インデックス防止） |
+| CMS config.yml base_url | `https://reiwa.casa` | `https://staging.reiwa.casa` |
+| CMS config.yml branch | `main` | `staging` |
+
+#### 9.4.1 ブランチ運用
+
+```
+main (本番)  ←── merge ── staging (テスト) ←── merge ── feature/*
+     │                        ↑
+     └── 定期マージ ──────────┘ (コンテンツ同期)
+```
+
+- 新機能: `feature/*` → `staging` へPR → テスト → `staging` → `main` へPR
+- コンテンツ同期: `main` の記事更新を `staging` に定期マージ
+- `config.yml` の `base_url` / `branch` は各ブランチで手動管理。staging → main マージ時は main の値を維持する。
+
+#### 9.4.2 サイトURL動的化
+
+`public/admin/index.html` 内のサイトURL参照（`addSiteLink`、`showPublicUrl`）は `window.location.origin` で動的取得する。これにより、本番（`reiwa.casa`）・テスト（`staging.reiwa.casa`）・ローカル開発（`localhost`）のいずれの環境でも正しいURLが表示される。
 
 ---
 

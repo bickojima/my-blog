@@ -188,10 +188,10 @@ describe('管理画面HTML（public/admin/index.html）の検証', () => {
       expect(adminHtml).toContain('observe(document.body');
     });
 
-    it('ヘッダーに本番サイトへのリンク追加機能がある', () => {
+    it('ヘッダーにサイトへのリンク追加機能がある', () => {
       expect(adminHtml).toContain('addSiteLink');
       expect(adminHtml).toContain('cms-site-link');
-      expect(adminHtml).toContain('https://reiwa.casa');
+      expect(adminHtml).toContain('window.location.origin');
       expect(adminHtml).toContain('target="_blank"');
     });
 
@@ -223,7 +223,7 @@ describe('管理画面HTML（public/admin/index.html）の検証', () => {
     it('エディタ画面に公開URL表示機能がある', () => {
       expect(adminHtml).toContain('showPublicUrl');
       expect(adminHtml).toContain('cms-public-url');
-      expect(adminHtml).toContain('reiwa.casa');
+      expect(adminHtml).toContain('window.location.origin');
     });
 
     it('公開URLがタイトルと日付フィールドから動的に生成される', () => {
