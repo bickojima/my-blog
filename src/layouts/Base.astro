@@ -89,8 +89,8 @@ const navPages = (await getCollection('pages'))
       color: #333;
     }
     .nav-dropdown-trigger::after {
-      content: ' ▾';
-      font-size: 0.7em;
+      content: '▾';
+      font-size: 0.85rem;
     }
     .nav-dropdown-menu {
       display: none;
@@ -151,14 +151,17 @@ const navPages = (await getCollection('pages'))
         {navPages.length === 1 ? (
           <a href={`/${navPages[0].slug}`}>{navPages[0].data.title}</a>
         ) : navPages.length > 1 ? (
-          <div class="nav-dropdown">
-            <button class="nav-dropdown-trigger" type="button">ページ</button>
-            <div class="nav-dropdown-menu">
-              {navPages.map(page => (
-                <a href={`/${page.slug}`}>{page.data.title}</a>
-              ))}
+          <>
+            <a href={`/${navPages[0].slug}`}>{navPages[0].data.title}</a>
+            <div class="nav-dropdown">
+              <button class="nav-dropdown-trigger" type="button" aria-label="他のページ"></button>
+              <div class="nav-dropdown-menu">
+                {navPages.slice(1).map(page => (
+                  <a href={`/${page.slug}`}>{page.data.title}</a>
+                ))}
+              </div>
             </div>
-          </div>
+          </>
         ) : null}
       </div>
     </nav>
