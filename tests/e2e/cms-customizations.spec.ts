@@ -332,7 +332,7 @@ test.describe('E-15: 公開URLバー表示制御', () => {
       const urlBar = page.locator('#cms-public-url');
       await expect(urlBar).toBeVisible();
       const text = await urlBar.textContent();
-      expect(text).toContain('reiwa.casa');
+      expect(text).toContain('localhost');
       expect(text).toContain('/posts/2026/02/');
     }
 
@@ -528,7 +528,7 @@ test.describe('E-17: サイトリンク・コレクション表示', () => {
       const text = await siteLink.textContent();
       expect(text).toContain('ブログを見る');
       const href = await siteLink.getAttribute('href');
-      expect(href).toBe('https://reiwa.casa');
+      expect(href).toBe('http://localhost:4173');
       const target = await siteLink.getAttribute('target');
       expect(target).toBe('_blank');
     }

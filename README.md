@@ -29,14 +29,16 @@ Astro + Decap CMS によるブログサイト。Cloudflare Pages でホスティ
 | 2026-02-20 | CMSプレビューに本番サイト相当のスタイルを適用（`CMS.registerPreviewStyle`） | - |
 | 2026-02-20 | 公開URLバーの表示制御を改善（visibility-based判定、ドロップダウン誤復元修正） | - |
 | 2026-02-20 | E2Eテスト大幅拡充（CMS UIカスタマイズ検証34テスト追加、合計64テスト×3デバイス=204テスト） | - |
+| 2026-02-20 | 本番/テスト環境分離（staging.reiwa.casa）、admin/index.htmlのサイトURL動的化 | - |
 
 ---
 
 ## 1. プロジェクト概要
 
 - **本番URL**: https://reiwa.casa
-- **管理画面**: https://reiwa.casa/admin
-- **認証方式**: GitHub OAuth
+- **テストURL**: https://staging.reiwa.casa（`staging` ブランチ）
+- **管理画面**: https://reiwa.casa/admin（テスト: https://staging.reiwa.casa/admin）
+- **認証方式**: GitHub OAuth（本番・テスト各環境に専用OAuth App）
 - **CMS**: Decap CMS v3.10.0
 
 ## 2. システム構成図
@@ -189,7 +191,24 @@ my-blog/
 | 概要 | text | 任意 |
 | 本文 | markdown | 必須 |
 
-## 7. デプロイ
+## 7. ブランチ運用
+
+```
+main (本番)  ←── merge ── staging (テスト) ←── merge ── feature/*
+     │                        ↑
+     └── 定期マージ ──────────┘ (コンテンツ同期)
+```
+
+| ブランチ | デプロイ先 | CMS backend.branch | 用途 |
+| :--- | :--- | :--- | :--- |
+| `main` | reiwa.casa | main | 本番環境 |
+| `staging` | staging.reiwa.casa | staging | テスト環境 |
+
+- 新機能開発: `feature/*` → `staging` へPR → テスト → `main` へPR
+- コンテンツ同期: `main` の記事更新を `staging` に定期マージ
+- `config.yml` の `base_url` / `branch` は各ブランチで個別管理（マージ時にコンフリクト解消）
+
+## 8. デプロイ
 
 | 項目 | 値 |
 | :--- | :--- |
@@ -198,7 +217,7 @@ my-blog/
 | 出力ディレクトリ | `dist` |
 | 環境変数 | `OAUTH_CLIENT_ID`, `OAUTH_CLIENT_SECRET` |
 
-## 8. ドキュメント体系
+## 9. ドキュメント体系
 
 | 文書 | 内容 |
 | :--- | :--- |
@@ -207,7 +226,7 @@ my-blog/
 | `tests/TEST-REPORT.md` | テスト仕様書（テストケース一覧・要件トレーサビリティ） |
 | `CLAUDE.md` | Claude Code向けプロジェクトガイド（開発規約・注意事項） |
 
-## 9. 参考リンク
+## 10. 参考リンク
 
 - [Astro ドキュメント](https://docs.astro.build)
 - [Decap CMS ドキュメント](https://decapcms.org/docs/)

@@ -4,6 +4,17 @@
 
 個人ブログ「tbiのブログ」（https://reiwa.casa）。Astro SSG + Decap CMS + Cloudflare Pages 構成の静的サイト。
 
+### 環境構成
+
+| 環境 | URL | ブランチ | 用途 |
+| :--- | :--- | :--- | :--- |
+| 本番 | https://reiwa.casa | `main` | 公開サイト |
+| テスト | https://staging.reiwa.casa | `staging` | 新機能テスト・動作確認 |
+
+- `admin/index.html` のサイトURL参照は `window.location.origin` で動的取得（環境非依存）
+- `config.yml` の `base_url` / `branch` は各ブランチで手動管理
+- 新機能: `feature/*` → `staging` PR → テスト → `main` PR
+
 ## コマンド
 
 ```bash
