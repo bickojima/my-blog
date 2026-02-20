@@ -76,20 +76,27 @@ const navPages = (await getCollection('pages'))
     .nav-dropdown {
       position: relative;
     }
-    .nav-dropdown-trigger {
+    .nav-dropdown-link {
       font-size: 0.85rem;
       color: #888;
-      cursor: pointer;
-      text-decoration: none;
     }
-    .nav-dropdown-trigger:hover {
+    .nav-dropdown-link:hover {
       color: #333;
     }
-    .nav-dropdown-trigger::after {
-      content: ' ▾';
-      display: inline-block;
-      font-size: 1rem;
-      padding: 0.2rem;
+    .nav-dropdown-toggle {
+      background: none;
+      border: none;
+      font-family: inherit;
+      font-size: 1.1rem;
+      color: #888;
+      cursor: pointer;
+      padding: 0.1rem 0.3rem;
+      margin-left: 0.1rem;
+      line-height: 1;
+      vertical-align: middle;
+    }
+    .nav-dropdown-toggle:hover {
+      color: #333;
     }
     .nav-dropdown-menu {
       display: none;
@@ -151,7 +158,7 @@ const navPages = (await getCollection('pages'))
           <a href={`/${navPages[0].slug}`}>{navPages[0].data.title}</a>
         ) : navPages.length > 1 ? (
           <div class="nav-dropdown">
-            <a href={`/${navPages[0].slug}`} class="nav-dropdown-trigger">{navPages[0].data.title}</a>
+            <a href={`/${navPages[0].slug}`} class="nav-dropdown-link">{navPages[0].data.title}</a><button class="nav-dropdown-toggle" type="button" aria-label="ページメニュー">▾</button>
             <div class="nav-dropdown-menu">
               {navPages.map(page => (
                 <a href={`/${page.slug}`}>{page.data.title}</a>
@@ -173,18 +180,9 @@ const navPages = (await getCollection('pages'))
   <script>
     const dropdown = document.querySelector('.nav-dropdown');
     if (dropdown) {
-      const trigger = dropdown.querySelector('.nav-dropdown-trigger');
-      let isHovering = false;
-      dropdown.addEventListener('mouseenter', () => { isHovering = true; });
-      dropdown.addEventListener('mouseleave', () => { isHovering = false; });
-      trigger?.addEventListener('click', (e) => {
-        // PC: ホバー中ならメニュー表示済みなので即遷移
-        if (isHovering) return;
-        // モバイル: 1回目タップでメニュー開く、2回目で遷移
-        if (!dropdown.classList.contains('is-open')) {
-          e.preventDefault();
-          dropdown.classList.add('is-open');
-        }
+      const toggle = dropdown.querySelector('.nav-dropdown-toggle');
+      toggle?.addEventListener('click', () => {
+        dropdown.classList.toggle('is-open');
       });
       document.addEventListener('click', (e) => {
         if (!(e.target instanceof Node) || !dropdown.contains(e.target)) {
