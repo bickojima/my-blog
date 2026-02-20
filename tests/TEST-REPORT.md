@@ -462,6 +462,19 @@ admin-html.test.mjs              -     ●     -     -     -     -     -     -  
 | 14 | image-optimize.mjs でEXIF orientationによる幅の補正がある | M-11 | ソースコード内にorientation≥5による幅高さ入替処理が存在する |
 | 15 | Base.astro に image-orientation: from-image が設定されている | M-11 | ソースコード内に`image-orientation: from-image`が存在する |
 
+### 7.2 固定ページコンテンツ検証
+
+固定ページファイルのfrontmatterと構造を検証する。テストケースNo.17〜21はページ数分だけ動的に展開される。
+
+| No. | テストケース | テスト手法 | 期待結果 |
+| :--- | :--- | :--- | :--- |
+| 16 | 固定ページファイルが1つ以上存在する | M-01 | `src/content/pages/`に`.md`ファイルが1件以上存在する |
+| 17 | titleが文字列で存在する | M-04 | `typeof title === 'string'` かつ空でない |
+| 18 | slugが半角英数字とハイフンのみである | M-04 | `/^[a-z0-9-]+$/` にマッチする |
+| 19 | ファイル名がslugフィールドと一致する | M-01, M-03 | ファイル名（拡張子除く）がfrontmatterの`slug`値と一致する（CMS slugテンプレート`{{fields.slug}}`の実データ検証） |
+| 20 | orderが数値である | M-04 | `typeof order === 'number'` |
+| 21 | 本文が空でない | M-04 | frontmatter除去後のMarkdown本文が空でない |
+
 ---
 
 ## 8. rehype-image-caption プラグイン (`rehype-image-caption.test.mjs`) — 8件
@@ -500,7 +513,7 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 
 ---
 
-## 10. CMS設定検証 (`cms-config.test.mjs`) — 27件
+## 10. CMS設定検証 (`cms-config.test.mjs`) — 34件
 
 `public/admin/config.yml`をパースし、設定値の正当性を検証する。
 
@@ -516,7 +529,7 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 | 8 | 日本語ロケールが設定されている | ロケール | M-03 | `locale === "ja"` |
 | 9 | Unicode対応のスラッグエンコーディングが設定されている | スラッグ | M-03 | `slug.encoding === "unicode"` |
 | 10 | アクセント文字のクリーニングが無効である | スラッグ | M-03 | `slug.clean_accents === false` |
-| 11 | コレクションが1つ（posts）定義されている | コレクション | M-03, M-04 | `collections.length === 1` かつ `name === "posts"` |
+| 11 | コレクションが2つ（pages, posts）定義されている | コレクション | M-03, M-04 | `collections.length === 2` かつ `pages`, `posts` が含まれる |
 | 12 | フォルダが正しいパスに設定されている | posts | M-03 | `folder === "src/content/posts"` |
 | 13 | 新規作成が有効になっている | posts | M-03 | `create === true` |
 | 14 | 拡張子がmdに設定されている | posts | M-03 | `extension === "md"` |
@@ -533,10 +546,17 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 | 25 | tagsフィールドがlistウィジェットでオプションである | フィールド | M-04 | `widget === "list"`, `required === false` |
 | 26 | thumbnailフィールドがimageウィジェットでオプションである | フィールド | M-04 | `widget === "image"`, `required === false` |
 | 27 | bodyフィールドがmarkdownウィジェットである | フィールド | M-04 | `widget === "markdown"` |
+| 28 | pagesコレクションのフォルダが正しいパスに設定されている | pages | M-03 | `folder === "src/content/pages"` |
+| 29 | pagesコレクションの新規作成が有効になっている | pages | M-03 | `create === true` |
+| 30 | pagesコレクションの拡張子がmdに設定されている | pages | M-03 | `extension === "md"` |
+| 31 | pagesコレクションのslugテンプレートがfields.slugを参照している | pages | M-03 | `slug === "{{fields.slug}}"`（`{{slug}}`はタイトルベースのため不可） |
+| 32 | pagesの必須フィールドがすべて定義されている | pages フィールド | M-04 | `title`, `slug`, `order`, `body` が存在する |
+| 33 | pagesのslugフィールドにバリデーションパターンがある | pages フィールド | M-04 | `pattern[0] === "^[a-z0-9-]+$"` |
+| 34 | pagesのorderフィールドがnumberウィジェットである | pages フィールド | M-04 | `widget === "number"`, `value_type === "int"` |
 
 ---
 
-## 11. ビルド検証 (`build.test.mjs`) — 31件
+## 11. ビルド検証 (`build.test.mjs`) — 35件
 
 `npm run build`を実行し、パイプライン全体（normalize-images → organize-posts → astro build → image-optimize）の出力を検証する。全テストケースはビルド完了後に実行される。
 
@@ -576,7 +596,7 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 
 ---
 
-## 12. 管理画面HTML検証 (`admin-html.test.mjs`) — 66件
+## 12. 管理画面HTML検証 (`admin-html.test.mjs`) — 67件
 
 `public/admin/index.html`のHTML/CSS/JavaScript内容を文字列パターンマッチングで検証する。
 
@@ -652,8 +672,9 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 | 4 | 削除ボタンの文脈判定がある | M-02 | メディアライブラリ/エディタの文脈判定ロジックが含まれる |
 | 5 | 選択状態による削除ボタンの有効/無効制御がある | M-02 | disabled属性の動的切替処理が含まれる |
 | 6 | エディタ画面に公開URL表示機能がある | M-02 | `window.location.origin`を使った公開URL生成・表示のJS処理が含まれる |
-| 7 | 公開URLがタイトルと日付から動的生成される | M-02 | タイトル・日付フィールド監視と URL 構築処理が含まれる |
-| 8 | 選択状態の判定がborderColorで行われている | M-02 | `borderColor`による選択判定ロジックが含まれる |
+| 7 | 記事の公開URLがタイトルと日付から動的生成される | M-02 | タイトル・日付フィールド監視と URL 構築処理が含まれる |
+| 8 | 固定ページの公開URLがslugフィールドから生成される | M-02 | `/collections/pages/`判定とslugInputによるURL構築処理が含まれる |
+| 9 | 選択状態の判定がborderColorで行われている | M-02 | `borderColor`による選択判定ロジックが含まれる |
 
 ### 12.7 iPad対応（4件）
 
@@ -921,22 +942,22 @@ npm run build
 
 | 項目 | 結果 |
 | :--- | :--- |
-| 実行日時 | 2026-02-15 17:20 |
+| 実行日時 | 2026-02-20 22:30 |
 | Vitest バージョン | v4.0.18 |
-| 実行時間 | 1.31s |
+| 実行時間 | 1.83s |
 | 合否判定 | **合格** |
 
 ### 16.2 テストファイル別結果
 
 | テストファイル | テスト数 | 結果 | 実行時間 |
 | :--- | :--- | :--- | :--- |
-| `cms-config.test.mjs` | 27 | PASS | 3ms |
-| `admin-html.test.mjs` | 66 | PASS | 4ms |
+| `cms-config.test.mjs` | 34 | PASS | 4ms |
+| `admin-html.test.mjs` | 67 | PASS | 6ms |
 | `rehype-image-caption.test.mjs` | 8 | PASS | 2ms |
-| `auth-functions.test.mjs` | 10 | PASS | 25ms |
-| `content-validation.test.mjs` | 35 | PASS | 21ms |
-| `build.test.mjs` | 31 | PASS | 1293ms |
-| **合計** | **177** | **全PASS** | **1358ms** |
+| `auth-functions.test.mjs` | 10 | PASS | 26ms |
+| `content-validation.test.mjs` | 46 | PASS | 46ms |
+| `build.test.mjs` | 35 | PASS | 1690ms |
+| **合計** | **200** | **全PASS** | **1.83s** |
 
 ### 16.3 E2Eテスト最新実行結果（Playwright）
 

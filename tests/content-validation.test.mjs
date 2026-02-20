@@ -137,6 +137,13 @@ describe('固定ページ（pages）コンテンツの検証', () => {
       expect(frontmatter.slug).toMatch(/^[a-z0-9-]+$/);
     });
 
+    it('ファイル名がslugフィールドと一致する', () => {
+      // CMS config.ymlのslugテンプレートが{{fields.slug}}であることの実データ検証
+      // {{slug}}（タイトルベース）だとファイル名が日本語タイトルになる不具合の再発防止
+      const fileName = filePath.split('/').pop().replace('.md', '');
+      expect(fileName).toBe(frontmatter.slug);
+    });
+
     it('orderが数値である', () => {
       expect(typeof frontmatter.order).toBe('number');
     });
