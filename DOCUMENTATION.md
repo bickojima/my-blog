@@ -754,7 +754,7 @@ collections:
 
 ```
 ┌───────────────────────────────────────────────────────┐
-│                admin/index.html (801行)                │
+│                admin/index.html (952行)                │
 │                                                       │
 │  ┌─────────────────┐  ┌────────────────────────────┐ │
 │  │   CSS (Style)    │  │   JavaScript              │ │
@@ -766,7 +766,8 @@ collections:
 │  │ モバイル         │  │   ├ relabelImageButtons   │ │
 │  │   (≤799px)      │  │   ├ updateDeleteButtonState│ │
 │  │   sticky header │  │   ├ showPublicUrl          │ │
-│  │   ボトムシート   │  │   └ manageDropdownOverlay │ │
+│  │   ボトムシート   │  │   ├ manageDropdownOverlay │ │
+│  │                 │  │   └ hideCodeBlockOnMobile  │ │
 │  │   2列グリッド    │  │                            │ │
 │  │   44pxタップ領域 │  │ hashchange リスナー        │ │
 │  │                 │  │   └ showPublicUrl再実行    │ │
@@ -828,8 +829,9 @@ Decap CMSはデフォルトではモバイル対応が不十分であるため�
 
 記事編集画面で、画面下部に公開URLをリアルタイム表示する。タイトルと日付のフィールドを監視し、`https://reiwa.casa/posts/{年}/{月}/{タイトル}` 形式で動的生成する。
 
-- `hashchange` イベントで画面遷移を検知し、エディタ外では自動非表示
-- ドロップダウン（ボトムシート）表示中は `manageDropdownOverlay()` でURLバーを一時非表示にし、重なりを防止
+- `EditorControlBar` の `getBoundingClientRect().height > 0` でエディタ画面を判定し、コレクション一覧では確実に非表示
+- `hashchange` イベントで画面遷移時に `showPublicUrl()` を再実行
+- ドロップダウン（ボトムシート）表示中は `manageDropdownOverlay()` でURLバーを一時非表示にし、重なりを防止（`hiddenByDropdown` フラグで `showPublicUrl` による非表示との競合を回避）
 
 ### 13.7 EXIF画像回転の方針
 

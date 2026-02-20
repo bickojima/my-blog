@@ -26,6 +26,8 @@ Astro + Decap CMS によるブログサイト。Cloudflare Pages でホスティ
 | 2026-02-15 夜 | EXIF画像回転修正（fixPreviewImageOrientation削除）、公開URLバーhashchange対応、ドロップダウンボトムシート化 | - |
 | 2026-02-15 夜 | CMS管理画面ヘッダーに本番サイトリンク追加 | - |
 | 2026-02-15 夜 | iPhone codeblockクラッシュ対策（MutationObserverデバウンス、touchmoveエディタ除外） | - |
+| 2026-02-20 | CMSプレビューに本番サイト相当のスタイルを適用（`CMS.registerPreviewStyle`） | - |
+| 2026-02-20 | 公開URLバーの表示制御を改善（visibility-based判定、ドロップダウン誤復元修正） | - |
 
 ---
 
@@ -121,7 +123,7 @@ my-blog/
 | `npm run dev` | 開発サーバー起動（localhost:4321） |
 | `npm run build` | 本番ビルド（`./dist/` に出力） |
 | `npm run preview` | ビルド結果のローカルプレビュー |
-| `npm test` | 単体・統合テスト実行（Vitest / 237テスト） |
+| `npm test` | 単体・統合テスト実行（Vitest / 177テスト、記事数により変動） |
 | `npm run test:watch` | ウォッチモードでテスト実行 |
 | `npm run test:e2e` | E2Eテスト実行（Playwright / PC・iPad・iPhone 90テスト） |
 
@@ -163,8 +165,13 @@ my-blog/
 
 - エディタ画面の下部に公開URLをリアルタイム表示
 - タイトル・日付フィールドの変更を監視し動的に生成
-- `hashchange` イベントでエディタ↔一覧遷移時に表示/非表示を切替
-- ドロップダウン表示中は公開URLバーを一時的に非表示（重なり防止）
+- EditorControlBarの表示状態（`getBoundingClientRect`）でエディタ画面を判定し、コレクション一覧では確実に非表示
+- ドロップダウン表示中は公開URLバーを一時的に非表示（`hiddenByDropdown`フラグで誤復元を防止）
+
+### 5.6 プレビュースタイル
+
+- `CMS.registerPreviewStyle()` で本番サイト相当のCSSをプレビューiframeに注入
+- フォント、行間、画像サイズ・角丸、コードブロック背景色など本番と同等の表示を実現
 
 ## 6. CMS設定
 
