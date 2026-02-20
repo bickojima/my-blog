@@ -148,6 +148,20 @@ describe('固定ページ（pages）コンテンツの検証', () => {
       expect(typeof frontmatter.order).toBe('number');
     });
 
+    it('draftがboolean型である（存在する場合）', () => {
+      if (frontmatter.draft !== undefined) {
+        expect(typeof frontmatter.draft).toBe('boolean');
+      }
+    });
+
+    it('slugが予約語でない（posts, tags, admin）', () => {
+      const reservedSlugs = ['posts', 'tags', 'admin'];
+      expect(
+        reservedSlugs.includes(frontmatter.slug),
+        `slugが予約語です: ${frontmatter.slug}（${reservedSlugs.join(', ')}は使用不可）`
+      ).toBe(false);
+    });
+
     it('本文が空でない', () => {
       expect(content.trim().length).toBeGreaterThan(0);
     });

@@ -114,6 +114,31 @@ describe('CMS設定（config.yml）の検証', () => {
           expect(order.widget).toBe('number');
           expect(order.value_type).toBe('int');
         });
+
+        it('draftフィールドがbooleanウィジェットでデフォルトfalse', () => {
+          const draft = fields.find(f => f.name === 'draft');
+          expect(draft.widget).toBe('boolean');
+          expect(draft.default).toBe(false);
+        });
+
+        it('bodyフィールドがmarkdownウィジェット', () => {
+          const body = fields.find(f => f.name === 'body');
+          expect(body.widget).toBe('markdown');
+        });
+      });
+
+      it('フォーマットがfrontmatterに設定されている', () => {
+        expect(collection.format).toBe('frontmatter');
+      });
+
+      it('サマリー表示にorderとtitleが含まれている', () => {
+        expect(collection.summary).toContain('{{order}}');
+        expect(collection.summary).toContain('{{title}}');
+      });
+
+      it('ソート可能フィールドにorderとtitleが含まれている', () => {
+        expect(collection.sortable_fields).toContain('order');
+        expect(collection.sortable_fields).toContain('title');
       });
     });
 

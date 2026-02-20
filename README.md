@@ -34,6 +34,7 @@ Astro + Decap CMS によるブログサイト。Cloudflare Pages でホスティ
 | 2026-02-20 | 本番/テスト環境分離（staging.reiwa.casa）、admin/index.htmlのサイトURL動的化 | - |
 | 2026-02-20 | staging環境: CNAME方式でカスタムドメイン接続、[STAGING]ラベル表示（サイト・CMS） | - |
 | 2026-02-20 | 固定ページシステム導入（pagesコレクション、/profileページ、ヘッダーナビ動的生成） | - |
+| 2026-02-20 | 固定ページ不具合修正（slugテンプレート、公開URL表示、ドロップダウンUX）、テスト強化（Vitest 218件、E2E 237件） | - |
 
 ---
 
@@ -132,9 +133,9 @@ my-blog/
 | `npm run dev` | 開発サーバー起動（localhost:4321） |
 | `npm run build` | 本番ビルド（`./dist/` に出力） |
 | `npm run preview` | ビルド結果のローカルプレビュー |
-| `npm test` | 単体・統合テスト実行（Vitest / 200テスト、記事数により変動） |
+| `npm test` | 単体・統合テスト実行（Vitest / 218テスト、記事数により変動） |
 | `npm run test:watch` | ウォッチモードでテスト実行 |
-| `npm run test:e2e` | E2Eテスト実行（Playwright / PC・iPad・iPhone 204テスト） |
+| `npm run test:e2e` | E2Eテスト実行（Playwright / PC・iPad・iPhone 237テスト） |
 
 ## 5. 管理画面のUIカスタマイズ
 
