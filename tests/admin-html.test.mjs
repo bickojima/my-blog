@@ -203,6 +203,14 @@ describe('管理画面HTML（public/admin/index.html）の検証', () => {
       );
     });
 
+    it('固定ページ一覧の番号フォーマット処理がある', () => {
+      // "番号 | タイトル" パターンの正規表現（entry-dateと同じスタイルで表示）
+      expect(adminHtml).toContain(
+        String.raw`/^(\d+)\s*\|\s*(.+)$/`
+      );
+      expect(adminHtml).toContain("'#' + pagesMatch[1]");
+    });
+
     it('削除ボタンのラベル変更処理がある', () => {
       expect(adminHtml).toContain('relabelImageButtons');
       expect(adminHtml).toContain('選択解除');
