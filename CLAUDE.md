@@ -22,7 +22,7 @@
 ```bash
 npm run dev          # 開発サーバー起動（前処理含む）
 npm run build        # 本番ビルド（normalize-images → organize-posts → astro build → image-optimize）
-npm test             # Vitest 全テスト実行（242テスト、記事数により変動）
+npm test             # Vitest 全テスト実行（243テスト、記事数により変動）
 npm run test:watch   # Vitest ウォッチモード
 npm run test:e2e     # Playwright E2Eテスト（要: npm run build 済み、237テスト）
 ```
@@ -41,7 +41,7 @@ src/
 └── content.config.ts        # Zodスキーマ定義
 
 public/
-├── admin/index.html         # Decap CMS管理画面（CSS/JS カスタマイズ含む、約950行）
+├── admin/index.html         # Decap CMS管理画面（CSS/JS カスタマイズ含む、約1000行）
 ├── admin/config.yml         # CMS設定（GitHub backend, OAuth）
 └── images/uploads/          # アップロード画像
 
@@ -90,7 +90,7 @@ tests/
 
 ## テスト
 
-- **Vitest**: 設定検証、コンテンツ検証、単体テスト、ビルド統合テスト（242テスト、記事数により変動）
+- **Vitest**: 設定検証、コンテンツ検証、単体テスト、ビルド統合テスト（243テスト、記事数により変動）
 - **Playwright**: PC/iPad/iPhone 3デバイス × 79テスト = 237テスト（ローカルのみ、CIでは未実行）
 - コンテンツ検証テストは記事数・ページ数に応じて動的展開される
 - テスト実行後、失敗がある場合は原因を調査し修正する（テストを削除・スキップしない）

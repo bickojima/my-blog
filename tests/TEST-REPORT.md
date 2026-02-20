@@ -15,6 +15,7 @@
 | 1.8 | 2026-02-20 | 固定ページ・ドロップダウンのテスト追加: cms-config 5件、content-validation 4件、build 9件追加（218テスト）。E2E site.spec.ts にE-20（固定ページ表示）4件・E-21（ヘッダーナビドロップダウン）7件追加（237テスト） |
 | 1.9 | 2026-02-20 | FR-10充足化（url-map.jsonテスト6件追加）、CMS-14追加（コレクション表示順序テスト1件）、全要件トレーサビリティ充足、コレクション順序変更（posts先頭） |
 | 1.10 | 2026-02-21 | テスト動的化（ハードコードコンテンツ排除）、ヘッダーナビ条件分岐テスト11件追加、境界値・一意性テスト6件追加、ビルドテストをソースデータ動的参照に改修（242テスト） |
+| 1.11 | 2026-02-21 | 固定ページ番号バッジフォーマットテスト追加（admin-html 68件）、テスト件数更新（243テスト） |
 
 ## テスト基盤の変更履歴
 
@@ -26,6 +27,7 @@
 | 2026-02-20 | **固定ページ・ドロップダウン検証強化**: cms-config 5件、content-validation 4件、build 9件追加。E2E site.spec.ts に固定ページ表示（E-20）4件、ヘッダーナビドロップダウン（E-21）7件追加。計218 Vitest + 237 E2E = 455テスト | - |
 | 2026-02-20 | **要件トレーサビリティ完全充足**: FR-10テスト6件追加（url-map.json検証）、CMS-14追加（コレクション表示順序）1件。コレクション順序変更（posts先頭）。計225 Vitest + 237 E2E = 462テスト | - |
 | 2026-02-21 | **テスト動的化・条件分岐網羅**: ハードコードコンテンツ排除（ソースから動的取得）、ヘッダーナビ3分岐テンプレートロジック・JS制御テスト11件、固定ページ境界値・一意性テスト6件追加。計242 Vitest + 237 E2E = 479テスト | - |
+| 2026-02-21 | **コードリファクタリング・テスト追加**: 固定ページ番号バッジフォーマットテスト1件追加（admin-html 67→68件）。image-optimize.mjs writeFile整理、テスト変数重複排除。計243 Vitest + 237 E2E = 480テスト | - |
 
 ---
 
@@ -660,7 +662,7 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 
 ---
 
-## 2.6. 管理画面HTML検証 (`admin-html.test.mjs`) — 67件
+## 2.6. 管理画面HTML検証 (`admin-html.test.mjs`) — 68件
 
 `public/admin/index.html`のHTML/CSS/JavaScript内容を文字列パターンマッチングで検証する。
 
@@ -725,7 +727,7 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 | 2 | Slateエラー（toSlatePoint/toSlateRange）のグローバルハンドラがある | M-02 | `toSlatePoint`/`toSlateRange`をキャッチするwindow errorハンドラが含まれる |
 | 3 | MutationObserverがrequestAnimationFrameでデバウンスされている | M-02 | `requestAnimationFrame`と`rafPending`によるデバウンス処理が含まれる |
 
-### 2.6.6 JavaScriptカスタマイズ（9件）
+### 2.6.6 JavaScriptカスタマイズ（10件）
 
 | No. | テストケース | テスト手法 | 期待結果 |
 | :--- | :--- | :--- | :--- |
@@ -739,6 +741,7 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 | 7 | 記事の公開URLがタイトルと日付から動的生成される | M-02 | タイトル・日付フィールド監視と URL 構築処理が含まれる |
 | 8 | 固定ページの公開URLがslugフィールドから生成される | M-02 | `/collections/pages/`判定とslugInputによるURL構築処理が含まれる |
 | 9 | 選択状態の判定がborderColorで行われている | M-02 | `borderColor`による選択判定ロジックが含まれる |
+| 10 | 固定ページ一覧の番号フォーマット処理がある | M-02 | `pagesMatch`正規表現と`'#' + pagesMatch[1]`による番号バッジ表示処理が含まれる |
 
 ### 2.6.7 iPad対応（4件）
 
@@ -972,12 +975,12 @@ npm run build
 | テストファイル | テスト数 | 結果 | 実行時間 |
 | :--- | :--- | :--- | :--- |
 | `cms-config.test.mjs` | 40 | PASS | 5ms |
-| `admin-html.test.mjs` | 67 | PASS | 7ms |
+| `admin-html.test.mjs` | 68 | PASS | 7ms |
 | `rehype-image-caption.test.mjs` | 8 | PASS | 2ms |
 | `auth-functions.test.mjs` | 10 | PASS | 25ms |
 | `content-validation.test.mjs` | 67 | PASS | 43ms |
 | `build.test.mjs` | 50 | PASS | 1577ms |
-| **合計** | **242** | **全PASS** | **1.75s** |
+| **合計** | **243** | **全PASS** | **1.75s** |
 
 ### 4.3.3 E2Eテスト最新実行結果（Playwright）
 

@@ -582,6 +582,21 @@
               titleSpan.className = 'entry-title';
               titleSpan.textContent = match[3];
               el.appendChild(titleSpan);
+              return;
+            }
+            // 固定ページ: "番号 | タイトル" 形式（summary: "{{order}} | {{title}}"）
+            var pagesMatch = text.match(/^(\d+)\s*\|\s*(.+)$/);
+            if (pagesMatch) {
+              el.dataset.formatted = 'true';
+              var orderSpan = document.createElement('span');
+              orderSpan.className = 'entry-date';
+              orderSpan.textContent = '#' + pagesMatch[1];
+              el.textContent = '';
+              el.appendChild(orderSpan);
+              var pageTitleSpan = document.createElement('span');
+              pageTitleSpan.className = 'entry-title';
+              pageTitleSpan.textContent = pagesMatch[2];
+              el.appendChild(pageTitleSpan);
             }
           });
         }

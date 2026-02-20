@@ -12,6 +12,7 @@ Astro + Decap CMS によるブログサイト。Cloudflare Pages でホスティ
 | 1.3 | 2026-02-20 | 本番/テスト環境分離（staging.reiwa.casa）、[STAGING]ラベル表示、CMS URL動的化、テスト環境セクション追加 |
 | 1.4 | 2026-02-20 | 固定ページシステム導入（pages コレクション、プロフィールページ、ヘッダーナビ） |
 | 1.5 | 2026-02-21 | 章番号再構成、セクション順序修正、テスト件数更新 |
+| 1.6 | 2026-02-21 | マージ手順リファレンス追加、テスト件数更新（243テスト） |
 
 詳細なシステム変更履歴は [DOCUMENTATION.md](docs/DOCUMENTATION.md) を参照。
 
@@ -114,7 +115,7 @@ my-blog/
 | `npm run dev` | 開発サーバー起動（localhost:4321） |
 | `npm run build` | 本番ビルド（`./dist/` に出力） |
 | `npm run preview` | ビルド結果のローカルプレビュー |
-| `npm test` | 単体・統合テスト実行（Vitest / 242テスト、記事数により変動） |
+| `npm test` | 単体・統合テスト実行（Vitest / 243テスト、記事数により変動） |
 | `npm run test:watch` | ウォッチモードでテスト実行 |
 | `npm run test:e2e` | E2Eテスト実行（Playwright / PC・iPad・iPhone 237テスト） |
 
@@ -213,6 +214,7 @@ main (本番)  ←── merge ── staging (テスト) ←── merge ──
 - 新機能開発: `feature/*` → `staging` へPR → テスト → `main` へPR
 - コンテンツ同期: `main` の記事更新を `staging` に定期マージ
 - `config.yml` の `base_url` / `branch` は各ブランチで個別管理（マージ時にコンフリクト解消）
+- マージ手順の詳細は [DOCUMENTATION.md 4.6章](docs/DOCUMENTATION.md) を参照
 
 ## 8. デプロイ
 
