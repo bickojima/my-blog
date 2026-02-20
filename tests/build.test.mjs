@@ -1,9 +1,59 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { execSync } from 'child_process';
 import { existsSync, readFileSync, readdirSync } from 'fs';
-import { join } from 'path';
+import { join, extname } from 'path';
+import matter from 'gray-matter';
 
 const DIST_DIR = join(process.cwd(), 'dist');
+const POSTS_DIR = join(process.cwd(), 'src/content/posts');
+const PAGES_DIR = join(process.cwd(), 'src/content/pages');
+
+/**
+ * ソースの記事Markdownを再帰収集し、非draftの公開記事を返す
+ */
+function getPublishedPosts() {
+  const files = [];
+  function collect(dir) {
+    if (!existsSync(dir)) return;
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const fullPath = join(dir, entry.name);
+      if (entry.isDirectory()) collect(fullPath);
+      else if (extname(entry.name) === '.md') files.push(fullPath);
+    }
+  }
+  collect(POSTS_DIR);
+  return files
+    .map(f => {
+      const { data } = matter(readFileSync(f, 'utf-8'));
+      const dateStr = data.date instanceof Date
+        ? data.date.toISOString().split('T')[0]
+        : String(data.date);
+      const [year, month] = dateStr.split('-');
+      return { title: data.title, year, month, draft: data.draft, path: f };
+    })
+    .filter(p => !p.draft);
+}
+
+/**
+ * ソースの固定ページMarkdownを収集し、非draftページをorder順で返す
+ */
+function getPublishedPages() {
+  if (!existsSync(PAGES_DIR)) return [];
+  return readdirSync(PAGES_DIR)
+    .filter(f => extname(f) === '.md')
+    .map(f => {
+      const { data } = matter(readFileSync(join(PAGES_DIR, f), 'utf-8'));
+      return { title: data.title, slug: data.slug, order: data.order, draft: data.draft };
+    })
+    .filter(p => !p.draft)
+    .sort((a, b) => a.order - b.order);
+}
+
+// ソースから動的取得（ビルド前に読める）
+const publishedPosts = getPublishedPosts();
+const publishedPages = getPublishedPages();
+const firstPost = publishedPosts[0];
+const firstPage = publishedPages[0];
 
 describe('ビルド検証', () => {
   beforeAll(() => {
@@ -60,9 +110,10 @@ describe('ビルド検証', () => {
     });
 
     it('記事ページがyyyy/mm/記事名の構造で生成されている', () => {
+      expect(firstPost).toBeDefined();
       const postPath = join(
         DIST_DIR,
-        'posts/2026/02/ブラザープリンターを買った話/index.html'
+        `posts/${firstPost.year}/${firstPost.month}/${firstPost.title}/index.html`
       );
       expect(existsSync(postPath)).toBe(true);
     });
@@ -70,14 +121,16 @@ describe('ビルド検証', () => {
 
   describe('アーカイブページの生成確認', () => {
     it('年別アーカイブページが生成される', () => {
+      expect(firstPost).toBeDefined();
       expect(
-        existsSync(join(DIST_DIR, 'posts/2026/index.html'))
+        existsSync(join(DIST_DIR, `posts/${firstPost.year}/index.html`))
       ).toBe(true);
     });
 
     it('月別アーカイブページが生成される', () => {
+      expect(firstPost).toBeDefined();
       expect(
-        existsSync(join(DIST_DIR, 'posts/2026/02/index.html'))
+        existsSync(join(DIST_DIR, `posts/${firstPost.year}/${firstPost.month}/index.html`))
       ).toBe(true);
     });
 
@@ -89,78 +142,110 @@ describe('ビルド検証', () => {
   });
 
   describe('固定ページの生成確認', () => {
-    it('プロフィールページが生成される', () => {
-      expect(existsSync(join(DIST_DIR, 'profile/index.html'))).toBe(true);
+    it('全固定ページのHTMLが生成される', () => {
+      expect(publishedPages.length).toBeGreaterThan(0);
+      for (const page of publishedPages) {
+        expect(
+          existsSync(join(DIST_DIR, `${page.slug}/index.html`)),
+          `${page.slug}/index.html が存在しない`
+        ).toBe(true);
+      }
     });
 
-    it('プロフィールページにタイトルが含まれている', () => {
-      const html = readFileSync(join(DIST_DIR, 'profile/index.html'), 'utf-8');
-      expect(html).toContain('プロフィール');
+    it('各固定ページにタイトルが含まれている', () => {
+      for (const page of publishedPages) {
+        const html = readFileSync(join(DIST_DIR, `${page.slug}/index.html`), 'utf-8');
+        expect(html).toContain(page.title);
+      }
     });
 
-    it('プロフィールページに「記事一覧に戻る」リンクがある', () => {
-      const html = readFileSync(join(DIST_DIR, 'profile/index.html'), 'utf-8');
-      expect(html).toContain('記事一覧に戻る');
-      expect(html).toContain('href="/"');
-    });
-
-    it('aboutページが生成される', () => {
-      expect(existsSync(join(DIST_DIR, 'about/index.html'))).toBe(true);
-    });
-
-    it('aboutページにタイトルが含まれている', () => {
-      const html = readFileSync(join(DIST_DIR, 'about/index.html'), 'utf-8');
-      expect(html).toContain('このサイトについて');
-    });
-
-    it('aboutページに「記事一覧に戻る」リンクがある', () => {
-      const html = readFileSync(join(DIST_DIR, 'about/index.html'), 'utf-8');
-      expect(html).toContain('記事一覧に戻る');
-      expect(html).toContain('href="/"');
+    it('各固定ページに「記事一覧に戻る」リンクがある', () => {
+      for (const page of publishedPages) {
+        const html = readFileSync(join(DIST_DIR, `${page.slug}/index.html`), 'utf-8');
+        expect(html).toContain('記事一覧に戻る');
+        expect(html).toContain('href="/"');
+      }
     });
   });
 
-  describe('ヘッダーナビゲーションの検証', () => {
+  describe('ヘッダーナビゲーションの検証（2ページ以上ケース）', () => {
     let indexHtml;
 
     beforeAll(() => {
       indexHtml = readFileSync(join(DIST_DIR, 'index.html'), 'utf-8');
     });
 
-    it('トップページのヘッダーにプロフィールリンクがある', () => {
-      expect(indexHtml).toContain('href="/profile"');
-      expect(indexHtml).toContain('プロフィール');
-    });
-
-    it('トップページのヘッダーにaboutリンクがある', () => {
-      expect(indexHtml).toContain('href="/about"');
+    it('トップページのヘッダーに全固定ページへのリンクがある', () => {
+      for (const page of publishedPages) {
+        expect(indexHtml).toContain(`href="/${page.slug}"`);
+      }
     });
 
     it('ドロップダウン構造（nav-dropdown）が存在する（固定ページ2つ以上）', () => {
-      expect(indexHtml).toContain('nav-dropdown');
+      if (publishedPages.length >= 2) {
+        expect(indexHtml).toContain('nav-dropdown');
+      }
     });
 
     it('ドロップダウントグルボタン（▾）が存在する', () => {
-      expect(indexHtml).toContain('nav-dropdown-toggle');
-      expect(indexHtml).toContain('▾');
+      if (publishedPages.length >= 2) {
+        expect(indexHtml).toContain('nav-dropdown-toggle');
+        expect(indexHtml).toContain('▾');
+      }
     });
 
     it('ドロップダウンメニュー（nav-dropdown-menu）が存在する', () => {
-      expect(indexHtml).toContain('nav-dropdown-menu');
+      if (publishedPages.length >= 2) {
+        expect(indexHtml).toContain('nav-dropdown-menu');
+      }
     });
 
-    it('最優先ページが直接リンク（nav-dropdown-link）として表示される', () => {
-      expect(indexHtml).toContain('nav-dropdown-link');
+    it('最優先ページ（order最小）が直接リンクとして表示される', () => {
+      if (publishedPages.length >= 2) {
+        const topPage = publishedPages[0];
+        // Astroビルドではscoped属性が付与されるため、href+classで照合
+        const escapedSlug = topPage.slug.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        expect(indexHtml).toMatch(new RegExp(`href="/${escapedSlug}"[^>]*class="nav-dropdown-link"`));
+        expect(indexHtml).toContain(`>${topPage.title}</a>`);
+      }
+    });
+
+    it('ドロップダウンメニューに全固定ページが含まれている', () => {
+      if (publishedPages.length >= 2) {
+        const menuMatch = indexHtml.match(
+          /nav-dropdown-menu[\s\S]*?<\/div>/
+        );
+        expect(menuMatch).not.toBeNull();
+        for (const page of publishedPages) {
+          expect(menuMatch[0]).toContain(page.title);
+        }
+      }
     });
 
     it('ドロップダウンのJS制御スクリプトが存在する', () => {
-      // mouseenter/mouseleave による開閉制御
       expect(indexHtml).toContain('mouseenter');
       expect(indexHtml).toContain('mouseleave');
-      // ▾ボタンのクリックトグル
       expect(indexHtml).toContain('nav-dropdown-toggle');
-      // 外側クリックで閉じる
       expect(indexHtml).toContain('is-open');
+    });
+
+    it('mouseleaveに300ms遅延が設定されている', () => {
+      expect(indexHtml).toContain('300');
+      expect(indexHtml).toContain('setTimeout');
+    });
+
+    it('外側クリックで閉じるハンドラが存在する', () => {
+      expect(indexHtml).toContain('document.addEventListener');
+      // .contains() はJS最小化後も残る（変数名のみ短縮）
+      expect(indexHtml).toMatch(/\.contains\(/);
+    });
+
+    it('固定ページが各ページの出力にもドロップダウンナビを持つ', () => {
+      if (publishedPages.length >= 2) {
+        const pageHtml = readFileSync(join(DIST_DIR, `${firstPage.slug}/index.html`), 'utf-8');
+        expect(pageHtml).toContain('nav-dropdown');
+        expect(pageHtml).toContain('nav-dropdown-menu');
+      }
     });
   });
 
@@ -206,8 +291,9 @@ describe('ビルド検証', () => {
     });
 
     it('公開記事へのリンクが含まれている', () => {
-      expect(indexHtml).toContain('ブラザープリンターを買った話');
-      expect(indexHtml).toContain('href="/posts/2026/02/');
+      expect(firstPost).toBeDefined();
+      expect(indexHtml).toContain(firstPost.title);
+      expect(indexHtml).toContain(`href="/posts/${firstPost.year}/${firstPost.month}/`);
     });
 
     it('カテゴリリンクが含まれていない', () => {
@@ -219,8 +305,9 @@ describe('ビルド検証', () => {
     });
 
     it('アーカイブナビゲーションが含まれている', () => {
+      expect(firstPost).toBeDefined();
       expect(indexHtml).toContain('アーカイブ');
-      expect(indexHtml).toContain('href="/posts/2026"');
+      expect(indexHtml).toContain(`href="/posts/${firstPost.year}"`);
     });
 
     it('copyright表記がある', () => {
@@ -235,9 +322,10 @@ describe('ビルド検証', () => {
 
   describe('個別記事ページHTMLの検証', () => {
     it('記事ページに「記事一覧に戻る」リンクがある', () => {
+      expect(firstPost).toBeDefined();
       const postHtml = join(
         DIST_DIR,
-        'posts/2026/02/ブラザープリンターを買った話/index.html'
+        `posts/${firstPost.year}/${firstPost.month}/${firstPost.title}/index.html`
       );
       if (existsSync(postHtml)) {
         const html = readFileSync(postHtml, 'utf-8');
@@ -288,20 +376,74 @@ describe('ビルド検証', () => {
     });
   });
 
+  describe('URLマッピングJSON（url-map.json）の検証', () => {
+    let urlMap;
+
+    beforeAll(() => {
+      const urlMapPath = join(DIST_DIR, 'admin/url-map.json');
+      expect(existsSync(urlMapPath)).toBe(true);
+      urlMap = JSON.parse(readFileSync(urlMapPath, 'utf-8'));
+    });
+
+    it('url-map.jsonがdist/admin/に出力されている', () => {
+      expect(existsSync(join(DIST_DIR, 'admin/url-map.json'))).toBe(true);
+    });
+
+    it('有効なJSONオブジェクトである', () => {
+      expect(typeof urlMap).toBe('object');
+      expect(urlMap).not.toBeNull();
+      expect(Array.isArray(urlMap)).toBe(false);
+    });
+
+    it('1件以上のエントリが含まれている', () => {
+      expect(Object.keys(urlMap).length).toBeGreaterThan(0);
+    });
+
+    it('キーがYYYY/MM/スラグ形式である', () => {
+      for (const key of Object.keys(urlMap)) {
+        expect(key).toMatch(/^\d{4}\/\d{2}\/.+$/);
+      }
+    });
+
+    it('値が/posts/YYYY/MM/スラグ形式のURLパスである', () => {
+      for (const value of Object.values(urlMap)) {
+        expect(value).toMatch(/^\/posts\/\d{4}\/\d{2}\/.+$/);
+      }
+    });
+
+    it('キーと値のスラグ部分が一致している', () => {
+      for (const [key, value] of Object.entries(urlMap)) {
+        expect(value).toBe(`/posts/${key}`);
+      }
+    });
+  });
+
   describe('rehype-image-captionプラグインの適用確認', () => {
     it('title付き画像がfigure/figcaptionに変換されている', () => {
-      const htmlPath = join(
-        DIST_DIR,
-        'posts/2026/02/ブラザープリンターを買った話/index.html'
-      );
-      expect(existsSync(htmlPath)).toBe(true);
+      // dist/posts/ 内の全記事HTMLから figure タグを持つものを動的に検索
+      const postsDir = join(DIST_DIR, 'posts');
+      let foundFigure = false;
 
-      const html = readFileSync(htmlPath, 'utf-8');
-      expect(html).toContain('<figure');
-      expect(html).toContain('<figcaption');
-      expect(html).toContain('プリンター');
-      expect(html).toContain('loading="lazy"');
-      expect(html).toContain('decoding="async"');
+      function searchForFigure(dir) {
+        if (!existsSync(dir)) return;
+        for (const entry of readdirSync(dir, { withFileTypes: true })) {
+          const fullPath = join(dir, entry.name);
+          if (entry.isDirectory()) {
+            searchForFigure(fullPath);
+          } else if (entry.name === 'index.html') {
+            const html = readFileSync(fullPath, 'utf-8');
+            if (html.includes('<figure') && html.includes('<figcaption')) {
+              foundFigure = true;
+              // figure/figcaptionが存在する記事で追加検証
+              expect(html).toContain('loading="lazy"');
+              expect(html).toContain('decoding="async"');
+              return;
+            }
+          }
+        }
+      }
+      searchForFigure(postsDir);
+      expect(foundFigure, 'figure/figcaptionを含む記事が1件もない').toBe(true);
     });
   });
 });
