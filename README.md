@@ -28,6 +28,7 @@ Astro + Decap CMS によるブログサイト。Cloudflare Pages でホスティ
 | 2026-02-15 夜 | iPhone codeblockクラッシュ対策（MutationObserverデバウンス、touchmoveエディタ除外） | - |
 | 2026-02-20 | CMSプレビューに本番サイト相当のスタイルを適用（`CMS.registerPreviewStyle`） | - |
 | 2026-02-20 | 公開URLバーの表示制御を改善（visibility-based判定、ドロップダウン誤復元修正） | - |
+| 2026-02-20 | E2Eテスト大幅拡充（CMS UIカスタマイズ検証34テスト追加、合計64テスト×3デバイス=192テスト） | - |
 
 ---
 
@@ -105,7 +106,8 @@ my-blog/
 │   ├── *.test.mjs                # 単体・統合テスト（Vitest）
 │   ├── e2e/                      # E2Eテスト（Playwright）
 │   │   ├── site.spec.ts          # 静的サイトE2Eテスト
-│   │   └── cms.spec.ts           # CMS管理画面E2Eテスト
+│   │   ├── cms.spec.ts           # CMS管理画面E2Eテスト
+│   │   └── cms-customizations.spec.ts  # CMS UIカスタマイズ検証テスト
 │   └── TEST-REPORT.md            # テスト仕様書
 ├── CLAUDE.md                     # Claude Code向けプロジェクトガイド
 ├── astro.config.mjs
@@ -125,7 +127,7 @@ my-blog/
 | `npm run preview` | ビルド結果のローカルプレビュー |
 | `npm test` | 単体・統合テスト実行（Vitest / 177テスト、記事数により変動） |
 | `npm run test:watch` | ウォッチモードでテスト実行 |
-| `npm run test:e2e` | E2Eテスト実行（Playwright / PC・iPad・iPhone 90テスト） |
+| `npm run test:e2e` | E2Eテスト実行（Playwright / PC・iPad・iPhone 192テスト） |
 
 ## 5. 管理画面のUIカスタマイズ
 
