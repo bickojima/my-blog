@@ -18,16 +18,20 @@ describe('CMS設定（config.yml）の検証', () => {
       expect(config.backend.repo).toBe('bickojima/my-blog');
     });
 
-    it('ブランチがmainに設定されている', () => {
-      expect(config.backend.branch).toBe('main');
+    it('ブランチが有効な値に設定されている', () => {
+      expect(['main', 'staging']).toContain(config.backend.branch);
     });
 
     it('認証エンドポイントが設定されている', () => {
       expect(config.backend.auth_endpoint).toBe('/auth');
     });
 
-    it('base_urlが本番URLに設定されている', () => {
-      expect(config.backend.base_url).toBe('https://reiwa.casa');
+    it('base_urlがブランチに対応するURLに設定されている', () => {
+      const expectedUrls = {
+        main: 'https://reiwa.casa',
+        staging: 'https://staging.reiwa.casa',
+      };
+      expect(config.backend.base_url).toBe(expectedUrls[config.backend.branch]);
     });
   });
 
