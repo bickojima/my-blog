@@ -539,7 +539,7 @@
 
           var link = document.createElement('a');
           link.id = 'cms-site-link';
-          link.href = 'https://reiwa.casa';
+          link.href = window.location.origin;
           link.target = '_blank';
           link.rel = 'noopener';
           link.textContent = 'ブログを見る \u2197';
@@ -726,8 +726,8 @@
             if (!resolvedPath) return;
 
             var parts = resolvedPath.split('/');
-            var publicUrl = 'https://reiwa.casa' + parts.map(function(s) { return s ? encodeURIComponent(s) : s; }).join('/');
-            var displayUrl = 'https://reiwa.casa' + resolvedPath;
+            var publicUrl = window.location.origin + parts.map(function(s) { return s ? encodeURIComponent(s) : s; }).join('/');
+            var displayUrl = window.location.origin + resolvedPath;
             var label = entryMatch ? '公開URL:' : '公開予定URL:';
 
             if (!urlDisplay) {
