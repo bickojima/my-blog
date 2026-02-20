@@ -153,21 +153,16 @@ test.describe('E-07: CMS管理画面読込', () => {
 
 test.describe('E-08: 認証シミュレーション', () => {
   test('ログインボタンクリックでOAuthポップアップが起動する', async ({ page }) => {
-    await page.route('**/auth', (route) => {
-      route.fulfill({
-        status: 200,
-        contentType: 'text/html',
-        body: '<html><body>OAuth Mock</body></html>',
-      });
-    });
     await page.goto('/admin/');
     await page.waitForTimeout(3000);
 
     const popupPromise = page.waitForEvent('popup');
     await page.locator('button:has-text("GitHub でログインする")').click();
     const popup = await popupPromise;
-    // ポップアップが開き、/auth にリクエストが飛ぶ
-    expect(popup.url()).toContain('/auth');
+    // ポップアップが開き、OAuth認証フローが開始される
+    // （/auth エンドポイントから GitHub にリダイレクトされる場合がある）
+    const popupUrl = popup.url();
+    expect(popupUrl.includes('/auth') || popupUrl.includes('github.com')).toBeTruthy();
     await popup.close();
   });
 
