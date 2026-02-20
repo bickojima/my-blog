@@ -661,7 +661,6 @@
             }
 
             var hash = window.location.hash || '';
-            var isNew = /\/new\/?$/.test(hash);
             var entryMatch = hash.match(/\/entries\/(.+?)$/);
 
             var resolvedPath = null;
@@ -744,7 +743,9 @@
               urlDisplay.innerHTML = newHtml;
               urlDisplay.dataset.lastUrl = displayUrl;
             }
-          } catch(e) {}
+          } catch(e) {
+            console.warn('[CMS] showPublicUrl error:', e);
+          }
         }
 
         // iOS Safari: ドロップダウン表示時にURLバーを退避
@@ -869,6 +870,12 @@
               canvas.width = img.naturalWidth;
               canvas.height = img.naturalHeight;
               var ctx = canvas.getContext('2d');
+              if (!ctx) {
+                // Canvas 2Dコンテキストが取得できない場合は元ファイルをそのまま使う
+                input.dataset.exifFixed = 'true';
+                input.dispatchEvent(new Event('change', { bubbles: true }));
+                return;
+              }
               ctx.drawImage(img, 0, 0);
 
               var outputType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
