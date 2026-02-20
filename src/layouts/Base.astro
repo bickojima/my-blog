@@ -1,4 +1,5 @@
 ---
+import { getCollection } from 'astro:content';
 import ArchiveNav from '../components/ArchiveNav.astro';
 
 interface Props {
@@ -8,6 +9,9 @@ interface Props {
 const { title } = Astro.props;
 const isStaging = import.meta.env.CF_PAGES_BRANCH === 'staging';
 const siteTitle = isStaging ? '[STAGING] tbiのブログ' : 'tbiのブログ';
+const navPages = (await getCollection('pages'))
+  .filter(p => !p.data.draft)
+  .sort((a, b) => a.data.order - b.data.order);
 ---
 
 <!DOCTYPE html>
@@ -58,9 +62,16 @@ const siteTitle = isStaging ? '[STAGING] tbiのブログ' : 'tbiのブログ';
       font-size: 1.1rem;
       font-weight: bold;
     }
+    .nav-links {
+      display: flex;
+      gap: 1rem;
+    }
     .nav-links a {
       font-size: 0.85rem;
       color: #888;
+    }
+    .nav-links a:hover {
+      color: #333;
     }
     main {
       max-width: 700px;
@@ -90,6 +101,9 @@ const siteTitle = isStaging ? '[STAGING] tbiのブログ' : 'tbiのブログ';
     <nav>
       <a href="/" class="site-title">{siteTitle}</a>
       <div class="nav-links">
+        {navPages.map(page => (
+          <a href={`/${page.slug}`}>{page.data.title}</a>
+        ))}
       </div>
     </nav>
   </header>
