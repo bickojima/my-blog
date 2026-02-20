@@ -88,6 +88,82 @@ describe('ビルド検証', () => {
     });
   });
 
+  describe('固定ページの生成確認', () => {
+    it('プロフィールページが生成される', () => {
+      expect(existsSync(join(DIST_DIR, 'profile/index.html'))).toBe(true);
+    });
+
+    it('プロフィールページにタイトルが含まれている', () => {
+      const html = readFileSync(join(DIST_DIR, 'profile/index.html'), 'utf-8');
+      expect(html).toContain('プロフィール');
+    });
+
+    it('プロフィールページに「記事一覧に戻る」リンクがある', () => {
+      const html = readFileSync(join(DIST_DIR, 'profile/index.html'), 'utf-8');
+      expect(html).toContain('記事一覧に戻る');
+      expect(html).toContain('href="/"');
+    });
+
+    it('aboutページが生成される', () => {
+      expect(existsSync(join(DIST_DIR, 'about/index.html'))).toBe(true);
+    });
+
+    it('aboutページにタイトルが含まれている', () => {
+      const html = readFileSync(join(DIST_DIR, 'about/index.html'), 'utf-8');
+      expect(html).toContain('このサイトについて');
+    });
+
+    it('aboutページに「記事一覧に戻る」リンクがある', () => {
+      const html = readFileSync(join(DIST_DIR, 'about/index.html'), 'utf-8');
+      expect(html).toContain('記事一覧に戻る');
+      expect(html).toContain('href="/"');
+    });
+  });
+
+  describe('ヘッダーナビゲーションの検証', () => {
+    let indexHtml;
+
+    beforeAll(() => {
+      indexHtml = readFileSync(join(DIST_DIR, 'index.html'), 'utf-8');
+    });
+
+    it('トップページのヘッダーにプロフィールリンクがある', () => {
+      expect(indexHtml).toContain('href="/profile"');
+      expect(indexHtml).toContain('プロフィール');
+    });
+
+    it('トップページのヘッダーにaboutリンクがある', () => {
+      expect(indexHtml).toContain('href="/about"');
+    });
+
+    it('ドロップダウン構造（nav-dropdown）が存在する（固定ページ2つ以上）', () => {
+      expect(indexHtml).toContain('nav-dropdown');
+    });
+
+    it('ドロップダウントグルボタン（▾）が存在する', () => {
+      expect(indexHtml).toContain('nav-dropdown-toggle');
+      expect(indexHtml).toContain('▾');
+    });
+
+    it('ドロップダウンメニュー（nav-dropdown-menu）が存在する', () => {
+      expect(indexHtml).toContain('nav-dropdown-menu');
+    });
+
+    it('最優先ページが直接リンク（nav-dropdown-link）として表示される', () => {
+      expect(indexHtml).toContain('nav-dropdown-link');
+    });
+
+    it('ドロップダウンのJS制御スクリプトが存在する', () => {
+      // mouseenter/mouseleave による開閉制御
+      expect(indexHtml).toContain('mouseenter');
+      expect(indexHtml).toContain('mouseleave');
+      // ▾ボタンのクリックトグル
+      expect(indexHtml).toContain('nav-dropdown-toggle');
+      // 外側クリックで閉じる
+      expect(indexHtml).toContain('is-open');
+    });
+  });
+
   describe('タグページの生成確認', () => {
     it('タグページディレクトリが生成される', () => {
       const tagsDir = join(DIST_DIR, 'tags');

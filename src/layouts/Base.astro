@@ -1,4 +1,5 @@
 ---
+import { getCollection } from 'astro:content';
 import ArchiveNav from '../components/ArchiveNav.astro';
 
 interface Props {
@@ -6,6 +7,11 @@ interface Props {
 }
 
 const { title } = Astro.props;
+const isStaging = import.meta.env.CF_PAGES_BRANCH === 'staging';
+const siteTitle = isStaging ? '[STAGING] tbiのブログ' : 'tbiのブログ';
+const navPages = (await getCollection('pages'))
+  .filter(p => !p.data.draft)
+  .sort((a, b) => a.data.order - b.data.order);
 ---
 
 <!DOCTYPE html>
@@ -56,9 +62,68 @@ const { title } = Astro.props;
       font-size: 1.1rem;
       font-weight: bold;
     }
-    .nav-links a {
+    .nav-links {
+      display: flex;
+      gap: 1rem;
+    }
+    .nav-links > a {
       font-size: 0.85rem;
       color: #888;
+    }
+    .nav-links > a:hover {
+      color: #333;
+    }
+    .nav-dropdown {
+      position: relative;
+    }
+    .nav-dropdown-link {
+      font-size: 0.85rem;
+      color: #888;
+    }
+    .nav-dropdown-link:hover {
+      color: #333;
+    }
+    .nav-dropdown-toggle {
+      background: none;
+      border: none;
+      font-family: inherit;
+      font-size: 1.1rem;
+      color: #888;
+      cursor: pointer;
+      padding: 0.1rem 0.3rem;
+      margin-left: 0.1rem;
+      line-height: 1;
+      vertical-align: middle;
+    }
+    .nav-dropdown-toggle:hover {
+      color: #333;
+    }
+    .nav-dropdown-menu {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: 100%;
+      padding-top: 0.25rem;
+      background: #fff;
+      border: 1px solid #eee;
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      min-width: 120px;
+      z-index: 100;
+    }
+    .nav-dropdown.is-open .nav-dropdown-menu {
+      display: block;
+    }
+    .nav-dropdown-menu a {
+      display: block;
+      padding: 0.4rem 0.8rem;
+      font-size: 0.85rem;
+      color: #555;
+      white-space: nowrap;
+    }
+    .nav-dropdown-menu a:hover {
+      background: #f5f5f5;
+      color: #333;
     }
     main {
       max-width: 700px;
@@ -86,8 +151,20 @@ const { title } = Astro.props;
 <body>
   <header>
     <nav>
-      <a href="/" class="site-title">tbiのブログ</a>
+      <a href="/" class="site-title">{siteTitle}</a>
       <div class="nav-links">
+        {navPages.length === 1 ? (
+          <a href={`/${navPages[0].slug}`}>{navPages[0].data.title}</a>
+        ) : navPages.length > 1 ? (
+          <div class="nav-dropdown">
+            <a href={`/${navPages[0].slug}`} class="nav-dropdown-link">{navPages[0].data.title}</a><button class="nav-dropdown-toggle" type="button" aria-label="ページメニュー">▾</button>
+            <div class="nav-dropdown-menu">
+              {navPages.map(page => (
+                <a href={`/${page.slug}`}>{page.data.title}</a>
+              ))}
+            </div>
+          </div>
+        ) : null}
       </div>
     </nav>
   </header>
@@ -96,8 +173,36 @@ const { title } = Astro.props;
     <ArchiveNav />
   </main>
   <footer>
-    <p>&copy; {new Date().getFullYear()} tbiのブログ</p>
+    <p>&copy; {new Date().getFullYear()} {siteTitle}</p>
     <a href="/admin/" class="admin-link">管理</a>
   </footer>
+  <script>
+    const dropdown = document.querySelector('.nav-dropdown');
+    if (dropdown) {
+      const toggle = dropdown.querySelector('.nav-dropdown-toggle');
+      // PC: ホバーで開閉（mouseleaveは遅延付きでメニューへの移動を許容）
+      let closeTimer: ReturnType<typeof setTimeout> | null = null;
+      dropdown.addEventListener('mouseenter', () => {
+        if (closeTimer) { clearTimeout(closeTimer); closeTimer = null; }
+        dropdown.classList.add('is-open');
+      });
+      dropdown.addEventListener('mouseleave', () => {
+        closeTimer = setTimeout(() => {
+          dropdown.classList.remove('is-open');
+          closeTimer = null;
+        }, 300);
+      });
+      // ▾ボタン: クリック/タップでトグル
+      toggle?.addEventListener('click', () => {
+        dropdown.classList.toggle('is-open');
+      });
+      // 外側クリックで閉じる
+      document.addEventListener('click', (e) => {
+        if (!(e.target instanceof Node) || !dropdown.contains(e.target)) {
+          dropdown.classList.remove('is-open');
+        }
+      });
+    }
+  </script>
 </body>
 </html>
