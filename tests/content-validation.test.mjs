@@ -4,6 +4,7 @@ import { join, extname, relative } from 'path';
 import matter from 'gray-matter';
 
 const POSTS_DIR = join(process.cwd(), 'src/content/posts');
+const PAGES_DIR = join(process.cwd(), 'src/content/pages');
 const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 
 /**
@@ -111,7 +112,6 @@ describe('コンテンツ（Markdownファイル）の検証', () => {
 });
 
 describe('固定ページ（pages）コンテンツの検証', () => {
-  const PAGES_DIR = join(process.cwd(), 'src/content/pages');
   const pageFiles = existsSync(PAGES_DIR)
     ? readdirSync(PAGES_DIR).filter(f => extname(f) === '.md').map(f => join(PAGES_DIR, f))
     : [];
@@ -240,7 +240,6 @@ describe('ヘッダーナビゲーション条件分岐の検証（Base.astroソ
 });
 
 describe('固定ページフィールドの境界値・一意性検証', () => {
-  const PAGES_DIR = join(process.cwd(), 'src/content/pages');
   const pageFiles = existsSync(PAGES_DIR)
     ? readdirSync(PAGES_DIR).filter(f => extname(f) === '.md').map(f => join(PAGES_DIR, f))
     : [];

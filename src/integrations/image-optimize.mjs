@@ -1,5 +1,5 @@
 import sharp from 'sharp';
-import { readdir, stat } from 'fs/promises';
+import { readdir, stat, writeFile } from 'fs/promises';
 import { join, extname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -71,7 +71,6 @@ export default function imageOptimize() {
             }
 
             const buffer = await pipeline.toBuffer();
-            const { writeFile } = await import('fs/promises');
             await writeFile(filePath, buffer);
 
             const reduction = Math.round((1 - buffer.length / originalSize) * 100);
