@@ -146,6 +146,113 @@ test.describe('E-05: 画像表示', () => {
   });
 });
 
+test.describe('E-20: 固定ページ表示', () => {
+  test('プロフィールページが表示される', async ({ page }) => {
+    await page.goto('/profile');
+    await expect(page.locator('h1')).toHaveText('プロフィール');
+    await expect(page.locator('.page-content')).toBeVisible();
+  });
+
+  test('aboutページが表示される', async ({ page }) => {
+    await page.goto('/about');
+    await expect(page.locator('h1')).toHaveText('このサイトについて');
+    await expect(page.locator('.page-content')).toBeVisible();
+  });
+
+  test('固定ページに「記事一覧に戻る」リンクがある', async ({ page }) => {
+    await page.goto('/profile');
+    const backLink = page.locator('.page-footer a');
+    await expect(backLink).toBeVisible();
+    await expect(backLink).toContainText('記事一覧に戻る');
+    await backLink.click();
+    await expect(page.locator('h1')).toHaveText('記事一覧');
+  });
+
+  test('固定ページにヘッダー・フッター構造がある', async ({ page }) => {
+    await page.goto('/profile');
+    // サイトヘッダー（ナビゲーション含む）
+    await expect(page.locator('header .site-title')).toBeVisible();
+    // ページ固有のヘッダー（h1タイトル）
+    await expect(page.locator('.page-header h1')).toBeVisible();
+    // サイトフッター
+    await expect(page.locator('body > footer')).toBeVisible();
+  });
+});
+
+test.describe('E-21: ヘッダーナビゲーションドロップダウン', () => {
+  test('ヘッダーにドロップダウン構造が存在する', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('.nav-dropdown')).toBeVisible();
+    await expect(page.locator('.nav-dropdown-link')).toBeVisible();
+    await expect(page.locator('.nav-dropdown-toggle')).toBeVisible();
+  });
+
+  test('最優先ページのリンクがヘッダーに表示される', async ({ page }) => {
+    await page.goto('/');
+    const link = page.locator('.nav-dropdown-link');
+    await expect(link).toHaveText('プロフィール');
+    await expect(link).toHaveAttribute('href', '/profile');
+  });
+
+  test('ドロップダウンメニューが初期状態で非表示', async ({ page }) => {
+    await page.goto('/');
+    const menu = page.locator('.nav-dropdown-menu');
+    await expect(menu).not.toBeVisible();
+  });
+
+  test('▾ボタンクリックでドロップダウンが開閉する', async ({ page }) => {
+    await page.goto('/');
+    const menu = page.locator('.nav-dropdown-menu');
+
+    // 初期状態で閉じていることを確認
+    await expect(menu).not.toBeVisible();
+
+    // dispatchEventでクリック（mouseenterによるhover副作用なし）
+    await page.locator('.nav-dropdown-toggle').dispatchEvent('click');
+    await expect(menu).toBeVisible();
+
+    // 再dispatchEventで閉じる
+    await page.locator('.nav-dropdown-toggle').dispatchEvent('click');
+    await expect(menu).not.toBeVisible();
+  });
+
+  test('ドロップダウンメニュー内に全固定ページのリンクがある', async ({ page }) => {
+    await page.goto('/');
+    // JSでドロップダウンを開く
+    await page.evaluate(() => {
+      document.querySelector('.nav-dropdown')?.classList.add('is-open');
+    });
+    const menuLinks = page.locator('.nav-dropdown-menu a');
+    const count = await menuLinks.count();
+    expect(count).toBeGreaterThanOrEqual(2);
+
+    // プロフィールとaboutのリンクがある
+    const hrefs = await menuLinks.evaluateAll(links => links.map(l => l.getAttribute('href')));
+    expect(hrefs).toContain('/profile');
+    expect(hrefs).toContain('/about');
+  });
+
+  test('ドロップダウンメニューのリンクから固定ページに遷移できる', async ({ page }) => {
+    await page.goto('/');
+    // JSでドロップダウンを開く
+    await page.evaluate(() => {
+      document.querySelector('.nav-dropdown')?.classList.add('is-open');
+    });
+
+    // aboutリンクをクリック
+    const aboutLink = page.locator('.nav-dropdown-menu a[href="/about"]');
+    await aboutLink.click();
+    await expect(page.locator('h1')).toHaveText('このサイトについて');
+  });
+
+  test('最優先ページリンクから直接遷移できる', async ({ page }) => {
+    await page.goto('/');
+    const link = page.locator('.nav-dropdown-link');
+    await link.click();
+    await expect(page.locator('h1')).toHaveText('プロフィール');
+  });
+});
+
 test.describe('E-06: 下書き記事非表示', () => {
   test('トップページの記事一覧にdraft記事が含まれない', async ({ page }) => {
     await page.goto('/');

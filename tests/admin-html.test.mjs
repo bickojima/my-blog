@@ -226,10 +226,16 @@ describe('管理画面HTML（public/admin/index.html）の検証', () => {
       expect(adminHtml).toContain('window.location.origin');
     });
 
-    it('公開URLがタイトルと日付フィールドから動的に生成される', () => {
+    it('公開URLが記事ではタイトルと日付フィールドから動的に生成される', () => {
       expect(adminHtml).toContain('titleInput');
       expect(adminHtml).toContain('dateInput');
       expect(adminHtml).toContain('urlBound');
+    });
+
+    it('公開URLが固定ページではslugフィールドから生成される', () => {
+      // 固定ページの公開URLは /{slug} であり /posts/{title} ではない
+      expect(adminHtml).toContain("'/collections/pages/'");
+      expect(adminHtml).toContain('slugInput');
     });
 
     it('選択状態の判定がborderColor（青系）で行われている', () => {

@@ -12,6 +12,10 @@
 | 1.5 | 2026-02-15 | CMS管理画面ヘッダーに本番サイトリンク追加（CMS-11） |
 | 1.6 | 2026-02-15 | iPhone codeblockクラッシュ対策（MutationObserverデバウンス、touchmoveエディタ除外） |
 | 1.7 | 2026-02-20 | 本番/テスト環境分離（staging.reiwa.casa）、admin/index.htmlサイトURL動的化、テスト環境セクション（9.4章）追加 |
+| 1.8 | 2026-02-20 | [STAGING]ラベル実装（9.4.3章追加）、CNAME方式ドメイン接続（9.3章更新）、CMS-11/13.5/13.6を環境動的化 |
+| 1.9 | 2026-02-20 | 固定ページシステム導入（FR-14/CMS-13追加、pagesコレクション、ヘッダーナビ動的生成） |
+| 1.10 | 2026-02-20 | 固定ページ不具合修正: CMS slugテンプレート修正（`{{slug}}`→`{{fields.slug}}`）、公開URL表示の固定ページ対応、ヘッダーナビドロップダウンUX改善（hover遅延閉じ・トグルボタン分離）、再発防止テスト追加（218テスト） |
+| 1.11 | 2026-02-20 | テスト・ドキュメント全面レビュー: Vitest 18件追加（218テスト）、E2E 11テストシナリオ追加（237テスト）、要件記述をふるまい中心に改訂、バグ一覧（19章）追加 |
 
 ## システム変更履歴
 
@@ -34,6 +38,12 @@ PR履歴に基づく主要なシステム変更の記録である。
 | 2026-02-15 午後 | **包括的リファクタリング**: Netlify Identity残骸除去、robots.txtドメイン修正、壊れた画像参照修正、テスト追加（227テスト）、ドキュメント全面改訂 | #80 |
 | 2026-02-15 夕方 | **E2Eテスト導入**: Playwright によるブラウザ自動テスト（PC/iPad/iPhone 3デバイス×30テスト=90テスト） | - |
 | 2026-02-15 夜 | **EXIF画像回転修正**: CMS編集画面でEXIF回転が反転する問題を修正（fixPreviewImageOrientation削除）。ドロップダウンをCSSボトムシート化。公開URLバーのhashchange対応。テスト237件 | - |
+| 2026-02-20 | **CMSプレビュースタイル**: `CMS.registerPreviewStyle()` で本番サイト相当のCSSをプレビューiframeに注入 | - |
+| 2026-02-20 | **公開URLバー改善**: visibility-based判定、ドロップダウン誤復元修正 | - |
+| 2026-02-20 | **E2Eテスト拡充**: CMS UIカスタマイズ検証34テスト追加（合計64テスト×3デバイス=204テスト） | - |
+| 2026-02-20 | **本番/テスト環境分離**: staging.reiwa.casa構築（CNAME方式）、admin/index.htmlサイトURL動的化、[STAGING]ラベル表示、専用OAuth App | - |
+| 2026-02-20 | **固定ページシステム導入**: pagesコレクション、ヘッダーナビ動的生成、[slug].astroルーティング | - |
+| 2026-02-20 | **固定ページ不具合修正**: CMS slugテンプレート`{{slug}}`→`{{fields.slug}}`（ファイル名がタイトルになる不具合）、公開URL表示の固定ページ対応（`/posts/タイトル`→`/slug`）、ドロップダウンhover時のCSS`:hover`とJSトグルの競合修正、メニューgap問題（margin→padding）修正 | - |
 
 ---
 
@@ -81,6 +91,7 @@ PR履歴に基づく主要なシステム変更の記録である。
 16. [バックアップ設計](#16-バックアップ設計)
 17. [フォーク転用ガイド](#17-フォーク転用ガイド)
 18. [トラブルシューティング](#18-トラブルシューティング)
+19. [バグ一覧](#19-バグ一覧)
 
 ---
 
@@ -136,19 +147,20 @@ PR履歴に基づく主要なシステム変更の記録である。
 
 | ID | 要件 | 実装箇所 | 備考 |
 | :--- | :--- | :--- | :--- |
-| FR-01 | 記事管理: Markdown + frontmatter (title, date, draft, tags, thumbnail, summary, body) | `content.config.ts`, `config.yml` | コンテンツコレクション定義 |
-| FR-02 | URL生成: `/posts/{年}/{月}/{ファイル名}` | `src/lib/posts.ts` | ファイル名ベースのスラグ |
-| FR-03 | 下書き: 一覧非表示、URL直打ちアクセス可 | `pages/*.astro` | 限定公開的な挙動 |
-| FR-04 | タグ分類: `/tags/{タグ名}` で一覧表示 | `pages/tags/[tag].astro` | カテゴリは廃止済み |
-| FR-05 | アーカイブ: 年別・月別ページ生成 | `pages/posts/[year]/`, `[month]/` | ArchiveNav.astroでナビ表示 |
-| FR-06 | 画像アップロード: `public/images/uploads/` にGit管理 | `config.yml` | CMSメディアフォルダ設定 |
-| FR-07 | 画像最適化: 最大1200px, JPEG/PNG/WebP 80%圧縮 | `image-optimize.mjs` | ビルド後自動実行 |
-| FR-08 | EXIF回転正規化: ピクセル回転 + メタデータ除去 | `normalize-images.mjs`, `image-optimize.mjs`, `Base.astro` | 3段階パイプライン |
-| FR-09 | 記事自動整理: 日付→`yyyy/mm/`ディレクトリ配置 | `organize-posts.mjs` | prebuildスクリプト |
-| FR-10 | URLマッピングJSON: CMS用`url-map.json`生成 | `organize-posts.mjs` | 公開URL表示に使用 |
-| FR-11 | HEIC→JPEG変換: iOS accept属性制限で自動変換 | `admin/index.html` | iOSのみ適用 |
-| FR-12 | CMS認証: GitHub OAuth + Cloudflare Functions | `functions/auth/` | Netlify Identityから移行済み |
-| FR-13 | 画像キャプション: title属性→`<figcaption>`, lazy loading自動付与 | `rehype-image-caption.mjs` | rehypeプラグイン |
+| FR-01 | 記事管理: タイトル・日付・タグ等のメタデータを持つ記事を作成・編集・公開できる | `content.config.ts`, `config.yml` | Markdown + frontmatter形式 |
+| FR-02 | URL生成: 記事の公開URLが日付とファイル名に基づき自動生成される | `src/lib/posts.ts` | `/posts/{年}/{月}/{ファイル名}` 形式 |
+| FR-03 | 下書き: 下書き記事は一覧に表示されないが、URLを知っていればアクセスできる | `pages/*.astro` | 限定公開的な挙動 |
+| FR-04 | タグ分類: 記事をタグで分類し、タグごとの一覧ページを閲覧できる | `pages/tags/[tag].astro` | `/tags/{タグ名}` で表示 |
+| FR-05 | アーカイブ: 年別・月別の記事一覧ページが自動生成される | `pages/posts/[year]/`, `[month]/` | ArchiveNav.astroでナビ表示 |
+| FR-06 | 画像アップロード: CMSから画像をアップロードしGit管理できる | `config.yml` | `public/images/uploads/` に保存 |
+| FR-07 | 画像最適化: アップロード画像が自動的にリサイズ・圧縮される | `image-optimize.mjs` | 最大1200px, 80%品質, ビルド後自動実行 |
+| FR-08 | EXIF回転正規化: iPhone等で撮影した画像が正しい向きで表示される | `normalize-images.mjs`, `image-optimize.mjs`, `Base.astro` | ピクセル回転 + CSS fallbackの3段階パイプライン |
+| FR-09 | 記事自動整理: 記事ファイルが日付に基づくディレクトリに自動配置される | `organize-posts.mjs` | `yyyy/mm/` 形式、prebuildで実行 |
+| FR-10 | URLマッピング: CMS上で各記事の公開URLを確認できるようにマッピングデータが生成される | `organize-posts.mjs` | `url-map.json` を生成 |
+| FR-11 | HEIC変換: iOSで撮影したHEIC形式の画像がJPEGに自動変換される | `admin/index.html` | accept属性制限によるiOS自動変換 |
+| FR-12 | CMS認証: 管理者がGitHubアカウントでCMSにログインできる | `functions/auth/` | GitHub OAuth + Cloudflare Functions |
+| FR-13 | 画像キャプション: 画像にタイトルを設定するとキャプション付きで表示される | `rehype-image-caption.mjs` | `<figcaption>` 変換 + lazy loading自動付与 |
+| FR-14 | 固定ページ管理: CMSから固定ページを作成・編集、ヘッダーナビに動的表示 | `src/content/pages/`, `src/pages/[slug].astro`, `Base.astro` | pagesコレクション |
 
 ### 2.2 各要件の詳細
 
@@ -164,6 +176,36 @@ PR履歴に基づく主要なシステム変更の記録である。
 | `tags` | string[] | 任意 | `[]` | 分類タグ |
 | `thumbnail` | string | 任意 | - | サムネイル画像パス |
 | `summary` | string | 任意 | - | 記事概要 |
+
+#### FR-14 固定ページ管理
+
+固定ページはCMSから作成・編集可能な静的ページ。ヘッダーナビゲーションに動的表示される。
+
+| フィールド | 型 | 必須 | デフォルト | 説明 |
+| :--- | :--- | :--- | :--- | :--- |
+| `title` | string | 必須 | - | ページタイトル |
+| `slug` | string | 必須 | - | URLスラグ（半角英数字とハイフンのみ、ファイル名に使用） |
+| `order` | number | 任意 | `0` | ヘッダーナビ表示順（昇順、重複時は順不定だがエラーにはならない） |
+| `draft` | boolean | 任意 | `false` | 下書きフラグ |
+
+**ヘッダーナビゲーション表示ルール:**
+
+| 固定ページ数 | ヘッダー表示 |
+|:---|:---|
+| 0 | リンクなし |
+| 1 | 直接リンク（`<a>`タグ） |
+| 2以上 | 最優先ページ名 + ▾ドロップダウン（全ページ一覧） |
+
+**ドロップダウン動作:**
+- ページ名部分: 直接リンク（クリック/タップで即遷移）
+- ▾ボタン: クリック/タップでドロップダウン開閉トグル
+- PC: `mouseenter`でメニュー表示、`mouseleave`で300ms遅延後に閉じる（メニューへの移動を許容）
+- メニューと要素間のギャップは`padding-top`で実装（`margin-top`だとホバー判定が途切れる）
+- CSS `:hover` ではなく JS `is-open` クラスで表示制御（`:hover` とトグルの競合を防止）
+
+**CMS設定上の注意:**
+- `config.yml` の固定ページコレクションの `slug` プロパティは `"{{fields.slug}}"` を使用する
+- `"{{slug}}"` は Decap CMS ではタイトルのURL安全版を意味するため、フィールド値を使うには `"{{fields.slug}}"` が必要
 
 #### FR-03 下書き機能
 
@@ -181,18 +223,19 @@ PR履歴に基づく主要なシステム変更の記録である。
 
 | ID | 要件 | 実装箇所 | 備考 |
 | :--- | :--- | :--- | :--- |
-| CMS-01 | モバイルレスポンシブ（799px以下） | `admin/index.html` CSS | サイドバー、ボタン、モーダル等 |
-| CMS-02 | iOS自動ズーム防止（font-size 16px+） | `admin/index.html` CSS | iOS HIG準拠 |
-| CMS-03 | pull-to-refresh無効化 | `admin/index.html` JS | 編集中の誤リロード防止 |
-| CMS-04 | 削除ボタンラベル区別（選択解除/完全削除） | `admin/index.html` JS | 操作ミス防止 |
-| CMS-05 | 一覧表示改善（日付バッジ + 下書きラベル + タイトル） | `admin/index.html` JS | MutationObserver使用 |
-| CMS-06 | エディタ公開URL表示 | `admin/index.html` JS | リアルタイム更新 |
-| CMS-07 | メディアライブラリ（2列グリッド, タッチスクロール） | `admin/index.html` CSS | モバイル対応 |
-| CMS-08 | 保存ボタン常時表示（sticky, min-height 44px） | `admin/index.html` CSS | Apple HIG準拠タップ領域 |
-| CMS-09 | ドロップダウンとURLバーの重なり防止 | `admin/index.html` JS | manageDropdownOverlay使用 |
-| CMS-10 | 画面遷移時の公開URLバー自動非表示 | `admin/index.html` JS | hashchangeリスナー使用 |
-| CMS-11 | サイドバーに本番サイトへのリンク表示 | `admin/index.html` JS | addSiteLink関数 |
-| CMS-12 | iPhone codeblockクラッシュ対策 | `admin/index.html` CSS/JS | モバイルcodeblockボタン非表示、Slateエラーハンドラ、MutationObserverデバウンス、touchmoveエディタ除外 |
+| CMS-01 | モバイルレスポンシブ: 799px以下のモバイル端末で管理画面を使用できる | `admin/index.html` CSS | サイドバー、ボタン、モーダル等 |
+| CMS-02 | iOS自動ズーム防止: iPhoneで入力フィールドにフォーカスしても画面がズームしない | `admin/index.html` CSS | font-size 16px以上を確保（iOS HIG準拠） |
+| CMS-03 | pull-to-refresh無効化: 編集中にスクロール操作でページがリロードされない | `admin/index.html` JS | touchstart/touchmoveのpreventDefault |
+| CMS-04 | 削除ボタンラベル区別: 画像の「選択解除」と「完全削除」が明確に区別できる | `admin/index.html` JS | 操作ミス防止 |
+| CMS-05 | 一覧表示改善: 記事一覧で日付・下書き状態・タイトルが視認しやすく表示される | `admin/index.html` JS | MutationObserver使用 |
+| CMS-06 | エディタ公開URL表示: 編集中の記事・ページの公開URLがリアルタイムで表示される | `admin/index.html` JS | url-map.json連携 |
+| CMS-07 | メディアライブラリ: モバイルでもメディア一覧が見やすく操作しやすい | `admin/index.html` CSS | 2列グリッド、タッチスクロール対応 |
+| CMS-08 | 保存ボタン常時表示: モバイルでも保存・公開ボタンが常に画面内に表示される | `admin/index.html` CSS | sticky header、min-height 44px（Apple HIG準拠） |
+| CMS-09 | ドロップダウン重なり防止: ドロップダウンメニューが公開URLバーと重ならない | `admin/index.html` JS | manageDropdownOverlay関数 |
+| CMS-10 | 公開URLバー自動制御: 画面遷移時に公開URLバーが適切に表示・非表示される | `admin/index.html` JS | hashchangeリスナー |
+| CMS-11 | サイトリンク表示: 管理画面からワンクリックで公開サイトにアクセスできる | `admin/index.html` JS | addSiteLink関数、staging環境では[STAGING]ラベル付与 |
+| CMS-12 | codeblockクラッシュ防止: モバイルでcodeblock操作によるクラッシュが発生しない | `admin/index.html` CSS/JS | codeblockボタン非表示、Slateエラーハンドラ、デバウンス |
+| CMS-13 | 固定ページCMS編集: CMSから固定ページのタイトル・slug・表示順・本文を管理できる | `config.yml` pagesコレクション | `src/content/pages/` に保存 |
 
 ---
 
@@ -202,10 +245,10 @@ PR履歴に基づく主要なシステム変更の記録である。
 
 | ID | 要件 | 実装箇所 | 備考 |
 | :--- | :--- | :--- | :--- |
-| NFR-01 | 静的サイト生成（Astro SSG） | `astro.config.mjs` | `output: 'static'` |
-| NFR-02 | Cloudflare Pagesホスティング | `wrangler.toml`, `_routes.json` | Functions含む |
-| NFR-03 | 管理画面SEO除外 | `_headers`, `admin/index.html` | `robots: noindex`, `X-Robots-Tag` |
-| NFR-04 | 日本語URL（Unicode slug） | `config.yml` | `encoding: "unicode"` |
+| NFR-01 | 静的サイト生成: サイト全体が静的HTMLとして生成・配信される | `astro.config.mjs` | Astro SSG、`output: 'static'` |
+| NFR-02 | CDNホスティング: サイトがCDN経由で高速に配信される | `wrangler.toml`, `_routes.json` | Cloudflare Pages + Functions |
+| NFR-03 | 管理画面SEO除外: 管理画面が検索エンジンにインデックスされない | `_headers`, `admin/index.html` | `robots: noindex`, `X-Robots-Tag` |
+| NFR-04 | 日本語URL対応: 日本語タイトルの記事がそのまま日本語URLで公開される | `config.yml` | Unicode slug（`encoding: "unicode"`） |
 
 ---
 
@@ -227,7 +270,7 @@ my-blog/
 │       └── callback.js                 # OAuthコールバック
 ├── public/                             # 静的ファイル（そのままdistにコピー）
 │   ├── admin/
-│   │   ├── index.html                  # CMS管理画面（CSS/JS含む628行）
+│   │   ├── index.html                  # CMS管理画面（CSS/JS含む約950行）
 │   │   └── config.yml                  # CMS設定定義
 │   ├── images/uploads/                 # アップロード画像（Git管理）
 │   ├── _headers                        # HTTPレスポンスヘッダー
@@ -312,7 +355,7 @@ my-blog/
 | ホスティング | Cloudflare Pages | - | 静的配信 + Functions |
 | 認証 | GitHub OAuth App | - | CMS管理者認証 |
 | 画像処理 | sharp | v0.34.5 | 画像圧縮・回転・リサイズ |
-| テスト（単体・統合） | Vitest | v4.0.18 | 単体テスト・統合テスト（177テスト） |
+| テスト（単体・統合） | Vitest | v4.0.18 | 単体テスト・統合テスト（218テスト） |
 | テスト（E2E） | Playwright | v1.58.2 | ブラウザE2Eテスト（PC/iPad/iPhone 204テスト） |
 | コンテンツ | Markdown | - | frontmatter形式 |
 
@@ -338,6 +381,7 @@ my-blog/
 | `/posts/{yyyy}` | 年別アーカイブ | `src/pages/posts/[year]/index.astro` |
 | `/posts/{yyyy}/{mm}` | 月別アーカイブ | `src/pages/posts/[year]/[month]/index.astro` |
 | `/tags/{tag}` | タグ別一覧 | `src/pages/tags/[tag].astro` |
+| `/{slug}` | 固定ページ | `src/pages/[slug].astro` |
 | `/admin/` | CMS管理画面 | `public/admin/index.html` |
 
 ### 7.2 URLスラグ生成規則
@@ -584,13 +628,29 @@ return new Response(`
 
 ### 8.8 GitHub OAuth App の設定
 
-GitHub Settings > Developer settings > OAuth Apps で作成する。
+GitHub Settings > Developer settings > OAuth Apps で環境ごとに個別のアプリを作成する。
+
+#### 本番環境
 
 | 設定項目 | 値 |
 | :--- | :--- |
-| Application name | 任意（例: `tbiのブログ CMS`） |
+| Application name | `My Blog CMS` |
 | Homepage URL | `https://reiwa.casa` |
 | Authorization callback URL | `https://reiwa.casa/auth/callback` |
+| Client ID | `Ov23liNxCgnMDc7a1KJC` |
+| Cloudflare Pages 環境変数 | Production |
+
+#### テスト環境
+
+| 設定項目 | 値 |
+| :--- | :--- |
+| Application name | `tbiのブログ CMS (staging)` |
+| Homepage URL | `https://staging.reiwa.casa` |
+| Authorization callback URL | `https://staging.reiwa.casa/auth/callback` |
+| Client ID | `Ov23liv4hYxJQvNUZEgi` |
+| Cloudflare Pages 環境変数 | Preview |
+
+> **注意**: Client Secret は GitHub OAuth App 設定画面と Cloudflare Pages 環境変数でのみ管理する。ソースコードにコミットしない。
 
 ---
 
@@ -600,11 +660,26 @@ GitHub Settings > Developer settings > OAuth Apps で作成する。
 
 | 項目 | 値 |
 | :--- | :--- |
+| プロジェクト名 | `my-blog` |
 | フレームワーク | Astro |
 | ビルドコマンド | `npm run build` |
 | 出力ディレクトリ | `dist` |
 | ルートディレクトリ | `/` |
 | Node.js バージョン | 18以上 |
+
+#### ブランチコントロール
+
+| 項目 | 設定 |
+| :--- | :--- |
+| プロダクションブランチ | `main`（自動デプロイ有効） |
+| プレビューブランチ | カスタム: `staging` のみ |
+
+#### 環境変数
+
+| 変数名 | Production | Preview |
+| :--- | :--- | :--- |
+| `OAUTH_CLIENT_ID` | 本番OAuth App の Client ID | テストOAuth App の Client ID |
+| `OAUTH_CLIENT_SECRET` | 本番OAuth App の Client Secret | テストOAuth App の Client Secret |
 
 ### 9.2 HTTPヘッダー設定（`_headers`）
 
@@ -615,9 +690,17 @@ GitHub Settings > Developer settings > OAuth Apps で作成する。
   X-Robots-Tag: noindex
 ```
 
-### 9.3 カスタムドメイン
+### 9.3 カスタムドメインとDNS
 
-本番環境では`reiwa.casa`をカスタムドメインとして設定している。DNSレコードはCloudflare Pagesにより自動設定される。
+Cloudflare DNS（`reiwa.casa` ゾーン）で以下のレコードを管理している。
+
+| タイプ | 名前 | ターゲット | プロキシ | 用途 |
+| :--- | :--- | :--- | :--- | :--- |
+| CNAME | `reiwa.casa` | `my-blog-3cg.pages.dev` | ON | 本番サイト（Pages Production） |
+| CNAME | `staging` | `staging.my-blog-3cg.pages.dev` | ON | テストサイト（Pages Preview） |
+| CNAME | `blog` | `ghs.google...` | ON | （別用途） |
+
+テスト環境はCloudflare Pagesのカスタムドメイン機能がProductionブランチのみ対応のため、DNS CNAMEレコードでPreview deploymentのURL（`staging.my-blog-3cg.pages.dev`）に直接ルーティングしている。
 
 ### 9.4 テスト環境
 
@@ -649,6 +732,16 @@ main (本番)  ←── merge ── staging (テスト) ←── merge ──
 #### 9.4.2 サイトURL動的化
 
 `public/admin/index.html` 内のサイトURL参照（`addSiteLink`、`showPublicUrl`）は `window.location.origin` で動的取得する。これにより、本番（`reiwa.casa`）・テスト（`staging.reiwa.casa`）・ローカル開発（`localhost`）のいずれの環境でも正しいURLが表示される。
+
+#### 9.4.3 [STAGING]ラベル表示
+
+テスト環境を目視で区別するため、以下の箇所に `[STAGING]` プレフィックスを表示する。
+
+| 表示箇所 | 判定方法 | 実装ファイル |
+| :--- | :--- | :--- |
+| サイトタイトル（ヘッダー・フッター） | `import.meta.env.CF_PAGES_BRANCH === 'staging'` | `src/layouts/Base.astro` |
+| CMS管理画面 `<title>` タグ | `window.location.hostname.startsWith('staging.')` or `.pages.dev` | `public/admin/index.html` |
+| CMSサイドバー「ブログを見る」リンク | 同上 | `public/admin/index.html` |
 
 ---
 
@@ -716,6 +809,15 @@ const posts = defineCollection({
     summary: z.string().optional(),
   }),
 });
+
+const pages = defineCollection({
+  loader: glob({ pattern: "**/*.md", base: "src/content/pages" }),
+  schema: z.object({
+    title: z.string(),
+    order: z.number().default(0),
+    draft: z.boolean().optional().default(false),
+  }),
+});
 ```
 
 ### 11.3 organize-posts.mjs の処理仕様
@@ -761,10 +863,18 @@ public_folder: "/images/uploads"
 
 ### 12.4 コレクション定義
 
-単一のコレクション「記事」で全記事を管理する。
+「固定ページ」と「記事」の2コレクションで管理する。
 
 ```yaml
 collections:
+  - name: "pages"
+    label: "固定ページ"
+    folder: "src/content/pages"
+    create: true
+    slug: "{{fields.slug}}"
+    extension: "md"
+    format: "frontmatter"
+
   - name: "posts"
     label: "記事"
     folder: "src/content/posts"
@@ -773,8 +883,9 @@ collections:
     slug: "{{slug}}"
 ```
 
-- `path`: ファイルの保存・読み取りパスを定義。CMSがサブディレクトリ`yyyy/mm/`内の既存記事を再帰スキャンする
-- `slug`: ファイル名部分のみ（タイトルベース）
+- `slug`（pages）: `{{fields.slug}}` でフロントマターのslugフィールド値をファイル名に使用（`{{slug}}` はDecap CMSではタイトルのURL安全版を意味するため不可）
+- `path`（posts）: ファイルの保存・読み取りパスを定義。CMSがサブディレクトリ`yyyy/mm/`内の既存記事を再帰スキャンする
+- `slug`（posts）: ファイル名部分のみ（タイトルベース）
 
 ---
 
@@ -849,19 +960,28 @@ Decap CMSはデフォルトではモバイル対応が不十分であるため�
 | codeblockボタン非表示 | `hideCodeBlockOnMobile()` でモバイル（≤799px）時に非表示 | Slate v0.47 void nodeクラッシュが根本修正不可能なため機能自体を無効化 |
 | Slateエラーハンドラ | `window.addEventListener('error')` で `toSlatePoint` 等を握りつぶし | 既存codeblock記事を開いた際のクラッシュ画面を回避 |
 
-### 13.5 本番サイトリンク
+### 13.5 サイトリンク
 
-サイドバーのコレクション一覧の下に「ブログを見る」リンクを表示し、本番サイト（`https://reiwa.casa`）へのワンクリックアクセスを提供する。
+サイドバーのコレクション一覧の下に「ブログを見る」リンクを表示し、サイトへのワンクリックアクセスを提供する。リンク先は `window.location.origin` で環境に応じたURLを動的生成する。
 
 - `addSiteLink()` 関数が `[class*=SidebarContainer]` に `<a>` 要素を動的注入
 - 新規タブで開く（`target="_blank"`）
 - 重複防止: `#cms-site-link` IDで既存チェック
+- staging環境では `[STAGING] ブログを見る` と表示（hostname判定）
 
 ### 13.6 公開URL表示
 
-記事編集画面で、画面下部に公開URLをリアルタイム表示する。タイトルと日付のフィールドを監視し、`https://reiwa.casa/posts/{年}/{月}/{タイトル}` 形式で動的生成する。
+エディタ画面で、画面下部に公開URLをリアルタイム表示する。コレクション種別をハッシュURLから判定し、それぞれ異なるURL形式で動的生成する（`origin` は `window.location.origin` により環境に応じたドメインを使用）。
+
+| コレクション | URL形式 | 既存エントリのソース | 新規エントリのソース |
+|:---|:---|:---|:---|
+| 記事（posts） | `{origin}/posts/{年}/{月}/{タイトル}` | ハッシュのエントリパス | タイトル＋日付フィールド |
+| 固定ページ（pages） | `{origin}/{slug}` | ハッシュのエントリパス（=ファイル名=slug） | slugフィールド |
+
+**重要**: 固定ページのCMS config.ymlでは `slug: "{{fields.slug}}"` を使用する。`{{slug}}` は Decap CMS ではタイトルのURL安全版を意味するため、`{{fields.slug}}` でフロントマターの `slug` フィールド値をファイル名に使用する必要がある。
 
 - `EditorControlBar` の `getBoundingClientRect().height > 0` でエディタ画面を判定し、コレクション一覧では確実に非表示
+- ハッシュURL内の `/collections/pages/` または `/collections/posts/` でコレクション種別を判定
 - `hashchange` イベントで画面遷移時に `showPublicUrl()` を再実行
 - ドロップダウン（ボトムシート）表示中は `manageDropdownOverlay()` でURLバーを一時非表示にし、重なりを防止（`hiddenByDropdown` フラグで `showPublicUrl` による非表示との競合を回避）
 
@@ -1080,7 +1200,7 @@ GitHubリポジトリが利用可能な場合、以下の手順でシステム�
 | 2 | `public/admin/config.yml` | `backend.base_url` | `https://reiwa.casa` | 本番ドメイン |
 | 3 | `src/layouts/Base.astro` | サイトタイトル | `tbiのブログ` | ヘッダー・フッターに表示される |
 | 4 | `public/robots.txt` | Sitemap URL | `https://reiwa.casa/sitemap.xml` | サイトマップURL |
-| 5 | `public/admin/index.html` | 公開URL表示のドメイン | `reiwa.casa` | JS内のハードコード値 |
+| 5 | `public/admin/index.html` | 公開URL表示のドメイン | `window.location.origin`（動的） | 変更不要（環境自動検出） |
 | 6 | Cloudflare環境変数 | `OAUTH_CLIENT_ID` / `SECRET` | - | 新サイト用のOAuth App |
 | 7 | GitHub OAuth App | Callback URL | `https://reiwa.casa/auth/callback` | 新ドメインに変更 |
 
@@ -1118,13 +1238,13 @@ GitHubリポジトリが利用可能な場合、以下の手順でシステム�
 
 **原因**: Cloudflare Pagesの環境変数が未設定である。
 
-**対処**: Cloudflare Pages > 設定 > 環境変数で`OAUTH_CLIENT_ID`と`OAUTH_CLIENT_SECRET`を設定し、再デプロイを実行する。
+**対処**: Cloudflare Pages > 設定 > 環境変数で`OAUTH_CLIENT_ID`と`OAUTH_CLIENT_SECRET`を設定し、再デプロイを実行する。本番環境はProduction、テスト環境はPreviewの環境変数をそれぞれ確認すること。
 
 ### 18.2 「redirect_uri is not associated」エラー
 
 **原因**: GitHub OAuth AppのCallback URLが不正である。
 
-**対処**: GitHub OAuth App設定で、Authorization callback URLが`https://reiwa.casa/auth/callback`であることを確認する（末尾スラッシュなし、`https://`）。
+**対処**: GitHub OAuth App設定で、Authorization callback URLが環境に対応するURLであることを確認する（末尾スラッシュなし、`https://`）。本番: `https://reiwa.casa/auth/callback`、テスト: `https://staging.reiwa.casa/auth/callback`。
 
 ### 18.3 認証後にログインできない
 
@@ -1137,4 +1257,28 @@ GitHubリポジトリが利用可能な場合、以下の手順でシステム�
 
 ---
 
-**最終更新**: 2026年2月15日（v1.4）
+## 19. バグ一覧
+
+過去に発生したバグと対策の記録。再発防止のため、今後発見されたバグもすべて本一覧に追記する。
+
+| No. | 発生時期 | バグ概要 | 原因 | 対策 | 再発防止テスト |
+|:---|:---|:---|:---|:---|:---|
+| 1 | 2026-02-14 | モバイル保存ボタン非表示: iPhoneポートレートでCMS保存・公開ボタンが画面外に隠れる | Decap CMSデフォルトのCSS | `flex-shrink: 0`, `min-height: 44px`, sticky header | admin-html 12.8章 |
+| 2 | 2026-02-14 | iOS自動ズーム: iPhoneでinput/textareaフォーカス時に画面が自動ズーム | iOSは16px未満のフォントサイズで自動ズーム | `font-size: 16px !important` | admin-html 12.5章 #1 |
+| 3 | 2026-02-14 | pull-to-refresh誤発動: iPhoneで編集中にpull-to-refreshが発動しページがリロード | iOS Safariのデフォルト動作 | touchstart/touchmoveのpreventDefault（エディタ内は除外） | admin-html 12.5章 #3,#4,#5 |
+| 4 | 2026-02-14 | 削除ボタン誤操作: 画像ウィジェットの「削除」が画像選択解除なのかファイル削除なのか判別不能 | 同一ラベル | 「選択解除」/「完全削除」にラベル分離 | admin-html 12.6章 #3,#4,#5 |
+| 5 | 2026-02-15 | iPhone EXIF画像回転: iPhoneで撮影した画像が横向きに表示される | EXIF orientationタグが一部ブラウザで未解釈 | normalize-images.mjsでピクセル回転、image-optimize.mjsで再確認、CSS `image-orientation: from-image` | content-validation 7章 #12-#15, build 11章 #29 |
+| 6 | 2026-02-15 | fixPreviewImageOrientation副作用: CMS編集画面で画像が逆に回転する | JSでcanvas経由のEXIF補正がEXIFメタデータを消失させ二重補正 | JSによるcanvas補正を廃止しCSSに委ねる | admin-html 12.4章 #1 |
+| 7 | 2026-02-15 | ドロップダウン位置ずれ: CMSの公開ボタンドロップダウンがモバイルで画面外に表示 | position: absoluteがビューポート外 | ボトムシート化（position: fixed, bottom: 0） | admin-html 12.3章 #6 |
+| 8 | 2026-02-15 | 公開URLバー残留（iPhone）: エディタからコレクション一覧に戻った後も公開URLバーが残る | hashchange検知不足 | hashchange/popstateリスナーでshowPublicUrl再実行 | E-15 |
+| 9 | 2026-02-15 | Slate codeblockクラッシュ（iPhone）: iPhoneでcodeblockを挿入するとCMSがクラッシュ | Slate v0.47のvoid nodeバグ（根本修正不可） | モバイルでcodeblockボタン非表示、toSlatePointエラーハンドラ、MutationObserverデバウンス | admin-html 12.5b章 |
+| 10 | 2026-02-15 | サイトリンク注入先ミス: 「ブログを見る」リンクがヘッダーの不適切な位置に表示 | header rootに注入 | SidebarContainerに注入先変更 | admin-html 12.6章 #1b |
+| 11 | 2026-02-20 | 公開URLバー残留（コレクション一覧）: ソート用ドロップダウン操作後にURLバーが再表示 | EditorControlBar判定が不正確 | getBoundingClientRect().height > 0 による判定 | E-15 |
+| 12 | 2026-02-20 | CMS固定ページslugテンプレート: 固定ページのファイル名がタイトル（日本語）になる | config.ymlの`slug: "{{slug}}"`がDecap CMSではタイトルのURL安全版を意味 | `slug: "{{fields.slug}}"`に変更 | cms-config 10章 #31, content-validation 7.2章 #19 |
+| 13 | 2026-02-20 | 固定ページ公開URL表示: CMS上の固定ページに`/posts/タイトル`という間違ったURLが表示 | showPublicUrlが記事専用ロジックのみ | ハッシュURLから`/collections/pages/`を判定し`/{slug}`を生成 | admin-html 12.6章 #8 |
+| 14 | 2026-02-20 | ドロップダウン▾閉じない: ヘッダーナビの▾ボタンクリックでメニューが閉じない | CSS `:hover`ルールがJS `is-open`トグルと競合 | CSS `:hover`ルール削除、JSのmouseenter/mouseleaveに統一 | build 11章, E-21 |
+| 15 | 2026-02-20 | ドロップダウンメニューgap: ページ名にホバー後、メニューへマウス移動するとメニューが消える | menu `margin-top`がホバー判定の隙間を作る | `padding-top`に変更 + mouseleave 300ms遅延 | build 11章, E-21 |
+
+---
+
+**最終更新**: 2026年2月20日（v1.10）
