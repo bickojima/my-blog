@@ -54,10 +54,7 @@ collections:
     extension: "md"
     format: "frontmatter"
     summary: "{{order}} | {{draft}} | {{title}}"
-    sortable_fields:
-      - field: order
-        default: true
-      - title
+    sortable_fields: ["order", "title"]
     media_folder: "/public/images/uploads"
     public_folder: "/images/uploads"
     fields:
