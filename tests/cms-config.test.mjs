@@ -143,12 +143,8 @@ describe('CMS設定（config.yml）の検証', () => {
       });
 
       it('ソート可能フィールドにorderとtitleが含まれている', () => {
-        const fields = collection.sortable_fields;
-        // orderフィールドがデフォルトソートに設定されている（オブジェクト形式）
-        const orderField = fields.find(f => typeof f === 'object' && f.field === 'order');
-        expect(orderField).toBeDefined();
-        expect(orderField.default).toBe(true);
-        expect(fields).toContain('title');
+        expect(collection.sortable_fields).toContain('order');
+        expect(collection.sortable_fields).toContain('title');
       });
     });
 
