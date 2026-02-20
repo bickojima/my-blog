@@ -22,9 +22,9 @@
 ```bash
 npm run dev          # 開発サーバー起動（前処理含む）
 npm run build        # 本番ビルド（normalize-images → organize-posts → astro build → image-optimize）
-npm test             # Vitest 全テスト実行（200テスト、記事数により変動）
+npm test             # Vitest 全テスト実行（218テスト、記事数により変動）
 npm run test:watch   # Vitest ウォッチモード
-npm run test:e2e     # Playwright E2Eテスト（要: npm run build 済み、204テスト）
+npm run test:e2e     # Playwright E2Eテスト（要: npm run build 済み、237テスト）
 ```
 
 ## ディレクトリ構成
@@ -76,8 +76,8 @@ tests/
 
 ## テスト
 
-- **Vitest**: 設定検証、コンテンツ検証、単体テスト、ビルド統合テスト（200テスト、記事数により変動）
-- **Playwright**: PC/iPad/iPhone 3デバイス × 68テスト = 204テスト（ローカルのみ、CIでは未実行）
+- **Vitest**: 設定検証、コンテンツ検証、単体テスト、ビルド統合テスト（218テスト、記事数により変動）
+- **Playwright**: PC/iPad/iPhone 3デバイス × 79テスト = 237テスト（ローカルのみ、CIでは未実行）
 - コンテンツ検証テストは記事数に応じて動的展開される
 
 ## ドキュメント
