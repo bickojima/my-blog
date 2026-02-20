@@ -76,11 +76,20 @@ describe('CMS設定（config.yml）の検証', () => {
     });
 
     describe('Decap CMS v3.10.0 互換性', () => {
-      it('全コレクションのsortable_fieldsが文字列配列である（オブジェクト形式はv3.10.0非対応）', () => {
+      it('全コレクションのsortable_fieldsが有効な形式である', () => {
+        // Decap CMS v3.10.0: 文字列 or { field: string, default_sort: "asc"|"desc" }
         config.collections.forEach(collection => {
           if (collection.sortable_fields) {
             collection.sortable_fields.forEach(field => {
-              expect(typeof field).toBe('string');
+              if (typeof field === 'object') {
+                expect(field).toHaveProperty('field');
+                expect(typeof field.field).toBe('string');
+                if (field.default_sort) {
+                  expect(['asc', 'desc']).toContain(field.default_sort);
+                }
+              } else {
+                expect(typeof field).toBe('string');
+              }
             });
           }
         });
@@ -155,8 +164,18 @@ describe('CMS設定（config.yml）の検証', () => {
       });
 
       it('ソート可能フィールドにorderとtitleが含まれている', () => {
-        expect(collection.sortable_fields).toContain('order');
-        expect(collection.sortable_fields).toContain('title');
+        const fields = collection.sortable_fields;
+        const fieldNames = fields.map(f => typeof f === 'object' ? f.field : f);
+        expect(fieldNames).toContain('order');
+        expect(fieldNames).toContain('title');
+      });
+
+      it('orderフィールドがデフォルトで昇順ソートに設定されている', () => {
+        const orderField = collection.sortable_fields.find(
+          f => typeof f === 'object' && f.field === 'order'
+        );
+        expect(orderField).toBeDefined();
+        expect(orderField.default_sort).toBe('asc');
       });
     });
 
