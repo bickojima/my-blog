@@ -13,6 +13,7 @@ Astro + Decap CMS によるブログサイト。Cloudflare Pages でホスティ
 | 1.4 | 2026-02-20 | 固定ページシステム導入（pages コレクション、プロフィールページ、ヘッダーナビ） |
 | 1.5 | 2026-02-21 | 章番号再構成、セクション順序修正、テスト件数更新 |
 | 1.6 | 2026-02-21 | マージ手順リファレンス追加、テスト件数更新（243テスト） |
+| 1.7 | 2026-02-21 | 固定ページ下書きバッジ・デフォルトソート追加（CMS-16）、config.ymlスキーマ検証テスト追加、テスト件数更新（245 Vitest + 240 E2E） |
 
 詳細なシステム変更履歴は [DOCUMENTATION.md](docs/DOCUMENTATION.md) を参照。
 
@@ -115,7 +116,7 @@ my-blog/
 | `npm run dev` | 開発サーバー起動（localhost:4321） |
 | `npm run build` | 本番ビルド（`./dist/` に出力） |
 | `npm run preview` | ビルド結果のローカルプレビュー |
-| `npm test` | 単体・統合テスト実行（Vitest / 245テスト、記事数により変動） |
+| `npm test` | 単体・統合テスト実行（Vitest / 247テスト、記事数により変動） |
 | `npm run test:watch` | ウォッチモードでテスト実行 |
 | `npm run test:e2e` | E2Eテスト実行（Playwright / PC・iPad・iPhone 240テスト） |
 
