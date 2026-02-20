@@ -7,6 +7,9 @@ const configPath = join(process.cwd(), 'public/admin/config.yml');
 const configRaw = readFileSync(configPath, 'utf-8');
 const config = yaml.load(configRaw);
 
+const docPath = join(process.cwd(), 'docs/DOCUMENTATION.md');
+const docContent = readFileSync(docPath, 'utf-8');
+
 describe('CMS設定（config.yml）の検証', () => {
   describe('バックエンド設定', () => {
     it('GitHubバックエンドが設定されている', () => {
@@ -269,5 +272,32 @@ describe('CMS設定（config.yml）の検証', () => {
         });
       });
     });
+  });
+});
+
+describe('要件トレーサビリティ検証', () => {
+  it('DOCUMENTATION.mdの全CMS要件IDがトレーサビリティマトリクスに記載されている', () => {
+    // 1.3章（CMS管理画面要件）からCMS-XX IDを抽出
+    const reqSectionMatch = docContent.match(/## 1\.3\. CMS管理画面要件[\s\S]*?(?=\n---|\n## 1\.4\.)/);
+    const reqSection = reqSectionMatch ? reqSectionMatch[0] : '';
+    const reqIds = [...new Set([...reqSection.matchAll(/\| (CMS-\d+) \|/g)].map(m => m[1]))];
+
+    // 1.5.2章（トレーサビリティマトリクス）からCMS-XX IDを抽出
+    const traceSectionMatch = docContent.match(/### 1\.5\.2[\s\S]*?(?=\n### 1\.5\.3|\n---)/);
+    const traceSection = traceSectionMatch ? traceSectionMatch[0] : '';
+    const traceIds = [...traceSection.matchAll(/\| (CMS-\d+) \|/g)].map(m => m[1]);
+
+    // 各要件IDがトレーサビリティに存在するか検証
+    expect(reqIds.length).toBeGreaterThan(0);
+    for (const id of reqIds) {
+      expect(traceIds, `${id} がトレーサビリティマトリクスに未記載`).toContain(id);
+    }
+  });
+
+  it('config.ymlの全コレクションに対応する要件がDOCUMENTATION.mdに存在する', () => {
+    const collectionNames = config.collections.map(c => c.name);
+    for (const name of collectionNames) {
+      expect(docContent, `コレクション "${name}" に対応する要件がDOCUMENTATION.mdに未記載`).toContain(name);
+    }
   });
 });
