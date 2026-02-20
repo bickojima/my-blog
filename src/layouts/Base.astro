@@ -66,11 +66,58 @@ const navPages = (await getCollection('pages'))
       display: flex;
       gap: 1rem;
     }
-    .nav-links a {
+    .nav-links > a {
       font-size: 0.85rem;
       color: #888;
     }
-    .nav-links a:hover {
+    .nav-links > a:hover {
+      color: #333;
+    }
+    .nav-dropdown {
+      position: relative;
+    }
+    .nav-dropdown-trigger {
+      font-size: 0.85rem;
+      color: #888;
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-family: inherit;
+      padding: 0;
+    }
+    .nav-dropdown-trigger:hover {
+      color: #333;
+    }
+    .nav-dropdown-trigger::after {
+      content: ' ▾';
+      font-size: 0.7em;
+    }
+    .nav-dropdown-menu {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: 100%;
+      margin-top: 0.25rem;
+      background: #fff;
+      border: 1px solid #eee;
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      min-width: 120px;
+      z-index: 100;
+    }
+    .nav-dropdown:hover .nav-dropdown-menu,
+    .nav-dropdown:focus-within .nav-dropdown-menu {
+      display: block;
+    }
+    .nav-dropdown-menu a {
+      display: block;
+      padding: 0.4rem 0.8rem;
+      font-size: 0.85rem;
+      color: #555;
+      white-space: nowrap;
+    }
+    .nav-dropdown-menu a:hover {
+      background: #f5f5f5;
       color: #333;
     }
     main {
@@ -101,9 +148,18 @@ const navPages = (await getCollection('pages'))
     <nav>
       <a href="/" class="site-title">{siteTitle}</a>
       <div class="nav-links">
-        {navPages.map(page => (
-          <a href={`/${page.slug}`}>{page.data.title}</a>
-        ))}
+        {navPages.length === 1 ? (
+          <a href={`/${navPages[0].slug}`}>{navPages[0].data.title}</a>
+        ) : navPages.length > 1 ? (
+          <div class="nav-dropdown">
+            <button class="nav-dropdown-trigger" type="button">ページ</button>
+            <div class="nav-dropdown-menu">
+              {navPages.map(page => (
+                <a href={`/${page.slug}`}>{page.data.title}</a>
+              ))}
+            </div>
+          </div>
+        ) : null}
       </div>
     </nav>
   </header>
