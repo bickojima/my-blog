@@ -246,7 +246,7 @@ my-blog/
 │   └── content.config.ts              # コンテンツスキーマ定義
 ├── tests/                              # 自動テスト
 │   ├── *.test.mjs                      # 単体・統合テスト（Vitest）
-│   └── e2e/                            # E2Eテスト（Playwright）
+│   └── e2e/                            # E2Eテスト（Playwright 3ファイル）
 ├── CLAUDE.md                           # Claude Code向けプロジェクトガイド
 ├── astro.config.mjs                    # Astro設定
 ├── playwright.config.ts                # Playwright E2E設定
@@ -311,8 +311,8 @@ my-blog/
 | ホスティング | Cloudflare Pages | - | 静的配信 + Functions |
 | 認証 | GitHub OAuth App | - | CMS管理者認証 |
 | 画像処理 | sharp | v0.34.5 | 画像圧縮・回転・リサイズ |
-| テスト（単体・統合） | Vitest | v4.0.18 | 単体テスト・統合テスト（237テスト） |
-| テスト（E2E） | Playwright | v1.58.2 | ブラウザE2Eテスト（PC/iPad/iPhone 90テスト） |
+| テスト（単体・統合） | Vitest | v4.0.18 | 単体テスト・統合テスト（177テスト） |
+| テスト（E2E） | Playwright | v1.58.2 | ブラウザE2Eテスト（PC/iPad/iPhone 192テスト） |
 | コンテンツ | Markdown | - | frontmatter形式 |
 
 ### 6.2 選定理由
