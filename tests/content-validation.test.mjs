@@ -259,11 +259,11 @@ describe('固定ページフィールドの境界値・一意性検証', () => {
     }
   });
 
-  it('全固定ページのorderが0以上である', () => {
+  it('全固定ページのorderが1以上の正の整数である', () => {
     for (const page of allPages) {
       expect(
-        page.order >= 0,
-        `${page.file}: order=${page.order} は負の値`
+        page.order >= 1,
+        `${page.file}: order=${page.order} は1未満の不正値`
       ).toBe(true);
     }
   });

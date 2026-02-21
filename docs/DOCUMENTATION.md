@@ -24,6 +24,7 @@
 | 1.17 | 2026-02-21 | 第三者セキュリティ診断に基づく修正: XSS脆弱性修正（callback.js escapeForScript、admin/index.html innerHTML排除）、postMessageオリジン検証、OAuthスコープ最小化（public_repo,read:user）、CDNバージョン固定、MutationObserver統合、var→const/let統一、セキュリティチェックリスト・品質向上策（4.7章）追加、バグ一覧No.18〜24追加、ドキュメント不整合修正（テスト件数・行数・章番号参照） |
 | 1.18 | 2026-02-21 | セキュリティ要件を1.4.2章（SEC-01〜SEC-09）として独立、セキュリティ検証テスト追加（admin-html 9件、auth-functions 4件）、トレーサビリティマトリクス1.5.4章追加、4.7章を品質向上策・定期診断に再構成、TOC整備 |
 | 1.19 | 2026-02-21 | 第2回ペネトレーションテスト実施: SEC-10〜SEC-13追加（HTTPセキュリティヘッダー、OAuth CSRF防止stateパラメータ、SRI、エラー情報漏洩防止）、_headers全面強化（CSP/X-Frame-Options/X-Content-Type-Options）、callback.js var→const修正・エラーメッセージ汎化、admin/index.html SRI属性追加 |
+| 1.20 | 2026-02-21 | SEC-14〜SEC-20追加: HSTS preload対応、Cross-Origin Isolation(COOP/CORP)、DNS Prefetch防止、Permissions-Policy拡張(FLoC/Topics無効化)、情報漏洩防止(ファイル)、入力値バリデーション強化(order=-1バグ修正、3層バリデーション)、ファズテスト必須化(207テスト: XSS/SQLi/パストラバーサル/コマンドインジェクション/プロトタイプ汚染)。ビルドパイプライン再構成(build:raw+build=テスト必須)。バグNo.25-26追加。全477テスト |
 
 ## システム変更履歴
 
@@ -284,6 +285,13 @@ PR履歴に基づく主要なシステム変更の記録である。
 | SEC-11 | OAuth CSRF防止: stateパラメータでCSRFを防止する | `functions/auth/` | crypto.randomUUID()でstate生成、HttpOnly Cookieで保存・照合 |
 | SEC-12 | SRI（Subresource Integrity）: 外部CDNスクリプトの完全性を検証する | `admin/index.html` | integrity属性 + crossorigin="anonymous" |
 | SEC-13 | エラー情報漏洩防止: OAuthエラーメッセージを汎化する | `functions/auth/callback.js` | GitHubエラー詳細をクライアントに返さない |
+| SEC-14 | HSTS（HTTP Strict Transport Security）: max-age≧2年、includeSubDomains、preloadを設定する | `_headers` | HSTS Preload List登録対応 |
+| SEC-15 | Cross-Origin Isolation: COOP（same-origin）、CORP（same-origin）を設定する | `_headers` | Spectre系サイドチャネル攻撃緩和 |
+| SEC-16 | DNS Prefetch / Cross-Domain Policy防止: X-DNS-Prefetch-Control: off、X-Permitted-Cross-Domain-Policies: noneを設定する | `_headers` | 情報漏洩経路の遮断 |
+| SEC-17 | Permissions-Policy拡張: FLoC/Topics（interest-cohort）含む全不要APIを無効化する | `_headers` | プライバシー保護（広告トラッキング拒否） |
+| SEC-18 | 情報漏洩防止（ファイル）: public配下に.env/.git/package.json等の機密ファイルが存在しないことを保証する | ビルドプロセス | ペネトレーションテストで確認 |
+| SEC-19 | 入力値バリデーション強化: フィールド境界値・不整合値をCMS設定・Zodスキーマ・テストの3層で防止する | `config.yml`, `content.config.ts` | order≧1、slug正規表現、型チェック |
+| SEC-20 | ファズテスト必須化: XSS/SQLi/パストラバーサル/プロトタイプ汚染等の攻撃ペイロードに対する耐性を自動テストで検証する | `fuzz-validation.test.mjs` | ビルド時にファズテスト必須実行 |
 
 ---
 
@@ -357,8 +365,15 @@ PR履歴に基づく主要なシステム変更の記録である。
 | SEC-11 | OAuth CSRF防止 | auth-functions | 2.3.1章 #5, #6 | M-02 | 充足 |
 | SEC-12 | SRI（Subresource Integrity） | admin-html | 2.6.12章 #10, #11 | M-02 | 充足 |
 | SEC-13 | エラー情報漏洩防止 | auth-functions | 2.3.1章 #7 | M-02 | 充足 |
+| SEC-14 | HSTS（preload対応） | fuzz-validation | 2.7.8章 #7〜#10 | M-02 | 充足 |
+| SEC-15 | Cross-Origin Isolation | fuzz-validation | 2.7.8章 #11, #12 | M-02 | 充足 |
+| SEC-16 | DNS Prefetch / Cross-Domain Policy防止 | fuzz-validation | 2.7.8章 #13, #14 | M-02 | 充足 |
+| SEC-17 | Permissions-Policy拡張 | fuzz-validation | 2.7.8章 #3〜#6 | M-02 | 充足 |
+| SEC-18 | 情報漏洩防止（ファイル） | fuzz-validation | 2.7.10章 #1〜#7 | M-02 | 充足 |
+| SEC-19 | 入力値バリデーション強化 | fuzz-validation | 2.7.1〜2.7.6章 | M-02, M-09 | 充足 |
+| SEC-20 | ファズテスト必須化 | fuzz-validation | 2.7章全体 | M-09 | 充足 |
 
-**充足状況: 全要件（FR-01〜FR-14, CMS-01〜CMS-16, NFR-01〜NFR-04, SEC-01〜SEC-13）がテストで充足されている。未テスト要件なし。**
+**充足状況: 全要件（FR-01〜FR-14, CMS-01〜CMS-16, NFR-01〜NFR-04, SEC-01〜SEC-20）がテストで充足されている。未テスト要件なし。**
 
 ---
 
@@ -1413,6 +1428,8 @@ GitHubリポジトリが利用可能な場合、以下の手順でシステム�
 | 22 | 2026-02-21 | CDNバージョン範囲指定（admin/index.html）: `decap-cms@^3.10.0`でキャレット範囲を使用しており、サプライチェーン攻撃で悪意あるバージョンが配信される可能性 | npmのキャレット構文をCDN URLにそのまま使用 | `decap-cms@3.10.0`に正確なバージョンを固定 | admin-html 2.6.1章 |
 | 23 | 2026-02-21 | MutationObserver二重定義（admin/index.html）: 2つの独立したMutationObserverが存在し、片方はRAFデバウンスなし | 機能追加時の統合漏れ | 単一MutationObserverに統合し、全監視をRAFデバウンス付きで一元管理 | admin-html 2.6.6章 |
 | 24 | 2026-02-21 | var/let/const混在（admin/index.html）: varとconst/letが混在し、変数スコープが不明確 | 段階的な機能追加でコーディングスタイルが統一されなかった | 全変数を'use strict'モードでconst/letに統一 | admin-html 2.6.6章 |
+| 25 | 2026-02-21 | 固定ページorder値に負数(-1)設定可能: CMS config.ymlのorderフィールドにmin制約がなく、-1等の不正値が入力・保存可能。表示崩れやエラーの原因となる | config.ymlのnumberウィジェットにmin制約が未設定、Zodスキーマにも最小値チェックなし | 3層バリデーション: (1) config.yml min:1, (2) Zodスキーマ z.number().int().min(1), (3) admin/index.html 正規表現を負数対応(-?\d+)で防御的表示。既存データのorder=-1を1に修正 | fuzz-validation 2.7.1章, content-validation 2.1.4章, cms-config 2.4章 |
+| 26 | 2026-02-21 | HTTPセキュリティヘッダー不足: HSTS/COOP/CORP/拡張Permissions-Policy等のMozilla Observatory A+評価に必要なヘッダーが未設定 | 初期構築時にOWASP推奨ヘッダーの網羅的設定を行わなかった | _headersファイルにHSTS(preload), COOP(same-origin), CORP(same-origin), X-DNS-Prefetch-Control(off), X-Permitted-Cross-Domain-Policies(none), Permissions-Policy(全不要API無効化)を追加 | fuzz-validation 2.7.8章, build 2.5.1章 |
 
 ---
 

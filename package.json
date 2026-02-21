@@ -4,7 +4,8 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "node scripts/normalize-images.mjs && node scripts/organize-posts.mjs && astro dev",
-    "build": "node scripts/normalize-images.mjs && node scripts/organize-posts.mjs && astro build",
+    "build:raw": "node scripts/normalize-images.mjs && node scripts/organize-posts.mjs && astro build",
+    "build": "vitest run --exclude tests/build.test.mjs && node scripts/normalize-images.mjs && node scripts/organize-posts.mjs && astro build",
     "preview": "astro preview",
     "astro": "astro",
     "test": "vitest run",

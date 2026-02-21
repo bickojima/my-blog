@@ -206,7 +206,7 @@ describe('管理画面HTML（public/admin/index.html）の検証', () => {
     it('固定ページ一覧の番号・下書きフォーマット処理がある', () => {
       // "番号 | draft | タイトル" パターンの正規表現（entry-dateと同じスタイルで表示）
       expect(adminHtml).toContain(
-        String.raw`/^(\d+)\s*\|\s*(true|false)\s*\|\s*(.+)$/`
+        String.raw`/^(-?\d+)\s*\|\s*(true|false)\s*\|\s*(.+)$/`
       );
       expect(adminHtml).toContain("'#' + pagesMatch[1]");
       // 下書きバッジ表示処理がある
