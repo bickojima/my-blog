@@ -25,6 +25,7 @@
 | 1.18 | 2026-02-21 | セキュリティ要件を1.4.2章（SEC-01〜SEC-09）として独立、セキュリティ検証テスト追加（admin-html 9件、auth-functions 4件）、トレーサビリティマトリクス1.5.4章追加、4.7章を品質向上策・定期診断に再構成、TOC整備 |
 | 1.19 | 2026-02-21 | 第2回ペネトレーションテスト実施: SEC-10〜SEC-13追加（HTTPセキュリティヘッダー、OAuth CSRF防止stateパラメータ、SRI、エラー情報漏洩防止）、_headers全面強化（CSP/X-Frame-Options/X-Content-Type-Options）、callback.js var→const修正・エラーメッセージ汎化、admin/index.html SRI属性追加 |
 | 1.20 | 2026-02-21 | SEC-14〜SEC-20追加: HSTS preload対応、Cross-Origin Isolation(COOP/CORP)、DNS Prefetch防止、Permissions-Policy拡張(FLoC/Topics無効化)、情報漏洩防止(ファイル)、入力値バリデーション強化(order=-1バグ修正、3層バリデーション)、ファズテスト必須化(207テスト: XSS/SQLi/パストラバーサル/コマンドインジェクション/プロトタイプ汚染)。ビルドパイプライン再構成(build:raw+build=テスト必須)。バグNo.25-26追加。全477テスト |
+| 1.21 | 2026-02-21 | iPhone記事保存失敗バグ修正（バグNo.27）: CDNスクリプト`</script>`閉じタグ欠落復元、管理画面セキュリティヘッダーオーバーライド追加（COOP: same-origin-allow-popups、X-Frame-Options: SAMEORIGIN、CSP frame-ancestors 'self'）。SEC-15要件を管理画面例外考慮に更新。再発防止テスト7件追加。全484テスト |
 
 ## システム変更履歴
 
@@ -286,7 +287,7 @@ PR履歴に基づく主要なシステム変更の記録である。
 | SEC-12 | SRI（Subresource Integrity）: 外部CDNスクリプトの完全性を検証する | `admin/index.html` | integrity属性 + crossorigin="anonymous" |
 | SEC-13 | エラー情報漏洩防止: OAuthエラーメッセージを汎化する | `functions/auth/callback.js` | GitHubエラー詳細をクライアントに返さない |
 | SEC-14 | HSTS（HTTP Strict Transport Security）: max-age≧2年、includeSubDomains、preloadを設定する | `_headers` | HSTS Preload List登録対応 |
-| SEC-15 | Cross-Origin Isolation: COOP（same-origin）、CORP（same-origin）を設定する | `_headers` | Spectre系サイドチャネル攻撃緩和 |
+| SEC-15 | Cross-Origin Isolation: COOP（same-origin）、CORP（same-origin）を設定する。管理画面（/admin/*）はOAuth popup許可のためCOOP: same-origin-allow-popups、プレビューiframe許可のためX-Frame-Options: SAMEORIGIN、CSP frame-ancestors 'self'にオーバーライドする | `_headers` | Spectre系サイドチャネル攻撃緩和 + CMS互換性 |
 | SEC-16 | DNS Prefetch / Cross-Domain Policy防止: X-DNS-Prefetch-Control: off、X-Permitted-Cross-Domain-Policies: noneを設定する | `_headers` | 情報漏洩経路の遮断 |
 | SEC-17 | Permissions-Policy拡張: FLoC/Topics（interest-cohort）含む全不要APIを無効化する | `_headers` | プライバシー保護（広告トラッキング拒否） |
 | SEC-18 | 情報漏洩防止（ファイル）: public配下に.env/.git/package.json等の機密ファイルが存在しないことを保証する | ビルドプロセス | ペネトレーションテストで確認 |
@@ -366,7 +367,7 @@ PR履歴に基づく主要なシステム変更の記録である。
 | SEC-12 | SRI（Subresource Integrity） | admin-html | 2.6.12章 #10, #11 | M-02 | 充足 |
 | SEC-13 | エラー情報漏洩防止 | auth-functions | 2.3.1章 #7 | M-02 | 充足 |
 | SEC-14 | HSTS（preload対応） | fuzz-validation | 2.7.8章 #7〜#10 | M-02 | 充足 |
-| SEC-15 | Cross-Origin Isolation | fuzz-validation | 2.7.8章 #11, #12 | M-02 | 充足 |
+| SEC-15 | Cross-Origin Isolation + 管理画面オーバーライド | fuzz-validation | 2.7.8章 #11, #12, 2.7.12章 #1〜#5 | M-02 | 充足 |
 | SEC-16 | DNS Prefetch / Cross-Domain Policy防止 | fuzz-validation | 2.7.8章 #13, #14 | M-02 | 充足 |
 | SEC-17 | Permissions-Policy拡張 | fuzz-validation | 2.7.8章 #3〜#6 | M-02 | 充足 |
 | SEC-18 | 情報漏洩防止（ファイル） | fuzz-validation | 2.7.10章 #1〜#7 | M-02 | 充足 |
@@ -1430,6 +1431,7 @@ GitHubリポジトリが利用可能な場合、以下の手順でシステム�
 | 24 | 2026-02-21 | var/let/const混在（admin/index.html）: varとconst/letが混在し、変数スコープが不明確 | 段階的な機能追加でコーディングスタイルが統一されなかった | 全変数を'use strict'モードでconst/letに統一 | admin-html 2.6.6章 |
 | 25 | 2026-02-21 | 固定ページorder値に負数(-1)設定可能: CMS config.ymlのorderフィールドにmin制約がなく、-1等の不正値が入力・保存可能。表示崩れやエラーの原因となる | config.ymlのnumberウィジェットにmin制約が未設定、Zodスキーマにも最小値チェックなし | 3層バリデーション: (1) config.yml min:1, (2) Zodスキーマ z.number().int().min(1), (3) admin/index.html 正規表現を負数対応(-?\d+)で防御的表示。既存データのorder=-1を1に修正 | fuzz-validation 2.7.1章, content-validation 2.1.4章, cms-config 2.4章 |
 | 26 | 2026-02-21 | HTTPセキュリティヘッダー不足: HSTS/COOP/CORP/拡張Permissions-Policy等のMozilla Observatory A+評価に必要なヘッダーが未設定 | 初期構築時にOWASP推奨ヘッダーの網羅的設定を行わなかった | _headersファイルにHSTS(preload), COOP(same-origin), CORP(same-origin), X-DNS-Prefetch-Control(off), X-Permitted-Cross-Domain-Policies(none), Permissions-Policy(全不要API無効化)を追加 | fuzz-validation 2.7.8章, build 2.5.1章 |
+| 27 | 2026-02-21 | iPhone記事保存失敗「TypeError: Load failed」: 4つのバグが複合。(1) コミット`295b44f`でSRI追加時に`</script>`閉じタグが脱落し、後続の`CMS.registerPreviewStyle`ブロックがCDNスクリプトのインライン内容としてHTMLパーサーに飲み込まれた。(2) コミット`a92ccbd`でCOOP `same-origin`を全ページに適用しOAuth popupの`window.opener`が`null`になり認証フロー破壊。(3) コミット`295b44f`でCSP `frame-ancestors 'none'`がCMSプレビューiframeを阻害。(4) 同コミットで`X-Frame-Options: DENY`が同上 | バグ#26修正（セキュリティヘッダー追加）とSRI追加（SEC-12）時に、管理画面（Decap CMS）固有の要件（OAuth popup: window.opener、プレビューiframe: frame-ancestors/X-Frame-Options）との互換性を検証しなかった。SRI追加時の単純な編集ミスで閉じタグ脱落 | (1) `</script>`閉じタグ復元。(2) /admin/*でCOOP: same-origin-allow-popupsにオーバーライド。(3) CSP frame-ancestors 'self'に変更。(4) /admin/*でX-Frame-Options: SAMEORIGINにオーバーライド。再発防止: CDNスクリプト閉じタグ自動テスト、管理画面ヘッダーオーバーライド自動テスト、CLAUDE.mdにヘッダー追加時の管理画面影響チェック義務化 | admin-html 2.6.1章, fuzz-validation 2.7.8章 |
 
 ---
 
@@ -1543,4 +1545,4 @@ git push origin staging
 
 ---
 
-**最終更新**: 2026年2月21日（v1.18）
+**最終更新**: 2026年2月21日（v1.21）

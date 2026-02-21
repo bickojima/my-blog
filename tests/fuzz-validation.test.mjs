@@ -953,12 +953,45 @@ describe('セキュリティヘッダー構成の包括的検証', () => {
   });
 
   describe('Cross-Originヘッダー', () => {
-    it('Cross-Origin-Opener-Policy: same-origin が設定されている', () => {
-      expect(headersContent).toContain('Cross-Origin-Opener-Policy: same-origin');
+    it('Cross-Origin-Opener-Policy: same-origin が全ページに設定されている', () => {
+      // /*セクションでsame-originが設定されていること
+      const globalSection = headersContent.split('/admin/')[0] || '';
+      expect(globalSection).toContain('Cross-Origin-Opener-Policy: same-origin');
     });
 
     it('Cross-Origin-Resource-Policy: same-origin が設定されている', () => {
       expect(headersContent).toContain('Cross-Origin-Resource-Policy: same-origin');
+    });
+  });
+
+  // バグ#27再発防止: COOP same-originがOAuth popupのwindow.openerをnullにし、
+  // Decap CMSのGitHub認証が失敗→記事保存時「TypeError: Load failed」が発生した
+  describe('管理画面（/admin/*）セキュリティヘッダーオーバーライド', () => {
+    const adminSection = headersContent.split('/admin/')[1] || '';
+
+    it('COOP が same-origin-allow-popups にオーバーライドされている（OAuth popup許可）', () => {
+      expect(adminSection).toContain('Cross-Origin-Opener-Policy: same-origin-allow-popups');
+    });
+
+    it('X-Frame-Options が SAMEORIGIN にオーバーライドされている（CMSプレビューiframe許可）', () => {
+      expect(adminSection).toContain('X-Frame-Options: SAMEORIGIN');
+    });
+
+    it('CORP が same-site にオーバーライドされている', () => {
+      expect(adminSection).toContain('Cross-Origin-Resource-Policy: same-site');
+    });
+
+    it('CSP frame-src に blob: が含まれている（CMSプレビュー用）', () => {
+      expect(adminSection).toContain('blob:');
+    });
+
+    it('管理画面のCOOPが全ページのCOOPより緩和されている', () => {
+      // 全ページ: same-origin（厳格）、管理画面: same-origin-allow-popups（popup許可）
+      const globalSection = headersContent.split('/admin/')[0] || '';
+      expect(globalSection).toContain('Cross-Origin-Opener-Policy: same-origin');
+      expect(adminSection).toContain('Cross-Origin-Opener-Policy: same-origin-allow-popups');
+      // 管理画面にsame-origin（厳格版）が単独で設定されていないことを確認
+      expect(adminSection).not.toMatch(/Cross-Origin-Opener-Policy:\s*same-origin\s*$/m);
     });
   });
 
@@ -983,8 +1016,8 @@ describe('セキュリティヘッダー構成の包括的検証', () => {
       expect(adminSection).toContain('script-src');
     });
 
-    it('frame-ancestors が none に設定されている（クリックジャッキング防止）', () => {
-      expect(adminSection).toContain("frame-ancestors 'none'");
+    it('frame-ancestors が self に設定されている（クリックジャッキング防止 + CMSプレビューiframe許可）', () => {
+      expect(adminSection).toContain("frame-ancestors 'self'");
     });
 
     it('base-uri が制限されている（ベースURLハイジャック防止）', () => {
