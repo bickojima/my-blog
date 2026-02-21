@@ -445,4 +445,32 @@ describe('ビルド検証', () => {
       expect(foundFigure, 'figure/figcaptionを含む記事が1件もない').toBe(true);
     });
   });
+
+  describe('セキュリティヘッダー検証（SEC-10）', () => {
+    const headersPath = join(process.cwd(), 'public/_headers');
+    const headersContent = readFileSync(headersPath, 'utf-8');
+
+    it('X-Content-Type-Optionsが設定されている', () => {
+      expect(headersContent).toContain('X-Content-Type-Options: nosniff');
+    });
+
+    it('X-Frame-Optionsが設定されている', () => {
+      expect(headersContent).toContain('X-Frame-Options: DENY');
+    });
+
+    it('Referrer-Policyが設定されている', () => {
+      expect(headersContent).toContain('Referrer-Policy: strict-origin-when-cross-origin');
+    });
+
+    it('Permissions-Policyが設定されている', () => {
+      expect(headersContent).toContain('Permissions-Policy:');
+    });
+
+    it('/admin/*にContent-Security-Policyが設定されている', () => {
+      // /admin/* セクションにCSPが含まれること
+      const adminSection = headersContent.split('/admin/')[1];
+      expect(adminSection).toBeDefined();
+      expect(adminSection).toContain('Content-Security-Policy:');
+    });
+  });
 });
