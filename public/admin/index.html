@@ -418,7 +418,7 @@
         }
       });
     </script>
-    <script src="https://unpkg.com/decap-cms@^3.10.0/dist/decap-cms.js"></script>
+    <script src="https://unpkg.com/decap-cms@3.10.0/dist/decap-cms.js"></script>
     <script>
       // プレビューペインに本番サイト相当のスタイルを適用
       // Base.astro のグローバルスタイル + [slug].astro の .post-content スタイルを統合
@@ -499,55 +499,26 @@
       `, { raw: true });
     </script>
     <script>
-      // Decap CMS UI カスタマイズ
+      // Decap CMS UI カスタマイズ + 画像アップロード処理
+      // MutationObserver を単一インスタンスに統合し、全DOM監視を一元管理
       (function() {
-        function initCustomizations() {
-          // MutationObserverコールバックをデバウンス（requestAnimationFrame）
-          // codeblock挿入等で大量DOM変更が発生した際の過負荷クラッシュを防止
-          var rafPending = false;
-          function runCustomizations() {
-            addSiteLink();
-            formatCollectionEntries();
-            relabelImageButtons();
-            updateDeleteButtonState();
-            showPublicUrl();
-            manageDropdownOverlay();
-            hideCodeBlockOnMobile();
-          }
+        'use strict';
 
-          var observer = new MutationObserver(function() {
-            if (rafPending) return;
-            rafPending = true;
-            requestAnimationFrame(function() {
-              rafPending = false;
-              runCustomizations();
-            });
-          });
-
-          observer.observe(document.body, {
-            childList: true,
-            subtree: true,
-            attributes: true,
-            attributeFilter: ['class']
-          });
-
-          // 初回実行
-          runCustomizations();
-        }
+        // === DOM カスタマイズ関数 ===
 
         // サイドバーに本番サイトへのリンクを追加（コレクション＞記事の下）
         function addSiteLink() {
           if (document.getElementById('cms-site-link')) return;
 
-          var sidebar = document.querySelector('[class*="SidebarContainer"]');
+          const sidebar = document.querySelector('[class*="SidebarContainer"]');
           if (!sidebar) return;
 
-          var link = document.createElement('a');
+          const link = document.createElement('a');
           link.id = 'cms-site-link';
           link.href = window.location.origin;
           link.target = '_blank';
           link.rel = 'noopener';
-          var isStaging = window.location.hostname.startsWith('staging.') || window.location.hostname.includes('.pages.dev');
+          const isStaging = window.location.hostname.startsWith('staging.') || window.location.hostname.includes('.pages.dev');
           link.textContent = (isStaging ? '[STAGING] ' : '') + 'ブログを見る \u2197';
           link.style.cssText = 'display:block;padding:12px 20px;color:#1a73e8;text-decoration:none;font-size:14px;border-top:1px solid #eee;margin-top:8px;';
           link.addEventListener('mouseenter', function() { link.style.background = '#f5f5f5'; });
@@ -557,67 +528,67 @@
 
         // コレクション一覧：日付・下書き状態・タイトルを分離表示
         function formatCollectionEntries() {
-          var elements = document.querySelectorAll(
+          const elements = document.querySelectorAll(
             '[class*="ListCard"] h2, [class*="ListCardTitle"], [class*="CardBody"] h2'
           );
-          elements.forEach(function(el) {
-            if (el.dataset.formatted) return;
-            var text = el.textContent || '';
+          for (const el of elements) {
+            if (el.dataset.formatted) continue;
+            const text = el.textContent || '';
             // summary: "{{date}} | {{draft}} | {{title}}"
-            var match = text.match(/^(\d{4}-\d{2}-\d{2})\s*\|\s*(true|false)\s*\|\s*(.+)$/);
+            const match = text.match(/^(\d{4}-\d{2}-\d{2})\s*\|\s*(true|false)\s*\|\s*(.+)$/);
             if (match) {
               el.dataset.formatted = 'true';
-              var dateSpan = document.createElement('span');
+              const dateSpan = document.createElement('span');
               dateSpan.className = 'entry-date';
               dateSpan.textContent = match[1];
               el.textContent = '';
               el.appendChild(dateSpan);
               if (match[2] === 'true') {
-                var draftSpan = document.createElement('span');
+                const draftSpan = document.createElement('span');
                 draftSpan.className = 'entry-draft';
                 draftSpan.textContent = '下書き';
                 el.appendChild(draftSpan);
               }
-              var titleSpan = document.createElement('span');
+              const titleSpan = document.createElement('span');
               titleSpan.className = 'entry-title';
               titleSpan.textContent = match[3];
               el.appendChild(titleSpan);
-              return;
+              continue;
             }
             // 固定ページ: "番号 | draft | タイトル" 形式（summary: "{{order}} | {{draft}} | {{title}}"）
-            var pagesMatch = text.match(/^(\d+)\s*\|\s*(true|false)\s*\|\s*(.+)$/);
+            const pagesMatch = text.match(/^(\d+)\s*\|\s*(true|false)\s*\|\s*(.+)$/);
             if (pagesMatch) {
               el.dataset.formatted = 'true';
-              var orderSpan = document.createElement('span');
+              const orderSpan = document.createElement('span');
               orderSpan.className = 'entry-date';
               orderSpan.textContent = '#' + pagesMatch[1];
               el.textContent = '';
               el.appendChild(orderSpan);
               if (pagesMatch[2] === 'true') {
-                var pageDraftSpan = document.createElement('span');
+                const pageDraftSpan = document.createElement('span');
                 pageDraftSpan.className = 'entry-draft';
                 pageDraftSpan.textContent = '下書き';
                 el.appendChild(pageDraftSpan);
               }
-              var pageTitleSpan = document.createElement('span');
+              const pageTitleSpan = document.createElement('span');
               pageTitleSpan.className = 'entry-title';
               pageTitleSpan.textContent = pagesMatch[3];
               el.appendChild(pageTitleSpan);
             }
-          });
+          }
         }
 
         // 画像ウィジェットのボタンラベル変更
         function relabelImageButtons() {
-          var buttons = document.querySelectorAll('button');
-          buttons.forEach(function(btn) {
-            if (btn.dataset.relabeled) return;
-            var text = btn.textContent.trim();
+          const buttons = document.querySelectorAll('button');
+          for (const btn of buttons) {
+            if (btn.dataset.relabeled) continue;
+            const text = btn.textContent.trim();
 
             // 「削除」を含むボタンを検出（「削除」「削除する」等すべて対応）
             if (text.includes('削除')) {
               // 画像/ファイルウィジェット内かどうか判定
-              var inFileWidget = btn.closest(
+              const inFileWidget = btn.closest(
                 '[class*="FileWidget"], [class*="ImageWidget"], [class*="FileContent"], [class*="ImageContent"]'
               );
 
@@ -632,30 +603,30 @@
               }
               btn.dataset.relabeled = 'true';
             }
-          });
+          }
         }
 
         // メディアライブラリ：オブジェクト未選択時は削除ボタンを無効化
         function updateDeleteButtonState() {
-          var modal = document.querySelector('[class*="StyledModal"], [class*="MediaLibrary"]');
+          const modal = document.querySelector('[class*="StyledModal"], [class*="MediaLibrary"]');
           if (!modal) return;
 
           // メディアライブラリ内の完全削除ボタンを探す
-          var deleteBtn = modal.querySelector('button.cms-full-delete-btn');
+          const deleteBtn = modal.querySelector('button.cms-full-delete-btn');
           if (!deleteBtn) return;
 
           // カードグリッド内の子要素からborderColorで選択状態を判定
           // styled-componentsはクラス名にselectedが出ないため、描画結果で判定
-          var grid = modal.querySelector('[class*="CardGrid"]');
-          var hasSelected = false;
+          const grid = modal.querySelector('[class*="CardGrid"]');
+          let hasSelected = false;
           if (grid) {
-            var cards = grid.querySelectorAll('[class*="Card"]');
-            for (var i = 0; i < cards.length; i++) {
-              var bc = window.getComputedStyle(cards[i]).borderColor;
+            const cards = grid.querySelectorAll('[class*="Card"]');
+            for (const card of cards) {
+              const bc = window.getComputedStyle(card).borderColor;
               if (!bc) continue;
-              var m = bc.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+              const m = bc.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
               if (m) {
-                var r = +m[1], g = +m[2], b = +m[3];
+                const r = +m[1], g = +m[2], b = +m[3];
                 // 青系ボーダー = 選択状態（グレーや白ではない色付きボーダー）
                 if (b > 150 && b - r > 40) {
                   hasSelected = true;
@@ -674,24 +645,24 @@
         // 新規記事: タイトルから生成（作成時にファイル名=タイトルになるため）
         function showPublicUrl() {
           try {
-            var urlDisplay = document.getElementById('cms-public-url');
+            let urlDisplay = document.getElementById('cms-public-url');
 
             // エディタ画面の判定: EditorControlBarが実際に画面に表示されているかで判定
             // Decap CMSはReact SPAのため、ページ遷移後も非表示のDOMが残ることがある
             // 要素の存在だけでなく描画サイズで判定し、コレクション一覧では確実に非表示にする
-            var editorBar = document.querySelector('[class*="EditorControlBar"]');
-            var isEditor = editorBar && editorBar.getBoundingClientRect().height > 0;
+            const editorBar = document.querySelector('[class*="EditorControlBar"]');
+            const isEditor = editorBar && editorBar.getBoundingClientRect().height > 0;
 
             if (!isEditor) {
               if (urlDisplay) urlDisplay.style.display = 'none';
               return;
             }
 
-            var hash = window.location.hash || '';
-            var entryMatch = hash.match(/\/entries\/(.+?)$/);
-            var isPages = hash.indexOf('/collections/pages/') !== -1;
+            const hash = window.location.hash || '';
+            const entryMatch = hash.match(/\/entries\/(.+?)$/);
+            const isPages = hash.indexOf('/collections/pages/') !== -1;
 
-            var resolvedPath = null;
+            let resolvedPath = null;
 
             if (isPages) {
               // 固定ページ: URL = /{slug}
@@ -700,16 +671,16 @@
                 resolvedPath = '/' + decodeURIComponent(entryMatch[1]);
               } else {
                 // 新規ページ: slugフィールド（2番目のテキスト入力）から取得
-                var allInputs = document.querySelectorAll('input');
-                var candidates = [];
-                for (var i = 0; i < allInputs.length; i++) {
-                  var t = (allInputs[i].type || 'text').toLowerCase();
+                const allInputs = document.querySelectorAll('input');
+                const candidates = [];
+                for (const input of allInputs) {
+                  const t = (input.type || 'text').toLowerCase();
                   if (t !== 'file' && t !== 'checkbox' && t !== 'radio' && t !== 'hidden') {
-                    candidates.push(allInputs[i]);
+                    candidates.push(input);
                   }
                 }
                 // pages: candidates[0]=title, candidates[1]=slug
-                var slugInput = candidates.length >= 2 ? candidates[1] : null;
+                const slugInput = candidates.length >= 2 ? candidates[1] : null;
                 if (slugInput && slugInput.value) {
                   resolvedPath = '/' + slugInput.value;
                   if (!slugInput.dataset.urlBound) {
@@ -721,24 +692,24 @@
             } else if (entryMatch) {
               // 既存記事: ハッシュのパスがファイルパス = URLスラグ
               // hash例: #/collections/posts/entries/2026/01/あああ
-              var entryPath = decodeURIComponent(entryMatch[1]);
+              const entryPath = decodeURIComponent(entryMatch[1]);
               resolvedPath = '/posts/' + entryPath;
             } else {
               // 新規記事: タイトル・日付からURL生成
-              var allInputs = document.querySelectorAll('input');
-              var candidates = [];
-              for (var i = 0; i < allInputs.length; i++) {
-                var t = (allInputs[i].type || 'text').toLowerCase();
+              const allInputs = document.querySelectorAll('input');
+              const candidates = [];
+              for (const input of allInputs) {
+                const t = (input.type || 'text').toLowerCase();
                 if (t !== 'file' && t !== 'checkbox' && t !== 'radio' && t !== 'hidden') {
-                  candidates.push(allInputs[i]);
+                  candidates.push(input);
                 }
               }
               if (candidates.length < 2) return;
 
-              var dateInput = null;
-              var dateIndex = -1;
-              for (var k = 0; k < candidates.length; k++) {
-                var v = candidates[k].value || '';
+              let dateInput = null;
+              let dateIndex = -1;
+              for (let k = 0; k < candidates.length; k++) {
+                const v = candidates[k].value || '';
                 if (v.match(/^\d{4}[-\/]\d{2}[-\/]\d{2}/)) {
                   dateInput = candidates[k];
                   dateIndex = k;
@@ -746,7 +717,7 @@
                 }
               }
 
-              var titleInput = null;
+              let titleInput = null;
               if (dateInput && dateIndex > 0) {
                 titleInput = candidates[dateIndex - 1];
               }
@@ -766,9 +737,9 @@
                 dateInput.addEventListener('change', function() { setTimeout(showPublicUrl, 100); });
               }
 
-              var title = (titleInput && titleInput.value) || '';
-              var dateVal = (dateInput && dateInput.value) || '';
-              var dateMatch = dateVal.match(/(\d{4})[-\/](\d{2})/);
+              const title = (titleInput && titleInput.value) || '';
+              const dateVal = (dateInput && dateInput.value) || '';
+              const dateMatch = dateVal.match(/(\d{4})[-\/](\d{2})/);
               if (!dateMatch || !title) {
                 if (urlDisplay) urlDisplay.style.display = 'none';
                 return;
@@ -778,10 +749,10 @@
 
             if (!resolvedPath) return;
 
-            var parts = resolvedPath.split('/');
-            var publicUrl = window.location.origin + parts.map(function(s) { return s ? encodeURIComponent(s) : s; }).join('/');
-            var displayUrl = window.location.origin + resolvedPath;
-            var label = entryMatch ? '公開URL:' : '公開予定URL:';
+            const parts = resolvedPath.split('/');
+            const publicUrl = window.location.origin + parts.map(function(s) { return s ? encodeURIComponent(s) : s; }).join('/');
+            const displayUrl = window.location.origin + resolvedPath;
+            const label = entryMatch ? '公開URL:' : '公開予定URL:';
 
             if (!urlDisplay) {
               urlDisplay = document.createElement('div');
@@ -791,9 +762,19 @@
             }
 
             urlDisplay.style.display = '';
-            var newHtml = '<span style="color:#666;margin-right:6px;">' + label + '</span><a href="' + publicUrl + '" target="_blank" rel="noopener" style="color:#1a73e8;text-decoration:underline;word-break:break-all;">' + displayUrl + '</a>';
             if (urlDisplay.dataset.lastUrl !== displayUrl) {
-              urlDisplay.innerHTML = newHtml;
+              urlDisplay.textContent = '';
+              const labelSpan = document.createElement('span');
+              labelSpan.style.cssText = 'color:#666;margin-right:6px;';
+              labelSpan.textContent = label;
+              const urlLink = document.createElement('a');
+              urlLink.href = publicUrl;
+              urlLink.target = '_blank';
+              urlLink.rel = 'noopener';
+              urlLink.style.cssText = 'color:#1a73e8;text-decoration:underline;word-break:break-all;';
+              urlLink.textContent = displayUrl;
+              urlDisplay.appendChild(labelSpan);
+              urlDisplay.appendChild(urlLink);
               urlDisplay.dataset.lastUrl = displayUrl;
             }
           } catch(e) {
@@ -806,8 +787,8 @@
         function manageDropdownOverlay() {
           if (window.innerWidth > 799) return;
 
-          var dropdown = document.querySelector('[class*="DropdownList"]');
-          var urlBar = document.getElementById('cms-public-url');
+          const dropdown = document.querySelector('[class*="DropdownList"]');
+          const urlBar = document.getElementById('cms-public-url');
 
           if (dropdown) {
             // ドロップダウン表示中: 公開URLバーが表示中の場合のみ一時的に隠す
@@ -835,26 +816,66 @@
 
           // 「＋」メニュー内の「Code Block」項目をテキスト内容で検索して非表示にする
           // styled-componentsのクラス名は動的生成で不安定なため、テキストマッチで判定
-          var candidates = document.querySelectorAll('button, li, [role="menuitem"], [role="option"]');
-          candidates.forEach(function(el) {
-            if (el.dataset.mobileHidden) return;
+          const candidates = document.querySelectorAll('button, li, [role="menuitem"], [role="option"]');
+          for (const el of candidates) {
+            if (el.dataset.mobileHidden) continue;
             // エディタコンテンツ内のラベル（「CODE BLOCK」）は対象外
-            if (el.closest && el.closest('[data-slate-editor]')) return;
-            var text = (el.textContent || '').trim();
+            if (el.closest && el.closest('[data-slate-editor]')) continue;
+            const text = (el.textContent || '').trim();
             if (text === 'Code Block') {
               el.dataset.mobileHidden = 'true';
               el.style.display = 'none';
             }
-          });
+          }
         }
 
-        // CMS読み込み後にカスタマイズを初期化
-        if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', initCustomizations);
-        } else {
-          // decap-cms.jsの読み込み完了を少し待つ
-          setTimeout(initCustomizations, 1000);
+        // iPhoneからのHEICファイルを制限（JPEG/PNG/WebP/GIFのみ受付）
+        // 画像input要素のaccept属性を制限し、iPhoneはHEICを自動的にJPEGに変換
+        function restrictImageInputAccept() {
+          const imageInputs = document.querySelectorAll('input[type="file"][accept*="image"]');
+          for (const input of imageInputs) {
+            input.setAttribute('accept', 'image/jpeg,image/jpg,image/png,image/webp,image/gif');
+          }
         }
+
+        // === MutationObserver 初期化（単一Observerで全監視を統合）===
+
+        function initCustomizations() {
+          // MutationObserverコールバックをデバウンス（requestAnimationFrame）
+          // codeblock挿入等で大量DOM変更が発生した際の過負荷クラッシュを防止
+          let rafPending = false;
+          function runCustomizations() {
+            addSiteLink();
+            formatCollectionEntries();
+            relabelImageButtons();
+            updateDeleteButtonState();
+            showPublicUrl();
+            manageDropdownOverlay();
+            hideCodeBlockOnMobile();
+            restrictImageInputAccept();
+          }
+
+          const observer = new MutationObserver(function() {
+            if (rafPending) return;
+            rafPending = true;
+            requestAnimationFrame(function() {
+              rafPending = false;
+              runCustomizations();
+            });
+          });
+
+          observer.observe(document.body, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ['class']
+          });
+
+          // 初回実行
+          runCustomizations();
+        }
+
+        // === イベントリスナー ===
 
         // 画面遷移時に公開URLバーを更新（エディタ↔一覧の遷移対応）
         // hashchange: 通常のハッシュ遷移
@@ -867,7 +888,7 @@
           setTimeout(showPublicUrl, 50);
         });
         document.addEventListener('click', function(e) {
-          var target = e.target;
+          let target = e.target;
           while (target && target !== document.body) {
             if (target.className && typeof target.className === 'string' &&
                 (target.className.indexOf('BackCollection') !== -1 ||
@@ -878,30 +899,11 @@
             target = target.parentElement;
           }
         });
-      })();
-    </script>
-    <script>
-      // iPhoneからのHEICファイルを自動的にJPEGに変換させるための設定
-      // 画像input要素のaccept属性をJPEGのみに制限
-      window.addEventListener('load', function() {
-        // DecapCMSの読み込みを待つ
-        const observer = new MutationObserver(function(mutations) {
-          const imageInputs = document.querySelectorAll('input[type="file"][accept*="image"]');
-          imageInputs.forEach(function(input) {
-            // JPEG、PNG、WebP、GIFのみを受け付ける（iPhoneはHEICを自動的にJPEGに変換）
-            input.setAttribute('accept', 'image/jpeg,image/jpg,image/png,image/webp,image/gif');
-          });
-        });
-
-        observer.observe(document.body, {
-          childList: true,
-          subtree: true
-        });
 
         // 画像アップロード時にEXIF回転を補正（Canvas APIで正規化）
         // iPhoneで撮影した写真のEXIF orientationを画像データに反映してからアップロード
         document.addEventListener('change', function(e) {
-          var input = e.target;
+          const input = e.target;
           if (!input || input.tagName !== 'INPUT' || input.type !== 'file') return;
           if (input.dataset.exifFixed) {
             delete input.dataset.exifFixed;
@@ -909,20 +911,20 @@
           }
           if (!input.files || !input.files.length) return;
 
-          var file = input.files[0];
+          const file = input.files[0];
           if (!file.type.match(/^image\/(jpeg|jpg|png|webp)$/i)) return;
 
           // 元のイベントの伝播を止めて、補正後に再度発火させる
           e.stopImmediatePropagation();
 
-          var reader = new FileReader();
+          const reader = new FileReader();
           reader.onload = function(ev) {
-            var img = new Image();
+            const img = new Image();
             img.onload = function() {
-              var canvas = document.createElement('canvas');
+              const canvas = document.createElement('canvas');
               canvas.width = img.naturalWidth;
               canvas.height = img.naturalHeight;
-              var ctx = canvas.getContext('2d');
+              const ctx = canvas.getContext('2d');
               if (!ctx) {
                 // Canvas 2Dコンテキストが取得できない場合は元ファイルをそのまま使う
                 input.dataset.exifFixed = 'true';
@@ -931,8 +933,8 @@
               }
               ctx.drawImage(img, 0, 0);
 
-              var outputType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
-              var quality = outputType === 'image/jpeg' ? 0.92 : undefined;
+              const outputType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+              const quality = outputType === 'image/jpeg' ? 0.92 : undefined;
 
               canvas.toBlob(function(blob) {
                 if (!blob) {
@@ -941,11 +943,11 @@
                   input.dispatchEvent(new Event('change', { bubbles: true }));
                   return;
                 }
-                var correctedFile = new File([blob], file.name, {
+                const correctedFile = new File([blob], file.name, {
                   type: outputType,
                   lastModified: Date.now()
                 });
-                var dt = new DataTransfer();
+                const dt = new DataTransfer();
                 dt.items.add(correctedFile);
                 input.files = dt.files;
                 input.dataset.exifFixed = 'true';
@@ -977,7 +979,7 @@
         document.addEventListener('touchmove', function(e) {
           // エディタ内（Slate / CodeMirror）のタッチ操作は妨害しない
           // codeblock挿入時等にpreventDefaultでクラッシュするのを防止
-          var target = e.target;
+          let target = e.target;
           while (target && target !== document.body) {
             // Slateエディタ内
             if (target.getAttribute && target.getAttribute('data-slate-editor') === 'true') {
@@ -1000,12 +1002,20 @@
             }
             target = target.parentElement;
           }
-          var y = e.touches[0].pageY;
+          const y = e.touches[0].pageY;
           if (document.scrollingElement.scrollTop === 0 && y > startY) {
             e.preventDefault();
           }
         }, { passive: false });
-      });
+
+        // CMS読み込み後にカスタマイズを初期化
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', initCustomizations);
+        } else {
+          // decap-cms.jsの読み込み完了を少し待つ
+          setTimeout(initCustomizations, 1000);
+        }
+      })();
     </script>
   </body>
 </html>

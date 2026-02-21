@@ -192,7 +192,7 @@ describe('管理画面HTML（public/admin/index.html）の検証', () => {
       expect(adminHtml).toContain('addSiteLink');
       expect(adminHtml).toContain('cms-site-link');
       expect(adminHtml).toContain('window.location.origin');
-      expect(adminHtml).toContain('target="_blank"');
+      expect(adminHtml).toContain("target = '_blank'");
     });
 
     it('コレクション一覧の日付フォーマット処理がある', () => {
