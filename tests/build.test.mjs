@@ -446,6 +446,19 @@ describe('ビルド検証', () => {
     });
   });
 
+  describe('ビルドパイプライン完全性検証（FR-20）', () => {
+    const packageJson = JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'utf-8'));
+
+    it('buildスクリプトに4段階パイプラインが定義されている', () => {
+      const buildScript = packageJson.scripts['build:raw'] || '';
+      // 4段階: normalize-images → organize-posts → astro build
+      // (image-optimizeはAstro integration経由で自動実行)
+      expect(buildScript).toContain('normalize-images');
+      expect(buildScript).toContain('organize-posts');
+      expect(buildScript).toContain('astro build');
+    });
+  });
+
   describe('セキュリティヘッダー検証（SEC-10）', () => {
     const headersPath = join(process.cwd(), 'public/_headers');
     const headersContent = readFileSync(headersPath, 'utf-8');
