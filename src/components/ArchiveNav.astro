@@ -15,7 +15,7 @@ const years = Array.from(archiveMap.keys()).sort((a, b) => b.localeCompare(a));
 ---
 
 <nav class="archive-nav">
-  <h3>アーカイブ</h3>
+  <h2>アーカイブ</h2>
   {years.map(year => (
     <div class="archive-year">
       <a href={`/posts/${year}`}>{year}年</a>
@@ -34,7 +34,7 @@ const years = Array.from(archiveMap.keys()).sort((a, b) => b.localeCompare(a));
     padding-top: 1.5rem;
     border-top: 1px solid #eee;
   }
-  .archive-nav h3 {
+  .archive-nav h2 {
     font-size: 1rem;
     margin-bottom: 0.75rem;
   }
@@ -55,7 +55,7 @@ const years = Array.from(archiveMap.keys()).sort((a, b) => b.localeCompare(a));
   }
   .archive-months a {
     font-size: 0.85rem;
-    color: #888;
+    color: #595959;
   }
   .archive-months a:hover {
     color: #333;

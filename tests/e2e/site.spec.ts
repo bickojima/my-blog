@@ -89,7 +89,7 @@ test.describe('E-04: アーカイブナビゲーション', () => {
   test('トップページにアーカイブナビがある', async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('nav.archive-nav')).toBeVisible();
-    await expect(page.locator('nav.archive-nav h3')).toHaveText('アーカイブ');
+    await expect(page.locator('nav.archive-nav h2')).toHaveText('アーカイブ');
   });
 
   test('年リンクをクリックすると年アーカイブに遷移する', async ({ page }) => {
