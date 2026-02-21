@@ -23,7 +23,7 @@
 npm run dev          # 開発サーバー起動（前処理含む）
 npm run build        # テスト必須ビルド（vitest run → normalize-images → organize-posts → astro build → image-optimize）
 npm run build:raw    # テストなしビルド（build.test.mjs内部で使用、Cloudflare Pages用）
-npm test             # Vitest 全テスト実行（496テスト、記事数により変動）
+npm test             # Vitest 全テスト実行（498テスト、記事数により変動）
 npm run test:watch   # Vitest ウォッチモード
 npm run test:e2e     # Playwright E2Eテスト（要: npm run build 済み、240テスト）
 ```
@@ -57,7 +57,7 @@ functions/auth/              # Cloudflare Functions: GitHub OAuth proxy
 
 tests/
 ├── *.test.mjs               # Vitest単体・統合テスト（7ファイル）
-├── fuzz-validation.test.mjs # ファズテスト（XSS/SQLi/パストラバーサル/プロトタイプ汚染等、207テスト）
+├── fuzz-validation.test.mjs # ファズテスト（XSS/SQLi/パストラバーサル/プロトタイプ汚染等、214テスト）
 ├── e2e/                     # Playwright E2E（site.spec.ts, cms.spec.ts, cms-customizations.spec.ts）
 └── TEST-REPORT.md           # テスト計画書・テストケース一覧・実行結果
 ```
@@ -93,7 +93,7 @@ tests/
 
 ## テスト
 
-- **Vitest**: 設定検証、コンテンツ検証、単体テスト、ビルド統合テスト、セキュリティ検証、ファズテスト、基本機能保護テスト（496テスト、記事数により変動）
+- **Vitest**: 設定検証、コンテンツ検証、単体テスト、ビルド統合テスト、セキュリティ検証、ファズテスト、基本機能保護テスト（498テスト、記事数により変動）
 - **Playwright**: PC/iPad/iPhone 3デバイス × 80テスト = 240テスト（ローカルのみ、CIでは未実行）
 - コンテンツ検証テストは記事数・ページ数に応じて動的展開される
 - テスト実行後、失敗がある場合は原因を調査し修正する（テストを削除・スキップしない）
@@ -167,6 +167,7 @@ DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を�
   - `X-Frame-Options: DENY` は CMS プレビュー iframe を阻害する → 管理画面は `SAMEORIGIN` を使用
   - CSP `frame-ancestors 'none'` は同上 → 管理画面は `frame-ancestors 'self'` を使用
 - **Cloudflare Pages `_headers` 制約（Bug #28）**: `/*` と `/admin/*` で同名ヘッダーを指定すると、オーバーライドではなく **Append（重複送信）** される。ブラウザは最も厳しい値を採用するため、管理画面で異なる値が必要なヘッダー（COOP, CORP, X-Frame-Options）は `/*` セクションに含めてはならない。`/admin/*` セクションにのみ設定する
+- **CSP `connect-src` に `blob:` 必須（Bug #29）**: Decap CMS v3.10.0 は画像アップロード時に `URL.createObjectURL()` で blob URL を生成し、エントリ保存時に `fetch(blobURL).then(e => e.blob())` でファイルデータを読み取る。`connect-src` に `blob:` がないとこの fetch がブロックされ、画像付き記事の保存が失敗する（テキストのみの保存は成功する）。参考: GitHub Issue #6829
 
 ### やってはいけないこと
 - テストを削除・スキップして通す（必ず原因を修正する）
