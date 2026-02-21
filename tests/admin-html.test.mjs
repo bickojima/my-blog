@@ -30,6 +30,26 @@ describe('管理画面HTML（public/admin/index.html）の検証', () => {
       expect(adminHtml).toContain('decap-cms');
       expect(adminHtml).toContain('</script>');
     });
+
+    // バグ#27再発防止: SRI追加時に</script>閉じタグが脱落し、
+    // 後続のCMS.registerPreviewStyleブロックがCDNスクリプトのインライン内容として
+    // HTMLパーサーに飲み込まれ、iPhoneで「TypeError: Load failed」が発生した
+    it('CDN scriptタグが</script>で正しく閉じられている（閉じタグ欠落防止）', () => {
+      // <script src="...cdn..."></script> の形式を検証
+      // 閉じタグがないと後続スクリプトブロックが飲み込まれる致命的バグになる
+      const cdnScriptRegex = /<script\s+src="https:\/\/unpkg\.com\/decap-cms[^"]*"[^>]*><\/script>/;
+      expect(adminHtml).toMatch(cdnScriptRegex);
+    });
+
+    it('CMS.registerPreviewStyleが独立した<script>ブロック内にある', () => {
+      // registerPreviewStyleが<script>...</script>の中にあることを確認
+      // CDNスクリプトタグのインライン内容に含まれていないことの検証
+      const scriptBlocks = adminHtml.match(/<script>[\s\S]*?<\/script>/g) || [];
+      const hasRegisterPreviewStyle = scriptBlocks.some(block =>
+        block.includes('CMS.registerPreviewStyle')
+      );
+      expect(hasRegisterPreviewStyle).toBe(true);
+    });
   });
 
   describe('PC端末対応', () => {
