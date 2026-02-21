@@ -143,10 +143,12 @@ describe('CMS設定（config.yml）の検証', () => {
           expect(slug.pattern[0]).toBe('^[a-z0-9-]+$');
         });
 
-        it('orderフィールドがnumberウィジェット', () => {
+        it('orderフィールドがnumberウィジェット（min:1で不正値を防止）', () => {
           const order = fields.find(f => f.name === 'order');
           expect(order.widget).toBe('number');
           expect(order.value_type).toBe('int');
+          expect(order.min).toBe(1);
+          expect(order.default).toBeGreaterThanOrEqual(1);
         });
 
         it('draftフィールドがbooleanウィジェットでデフォルトfalse', () => {

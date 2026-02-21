@@ -57,7 +57,7 @@ const firstPage = publishedPages[0];
 
 describe('ビルド検証', () => {
   beforeAll(() => {
-    execSync('npm run build', {
+    execSync('npm run build:raw', {
       cwd: process.cwd(),
       stdio: 'pipe',
       timeout: 120000,

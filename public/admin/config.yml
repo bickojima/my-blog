@@ -63,6 +63,6 @@ collections:
       - { label: "タイトル", name: "title", widget: "string" }
       - { label: "URLスラグ", name: "slug", widget: "string",
           pattern: ['^[a-z0-9-]+$', '半角英数字とハイフンのみ'] }
-      - { label: "表示順", name: "order", widget: "number", default: 0, value_type: "int" }
+      - { label: "表示順", name: "order", widget: "number", default: 1, value_type: "int", min: 1 }
       - { label: "下書き", name: "draft", widget: "boolean", default: false, required: false }
       - { label: "本文", name: "body", widget: "markdown" }
