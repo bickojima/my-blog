@@ -493,6 +493,14 @@ describe('ビルド検証', () => {
     it('/admin/*にCOOP: same-origin-allow-popupsが設定されている', () => {
       expect(adminSection).toContain('Cross-Origin-Opener-Policy: same-origin-allow-popups');
     });
+
+    it('CSP connect-src に blob: が含まれている（Bug #29: Decap CMS画像保存時の fetch(blobURL) に必要）', () => {
+      const cspMatch = adminSection.match(/Content-Security-Policy:(.+)/);
+      expect(cspMatch, 'CSPヘッダーが見つからない').toBeTruthy();
+      const connectSrcMatch = cspMatch[1].match(/connect-src\s+([^;]+)/);
+      expect(connectSrcMatch, 'connect-srcディレクティブが見つからない').toBeTruthy();
+      expect(connectSrcMatch[1]).toContain('blob:');
+    });
   });
 
   describe('_headersヘッダー重複防止検証（Bug #28 再発防止）', () => {

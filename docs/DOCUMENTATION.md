@@ -27,7 +27,8 @@
 | 1.20 | 2026-02-21 | SEC-14〜SEC-20追加: HSTS preload対応、Cross-Origin Isolation(COOP/CORP)、DNS Prefetch防止、Permissions-Policy拡張(FLoC/Topics無効化)、情報漏洩防止(ファイル)、入力値バリデーション強化(order=-1バグ修正、3層バリデーション)、ファズテスト必須化(207テスト: XSS/SQLi/パストラバーサル/コマンドインジェクション/プロトタイプ汚染)。ビルドパイプライン再構成(build:raw+build=テスト必須)。バグNo.25-26追加。全477テスト |
 | 1.21 | 2026-02-21 | iPhone記事保存失敗バグ修正（バグNo.27）: CDNスクリプト`</script>`閉じタグ欠落復元、管理画面セキュリティヘッダーオーバーライド追加（COOP: same-origin-allow-popups、X-Frame-Options: SAMEORIGIN、CSP frame-ancestors 'self'）。SEC-15要件を管理画面例外考慮に更新。再発防止テスト7件追加。全484テスト |
 | 1.22 | 2026-02-21 | 機能観点の要件定義追加: FR-15〜FR-21（コンテンツCRUD、リッチテキスト編集、ライブプレビュー、メディアライブラリ、ビルドパイプライン、環境分離）、NFR-05（レスポンシブデザイン）。基本機能保護ルール（4.7.2章）策定。再発防止テスト追加。全491テスト |
-| 1.23 | 2026-02-21 | バグNo.28修正: Cloudflare Pages `_headers`ヘッダー重複送信問題。`/*`と`/admin/*`で同名ヘッダーがAppendされブラウザが最厳格値を採用する問題を解消。COOP/CORP/X-Frame-Optionsを`/*`から削除し`/admin/*`のみに設定。ヘッダー重複検知テスト3件追加、既存ヘッダーテスト4件修正。全491テスト |
+| 1.23 | 2026-02-21 | バグNo.28修正: Cloudflare Pages `_headers`ヘッダー重複送信問題。`/*`と`/admin/*`で同名ヘッダーがAppendされブラウザが最厳格値を採用する問題を解消。COOP/CORP/X-Frame-Optionsを`/*`から削除し`/admin/*`のみに設定。ヘッダー重複検知テスト3件追加、既存ヘッダーテスト4件修正。全496テスト |
+| 1.24 | 2026-02-21 | バグNo.29修正: CSP `connect-src`に`blob:`不足による画像付き記事保存失敗。Decap CMSは画像保存時に`fetch(blobURL)`を実行するため`connect-src`に`blob:`が必要。再発防止テスト2件追加。全498テスト |
 
 ## システム変更履歴
 
@@ -455,7 +456,7 @@ staging環境の検知:
 | SEC-07 | OAuth最小権限 | auth-functions | 2.3章 #1, 2.3.1章 #4 | M-06, M-02 | 充足 |
 | SEC-08 | 秘密情報保護 | admin-html | 2.6.12章 #6 | M-02 | 充足 |
 | SEC-09 | デバッグコード排除 | admin-html | 2.6.12章 #5 | M-02 | 充足 |
-| SEC-10 | HTTPセキュリティヘッダー | build | 2.5.1章 #1〜#5 | M-02 | 充足 |
+| SEC-10 | HTTPセキュリティヘッダー | build, fuzz-validation | 2.5.1章 #1〜#5, #8, 2.7.8章 | M-02 | 充足 |
 | SEC-11 | OAuth CSRF防止 | auth-functions | 2.3.1章 #5, #6 | M-02 | 充足 |
 | SEC-12 | SRI（Subresource Integrity） | admin-html | 2.6.12章 #10, #11 | M-02 | 充足 |
 | SEC-13 | エラー情報漏洩防止 | auth-functions | 2.3.1章 #7 | M-02 | 充足 |
@@ -1526,6 +1527,7 @@ GitHubリポジトリが利用可能な場合、以下の手順でシステム�
 | 26 | 2026-02-21 | HTTPセキュリティヘッダー不足: HSTS/COOP/CORP/拡張Permissions-Policy等のMozilla Observatory A+評価に必要なヘッダーが未設定 | 初期構築時にOWASP推奨ヘッダーの網羅的設定を行わなかった | _headersファイルにHSTS(preload), COOP(same-origin), CORP(same-origin), X-DNS-Prefetch-Control(off), X-Permitted-Cross-Domain-Policies(none), Permissions-Policy(全不要API無効化)を追加 | fuzz-validation 2.7.8章, build 2.5.1章 |
 | 27 | 2026-02-21 | iPhone記事保存失敗「TypeError: Load failed」: 4つのバグが複合。(1) コミット`295b44f`でSRI追加時に`</script>`閉じタグが脱落し、後続の`CMS.registerPreviewStyle`ブロックがCDNスクリプトのインライン内容としてHTMLパーサーに飲み込まれた。(2) コミット`a92ccbd`でCOOP `same-origin`を全ページに適用しOAuth popupの`window.opener`が`null`になり認証フロー破壊。(3) コミット`295b44f`でCSP `frame-ancestors 'none'`がCMSプレビューiframeを阻害。(4) 同コミットで`X-Frame-Options: DENY`が同上 | バグ#26修正（セキュリティヘッダー追加）とSRI追加（SEC-12）時に、管理画面（Decap CMS）固有の要件（OAuth popup: window.opener、プレビューiframe: frame-ancestors/X-Frame-Options）との互換性を検証しなかった。SRI追加時の単純な編集ミスで閉じタグ脱落 | (1) `</script>`閉じタグ復元。(2) /admin/*でCOOP: same-origin-allow-popupsにオーバーライド。(3) CSP frame-ancestors 'self'に変更。(4) /admin/*でX-Frame-Options: SAMEORIGINにオーバーライド。再発防止: CDNスクリプト閉じタグ自動テスト、管理画面ヘッダーオーバーライド自動テスト、CLAUDE.mdにヘッダー追加時の管理画面影響チェック義務化 | admin-html 2.6.1章, fuzz-validation 2.7.8章 |
 | 28 | 2026-02-21 | iPhone記事保存失敗「TypeError: Load failed」（バグ#27修正不完全）: バグ#27の対策として`_headers`で`/admin/*`にCOOP/CORP/X-Frame-Optionsのオーバーライドを追加したが、Cloudflare Pagesは`/*`と`/admin/*`で同名ヘッダーを**オーバーライドではなくAppend（重複送信）する**。ブラウザは重複ヘッダーの最も厳しい値を採用するため、実質的にCOOP: same-origin（OAuth popup破壊）、X-Frame-Options: DENY（プレビューiframe破壊）、CORP: same-origin（CDNリソース制限）が適用され続けた | Cloudflare Pages `_headers`ファイルのヘッダーマージ仕様を誤解。同名ヘッダーが`/*`と`/admin/*`両方に存在する場合、より具体的なパスの値でオーバーライドされると想定したが、実際にはHTTPレスポンスに両方の値がAppendされる | (1) COOP/CORP/X-Frame-Optionsを`/*`セクションから完全削除。(2) これらのヘッダーは`/admin/*`セクションにのみ設定。(3) 非管理画面ページはこれらのヘッダーなし（公開ブログとして許容範囲）。再発防止: `_headers`ヘッダー重複検知テスト追加（build.test.mjs）、`/*`と`/admin/*`の同名ヘッダー禁止テスト追加（fuzz-validation）、CLAUDE.mdにCloudflare Pages `_headers`動作仕様を記載 | build 2.5.1章, fuzz-validation 2.7.8章 |
+| 29 | 2026-02-21 | 画像付き記事保存失敗「TypeError: Load failed」: テキストのみの記事保存は成功するが、画像を含む記事の保存が失敗する。CSP `connect-src`に`blob:`が不足しており、Decap CMS v3.10.0が画像保存時に内部で実行する`fetch(blobURL)`がブラウザにブロックされる | Decap CMSは画像アップロード時に`URL.createObjectURL()`でblob: URLを生成し、エントリ永続化時に`fetch(blobURL).then(e => e.blob())`でファイルデータを読み戻す。CSP `connect-src`に`blob:`が含まれていないため、このfetchが`Refused to connect to 'blob:...'`エラーとなる。テキストのみの保存ではblob: URLのfetchが発生しないため成功する（GitHub Issue #6829） | CSP `connect-src`に`blob:`を追加。再発防止: CSP connect-src blob:検証テスト追加（build.test.mjs、fuzz-validation.test.mjs）、CLAUDE.mdにCSP connect-src要件を記載 | build 2.5.1章, fuzz-validation 2.7.8章 |
 
 ---
 
@@ -1651,7 +1653,7 @@ git push origin staging
 
 | 変更対象 | CMS影響リスク | 確認事項 |
 |:---|:---|:---|
-| `_headers`（セキュリティヘッダー） | **高** | COOP: OAuth popupをブロックしないか。X-Frame-Options/CSP frame-ancestors: プレビューiframeをブロックしないか。CSP connect-src: GitHub APIアクセスを許可するか。**Cloudflare Pages制約: `/*`と`/admin/*`で同名ヘッダーを設定するとAppend（重複送信）される。管理画面で異なる値が必要なヘッダー（COOP/CORP/X-Frame-Options）は`/*`に含めない**（Bug #28） |
+| `_headers`（セキュリティヘッダー） | **高** | COOP: OAuth popupをブロックしないか。X-Frame-Options/CSP frame-ancestors: プレビューiframeをブロックしないか。CSP connect-src: GitHub APIアクセスを許可するか。**CSP connect-src に `blob:` を含むか（Decap CMS画像保存に必須、Bug #29）**。**Cloudflare Pages制約: `/*`と`/admin/*`で同名ヘッダーを設定するとAppend（重複送信）される。管理画面で異なる値が必要なヘッダー（COOP/CORP/X-Frame-Options）は`/*`に含めない**（Bug #28） |
 | `admin/index.html`（HTML構造） | **高** | `<script>`タグの閉じタグが正しいか。CDNスクリプトが後続ブロックを飲み込まないか |
 | `config.yml`（CMS設定） | **中** | backend設定（name, repo, branch, base_url, auth_endpoint）が正しいか。コレクション設定が有効か |
 | `functions/auth/`（OAuth） | **高** | 認証フロー全体が正常に動作するか。postMessageハンドシェイクが成功するか |
@@ -1675,6 +1677,7 @@ git push origin staging
 | _headersヘッダー重複禁止 | `/*`と`/admin/*`で同名ヘッダーが存在しないこと（Bug #28） | build |
 | _headers管理画面限定ヘッダー | COOP/CORP/X-Frame-Optionsが`/*`に含まれていないこと（Bug #28） | build |
 | _headers同名ヘッダー重複禁止 | admin セクションのヘッダーが global セクションと重複しないこと（Bug #28） | fuzz-validation |
+| CSP connect-src blob: | connect-srcに`blob:`が含まれていること（Bug #29: Decap CMS画像保存時の`fetch(blobURL)`に必要） | build, fuzz-validation |
 
 ### 4.7.3 定期セキュリティ診断
 
@@ -1687,4 +1690,4 @@ git push origin staging
 
 ---
 
-**最終更新**: 2026年2月21日（v1.23）
+**最終更新**: 2026年2月21日（v1.24）
