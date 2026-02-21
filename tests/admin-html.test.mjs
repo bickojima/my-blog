@@ -30,6 +30,26 @@ describe('管理画面HTML（public/admin/index.html）の検証', () => {
       expect(adminHtml).toContain('decap-cms');
       expect(adminHtml).toContain('</script>');
     });
+
+    // バグ#27再発防止: SRI追加時に</script>閉じタグが脱落し、
+    // 後続のCMS.registerPreviewStyleブロックがCDNスクリプトのインライン内容として
+    // HTMLパーサーに飲み込まれ、iPhoneで「TypeError: Load failed」が発生した
+    it('CDN scriptタグが</script>で正しく閉じられている（閉じタグ欠落防止）', () => {
+      // <script src="...cdn..."></script> の形式を検証
+      // 閉じタグがないと後続スクリプトブロックが飲み込まれる致命的バグになる
+      const cdnScriptRegex = /<script\s+src="https:\/\/unpkg\.com\/decap-cms[^"]*"[^>]*><\/script>/;
+      expect(adminHtml).toMatch(cdnScriptRegex);
+    });
+
+    it('CMS.registerPreviewStyleが独立した<script>ブロック内にある', () => {
+      // registerPreviewStyleが<script>...</script>の中にあることを確認
+      // CDNスクリプトタグのインライン内容に含まれていないことの検証
+      const scriptBlocks = adminHtml.match(/<script>[\s\S]*?<\/script>/g) || [];
+      const hasRegisterPreviewStyle = scriptBlocks.some(block =>
+        block.includes('CMS.registerPreviewStyle')
+      );
+      expect(hasRegisterPreviewStyle).toBe(true);
+    });
   });
 
   describe('PC端末対応', () => {
@@ -192,7 +212,7 @@ describe('管理画面HTML（public/admin/index.html）の検証', () => {
       expect(adminHtml).toContain('addSiteLink');
       expect(adminHtml).toContain('cms-site-link');
       expect(adminHtml).toContain('window.location.origin');
-      expect(adminHtml).toContain('target="_blank"');
+      expect(adminHtml).toContain("target = '_blank'");
     });
 
     it('コレクション一覧の日付フォーマット処理がある', () => {
@@ -206,7 +226,7 @@ describe('管理画面HTML（public/admin/index.html）の検証', () => {
     it('固定ページ一覧の番号・下書きフォーマット処理がある', () => {
       // "番号 | draft | タイトル" パターンの正規表現（entry-dateと同じスタイルで表示）
       expect(adminHtml).toContain(
-        String.raw`/^(\d+)\s*\|\s*(true|false)\s*\|\s*(.+)$/`
+        String.raw`/^(-?\d+)\s*\|\s*(true|false)\s*\|\s*(.+)$/`
       );
       expect(adminHtml).toContain("'#' + pagesMatch[1]");
       // 下書きバッジ表示処理がある
@@ -402,6 +422,121 @@ describe('管理画面HTML（public/admin/index.html）の検証', () => {
     it('PublishedToolbarButtonの::after疑似要素が非表示（ドロップダウン矢印の重なり防止）', () => {
       expect(adminHtml).toContain('[class*=PublishedToolbarButton]::after');
       expect(adminHtml).toContain('display: none');
+    });
+  });
+
+  describe('環境分離検証（FR-21）', () => {
+    it('staging環境検知ロジックが存在する（hostname判定）', () => {
+      // admin/index.html でhostnameベースのstaging検知がある
+      expect(adminHtml).toContain('hostname');
+      // STAGING ラベル表示ロジック
+      expect(adminHtml).toMatch(/STAGING|staging/);
+    });
+  });
+
+  describe('セキュリティ検証', () => {
+    it('innerHTML/outerHTMLを使用していない（SEC-01: XSS防止）', () => {
+      // scriptブロック内のJS部分を抽出して検査（HTML部分のinnerHTMLコメント等は除外）
+      const scriptBlocks = adminHtml.match(/<script(?:\s[^>]*)?>[\s\S]*?<\/script>/gi) || [];
+      for (const block of scriptBlocks) {
+        // CDNスクリプトタグ（src属性あり）は中身が空なので除外
+        if (block.match(/<script\s[^>]*src=/i)) continue;
+        const jsContent = block.replace(/<\/?script[^>]*>/gi, '');
+        expect(jsContent).not.toContain('innerHTML');
+        expect(jsContent).not.toContain('outerHTML');
+      }
+    });
+
+    it('CDN外部スクリプトのバージョンが正確に固定されている（SEC-03）', () => {
+      // unpkgやcdnから読み込むスクリプトのsrc属性を検査
+      const cdnScripts = adminHtml.match(/src="https?:\/\/[^"]*unpkg\.com[^"]*"/g) || [];
+      expect(cdnScripts.length).toBeGreaterThan(0);
+      for (const src of cdnScripts) {
+        // キャレット(^)やチルダ(~)が含まれていないこと
+        expect(src).not.toMatch(/[@/][~^]/);
+      }
+    });
+
+    it('target="_blank"リンクにrel="noopener"が付与されている（SEC-04）', () => {
+      // JSコード内のtarget='_blank'設定箇所を検出
+      const targetBlankCount = (adminHtml.match(/target\s*=\s*['"]_blank['"]/g) || []).length;
+      const noopenerCount = (adminHtml.match(/rel\s*=\s*['"]noopener['"]/g) || []).length;
+      expect(targetBlankCount).toBeGreaterThan(0);
+      expect(noopenerCount).toBe(targetBlankCount);
+    });
+
+    it('eval()/Function()/document.write()を使用していない（SEC-05: コード注入防止）', () => {
+      const scriptBlocks = adminHtml.match(/<script(?:\s[^>]*)?>[\s\S]*?<\/script>/gi) || [];
+      for (const block of scriptBlocks) {
+        if (block.match(/<script\s[^>]*src=/i)) continue;
+        const jsContent = block.replace(/<\/?script[^>]*>/gi, '');
+        // eval()の呼び出しがないこと（プロパティアクセス等は除外）
+        expect(jsContent).not.toMatch(/\beval\s*\(/);
+        // new Function()の呼び出しがないこと
+        expect(jsContent).not.toMatch(/\bnew\s+Function\s*\(/);
+        // document.write()の呼び出しがないこと
+        expect(jsContent).not.toMatch(/document\.write\s*\(/);
+      }
+    });
+
+    it('console.logが本番コードに含まれていない（SEC-09: デバッグコード排除）', () => {
+      // console.warnはエラーハンドリング用に許可、console.logは禁止
+      const scriptBlocks = adminHtml.match(/<script(?:\s[^>]*)?>[\s\S]*?<\/script>/gi) || [];
+      for (const block of scriptBlocks) {
+        if (block.match(/<script\s[^>]*src=/i)) continue;
+        const jsContent = block.replace(/<\/?script[^>]*>/gi, '');
+        expect(jsContent).not.toMatch(/console\.log\s*\(/);
+      }
+    });
+
+    it('ハードコードされたサイトURLが含まれていない（SEC-08）', () => {
+      // window.location.originで動的取得すべきところにreiwa.casaがハードコードされていない
+      const scriptBlocks = adminHtml.match(/<script(?:\s[^>]*)?>[\s\S]*?<\/script>/gi) || [];
+      for (const block of scriptBlocks) {
+        if (block.match(/<script\s[^>]*src=/i)) continue;
+        const jsContent = block.replace(/<\/?script[^>]*>/gi, '');
+        expect(jsContent).not.toMatch(/reiwa\.casa/);
+      }
+    });
+
+    it('Decap CMSのバージョンが正確に指定されている（SEC-03: バージョン固定）', () => {
+      // @X.Y.Z の正確なバージョン形式であること
+      const cdnUrl = adminHtml.match(/unpkg\.com\/decap-cms@([^/]+)/);
+      expect(cdnUrl).not.toBeNull();
+      // セマンティックバージョニング（X.Y.Z）であり、^や~が付いていないこと
+      expect(cdnUrl[1]).toMatch(/^\d+\.\d+\.\d+$/);
+    });
+
+    it('strictモードが有効である（品質基準Q-02）', () => {
+      expect(adminHtml).toContain("'use strict'");
+    });
+
+    it('var宣言が使用されていない（品質基準Q-01）', () => {
+      const scriptBlocks = adminHtml.match(/<script(?:\s[^>]*)?>[\s\S]*?<\/script>/gi) || [];
+      for (const block of scriptBlocks) {
+        if (block.match(/<script\s[^>]*src=/i)) continue;
+        const jsContent = block.replace(/<\/?script[^>]*>/gi, '');
+        // var宣言がないこと（varプレフィックスの変数名は除外）
+        expect(jsContent).not.toMatch(/\bvar\s+\w/);
+      }
+    });
+
+    it('CDNスクリプトにintegrity属性が設定されている（SEC-12: SRI）', () => {
+      // unpkg.comのscriptタグにintegrity属性が含まれること
+      const cdnScriptTags = adminHtml.match(/<script\s[^>]*src="https?:\/\/[^"]*unpkg\.com[^"]*"[^>]*>/gi) || [];
+      expect(cdnScriptTags.length).toBeGreaterThan(0);
+      for (const tag of cdnScriptTags) {
+        expect(tag).toMatch(/integrity="sha384-[A-Za-z0-9+/=]+"/);
+      }
+    });
+
+    it('CDNスクリプトにcrossorigin属性が設定されている（SEC-12: SRI）', () => {
+      // unpkg.comのscriptタグにcrossorigin="anonymous"が含まれること
+      const cdnScriptTags = adminHtml.match(/<script\s[^>]*src="https?:\/\/[^"]*unpkg\.com[^"]*"[^>]*>/gi) || [];
+      expect(cdnScriptTags.length).toBeGreaterThan(0);
+      for (const tag of cdnScriptTags) {
+        expect(tag).toContain('crossorigin="anonymous"');
+      }
     });
   });
 });

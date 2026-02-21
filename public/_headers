@@ -1,6 +1,30 @@
 # Cloudflare Pages Headers Configuration
-# https://developers.cloudflare.com/pages/platform/headers/
+# https://developers.cloudflare.com/pages/configuration/headers/
+# OWASP Secure Headers Project / Mozilla Observatory 準拠
+#
+# 重要: Cloudflare Pages は /* と /admin/* で同名ヘッダーを指定した場合、
+# オーバーライドではなく Append（重複送信）する。
+# ブラウザは重複ヘッダーの最も厳しい値を採用するため、
+# 管理画面と異なる値が必要なヘッダー（COOP, CORP, X-Frame-Options）は
+# /* に含めてはならない。（Bug #28 再発防止）
 
-# Decap CMS admin page should not be indexed
+# 全ページ共通セキュリティヘッダー
+# ※ COOP, CORP, X-Frame-Options はパス別に異なる値が必要なため、ここに含めない
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: accelerometer=(), autoplay=(), camera=(), cross-origin-isolated=(), display-capture=(), encrypted-media=(), fullscreen=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), midi=(), payment=(), picture-in-picture=(), publickey-credentials-get=(), screen-wake-lock=(), sync-xhr=(), usb=(), web-share=(), xr-spatial-tracking=(), gamepad=(), hid=(), idle-detection=(), serial=(), interest-cohort=()
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+  X-DNS-Prefetch-Control: off
+  X-Permitted-Cross-Domain-Policies: none
+
+# Decap CMS 管理画面: SEO除外 + CSP + OAuth popup許可 + プレビューiframe許可
+# COOP: same-origin-allow-popups = OAuth popup経由のwindow.openerを維持
+# X-Frame-Options: SAMEORIGIN = CMSプレビューiframeを許可
+# CORP: same-site = CMSが必要とするクロスサイトリソース読み込みを許可
 /admin/*
   X-Robots-Tag: noindex
+  Cross-Origin-Opener-Policy: same-origin-allow-popups
+  X-Frame-Options: SAMEORIGIN
+  Cross-Origin-Resource-Policy: same-site
+  Content-Security-Policy: default-src 'none'; script-src 'self' https://unpkg.com 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' blob: https://github.com https://api.github.com https://*.githubusercontent.com; img-src 'self' https: data: blob:; font-src 'self' data:; frame-src 'self' blob:; frame-ancestors 'self'; form-action 'self' https://github.com; base-uri 'self'

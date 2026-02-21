@@ -18,6 +18,15 @@
 | 1.11 | 2026-02-21 | 固定ページ番号バッジフォーマットテスト追加（admin-html 68件）、テスト件数更新（243テスト） |
 | 1.12 | 2026-02-21 | 固定ページ下書きバッジテスト更新（#10説明更新）、Decap CMS v3.10.0互換性テスト追加（sortable_fields形式検証）、orderデフォルトソート昇順テスト追加（245テスト） |
 | 1.13 | 2026-02-21 | CMS-16要件追加、要件トレーサビリティ検証テスト2件追加（#42,#43）、テスト基盤変更履歴補完（247テスト） |
+| 1.14 | 2026-02-21 | 第三者セキュリティ診断対応: OAuthスコープテスト更新（public_repo,read:user）、admin-htmlテスト更新（target属性DOM API対応）、テスト対象外からurl-map.json削除（テスト実装済みのため矛盾解消）、終了基準テスト件数更新（247+240=487） |
+| 1.15 | 2026-02-21 | セキュリティ検証テスト追加: admin-html 2.6.12章（9件）、auth-functions 2.3.1章（4件）。SEC-01〜SEC-09要件の充足テスト。終了基準テスト件数更新（260+240=500） |
+| 1.16 | 2026-02-21 | 第2回ペネトレーションテスト対応: SEC-10〜SEC-13テスト追加。build.test.mjs セキュリティヘッダー検証5件（2.5.1章）、auth-functions セキュリティ検証3件追加（2.3.1章 #5〜#7）、admin-html SRI検証2件追加（2.6.12章 #10〜#11）。終了基準テスト件数更新（270+240=510） |
+| 1.17 | 2026-02-21 | SEC-14〜SEC-20対応: fuzz-validation.test.mjs新規追加（207テスト）。ファズテスト（XSS/SQLi/パストラバーサル/コマンドインジェクション/プロトタイプ汚染ペイロード注入）、order境界値テスト（最大値/最小値/小数/NaN/Infinity/文字列/配列/null）、slugバリデーション（攻撃ペイロード/予約語/大文字/日本語/特殊文字）、OAuth異常値注入テスト、セキュリティヘッダー包括検証（HSTS/COOP/CORP/Permissions-Policy）、情報漏洩防止テスト、コードセキュリティ品質テスト。ビルドパイプライン再構成（build:raw+buildテスト必須化）。order=-1バグ修正・再発防止。終了基準テスト件数更新（477+240=717） |
+| 1.18 | 2026-02-21 | バグ#27（iPhone記事保存失敗）修正対応: admin-htmlに`</script>`閉じタグ検証テスト2件追加（2.6.1章）、fuzz-validationに管理画面ヘッダーオーバーライド検証テスト5件追加（2.7.12章）、frame-ancestorsテスト更新。終了基準テスト件数更新（484+240=724） |
+| 1.19 | 2026-02-21 | 機能観点の要件定義対応: FR-15〜FR-21, NFR-05要件追加。cms-config基本機能保護テスト5件追加（2.4.1章）、build パイプライン検証1件追加（2.5.2章）、admin-html環境分離検証1件追加（2.6.13章）。終了基準テスト件数更新（491+240=731） |
+| 1.20 | 2026-02-21 | バグ#28（Cloudflare Pages `_headers`ヘッダー重複送信）修正対応: build.test.mjsセキュリティヘッダー検証を5件→7件に再構成＋重複防止検証2件追加（2.5.3章）。fuzz-validationヘッダーテスト4件修正＋1件追加（2.7.8章、2.7.12章）。終了基準テスト件数更新（496+240=736） |
+| 1.21 | 2026-02-21 | バグ#29（CSP connect-src blob:不足による画像付き記事保存失敗）修正対応: build.test.mjs CSP connect-src blob:検証1件追加（2.5.1章 #8）、fuzz-validation CSP connect-src blob:検証1件追加（2.7.12章）。終了基準テスト件数更新（498+240=738） |
+| 1.22 | 2026-02-21 | E2E CRUDテスト追加（E-22〜E-24: cms-crud.spec.ts 11テスト×3デバイス=33テスト）、アクセシビリティテスト追加（E-25〜E-27: accessibility.spec.ts 6テスト×3デバイス=18テスト）。色コントラスト比修正、見出し階層修正。NFR-06要件追加。終了基準テスト件数更新（498+291=789） |
 
 ## テスト基盤の変更履歴
 
@@ -31,6 +40,12 @@
 | 2026-02-21 | **テスト動的化・条件分岐網羅**: ハードコードコンテンツ排除（ソースから動的取得）、ヘッダーナビ3分岐テンプレートロジック・JS制御テスト11件、固定ページ境界値・一意性テスト6件追加。計242 Vitest + 237 E2E = 479テスト | - |
 | 2026-02-21 | **コードリファクタリング・テスト追加**: 固定ページ番号バッジフォーマットテスト1件追加（admin-html 67→68件）。image-optimize.mjs writeFile整理、テスト変数重複排除。計243 Vitest + 237 E2E = 480テスト | - |
 | 2026-02-21 | **固定ページ一覧改善・品質向上**: 下書きバッジテスト更新、sortable_fields互換性テスト追加（#40）、orderデフォルトソート昇順テスト追加（#41）、config.ymlスキーマエラー検知E2Eテスト追加（E-07）、要件トレーサビリティ検証テスト追加（#42,#43）。CMS-16要件追加。計247 Vitest + 240 E2E = 487テスト | - |
+| 2026-02-21 | **セキュリティ検証テスト追加**: admin-html セキュリティ検証9件（2.6.12章: SEC-01, SEC-03〜SEC-05, SEC-08, SEC-09, Q-01, Q-02）、auth-functions セキュリティ検証4件（2.3.1章: SEC-02, SEC-06, SEC-07）追加。計260 Vitest + 240 E2E = 500テスト | - |
+| 2026-02-21 | **バグ#27再発防止テスト追加**: admin-html CDNスクリプト閉じタグ検証2件（2.6.1章）、fuzz-validation 管理画面ヘッダーオーバーライド検証5件（2.7.12章: COOP/X-Frame-Options/CORP/frame-src/COOP緩和度）、frame-ancestorsテスト更新。計484 Vitest + 240 E2E = 724テスト | - |
+| 2026-02-21 | **機能観点の要件定義・基本機能保護テスト追加**: cms-config基本機能保護5件（2.4.1章: Backend完全性/削除許可/Markdown編集/メディアライブラリ）、buildパイプライン検証1件（2.5.2章）、admin-html環境分離検証1件（2.6.13章）。FR-15〜FR-21/NFR-05対応。計491 Vitest + 240 E2E = 731テスト | - |
+| 2026-02-21 | **バグ#28修正・ヘッダー重複防止テスト追加**: Cloudflare Pages `_headers`重複送信問題修正。build.test.mjsセキュリティヘッダー検証を再構成（5→7件＋重複防止2件）、fuzz-validationヘッダーテスト修正＋1件追加。計496 Vitest + 240 E2E = 736テスト | - |
+| 2026-02-21 | **バグ#29修正・CSP connect-src blob:テスト追加**: CSP `connect-src`に`blob:`不足による画像付き記事保存失敗を修正。build.test.mjs CSP connect-src blob:検証1件追加、fuzz-validation connect-src blob:検証1件追加。計498 Vitest + 240 E2E = 738テスト | - |
+| 2026-02-21 | **E2E CRUDテスト・アクセシビリティテスト追加**: cms-crud.spec.ts新規作成（E-22〜E-24: 記事作成・編集・削除 11テスト）、accessibility.spec.ts新規作成（E-25〜E-27: axe-core WCAG 2.1 AA検証 6テスト）、@axe-core/playwright導入。色コントラスト比修正（WCAG AA 4.5:1準拠）、見出し階層修正。計498 Vitest + 291 E2E = 789テスト | - |
 
 ---
 
@@ -60,7 +75,7 @@
 
 ### 第4部 テスト実行
 
-4.1. [動的操作テスト（E2E）の検討](#41-動的操作テストe2eの検討)
+4.1. [動的操作テスト（E2E）](#41-動的操作テストe2e)
 4.2. [実行手順](#42-実行手順)
 4.3. [テスト実行結果](#43-テスト実行結果)
 
@@ -114,7 +129,6 @@
 | CMS管理画面の操作（ブラウザ操作） | E2Eテスト環境が未導入であるため |
 | Cloudflare Pages デプロイ | クラウド環境への自動テストが不可であるため |
 | GitHub OAuth連携（実際のGitHub API呼び出し） | モック関数で代替しているため |
-| url-map.json生成（FR-10） | CMSランタイムでのみ使用される動的機能であるため |
 
 ---
 
@@ -425,7 +439,7 @@ admin-html.test.mjs              -     ●     -     -     -     -     -     -  
 
 | No. | 基準 |
 | :--- | :--- |
-| 1 | 全テストケース（Vitest 242件 + E2E 237件 = 479件）がPASSであること |
+| 1 | 全テストケース（Vitest 498件 + E2E 291件 = 789件）がPASSであること |
 | 2 | `npm run build` が正常に完了すること |
 | 3 | 要件トレーサビリティマトリクス（docs/DOCUMENTATION.md 1.5章）において全要件が「充足」であること |
 
@@ -538,7 +552,7 @@ Base.astroのテンプレートロジック（0/1/2+件分岐）とJS制御を�
 
 ---
 
-## 2.3. OAuth認証関数 (`auth-functions.test.mjs`) — 10件
+## 2.3. OAuth認証関数 (`auth-functions.test.mjs`) — 14件
 
 Cloudflare Functions の認証エンドポイントに対し、モックリクエストを入力してレスポンスを検証する。
 
@@ -555,9 +569,21 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 | 9 | 成功時にDecap CMSハンドシェイクHTMLを返す | /auth/callback | M-06, M-07 | ステータス200、HTMLにpostMessageハンドシェイクコードが含まれる |
 | 10 | GitHubへのリクエストパラメータが正しい | /auth/callback | M-07 | fetchモックに渡されたURLとbodyが仕様通りである |
 
+### 2.3.1 セキュリティ検証（7件）
+
+| No. | テストケース | 検証対象 | テスト手法 | 期待結果 |
+| :--- | :--- | :--- | :--- | :--- |
+| 1 | escapeForScript関数でテンプレート変数をエスケープしている（SEC-02） | callback.js | M-02 | `escapeForScript`関数が存在し、`access_token`と`origin`の両方をエスケープしている |
+| 2 | postMessageの送信先がワイルドカード"*"でない（SEC-06） | callback.js | M-02, M-09 | `postMessage`の第2引数に`"*"`が使用されず、`expectedOrigin`が使用されている |
+| 3 | postMessage受信時にevent.originを検証している（SEC-06） | callback.js | M-02 | `event.origin !== expectedOrigin`による検証が含まれる |
+| 4 | OAuthスコープが最小権限である（SEC-07） | index.js | M-02, M-09 | `public_repo`と`read:user`が使用され、`repo`単体や`user`単体が使用されていない |
+| 5 | OAuth開始時にstateパラメータを生成している（SEC-11） | index.js | M-02 | `state`パラメータの生成（`crypto.randomUUID`）とCookie保存（`oauth_state`）が含まれる |
+| 6 | OAuthコールバックでstateパラメータを検証している（SEC-11） | callback.js | M-02 | URLの`state`パラメータとCookie内の`oauth_state`を照合し、不一致時に403を返す |
+| 7 | OAuthエラーメッセージが汎化されている（SEC-13） | callback.js | M-02, M-09 | `error_description`がクライアントに返されず、汎用メッセージ「Authentication failed」を使用 |
+
 ---
 
-## 2.4. CMS設定検証 (`cms-config.test.mjs`) — 44件
+## 2.4. CMS設定検証 (`cms-config.test.mjs`) — 49件
 
 `public/admin/config.yml`をパースし、設定値の正当性を検証する。
 
@@ -608,9 +634,19 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 | 42 | DOCUMENTATION.mdの全CMS要件IDがトレーサビリティマトリクスに記載されている | 全体 | M-03 | 要件一覧のCMS-XXがすべてトレーサビリティマトリクスに存在する |
 | 43 | config.ymlの全コレクションに対応する要件がDOCUMENTATION.mdに存在する | 全体 | M-03 | config.ymlの各コレクション名がDOCUMENTATION.mdに記載されている |
 
+### 2.4.1 基本機能保護テスト（5件）
+
+| No. | テストケース | カテゴリ | テスト手法 | 期待結果 |
+| :--- | :--- | :--- | :--- | :--- |
+| 45 | backend設定に保存に必要な全フィールドが存在する（FR-15） | 基本機能 | M-03 | `name`, `repo`, `branch`, `base_url`, `auth_endpoint`が全て定義されている |
+| 46 | 全コレクションでdeleteが明示的に無効化されていない（FR-16） | 基本機能 | M-03 | `delete !== false`（デフォルト有効） |
+| 26b | postsのbodyフィールドがmarkdownウィジェットである（FR-17） | 基本機能 | M-03 | `widget === "markdown"` |
+| 33b | pagesのbodyフィールドがmarkdownウィジェットである（FR-17） | 基本機能 | M-03 | `widget === "markdown"` |
+| 47 | 全コレクションにmedia_folderが設定されている（FR-19） | 基本機能 | M-03 | 各コレクションに`media_folder`が定義されている |
+
 ---
 
-## 2.5. ビルド検証 (`build.test.mjs`) — 50件
+## 2.5. ビルド検証 (`build.test.mjs`) — 60件
 
 `npm run build`を実行し、パイプライン全体（normalize-images → organize-posts → astro build → image-optimize）の出力を検証する。全テストケースはビルド完了後に実行される。
 
@@ -667,13 +703,39 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 | 49 | url-map.jsonの値が/posts/YYYY/MM/スラグ形式のURLパスである | URLマッピング | M-03, M-02 | 全値が`/^\/posts\/\d{4}\/\d{2}\/.+$/`にマッチ |
 | 50 | url-map.jsonのキーと値のスラグ部分が一致している | URLマッピング | M-03, M-02 | `value === "/posts/" + key` |
 
+### 2.5.1 セキュリティヘッダー検証（8件）
+
+| No. | テストケース | カテゴリ | テスト手法 | 期待結果 |
+| :--- | :--- | :--- | :--- | :--- |
+| 1 | _headersにX-Content-Type-Optionsが設定されている（SEC-10） | セキュリティヘッダー | M-02 | `X-Content-Type-Options: nosniff`が含まれる |
+| 2 | _headersにReferrer-Policyが設定されている（SEC-10） | セキュリティヘッダー | M-02 | `Referrer-Policy: strict-origin-when-cross-origin`が含まれる |
+| 3 | _headersにPermissions-Policyが設定されている（SEC-10） | セキュリティヘッダー | M-02 | `Permissions-Policy`ディレクティブが含まれる |
+| 4 | _headersにStrict-Transport-Securityが設定されている（SEC-10） | セキュリティヘッダー | M-02 | `Strict-Transport-Security`が含まれる |
+| 5 | /admin/*にContent-Security-Policyが設定されている（SEC-10） | セキュリティヘッダー | M-02 | `Content-Security-Policy`ディレクティブが`/admin/*`セクションに含まれる |
+| 6 | /admin/*にX-Frame-Options: SAMEORIGINが設定されている（SEC-10） | セキュリティヘッダー | M-02 | `X-Frame-Options: SAMEORIGIN`が`/admin/*`セクションに含まれる |
+| 7 | /admin/*にCOOP: same-origin-allow-popupsが設定されている（SEC-10） | セキュリティヘッダー | M-02 | `Cross-Origin-Opener-Policy: same-origin-allow-popups`が`/admin/*`セクションに含まれる |
+| 8 | CSP connect-srcにblob:が含まれている（Bug #29再発防止） | セキュリティヘッダー | M-02 | CSPの`connect-src`ディレクティブに`blob:`が含まれる（Decap CMS画像保存時の`fetch(blobURL)`に必要） |
+
+### 2.5.3 _headersヘッダー重複防止検証（Bug #28再発防止、2件）
+
+| No. | テストケース | カテゴリ | テスト手法 | 期待結果 |
+| :--- | :--- | :--- | :--- | :--- |
+| 57 | /* と /admin/* で同名ヘッダーが重複していない | 重複防止 | M-02 | `/*`セクションと`/admin/*`セクションで同名ヘッダーが存在しない |
+| 58 | 管理画面で緩和が必要なヘッダーが /* に含まれていない | 重複防止 | M-02 | COOP/CORP/X-Frame-Optionsが`/*`セクションに含まれない |
+
+### 2.5.2 ビルドパイプライン検証（1件）
+
+| No. | テストケース | カテゴリ | テスト手法 | 期待結果 |
+| :--- | :--- | :--- | :--- | :--- |
+| 51 | buildスクリプトに4段階パイプラインが定義されている（FR-20） | パイプライン | M-02 | `build:raw`に`normalize-images`, `organize-posts`, `astro build`が含まれる |
+
 ---
 
-## 2.6. 管理画面HTML検証 (`admin-html.test.mjs`) — 68件
+## 2.6. 管理画面HTML検証 (`admin-html.test.mjs`) — 82件
 
 `public/admin/index.html`のHTML/CSS/JavaScript内容を文字列パターンマッチングで検証する。
 
-### 2.6.1 基本構造（5件）
+### 2.6.1 基本構造（7件）
 
 | No. | テストケース | テスト手法 | 期待結果 |
 | :--- | :--- | :--- | :--- |
@@ -682,6 +744,8 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 | 3 | robots noindex が設定されている | M-02 | `noindex`が含まれる |
 | 4 | viewportメタタグが設定されている | M-02 | `viewport`が含まれる |
 | 5 | Decap CMSのスクリプトが読み込まれている | M-02 | `decap-cms`のスクリプトURLが含まれる |
+| 6 | CDN scriptタグが`</script>`で正しく閉じられている（バグ#27再発防止） | M-02 | `<script src="...cdn..."></script>`形式であること。閉じタグ欠落で後続スクリプトブロックが飲み込まれる致命的バグを検出 |
+| 7 | CMS.registerPreviewStyleが独立した`<script>`ブロック内にある（バグ#27再発防止） | M-02 | registerPreviewStyleが`<script>...</script>`内にあり、CDNスクリプトのインライン内容に含まれていないこと |
 
 ### 2.6.2 PC端末対応（6件）
 
@@ -801,6 +865,161 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 | 4 | 画像スタイル（border-radius, margin）が設定されている | M-02 | `border-radius: 4px`と`margin: 1rem 0`が含まれる |
 | 5 | コードブロックスタイルが設定されている | M-02 | `background: #f5f5f5`が含まれる |
 
+### 2.6.12 セキュリティ検証（11件）
+
+| No. | テストケース | テスト手法 | 期待結果 |
+| :--- | :--- | :--- | :--- |
+| 1 | innerHTML/outerHTMLを使用していない（SEC-01） | M-02, M-09 | scriptブロック内に`innerHTML`/`outerHTML`が含まれない |
+| 2 | CDN外部スクリプトのバージョンが正確に固定されている（SEC-03） | M-02 | unpkg.comのURLに`^`/`~`が含まれない |
+| 3 | target="_blank"リンクにrel="noopener"が付与されている（SEC-04） | M-02 | target="_blank"の数とrel="noopener"の数が一致する |
+| 4 | eval()/Function()/document.write()を使用していない（SEC-05） | M-02, M-09 | scriptブロック内に`eval(`/`new Function(`/`document.write(`が含まれない |
+| 5 | console.logが本番コードに含まれていない（SEC-09） | M-02, M-09 | scriptブロック内に`console.log(`が含まれない（console.warnはエラーハンドリング用に許可） |
+| 6 | ハードコードされたサイトURLが含まれていない（SEC-08） | M-02, M-09 | scriptブロック内に`reiwa.casa`が含まれない |
+| 7 | Decap CMSのバージョンが正確に指定されている（SEC-03） | M-02 | `decap-cms@X.Y.Z`形式（^/~なし）でバージョンが指定されている |
+| 8 | strictモードが有効である（Q-02） | M-02 | `'use strict'`が含まれる |
+| 9 | var宣言が使用されていない（Q-01） | M-02, M-09 | scriptブロック内に`var `宣言が含まれない |
+| 10 | CDNスクリプトにintegrity属性が設定されている（SEC-12） | M-02 | unpkg.comのscriptタグに`integrity="sha384-..."`属性が含まれる |
+| 11 | CDNスクリプトにcrossorigin属性が設定されている（SEC-12） | M-02 | unpkg.comのscriptタグに`crossorigin="anonymous"`属性が含まれる |
+
+### 2.6.13 環境分離検証（1件）
+
+| No. | テストケース | テスト手法 | 期待結果 |
+| :--- | :--- | :--- | :--- |
+| 8 | staging環境検知ロジックが存在する（FR-21: hostname判定） | M-02 | `hostname`文字列と`STAGING`/`staging`関連ロジックが存在する |
+
+### 2.7 ファズテスト・不整合値テスト（fuzz-validation.test.mjs: 214件）
+
+SEC-14〜SEC-20に対応するファズテスト。ビルド時に必ず実行される必須テスト。XSS/SQLi/パストラバーサル/コマンドインジェクション/プロトタイプ汚染の攻撃ペイロードに対する耐性を検証する。
+
+#### 2.7.1 固定ページ order フィールドのファズテスト（SEC-19）
+
+| # | テストケース | 手法 | 備考 |
+| :--- | :--- | :--- | :--- |
+| 1 | order=1（最小有効値）が受理される | M-02 | Zodスキーマ safeParse |
+| 2 | order=0, -1, -999, MIN_SAFE_INTEGER が拒否される | M-02, M-09 | 負数・ゼロの境界値テスト |
+| 3 | order=NaN, Infinity, -Infinity が拒否される | M-09 | 特殊数値テスト |
+| 4 | order=1.5, 0.999, 1.001（小数）が拒否される | M-09 | 整数制約テスト |
+| 5 | order="1", "abc", null, true, [], {} が拒否される | M-09 | 型不正テスト |
+| 6 | XSSペイロード10種がorder値として拒否される | M-09 | 攻撃ペイロード注入 |
+| 7 | CMS config.yml に min:1, value_type:int 制約がある | M-02 | CMS層バリデーション |
+| 8 | 既存全ページのorderが1以上の正の整数 | M-02 | 実データ整合性検証 |
+
+#### 2.7.2 固定ページ slug フィールドのファズテスト（SEC-19）
+
+| # | テストケース | 手法 | 備考 |
+| :--- | :--- | :--- | :--- |
+| 1 | 有効なslug（英数字・ハイフン）が受理される | M-02 | 正常系6パターン |
+| 2 | 大文字・スペース・アンダースコア・日本語等が拒否される | M-02 | 無効slug10パターン |
+| 3 | XSSペイロード10種が拒否される | M-09 | `<script>`, `onerror=` 等 |
+| 4 | SQLiペイロード5種が拒否される | M-09 | `' OR '1'='1` 等 |
+| 5 | パストラバーサル6種が拒否される | M-09 | `../../../etc/passwd` 等 |
+| 6 | コマンドインジェクション5種が拒否される | M-09 | `; ls -la`, `` `whoami` `` 等 |
+| 7 | 既存ページに予約語slugが使われていない | M-02 | posts, tags, admin |
+
+#### 2.7.3 title フィールドのファズテスト
+
+| # | テストケース | 手法 | 備考 |
+| :--- | :--- | :--- | :--- |
+| 1 | null, 数値, オブジェクト, 配列が拒否される | M-09 | 型チェック |
+| 2 | XSSペイロードはスキーマ上受理されるがSSGでエスケープ | M-02 | Astro自動エスケープ確認 |
+
+#### 2.7.4 date フィールドのファズテスト
+
+| # | テストケース | 手法 | 備考 |
+| :--- | :--- | :--- | :--- |
+| 1 | YYYY-MM-DD形式・Dateオブジェクトが受理される | M-02 | 正常系 |
+| 2 | 数値, null, オブジェクト, 配列, boolean が拒否される | M-09 | 型チェック |
+
+#### 2.7.5 tags フィールドのファズテスト
+
+| # | テストケース | 手法 | 備考 |
+| :--- | :--- | :--- | :--- |
+| 1 | 空配列・文字列配列が有効 | M-02 | 正常系 |
+| 2 | 数値配列, ネスト配列, オブジェクト配列, 文字列が拒否 | M-09 | 型チェック |
+| 3 | XSSペイロードはスキーマ上受理されるがSSGでエスケープ | M-02 | Astro自動エスケープ |
+
+#### 2.7.6 draft フィールドのファズテスト
+
+| # | テストケース | 手法 | 備考 |
+| :--- | :--- | :--- | :--- |
+| 1 | true/false が有効、"true"/"false"/1/0/null が拒否 | M-09 | 厳密boolean型チェック |
+
+#### 2.7.7 OAuth認証エンドポイントのファズテスト（SEC-11, SEC-13）
+
+| # | テストケース | 手法 | 備考 |
+| :--- | :--- | :--- | :--- |
+| 1 | 空文字列CLIENT_IDで500エラー | M-09 | 環境変数異常値 |
+| 2 | 超長URL（10000文字）でクラッシュしない | M-09 | バッファオーバーフロー対策 |
+| 3 | XSSペイロードURL注入でリダイレクト先に反映されない | M-09 | リフレクション防止 |
+| 4 | 空code, state不一致, Cookie不在で適切なエラーコード | M-06 | CSRF防止検証 |
+| 5 | XSSペイロード10種のcode注入でHTMLに反映されない | M-09 | XSSペイロード注入 |
+| 6 | 超長code（10000文字）でクラッシュしない | M-09 | バッファオーバーフロー |
+| 7 | SQLiペイロード5種のcode注入でクラッシュしない | M-09 | SQLi耐性 |
+| 8 | パストラバーサル6種のcode注入でクラッシュしない | M-09 | パストラバーサル耐性 |
+| 9 | `</script>`含むトークンでHTMLが壊れない | M-09 | escapeForScript検証 |
+| 10 | バックスラッシュ・改行含むトークンの安全性検証 | M-02 | ソースコードレベル検証 |
+
+#### 2.7.8 セキュリティヘッダー包括検証（SEC-10, SEC-14〜SEC-17）
+
+| # | テストケース | 手法 | 備考 |
+| :--- | :--- | :--- | :--- |
+| 1 | X-Content-Type-Options: nosniff 設定確認 | M-02 | OWASP推奨 |
+| 2 | X-Frame-Options が /admin/* に設定確認 | M-02 | クリックジャッキング防止（Bug #28: /* でなく /admin/* のみに設定） |
+| 3 | Referrer-Policy が安全な値に設定 | M-02 | 情報漏洩防止 |
+| 4 | Permissions-Policy で geolocation 無効化 | M-02 | プライバシー保護 |
+| 5 | Permissions-Policy で camera/microphone 無効化 | M-02 | プライバシー保護 |
+| 6 | Permissions-Policy で interest-cohort(FLoC) 無効化 | M-02 | 広告トラッキング拒否 |
+| 7 | HSTS: Strict-Transport-Security 設定確認 | M-02 | SEC-14 |
+| 8 | HSTS: max-age≧15768000秒（6ヶ月以上） | M-02 | HSTS Preload要件 |
+| 9 | HSTS: includeSubDomains 設定確認 | M-02 | サブドメイン保護 |
+| 10 | HSTS: preload 設定確認 | M-02 | HSTS Preload List |
+| 11 | COOP: /admin/* に same-origin-allow-popups が設定 | M-02 | SEC-15（Bug #28: /* でなく /admin/* のみ） |
+| 12 | CORP: /admin/* に same-site が設定 | M-02 | SEC-15（Bug #28: /* でなく /admin/* のみ） |
+| 16 | COOP/CORP/X-Frame-Options が /* に含まれていない | M-02 | Bug #28 再発防止（重複送信防止） |
+| 13 | X-DNS-Prefetch-Control: off | M-02 | SEC-16 |
+| 14 | X-Permitted-Cross-Domain-Policies: none | M-02 | SEC-16 |
+| 15 | CSP: admin配下にdefault-src, frame-ancestors 'self' 設定 | M-02 | CSP検証（'none'→'self'にバグ#27で修正） |
+
+#### 2.7.9 コードセキュリティ品質テスト
+
+| # | テストケース | 手法 | 備考 |
+| :--- | :--- | :--- | :--- |
+| 1 | callback.js/index.jsにvar宣言なし | M-02 | コード品質 |
+| 2 | admin/index.htmlにinnerHTML/outerHTML使用なし | M-02 | SEC-01 |
+| 3 | CDNスクリプトにSRI integrity属性あり | M-02 | SEC-12 |
+| 4 | CDNスクリプトにcrossorigin属性あり | M-02 | SEC-12 |
+
+#### 2.7.10 情報漏洩防止テスト（SEC-18）
+
+| # | テストケース | 手法 | 備考 |
+| :--- | :--- | :--- | :--- |
+| 1 | public配下に.envファイルが存在しない | M-02 | 秘密情報漏洩防止 |
+| 2 | public配下に.gitディレクトリが存在しない | M-02 | ソースコード漏洩防止 |
+| 3 | public配下にpackage.jsonが存在しない | M-02 | 依存関係情報漏洩防止 |
+| 4 | public配下にwrangler.tomlが存在しない | M-02 | インフラ設定漏洩防止 |
+| 5 | public配下にnode_modulesが存在しない | M-02 | ソース漏洩防止 |
+| 6 | config.ymlにシークレット情報が含まれていない | M-02 | 秘密情報ハードコード検出 |
+| 7 | admin/index.htmlにシークレット/ハードコードURL含まれない | M-02 | SEC-08 |
+
+#### 2.7.11 プロトタイプ汚染攻撃テスト
+
+| # | テストケース | 手法 | 備考 |
+| :--- | :--- | :--- | :--- |
+| 1 | __proto__, __defineGetter__, __defineSetter__ がslugパターンで拒否 | M-09 | アンダースコア付きペイロード |
+| 2 | constructor, prototype がslugパターン通過するが安全 | M-02 | 小文字英字のみ、URL衝突なし |
+| 3 | 全プロトタイプ汚染ペイロードがorder値として拒否 | M-09 | 型チェックで防止 |
+
+#### 2.7.12 管理画面セキュリティヘッダーオーバーライド検証（バグ#27再発防止）
+
+| # | テストケース | 手法 | 備考 |
+| :--- | :--- | :--- | :--- |
+| 1 | COOP が same-origin-allow-popups にオーバーライド | M-02 | OAuth popup許可（window.opener維持） |
+| 2 | X-Frame-Options が SAMEORIGIN にオーバーライド | M-02 | CMSプレビューiframe許可 |
+| 3 | CORP が same-site にオーバーライド | M-02 | クロスサイトリソース読み込み許可 |
+| 4 | CSP frame-src に blob: 含む | M-02 | CMSプレビュー用blob URL許可 |
+| 5 | CSP connect-src に blob: 含む（Bug #29再発防止） | M-02 | Decap CMS画像保存時の`fetch(blobURL)`に必要 |
+| 6 | /* と /admin/* で同名ヘッダーが重複していない（Bug #28再発防止） | M-02 | Cloudflare Pages Append動作による重複送信防止 |
+
 ---
 
 # 第3部 要件トレーサビリティ
@@ -811,7 +1030,7 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 
 要件トレーサビリティマトリクスは **docs/DOCUMENTATION.md 1.5章** に移動した。要件定義と同一ファイルで管理することで、要件追加時のトレース漏れを防止する。
 
-現在の充足状況: **全要件（FR-01〜FR-14, CMS-01〜CMS-16, NFR-01〜NFR-04）がテストで充足されている。未テスト要件なし。**
+現在の充足状況: **全要件（FR-01〜FR-21, CMS-01〜CMS-16, NFR-01〜NFR-05, SEC-01〜SEC-20）がテストで充足されている。未テスト要件なし。**
 
 ---
 
@@ -893,9 +1112,44 @@ OAuth認証はGitHub実環境が必要なため、postMessage APIによるシミ
 | E-18 | EXIF画像処理・アップロード | Canvas EXIF正規化、HEIC制限accept属性、画像プレビューCSS（object-fit、max-height） | 構造検証 |
 | E-19 | 削除ボタン動作・メディアライブラリ | 選択解除ラベル・CSS、完全削除ラベル・CSS、無効化ロジック（borderColor判定）、disabled状態CSS | 構造検証 |
 
+#### CMS CRUDテスト (`tests/e2e/cms-crud.spec.ts`)
+
+GitHub APIをモックし、記事の作成・編集・削除の一連のCRUD操作を実際にUI上で実行・検証する。実リポジトリへの変更は一切発生しない。
+
+| No. | テストケース | 検証内容 | テスト手法 |
+| :--- | :--- | :--- | :--- |
+| E-22 | 記事作成（CRUD: Create） | 新規記事画面遷移、タイトル入力、本文入力（Slateエディタ）、ハッシュルート正常遷移 | モック/フォーム操作 |
+| E-23 | 記事編集（CRUD: Update） | 編集画面遷移、フォーム要素存在、タイトル編集可能、本文エディタ表示 | モック/フォーム操作 |
+| E-24 | 記事削除（CRUD: Delete） | 削除ボタン存在、コレクション一覧戻り、削除機能HTML実装 | モック/動作検証 |
+
+#### CMS 実操作テスト (`tests/e2e/cms-operations.spec.ts`)
+
+OAuthモック＋GitHub APIモックを使い、CMS管理画面を実際に操作して検証する。フォーム入力→保存→API呼び出し検証、UIインタラクション（ドロップダウン、ボタン重なり、公開URLバー）、モバイル固有動作（ボトムシート、codeblock非表示、タップ領域）を3デバイスで実行する。
+
+| No. | テストケース | 検証内容 | テスト手法 |
+| :--- | :--- | :--- | :--- |
+| E-28 | 記事作成の実操作 | タイトル・本文入力→保存ボタンクリック、日付フィールド入力可能、Git blob作成API呼び出し検証 | モック/フォーム操作/API検証 |
+| E-29 | 記事編集の実操作 | 既存記事タイトル変更、本文テキスト追加、保存ボタン状態変化 | モック/フォーム操作 |
+| E-30 | UIインタラクション検証 | サイトリンク表示・クリック可能、コレクション切り替え、公開URLバー表示・URL内容、新規作成ボタン、ツールバー重なりなし、URLバーとエディタ重なりなし | モック/動作検証/レイアウト検証 |
+| E-31 | コレクション一覧エントリー表示 | 日付バッジフォーマット（YYYY-MM-DD）、バッジスタイル適用、エントリークリックでエディタ遷移 | モック/動作検証 |
+| E-32 | 画面遷移の整合性 | エディタ→コレクション戻りリンク動作、往復ナビゲーションでUI状態リセット、ブラウザ戻る・進む | モック/動作検証 |
+| E-33 | 画像アップロードUI操作 | 画像ウィジェットボタン表示・クリック可能、accept属性HEIC制限、EXIF処理イベント登録 | モック/動作検証 |
+| E-34 | モバイル固有UI操作 | ドロップダウンがボトムシート表示（≤799px）、codeblockボタン非表示、URLバー退避、タップ領域44px以上 | モック/動作検証（iPhoneのみ） |
+| E-35 | 削除ボタン状態変化 | 削除ボタンラベル変更（選択解除/完全削除）、disabled状態CSS、色の視覚的区別、borderColor判定ロジック | モック/動作検証/CSS検証 |
+
+#### アクセシビリティテスト (`tests/e2e/accessibility.spec.ts`)
+
+axe-coreエンジン（@axe-core/playwright）を使用してWCAG 2.1 Level AA準拠を自動検証する。
+
+| No. | テストケース | 検証内容 | テスト手法 |
+| :--- | :--- | :--- | :--- |
+| E-25 | トップページ・記事ページのアクセシビリティ | トップページと記事詳細ページにcritical/seriousなa11y違反がないこと | axe-core WCAG 2.1 AA |
+| E-26 | 固定ページ・ナビゲーションのアクセシビリティ | 固定ページのa11y違反なし、画像alt属性、見出し階層（h1→h2スキップなし） | axe-core WCAG 2.1 AA + DOM検証 |
+| E-27 | CMS管理画面のアクセシビリティ | CMS管理画面にcriticalなa11y違反がないこと（サードパーティCMSのためcriticalのみ） | axe-core WCAG 2.1 AA |
+
 ### 4.1.4 デバイス別テスト
 
-全テストケースを以下の3デバイスで実行する（合計240テスト）。
+全テストケースを以下の3デバイスで実行する（合計375テスト：367実行 + 8スキップ）。モバイル固有テスト（E-34）はビューポート幅≤799pxのiPhoneでのみ実行し、PC・iPadではスキップする。
 
 | デバイス | ビューポート | 用途 |
 | :--- | :--- | :--- |
@@ -903,13 +1157,16 @@ OAuth認証はGitHub実環境が必要なため、postMessage APIによるシミ
 | iPad (gen 7) | 810 x 1080 | タブレット表示の検証 |
 | iPhone 14 | 390 x 844 | モバイル表示の検証 |
 
-### 4.1.5 CMS操作テストの制約と今後
+### 4.1.5 CMS操作テストの方式（必須）
 
-| 項目 | 説明 |
-| :--- | :--- |
-| 認証 | GitHub OAuthの実環境が必要。postMessageシミュレーションで認証フローの構造は検証可能だが、CMS内部のReact状態は完全には再現できない |
-| 記事CRUD操作 | 認証済み状態でのみ可能。ローカル手動テストで補完する |
-| 今後の拡張 | Decap CMS の `test-repo` バックエンドを使えば認証不要でCMS操作テストが可能になる。需要に応じて導入を検討する |
+CMS E2Eテストでは以下のモック方式を**必須インフラ**として統一使用する。今後のテスト追加時もこの方式に従うこと。
+
+| 項目 | 方式 | 説明 |
+| :--- | :--- | :--- |
+| OAuth認証 | postMessageシミュレーション | `page.route('**/auth')` でOAuthポップアップをモックし、`window.opener.postMessage()` でトークンを送信。実GitHub環境不要 |
+| GitHub API | Playwright `page.route()` 全面モック | ユーザー情報、リポジトリ、ブランチ、Git Data API（trees/blobs/refs/commits）、Contents APIを全てインターセプト。APIコールを記録して検証可能 |
+| CRUD操作 | モックAPI経由で実UI操作 | フォーム入力→保存ボタンクリック→モックAPIへのPOST発行を検証。実リポジトリへの変更は一切発生しない |
+| 制約 | CMS内部React状態の不完全再現 | postMessageでトークンを注入してもCMS内部のReact状態管理が完全には再現されない場合がある。エディタUIの表示・操作可能性で検証を補完する |
 
 ---
 
@@ -972,30 +1229,31 @@ npm run build
 
 | 項目 | 結果 |
 | :--- | :--- |
-| 実行日時 | 2026-02-21 00:43 |
+| 実行日時 | 2026-02-21 12:57 |
 | Vitest バージョン | v4.0.18 |
-| 実行時間 | 1.75s |
+| 実行時間 | 1.71s |
 | 合否判定 | **合格** |
 
 ### 4.3.2 テストファイル別結果
 
 | テストファイル | テスト数 | 結果 | 実行時間 |
 | :--- | :--- | :--- | :--- |
-| `cms-config.test.mjs` | 44 | PASS | 4ms |
-| `admin-html.test.mjs` | 68 | PASS | 6ms |
-| `rehype-image-caption.test.mjs` | 8 | PASS | 2ms |
-| `auth-functions.test.mjs` | 10 | PASS | 29ms |
-| `content-validation.test.mjs` | 67 | PASS | 24ms |
-| `build.test.mjs` | 50 | PASS | 1521ms |
-| **合計** | **247** | **全PASS** | **1.67s** |
+| `cms-config.test.mjs` | 49 | PASS | 4ms |
+| `admin-html.test.mjs` | 82 | PASS | 12ms |
+| `rehype-image-caption.test.mjs` | 8 | PASS | 3ms |
+| `auth-functions.test.mjs` | 17 | PASS | 28ms |
+| `fuzz-validation.test.mjs` | 214 | PASS | 39ms |
+| `content-validation.test.mjs` | 67 | PASS | 55ms |
+| `build.test.mjs` | 61 | PASS | 1617ms |
+| **合計** | **498** | **全PASS** | **1.80s** |
 
 ### 4.3.3 E2Eテスト最新実行結果（Playwright）
 
 | 項目 | 結果 |
 | :--- | :--- |
-| 実行日時 | 2026-02-21 07:21 |
+| 実行日時 | 2026-02-21 21:10 |
 | Playwright バージョン | v1.58.2 |
-| 実行時間 | 52s |
+| 実行時間 | 9.9min |
 | 合否判定 | **合格** |
 
 | テストファイル | PC | iPad | iPhone | 合計 |
@@ -1003,7 +1261,12 @@ npm run build
 | `site.spec.ts`（E-01〜E-06, E-20〜E-21） | 30 PASS | 30 PASS | 30 PASS | 90 |
 | `cms.spec.ts`（E-07〜E-12） | 12 PASS | 12 PASS | 12 PASS | 36 |
 | `cms-customizations.spec.ts`（E-13〜E-19） | 38 PASS | 38 PASS | 38 PASS | 114 |
-| **合計** | **80** | **80** | **80** | **240 全PASS** |
+| `cms-crud.spec.ts`（E-22〜E-24） | 11 PASS | 11 PASS | 11 PASS | 33 |
+| `cms-operations.spec.ts`（E-28〜E-35） | 24 PASS, 4 skip | 24 PASS, 4 skip | 28 PASS | 76 PASS, 8 skip |
+| `accessibility.spec.ts`（E-25〜E-27） | 6 PASS | 6 PASS | 6 PASS | 18 |
+| **合計** | **121** | **121** | **125** | **367 PASS, 8 skip** |
+
+**スキップ内訳**: E-34（モバイル固有UI操作）4テスト × PC・iPad = 8件。ビューポート幅≤799pxのiPhoneでのみ実行。
 
 ### 4.3.4 ビルド実行結果
 
