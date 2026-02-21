@@ -1,7 +1,7 @@
 ---
 title: プロフィール
 slug: profile
-order: 1
+order: -1
 draft: false
 ---
 
