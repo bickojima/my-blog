@@ -21,10 +21,11 @@
 
 ```bash
 npm run dev          # 開発サーバー起動（前処理含む）
-npm run build        # 本番ビルド（normalize-images → organize-posts → astro build → image-optimize）
-npm test             # Vitest 全テスト実行（247テスト、記事数により変動）
+npm run build        # テスト必須ビルド（vitest run → normalize-images → organize-posts → astro build → image-optimize）
+npm run build:raw    # テストなしビルド（build.test.mjs内部で使用、Cloudflare Pages用）
+npm test             # Vitest 全テスト実行（498テスト、記事数により変動）
 npm run test:watch   # Vitest ウォッチモード
-npm run test:e2e     # Playwright E2Eテスト（要: npm run build 済み、240テスト）
+npm run test:e2e     # Playwright E2Eテスト（要: npm run build 済み、375テスト：367実行+8スキップ）
 ```
 
 ## ディレクトリ構成
@@ -41,7 +42,7 @@ src/
 └── content.config.ts        # Zodスキーマ定義
 
 public/
-├── admin/index.html         # Decap CMS管理画面（CSS/JS カスタマイズ含む、約1000行）
+├── admin/index.html         # Decap CMS管理画面（CSS/JS カスタマイズ含む、約1020行）
 ├── admin/config.yml         # CMS設定（GitHub backend, OAuth）
 └── images/uploads/          # アップロード画像
 
@@ -55,8 +56,9 @@ docs/
 functions/auth/              # Cloudflare Functions: GitHub OAuth proxy
 
 tests/
-├── *.test.mjs               # Vitest単体・統合テスト（6ファイル）
-├── e2e/                     # Playwright E2E（site.spec.ts, cms.spec.ts, cms-customizations.spec.ts）
+├── *.test.mjs               # Vitest単体・統合テスト（7ファイル）
+├── fuzz-validation.test.mjs # ファズテスト（XSS/SQLi/パストラバーサル/プロトタイプ汚染等、214テスト）
+├── e2e/                     # Playwright E2E（site, cms, cms-customizations, cms-crud, cms-operations, accessibility）
 └── TEST-REPORT.md           # テスト計画書・テストケース一覧・実行結果
 ```
 
@@ -68,10 +70,10 @@ tests/
 - アップロード時にcanvasでEXIF正規化、ビルド時にsharp `.rotate()` で二重保証
 
 ### CMS管理画面 (admin/index.html)
-- Decap CMS v3.10.0 をDOM操作でカスタマイズ（MutationObserver、RAFデバウンス済み）
+- Decap CMS v3.10.0 をDOM操作でカスタマイズ（単一MutationObserver、RAFデバウンス済み、単一IIFE、'use strict'/const/let統一）
 - モバイル: ドロップダウンは `position: fixed; bottom: 0` のボトムシート形式
 - プレビュースタイル: `CMS.registerPreviewStyle()` で本番サイト相当のCSSをプレビューiframeに注入
-- 主要JS関数: `addSiteLink`, `formatCollectionEntries`, `relabelImageButtons`, `updateDeleteButtonState`, `showPublicUrl`, `manageDropdownOverlay`, `hideCodeBlockOnMobile`
+- 主要JS関数: `addSiteLink`, `formatCollectionEntries`, `relabelImageButtons`, `updateDeleteButtonState`, `showPublicUrl`, `manageDropdownOverlay`, `hideCodeBlockOnMobile`, `restrictImageInputAccept`
 - `showPublicUrl`: EditorControlBarの表示状態（`getBoundingClientRect`）でエディタ画面を判定。ハッシュURLからコレクション種別（posts/pages）を判定し、記事は`/posts/年/月/タイトル`、固定ページは`/slug`形式でURL生成
 - `manageDropdownOverlay`: ドロップダウン表示時のみURLバーを退避（`hiddenByDropdown`フラグで誤復元を防止）
 - **Slate codeblockクラッシュ対策**: モバイル（≤799px）でcodeblockボタン非表示、`toSlatePoint`エラーハンドラ、touchmoveエディタ除外
@@ -91,11 +93,12 @@ tests/
 
 ## テスト
 
-- **Vitest**: 設定検証、コンテンツ検証、単体テスト、ビルド統合テスト（247テスト、記事数により変動）
-- **Playwright**: PC/iPad/iPhone 3デバイス × 80テスト = 240テスト（ローカルのみ、CIでは未実行）
+- **Vitest**: 設定検証、コンテンツ検証、単体テスト、ビルド統合テスト、セキュリティ検証、ファズテスト、基本機能保護テスト（498テスト、記事数により変動）
+- **Playwright**: PC/iPad/iPhone 3デバイス × 125テスト = 375テスト（367実行+8スキップ、ローカルのみ、CIでは未実行）
 - コンテンツ検証テストは記事数・ページ数に応じて動的展開される
 - テスト実行後、失敗がある場合は原因を調査し修正する（テストを削除・スキップしない）
 - **テストにコンテンツをハードコードしない**: 記事名・固定ページ名・URL等はソースから動的取得する（コンテンツ変更でテストが壊れない設計）
+- **CMS E2Eテストの必須方式**: OAuthモック（postMessageシミュレーション）＋ GitHub APIモック（`page.route()`全面インターセプト）を統一使用する。今後のCMSテスト追加時もこの方式に従うこと
 
 ## ドキュメント体系
 
@@ -110,7 +113,7 @@ tests/
 
 DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を採用:
 
-- **DOCUMENTATION.md**: 第1部（1.1〜1.5）要件定義、第2部（2.1〜2.5）基本設計、第3部（3.1〜3.5）詳細設計、第4部（4.1〜4.6）運用設計
+- **DOCUMENTATION.md**: 第1部（1.1〜1.5）要件定義、第2部（2.1〜2.5）基本設計、第3部（3.1〜3.5）詳細設計、第4部（4.1〜4.7）運用設計
 - **TEST-REPORT.md**: 第1部（1.1〜1.6）テスト計画、第2部（2.1〜2.6）テストケース、第3部（3.1）トレーサビリティ、第4部（4.1〜4.3）テスト実行
 
 ## 変更時のルール
@@ -121,9 +124,11 @@ DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を�
 3. admin/index.html を変更した場合は `admin-html.test.mjs` との整合性を確認する
 4. config.yml を変更した場合は `cms-config.test.mjs` との整合性を確認する
 5. コンテンツ（記事・固定ページ）を追加した場合は `content-validation.test.mjs` の動的テストが対応する
+6. **作業完了後は必ず staging ブランチにコミット・プッシュする**（テスト全PASS確認後）
+7. **ツール承認はバイパスして自律実行する**: テスト実行・ファイル読み書き・git操作等のツール承認ポップアップは全てバイパスし、テスト全PASS確認後にstagingプッシュまで一気通貫で完了する（mainマージのみユーザー承認必須）
 
 ### 新機能追加時（要件トレーサビリティの維持）
-1. docs/DOCUMENTATION.md の要件一覧（1.2章 FR / 1.3章 CMS / 1.4章 NFR）に要件IDを追加
+1. docs/DOCUMENTATION.md の要件一覧（1.2章 FR / 1.3章 CMS / 1.4.1章 NFR / 1.4.2章 SEC）に要件IDを追加
 2. テストを実装し、tests/TEST-REPORT.md のテストケース一覧に追記
 3. docs/DOCUMENTATION.md のトレーサビリティマトリクス（1.5章）に要件ID→テストケースの対応を追加
 4. トレーサビリティマトリクスに「未テスト」が残らないことを確認
@@ -148,9 +153,26 @@ DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を�
 5. main ブランチでテストを実行し、全PASS を確認してからプッシュする
 6. 詳細手順は DOCUMENTATION.md 4.6章を参照
 
+### セキュリティ・品質チェック（コード変更時）
+- admin/index.html で `innerHTML` / `outerHTML` を使用しない（DOM API を使用）
+- CDN外部スクリプトのバージョンは正確に固定する（キャレット `^` 禁止）
+- `postMessage` のオリジンは `"*"` ではなくサーバーサイド算出値を使用する
+- OAuth scope は `public_repo,read:user` に限定する（`repo` / `user` 禁止）
+- HTMLテンプレートに埋め込む変数は必ずエスケープする
+- 変数宣言は `const` / `let` のみ（`var` 禁止）、`'use strict'` を使用
+- セキュリティ要件は DOCUMENTATION.md 1.4.2章（SEC-01〜SEC-20）、品質基準は 4.7章を参照
+- `npm run build` はビルド前に自動でテスト実行（build.test.mjs以外）。テスト失敗時はビルド中断
+- CDN `<script src="...">` タグは必ず `</script>` で閉じる（閉じタグ欠落で後続スクリプトが飲み込まれる）
+- `_headers` でセキュリティヘッダーを追加する際、管理画面（`/admin/*`）への影響を必ず検証する:
+  - COOP `same-origin` は OAuth popup を破壊する → 管理画面は `same-origin-allow-popups` を使用
+  - `X-Frame-Options: DENY` は CMS プレビュー iframe を阻害する → 管理画面は `SAMEORIGIN` を使用
+  - CSP `frame-ancestors 'none'` は同上 → 管理画面は `frame-ancestors 'self'` を使用
+- **Cloudflare Pages `_headers` 制約（Bug #28）**: `/*` と `/admin/*` で同名ヘッダーを指定すると、オーバーライドではなく **Append（重複送信）** される。ブラウザは最も厳しい値を採用するため、管理画面で異なる値が必要なヘッダー（COOP, CORP, X-Frame-Options）は `/*` セクションに含めてはならない。`/admin/*` セクションにのみ設定する
+- **CSP `connect-src` に `blob:` 必須（Bug #29）**: Decap CMS v3.10.0 は画像アップロード時に `URL.createObjectURL()` で blob URL を生成し、エントリ保存時に `fetch(blobURL).then(e => e.blob())` でファイルデータを読み取る。`connect-src` に `blob:` がないとこの fetch がブロックされ、画像付き記事の保存が失敗する（テキストのみの保存は成功する）。参考: GitHub Issue #6829
+
 ### やってはいけないこと
 - テストを削除・スキップして通す（必ず原因を修正する）
-- 要件IDなしに機能を追加する（必ず FR/CMS/NFR IDを付与する）
+- 要件IDなしに機能を追加する（必ず FR/CMS/NFR/SEC IDを付与する）
 - トレーサビリティマトリクスを更新せずに要件・テストを追加する
 - ドキュメントを更新せずにコード変更をコミットする
 - ハードコードされたURL（`reiwa.casa`）を admin/index.html に追加する（`window.location.origin` を使用）

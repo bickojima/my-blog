@@ -42,8 +42,8 @@ export default function imageOptimize() {
           const originalSize = fileStat.size;
 
           try {
-            const image = sharp(filePath);
-            const metadata = await image.metadata();
+            // メタデータ取得とパイプラインを同一インスタンスで処理
+            const metadata = await sharp(filePath).metadata();
 
             // Apply EXIF orientation (iPhone photos store rotation as EXIF metadata)
             let pipeline = sharp(filePath).rotate();
