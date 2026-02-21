@@ -26,6 +26,7 @@
 | 1.19 | 2026-02-21 | 第2回ペネトレーションテスト実施: SEC-10〜SEC-13追加（HTTPセキュリティヘッダー、OAuth CSRF防止stateパラメータ、SRI、エラー情報漏洩防止）、_headers全面強化（CSP/X-Frame-Options/X-Content-Type-Options）、callback.js var→const修正・エラーメッセージ汎化、admin/index.html SRI属性追加 |
 | 1.20 | 2026-02-21 | SEC-14〜SEC-20追加: HSTS preload対応、Cross-Origin Isolation(COOP/CORP)、DNS Prefetch防止、Permissions-Policy拡張(FLoC/Topics無効化)、情報漏洩防止(ファイル)、入力値バリデーション強化(order=-1バグ修正、3層バリデーション)、ファズテスト必須化(207テスト: XSS/SQLi/パストラバーサル/コマンドインジェクション/プロトタイプ汚染)。ビルドパイプライン再構成(build:raw+build=テスト必須)。バグNo.25-26追加。全477テスト |
 | 1.21 | 2026-02-21 | iPhone記事保存失敗バグ修正（バグNo.27）: CDNスクリプト`</script>`閉じタグ欠落復元、管理画面セキュリティヘッダーオーバーライド追加（COOP: same-origin-allow-popups、X-Frame-Options: SAMEORIGIN、CSP frame-ancestors 'self'）。SEC-15要件を管理画面例外考慮に更新。再発防止テスト7件追加。全484テスト |
+| 1.22 | 2026-02-21 | 機能観点の要件定義追加: FR-15〜FR-21（コンテンツCRUD、リッチテキスト編集、ライブプレビュー、メディアライブラリ、ビルドパイプライン、環境分離）、NFR-05（レスポンシブデザイン）。基本機能保護ルール（4.7.2章）策定。再発防止テスト追加。全491テスト |
 
 ## システム変更履歴
 
@@ -105,7 +106,7 @@ PR履歴に基づく主要なシステム変更の記録である。
 4.4. [トラブルシューティング](#44-トラブルシューティング)
 4.5. [バグ一覧](#45-バグ一覧)
 4.6. [ブランチマージ手順](#46-ブランチマージ手順)
-4.7. [品質向上策・定期セキュリティ診断](#47-品質向上策定期セキュリティ診断)
+4.7. [品質向上策・基本機能保護・定期セキュリティ診断](#47-品質向上策基本機能保護定期セキュリティ診断)
 
 ---
 
@@ -175,6 +176,13 @@ PR履歴に基づく主要なシステム変更の記録である。
 | FR-12 | CMS認証: 管理者がGitHubアカウントでCMSにログインできる | `functions/auth/` | GitHub OAuth + Cloudflare Functions |
 | FR-13 | 画像キャプション: 画像にタイトルを設定するとキャプション付きで表示される | `rehype-image-caption.mjs` | `<figcaption>` 変換 + lazy loading自動付与 |
 | FR-14 | 固定ページ管理: CMSから固定ページを作成・編集、ヘッダーナビに動的表示 | `src/content/pages/`, `src/pages/[slug].astro`, `Base.astro` | pagesコレクション |
+| FR-15 | コンテンツ保存・公開: CMSで編集した記事・固定ページがGitHubリポジトリにコミットされ、自動ビルド・デプロイがトリガーされる | `config.yml` backend, `functions/auth/`, `_headers` | Decap CMS GitHub backend + OAuth |
+| FR-16 | コンテンツ削除: CMSから記事・固定ページを削除でき、リポジトリから該当ファイルが除去される | `config.yml` create: true, Decap CMS | GitHub API経由のファイル削除 |
+| FR-17 | リッチテキスト編集: マークダウンエディタで書式設定・画像挿入・リンク・コードブロック等の操作ができる | `config.yml` body widget: markdown | Decap CMS Slate-based editor |
+| FR-18 | ライブプレビュー: CMSエディタでリアルタイムプレビューが本番サイト相当のスタイルで表示される | `admin/index.html` CMS.registerPreviewStyle() | Decap CMS split-pane preview |
+| FR-19 | メディアライブラリ: アップロード済み画像の一覧表示・選択挿入・削除ができる | `config.yml` media_folder, `admin/index.html` CSS | Decap CMS media library |
+| FR-20 | ビルドパイプライン: 4段階の自動ビルド（EXIF正規化→記事整理→Astroビルド→画像最適化）が正常実行される | `package.json`, `scripts/`, `integrations/` | prebuild + build + postbuild |
+| FR-21 | 環境分離: staging/production環境が独立した設定で動作し、テスト環境で[STAGING]ラベルが表示される | `config.yml`, `Base.astro`, `admin/index.html` | ブランチごとの設定管理 |
 
 ### 1.2.2 各要件の詳細
 
@@ -229,6 +237,81 @@ PR履歴に基づく主要なシステム変更の記録である。
 
 記事の分類にはタグを使用する。カテゴリ機能はPR#41で廃止済みである。タグは各記事のfrontmatterに配列で定義し、`/tags/{タグ名}` で該当記事の一覧を表示する。
 
+#### FR-15 コンテンツ保存・公開
+
+CMSでの記事・固定ページの保存はブログの最も基本的な操作である。保存フローは以下の通り:
+
+```
+CMS編集画面 → 保存ボタン → Decap CMS → GitHub API (commit) → Cloudflare Pages webhook → ビルド → デプロイ
+```
+
+この操作が正常に動作するための前提条件:
+
+| 前提条件 | 検証方法 |
+|:---|:---|
+| Backend設定（name, repo, branch, base_url, auth_endpoint）が正しい | cms-config テスト |
+| OAuth認証が正常に動作する（ポップアップ経由のトークン取得） | auth-functions テスト |
+| COOP ヘッダーがOAuthポップアップをブロックしない | fuzz-validation テスト |
+| CDNスクリプトが正しく読み込まれる（`</script>`閉じタグ含む） | admin-html テスト |
+| CSP/CORS ヘッダーがGitHub APIアクセスを許可する | fuzz-validation テスト |
+
+> **注意**: バグNo.27（iPhone記事保存失敗）は、セキュリティヘッダー追加時にCMS互換性を検証しなかったことが原因。本要件のテストは保存操作の前提条件を網羅的に検証することで再発を防止する。
+
+#### FR-16 コンテンツ削除
+
+CMSから記事・固定ページを削除できる。Decap CMSでは`create: true`が設定されたコレクションに対し、エントリの削除がGitHub API経由のファイル削除として実行される。`delete`オプションが明示的に`false`に設定されていないことが条件。
+
+#### FR-17 リッチテキスト編集
+
+Decap CMSはSlate-basedのマークダウンエディタを提供し、以下の操作が可能:
+
+- インライン書式: 太字、斜体、見出し（H1〜H6）、リスト（箇条書き・番号付き）、引用
+- メディア挿入: 画像（メディアライブラリ連携）、リンク
+- コードブロック: インラインコード、コードブロック（モバイルではクラッシュ防止のため非表示: CMS-12）
+- `config.yml`の`body`フィールドが`widget: "markdown"`であることが条件
+
+#### FR-18 ライブプレビュー
+
+CMSエディタの右ペインにリアルタイムプレビューが表示される。`CMS.registerPreviewStyle()`により本番サイト相当のCSS（フォント、レイアウト、画像スタイル）がプレビューiframeに注入される。プレビューiframeの表示にはCSP `frame-ancestors 'self'`およびX-Frame-Options `SAMEORIGIN`が必要（`DENY`ではiframeがブロックされる）。
+
+#### FR-19 メディアライブラリ
+
+Decap CMSのメディアライブラリ機能により:
+- `public/images/uploads/`にアップロード済みの画像を一覧表示
+- 画像をクリックして記事に挿入
+- 不要な画像をリポジトリから削除
+- 新規画像をアップロード（FR-06と連携）
+
+#### FR-20 ビルドパイプライン
+
+4段階の自動ビルドパイプラインが`package.json`のスクリプトで定義される:
+
+| 段階 | スクリプト | 処理内容 |
+|:---|:---|:---|
+| 1. EXIF正規化 | `normalize-images.mjs` | iPhone画像のEXIF回転をピクセルデータに反映 |
+| 2. 記事整理 | `organize-posts.mjs` | 日付ベースのディレクトリ配置 + url-map.json生成 |
+| 3. Astroビルド | `astro build` | 静的HTML/CSS/JS生成 |
+| 4. 画像最適化 | `image-optimize.mjs` | 最大1200px、80%品質にリサイズ・圧縮 |
+
+`build`コマンドではビルド前にテスト（build.test.mjs以外）が自動実行され、テスト失敗時はビルドが中断される。
+
+#### FR-21 環境分離
+
+staging/production環境が独立した設定で動作する:
+
+| 項目 | production | staging |
+|:---|:---|:---|
+| URL | `https://reiwa.casa` | `https://staging.reiwa.casa` |
+| ブランチ | `main` | `staging` |
+| config.yml base_url | `https://reiwa.casa` | `https://staging.reiwa.casa` |
+| config.yml branch | `main` | `staging` |
+| OAuth App | My Blog CMS | tbiのブログ CMS (staging) |
+| [STAGING]ラベル | 非表示 | 表示 |
+
+staging環境の検知:
+- `Base.astro`: 環境変数`CF_PAGES_BRANCH`が`main`以外の場合に[STAGING]表示
+- `admin/index.html`: `hostname`が`reiwa.casa`以外の場合に[STAGING]表示
+
 ---
 
 ## 1.3. CMS管理画面要件
@@ -266,6 +349,7 @@ PR履歴に基づく主要なシステム変更の記録である。
 | NFR-02 | CDNホスティング: サイトがCDN経由で高速に配信される | `wrangler.toml`, `_routes.json` | Cloudflare Pages + Functions |
 | NFR-03 | 管理画面SEO除外: 管理画面が検索エンジンにインデックスされない | `_headers`, `admin/index.html` | `robots: noindex`, `X-Robots-Tag` |
 | NFR-04 | 日本語URL対応: 日本語タイトルの記事がそのまま日本語URLで公開される | `config.yml` | Unicode slug（`encoding: "unicode"`） |
+| NFR-05 | レスポンシブデザイン: 公開サイトおよびCMS管理画面がモバイル端末で適切に表示・操作できる | `Base.astro` CSS, `admin/index.html` CSS | viewport設定、メディアクエリ |
 
 ### 1.4.2 セキュリティ要件一覧 (SEC)
 
@@ -318,6 +402,13 @@ PR履歴に基づく主要なシステム変更の記録である。
 | FR-12 | CMS認証 | auth-functions, build | 2.3章 #1〜#10, 2.5章 #26 | M-06, M-07, M-08 | 充足 |
 | FR-13 | 画像キャプション | rehype-image-caption, build | 2.2章 #1〜#8, 2.5章 #31 | M-05, M-02 | 充足 |
 | FR-14 | 固定ページ管理 | cms-config, content-validation, build, E2E site | 2.4章 #28〜#39, 2.1.2章 #16〜#23, 2.1.3章 #24〜#34, 2.1.4章 #35〜#40, 2.5章 #32〜#44, E-20, E-21 | M-03, M-04, M-01, M-02, M-11, DOM検証 | 充足 |
+| FR-15 | コンテンツ保存・公開 | cms-config, auth-functions, admin-html, fuzz-validation | 2.4章 #1〜#5, #45, 2.3章 #1〜#10, 2.6.1章 #6,#7, 2.7.12章 #1〜#5 | M-03, M-06, M-07, M-02 | 充足 |
+| FR-16 | コンテンツ削除 | cms-config | 2.4章 #13, #46 | M-03 | 充足 |
+| FR-17 | リッチテキスト編集 | cms-config | 2.4章 #26b, #33b | M-03 | 充足 |
+| FR-18 | ライブプレビュー | admin-html | 2.6.11章 #1〜#5, 2.6.1章 #7 | M-02 | 充足 |
+| FR-19 | メディアライブラリ | cms-config, admin-html | 2.4章 #6,#7, #47, 2.6.3章 #8,#10 | M-03, M-02 | 充足 |
+| FR-20 | ビルドパイプライン | build | 2.5章 #1〜#8, #51 | M-01, M-02, M-12 | 充足 |
+| FR-21 | 環境分離 | cms-config, admin-html | 2.4章 #3,#5, 2.6.1章 #8 | M-03, M-02 | 充足 |
 
 ### 1.5.2 CMS管理画面要件 (CMS) → テストケース
 
@@ -348,6 +439,7 @@ PR履歴に基づく主要なシステム変更の記録である。
 | NFR-02 | Cloudflare Pagesホスティング | build | 2.5章 #6,#7,#8 | M-01 | 充足 |
 | NFR-03 | 管理画面SEO除外 | admin-html | 2.6.1章 #3 | M-02 | 充足 |
 | NFR-04 | 日本語URL | cms-config | 2.4章 #9,#10 | M-03 | 充足 |
+| NFR-05 | レスポンシブデザイン | admin-html, build | 2.6.3章 #1〜#10, 2.5章 #19 | M-02 | 充足 |
 
 ### 1.5.4 セキュリティ要件 (SEC) → テストケース
 
@@ -374,7 +466,7 @@ PR履歴に基づく主要なシステム変更の記録である。
 | SEC-19 | 入力値バリデーション強化 | fuzz-validation | 2.7.1〜2.7.6章 | M-02, M-09 | 充足 |
 | SEC-20 | ファズテスト必須化 | fuzz-validation | 2.7章全体 | M-09 | 充足 |
 
-**充足状況: 全要件（FR-01〜FR-14, CMS-01〜CMS-16, NFR-01〜NFR-04, SEC-01〜SEC-20）がテストで充足されている。未テスト要件なし。**
+**充足状況: 全要件（FR-01〜FR-21, CMS-01〜CMS-16, NFR-01〜NFR-05, SEC-01〜SEC-20）がテストで充足されている。未テスト要件なし。**
 
 ---
 
@@ -481,7 +573,7 @@ my-blog/
 | ホスティング | Cloudflare Pages | - | 静的配信 + Functions |
 | 認証 | GitHub OAuth App | - | CMS管理者認証 |
 | 画像処理 | sharp | v0.34.5 | 画像圧縮・回転・リサイズ |
-| テスト（単体・統合） | Vitest | v4.0.18 | 単体テスト・統合テスト（247テスト） |
+| テスト（単体・統合） | Vitest | v4.0.18 | 単体テスト・統合テスト・セキュリティ検証・基本機能保護（491テスト） |
 | テスト（E2E） | Playwright | v1.58.2 | ブラウザE2Eテスト（PC/iPad/iPhone 240テスト） |
 | コンテンツ | Markdown | - | frontmatter形式 |
 
@@ -1506,11 +1598,11 @@ git push origin staging
 
 ---
 
-## 4.7. 品質向上策・定期セキュリティ診断
+## 4.7. 品質向上策・基本機能保護・定期セキュリティ診断
 
 第三者セキュリティ診断（2026年2月21日実施）で検出された問題と対策を踏まえ、再発防止のための品質向上策と定期診断の運用を定める。
 
-セキュリティ要件は第1部 1.4.2章（SEC-01〜SEC-09）として定義されている。本章では運用面での品質基準と定期診断の手順を定める。
+セキュリティ要件は第1部 1.4.2章（SEC-01〜SEC-20）として定義されている。本章では運用面での品質基準、再発防止策、定期診断の手順を定める。
 
 ### 4.7.1 品質向上策
 
@@ -1534,7 +1626,52 @@ git push origin staging
 | D-03 | テスト対象外テーブルの内容が実態と矛盾しないこと | テスト実装済みの機能が「テスト対象外」に記載されたまま放置しない |
 | D-04 | 擬似コード・シーケンス図がコードの実装と一致すること | セキュリティ修正等でコードを変更した場合はドキュメントの擬似コードも更新する |
 
-### 4.7.2 定期セキュリティ診断
+### 4.7.2 基本機能保護（再発防止策）
+
+バグNo.27（iPhone記事保存失敗）の教訓に基づき、ブログの基本機能（コンテンツCRUD）が破壊されることを防止するための運用ルールを定める。
+
+#### 基本機能一覧（破壊禁止）
+
+以下はブログの「あるべき基本機能」であり、いかなる変更でも破壊してはならない:
+
+| 要件ID | 基本機能 | 破壊時の影響 |
+|:---|:---|:---|
+| FR-15 | コンテンツ保存・公開 | 記事が書けない（致命的） |
+| FR-16 | コンテンツ削除 | 不要記事を削除できない |
+| FR-17 | リッチテキスト編集 | マークダウンエディタが使えない |
+| FR-18 | ライブプレビュー | プレビューが表示されない |
+| FR-19 | メディアライブラリ | 画像の管理ができない |
+| FR-12 | CMS認証 | ログインできない（致命的） |
+
+#### CMS互換性影響評価（必須チェック）
+
+以下の変更を行う際は、CMS基本機能への影響を必ず評価する:
+
+| 変更対象 | CMS影響リスク | 確認事項 |
+|:---|:---|:---|
+| `_headers`（セキュリティヘッダー） | **高** | COOP: OAuth popupをブロックしないか。X-Frame-Options/CSP frame-ancestors: プレビューiframeをブロックしないか。CSP connect-src: GitHub APIアクセスを許可するか |
+| `admin/index.html`（HTML構造） | **高** | `<script>`タグの閉じタグが正しいか。CDNスクリプトが後続ブロックを飲み込まないか |
+| `config.yml`（CMS設定） | **中** | backend設定（name, repo, branch, base_url, auth_endpoint）が正しいか。コレクション設定が有効か |
+| `functions/auth/`（OAuth） | **高** | 認証フロー全体が正常に動作するか。postMessageハンドシェイクが成功するか |
+| CDN外部スクリプト更新 | **高** | SRIハッシュが正しいか。`</script>`閉じタグが維持されているか |
+
+#### 再発防止テスト要件
+
+バグNo.27の根本原因（セキュリティ強化がCMS基本機能を破壊）に対する自動テスト:
+
+| テスト | 検証内容 | テストファイル |
+|:---|:---|:---|
+| CDNスクリプト閉じタグ | `<script src="...cdn..."></script>`の形式を検証 | admin-html |
+| プレビュースタイル独立性 | `CMS.registerPreviewStyle`が独立`<script>`ブロック内にある | admin-html |
+| COOP管理画面オーバーライド | `/admin/*`がsame-origin-allow-popups | fuzz-validation |
+| X-Frame-Options管理画面オーバーライド | `/admin/*`がSAMEORIGIN | fuzz-validation |
+| CSP frame-ancestors | `/admin/*`にframe-ancestors 'self' | fuzz-validation |
+| Backend設定完全性 | 保存に必要な全フィールドが設定されている | cms-config |
+| コレクション削除許可 | deleteが明示的に無効化されていない | cms-config |
+| Bodyウィジェット | markdownウィジェットが設定されている | cms-config |
+| ビルドパイプライン完全性 | 4段階パイプラインが正しく定義されている | build |
+
+### 4.7.3 定期セキュリティ診断
 
 | 項目 | 内容 |
 |:---|:---|
@@ -1545,4 +1682,4 @@ git push origin staging
 
 ---
 
-**最終更新**: 2026年2月21日（v1.21）
+**最終更新**: 2026年2月21日（v1.22）
