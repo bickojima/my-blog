@@ -1,8 +1,8 @@
 backend:
   name: github
   repo: bickojima/my-blog
-  branch: staging
-  base_url: https://staging.reiwa.casa
+  branch: main
+  base_url: https://reiwa.casa
   auth_endpoint: /auth
 
 # 画像アップロード先（Astroのpublic配下に置く）
