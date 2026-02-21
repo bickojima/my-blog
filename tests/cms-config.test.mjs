@@ -5,7 +5,12 @@ import yaml from 'js-yaml';
 
 const configPath = join(process.cwd(), 'public/admin/config.yml');
 const configRaw = readFileSync(configPath, 'utf-8');
-const config = yaml.load(configRaw);
+let config;
+try {
+  config = yaml.load(configRaw);
+} catch (e) {
+  throw new Error(`config.yml のYAML解析に失敗: ${e.message}`);
+}
 
 const docPath = join(process.cwd(), 'docs/DOCUMENTATION.md');
 const docContent = readFileSync(docPath, 'utf-8');

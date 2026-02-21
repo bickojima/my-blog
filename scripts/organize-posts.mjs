@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import matter from 'gray-matter';
 
 const POSTS_DIR = 'src/content/posts';
 
@@ -19,18 +20,25 @@ function findMdFiles(dir) {
 
 function extractFrontmatter(filePath) {
   const content = fs.readFileSync(filePath, 'utf-8');
-  const dateMatch = content.match(/^date:\s*(\d{4})-(\d{2})-(\d{2})/m);
-  const titleMatch = content.match(/^title:\s*(.+)/m);
-  if (dateMatch && titleMatch) {
+  try {
+    const { data } = matter(content);
+    if (!data.date || !data.title) return null;
+    const dateStr = data.date instanceof Date
+      ? data.date.toISOString().split('T')[0]
+      : String(data.date);
+    const dateMatch = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (!dateMatch) return null;
     return {
       year: dateMatch[1],
       month: dateMatch[2],
       day: dateMatch[3],
       date: `${dateMatch[1]}-${dateMatch[2]}-${dateMatch[3]}`,
-      title: titleMatch[1].trim().replace(/^["']|["']$/g, ''),
+      title: String(data.title),
     };
+  } catch {
+    console.warn(`[organize-posts] Failed to parse frontmatter: ${filePath}`);
+    return null;
   }
-  return null;
 }
 
 function removeEmptyDirs(dir) {

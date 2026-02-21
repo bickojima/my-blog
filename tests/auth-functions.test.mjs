@@ -25,7 +25,7 @@ describe('OAuth認証: /auth/index.js（認証開始）', () => {
     const location = response.headers.get('location');
     expect(location).toContain('github.com/login/oauth/authorize');
     expect(location).toContain('client_id=test-client-id');
-    expect(location).toContain('scope=repo%2Cuser');
+    expect(location).toContain('scope=public_repo%2Cread%3Auser');
   });
 
   it('リダイレクトURIにコールバックパスが含まれる', async () => {
