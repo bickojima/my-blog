@@ -30,6 +30,7 @@
 | 1.23 | 2026-02-21 | バグNo.28修正: Cloudflare Pages `_headers`ヘッダー重複送信問題。`/*`と`/admin/*`で同名ヘッダーがAppendされブラウザが最厳格値を採用する問題を解消。COOP/CORP/X-Frame-Optionsを`/*`から削除し`/admin/*`のみに設定。ヘッダー重複検知テスト3件追加、既存ヘッダーテスト4件修正。全496テスト |
 | 1.24 | 2026-02-21 | バグNo.29修正: CSP `connect-src`に`blob:`不足による画像付き記事保存失敗。Decap CMSは画像保存時に`fetch(blobURL)`を実行するため`connect-src`に`blob:`が必要。再発防止テスト2件追加。全498テスト |
 | 1.25 | 2026-02-21 | E2E CRUDテスト追加（E-22〜E-24: 記事作成・編集・削除）、アクセシビリティテスト追加（E-25〜E-27: axe-core WCAG 2.1 AA検証）、NFR-06（アクセシビリティ）要件追加。色コントラスト比修正（#888→#595959、#999→#767676、#aaa→#767676、#ccc→#767676）、見出し階層修正（h3→h2）。E2E 291テスト、全498+291=789テスト |
+| 1.26 | 2026-02-21 | CMS実操作E2Eテスト追加（E-28〜E-35: フォーム入力→保存→API検証、UIインタラクション、モバイル固有動作、削除ボタン状態変化）。OAuthモック＋GitHub APIモックをCMS E2Eテストの必須インフラとして規定。E2E 375テスト（367実行+8スキップ）、全498+367=865テスト |
 
 ## システム変更履歴
 
@@ -406,8 +407,8 @@ staging環境の検知:
 | FR-12 | CMS認証 | auth-functions, build | 2.3章 #1〜#10, 2.5章 #26 | M-06, M-07, M-08 | 充足 |
 | FR-13 | 画像キャプション | rehype-image-caption, build | 2.2章 #1〜#8, 2.5章 #31 | M-05, M-02 | 充足 |
 | FR-14 | 固定ページ管理 | cms-config, content-validation, build, E2E site | 2.4章 #28〜#39, 2.1.2章 #16〜#23, 2.1.3章 #24〜#34, 2.1.4章 #35〜#40, 2.5章 #32〜#44, E-20, E-21 | M-03, M-04, M-01, M-02, M-11, DOM検証 | 充足 |
-| FR-15 | コンテンツ保存・公開 | cms-config, auth-functions, admin-html, fuzz-validation | 2.4章 #1〜#5, #45, 2.3章 #1〜#10, 2.6.1章 #6,#7, 2.7.12章 #1〜#5 | M-03, M-06, M-07, M-02 | 充足 |
-| FR-16 | コンテンツ削除 | cms-config | 2.4章 #13, #46 | M-03 | 充足 |
+| FR-15 | コンテンツ保存・公開 | cms-config, auth-functions, admin-html, fuzz-validation, E2E cms-operations | 2.4章 #1〜#5, #45, 2.3章 #1〜#10, 2.6.1章 #6,#7, 2.7.12章 #1〜#5, E-28, E-29 | M-03, M-06, M-07, M-02, M-11 | 充足 |
+| FR-16 | コンテンツ削除 | cms-config, E2E cms-operations | 2.4章 #13, #46, E-35 | M-03, M-11 | 充足 |
 | FR-17 | リッチテキスト編集 | cms-config | 2.4章 #26b, #33b | M-03 | 充足 |
 | FR-18 | ライブプレビュー | admin-html | 2.6.11章 #1〜#5, 2.6.1章 #7 | M-02 | 充足 |
 | FR-19 | メディアライブラリ | cms-config, admin-html | 2.4章 #6,#7, #47, 2.6.3章 #8,#10 | M-03, M-02 | 充足 |
@@ -421,15 +422,15 @@ staging環境の検知:
 | CMS-01 | モバイルレスポンシブ | admin-html | 2.6.3章 #1〜#10 | M-02 | 充足 |
 | CMS-02 | iOS自動ズーム防止 | admin-html | 2.6.5章 #1 | M-02 | 充足 |
 | CMS-03 | pull-to-refresh無効化 | admin-html | 2.6.5章 #3,#4 | M-02 | 充足 |
-| CMS-04 | 削除ボタンラベル区別 | admin-html | 2.6.6章 #3,#4,#5 | M-02 | 充足 |
-| CMS-05 | 一覧表示改善 | admin-html | 2.6.2章 #3, 2.6.6章 #2, 2.6.6章 #10 | M-02 | 充足 |
-| CMS-06 | エディタ公開URL表示 | admin-html | 2.6.6章 #6,#7 | M-02 | 充足 |
+| CMS-04 | 削除ボタンラベル区別 | admin-html, E2E cms-operations | 2.6.6章 #3,#4,#5, E-35 | M-02, M-11 | 充足 |
+| CMS-05 | 一覧表示改善 | admin-html, E2E cms-operations | 2.6.2章 #3, 2.6.6章 #2, 2.6.6章 #10, E-31 | M-02, M-11 | 充足 |
+| CMS-06 | エディタ公開URL表示 | admin-html, E2E cms-operations | 2.6.6章 #6,#7, E-30 | M-02, M-11 | 充足 |
 | CMS-07 | メディアライブラリ | admin-html | 2.6.3章 #8,#10 | M-02 | 充足 |
 | CMS-08 | 保存ボタン常時表示 | admin-html | 2.6.3章 #4,#5, 2.6.8章 #1,#2 | M-02 | 充足 |
-| CMS-09 | ドロップダウン重なり防止 | admin-html | 2.6.9章 #1〜#3, 2.6.10章 #1〜#8 | M-02 | 充足 |
-| CMS-10 | 公開URLバー自動制御 | admin-html, E2E site | 2.6.6章 #6,#7, E-15 | M-02, DOM検証 | 充足 |
-| CMS-11 | サイトリンク表示（環境動的） | admin-html | 2.6.6章 #1b | M-02 | 充足 |
-| CMS-12 | Slate codeblockクラッシュ対策 | admin-html | 2.6.5b章 #1,#2,#3, 2.6.5章 #5 | M-02 | 充足 |
+| CMS-09 | ドロップダウン重なり防止 | admin-html, E2E cms-operations | 2.6.9章 #1〜#3, 2.6.10章 #1〜#8, E-34 | M-02, M-11 | 充足 |
+| CMS-10 | 公開URLバー自動制御 | admin-html, E2E cms-operations | 2.6.6章 #6,#7, E-15, E-30, E-32 | M-02, DOM検証, M-11 | 充足 |
+| CMS-11 | サイトリンク表示（環境動的） | admin-html, E2E cms-operations | 2.6.6章 #1b, E-30 | M-02, M-11 | 充足 |
+| CMS-12 | Slate codeblockクラッシュ対策 | admin-html, E2E cms-operations | 2.6.5b章 #1,#2,#3, 2.6.5章 #5, E-34 | M-02, M-11 | 充足 |
 | CMS-13 | 固定ページCMS編集 | cms-config, content-validation | 2.4章 #28〜#39, 2.1.2章 #16〜#23 | M-03, M-04 | 充足 |
 | CMS-14 | コレクション表示順序 | cms-config | 2.4章 #11b | M-03 | 充足 |
 | CMS-15 | プレビュースタイル本番再現 | admin-html | 2.6.11章 #1〜#5 | M-02 | 充足 |
@@ -443,7 +444,7 @@ staging環境の検知:
 | NFR-02 | Cloudflare Pagesホスティング | build | 2.5章 #6,#7,#8 | M-01 | 充足 |
 | NFR-03 | 管理画面SEO除外 | admin-html | 2.6.1章 #3 | M-02 | 充足 |
 | NFR-04 | 日本語URL | cms-config | 2.4章 #9,#10 | M-03 | 充足 |
-| NFR-05 | レスポンシブデザイン | admin-html, build | 2.6.3章 #1〜#10, 2.5章 #19 | M-02 | 充足 |
+| NFR-05 | レスポンシブデザイン | admin-html, build, E2E cms-operations | 2.6.3章 #1〜#10, 2.5章 #19, E-34 | M-02, M-11 | 充足 |
 | NFR-06 | アクセシビリティ（WCAG 2.1 AA） | E2E accessibility | E-25〜E-27 | M-11（axe-core） | 充足 |
 
 ### 1.5.4 セキュリティ要件 (SEC) → テストケース
@@ -1693,4 +1694,4 @@ git push origin staging
 
 ---
 
-**最終更新**: 2026年2月21日（v1.25）
+**最終更新**: 2026年2月21日（v1.26）
