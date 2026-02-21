@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
+import { readFileSync } from 'node:fs';
 import { onRequest as authIndex } from '../functions/auth/index.js';
 import { onRequest as authCallback } from '../functions/auth/callback.js';
 
@@ -211,5 +212,38 @@ describe('OAuth認証: /auth/callback.js（コールバック処理）', () => {
     } finally {
       globalThis.fetch = originalFetch;
     }
+  });
+});
+
+describe('セキュリティ検証（functions/auth/）', () => {
+  const callbackSource = readFileSync('functions/auth/callback.js', 'utf-8');
+  const indexSource = readFileSync('functions/auth/index.js', 'utf-8');
+
+  it('escapeForScript関数でテンプレート変数をエスケープしている（SEC-02）', () => {
+    expect(callbackSource).toContain('function escapeForScript');
+    // access_tokenとoriginの両方がエスケープされていること
+    expect(callbackSource).toContain('escapeForScript(data.access_token)');
+    expect(callbackSource).toContain('escapeForScript(url.origin)');
+  });
+
+  it('postMessageの送信先がワイルドカード"*"でない（SEC-06）', () => {
+    // postMessageの第2引数に"*"を使用していないこと
+    expect(callbackSource).not.toMatch(/postMessage\([^)]+,\s*["']\*["']\s*\)/);
+    // expectedOriginを使用していること
+    expect(callbackSource).toContain('postMessage("authorizing:github", expectedOrigin)');
+  });
+
+  it('postMessage受信時にevent.originを検証している（SEC-06）', () => {
+    expect(callbackSource).toContain('event.origin !== expectedOrigin');
+  });
+
+  it('OAuthスコープが最小権限である（SEC-07）', () => {
+    // public_repo（公開リポジトリのみ）であること（repoは全リポジトリアクセス）
+    expect(indexSource).toContain('public_repo');
+    expect(indexSource).not.toMatch(/['"]repo['"]/);
+    expect(indexSource).not.toMatch(/scope.*[,\s]repo[,\s'"]/);
+    // read:user（読取のみ）であること（userは書込含む）
+    expect(indexSource).toContain('read:user');
+    expect(indexSource).not.toMatch(/scope.*[,\s]user['"]/);
   });
 });

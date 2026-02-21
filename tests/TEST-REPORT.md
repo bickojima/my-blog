@@ -19,6 +19,7 @@
 | 1.12 | 2026-02-21 | 固定ページ下書きバッジテスト更新（#10説明更新）、Decap CMS v3.10.0互換性テスト追加（sortable_fields形式検証）、orderデフォルトソート昇順テスト追加（245テスト） |
 | 1.13 | 2026-02-21 | CMS-16要件追加、要件トレーサビリティ検証テスト2件追加（#42,#43）、テスト基盤変更履歴補完（247テスト） |
 | 1.14 | 2026-02-21 | 第三者セキュリティ診断対応: OAuthスコープテスト更新（public_repo,read:user）、admin-htmlテスト更新（target属性DOM API対応）、テスト対象外からurl-map.json削除（テスト実装済みのため矛盾解消）、終了基準テスト件数更新（247+240=487） |
+| 1.15 | 2026-02-21 | セキュリティ検証テスト追加: admin-html 2.6.12章（9件）、auth-functions 2.3.1章（4件）。SEC-01〜SEC-09要件の充足テスト。終了基準テスト件数更新（260+240=500） |
 
 ## テスト基盤の変更履歴
 
@@ -32,6 +33,7 @@
 | 2026-02-21 | **テスト動的化・条件分岐網羅**: ハードコードコンテンツ排除（ソースから動的取得）、ヘッダーナビ3分岐テンプレートロジック・JS制御テスト11件、固定ページ境界値・一意性テスト6件追加。計242 Vitest + 237 E2E = 479テスト | - |
 | 2026-02-21 | **コードリファクタリング・テスト追加**: 固定ページ番号バッジフォーマットテスト1件追加（admin-html 67→68件）。image-optimize.mjs writeFile整理、テスト変数重複排除。計243 Vitest + 237 E2E = 480テスト | - |
 | 2026-02-21 | **固定ページ一覧改善・品質向上**: 下書きバッジテスト更新、sortable_fields互換性テスト追加（#40）、orderデフォルトソート昇順テスト追加（#41）、config.ymlスキーマエラー検知E2Eテスト追加（E-07）、要件トレーサビリティ検証テスト追加（#42,#43）。CMS-16要件追加。計247 Vitest + 240 E2E = 487テスト | - |
+| 2026-02-21 | **セキュリティ検証テスト追加**: admin-html セキュリティ検証9件（2.6.12章: SEC-01, SEC-03〜SEC-05, SEC-08, SEC-09, Q-01, Q-02）、auth-functions セキュリティ検証4件（2.3.1章: SEC-02, SEC-06, SEC-07）追加。計260 Vitest + 240 E2E = 500テスト | - |
 
 ---
 
@@ -61,7 +63,7 @@
 
 ### 第4部 テスト実行
 
-4.1. [動的操作テスト（E2E）の検討](#41-動的操作テストe2eの検討)
+4.1. [動的操作テスト（E2E）](#41-動的操作テストe2e)
 4.2. [実行手順](#42-実行手順)
 4.3. [テスト実行結果](#43-テスト実行結果)
 
@@ -425,7 +427,7 @@ admin-html.test.mjs              -     ●     -     -     -     -     -     -  
 
 | No. | 基準 |
 | :--- | :--- |
-| 1 | 全テストケース（Vitest 247件 + E2E 240件 = 487件）がPASSであること |
+| 1 | 全テストケース（Vitest 260件 + E2E 240件 = 500件）がPASSであること |
 | 2 | `npm run build` が正常に完了すること |
 | 3 | 要件トレーサビリティマトリクス（docs/DOCUMENTATION.md 1.5章）において全要件が「充足」であること |
 
@@ -538,7 +540,7 @@ Base.astroのテンプレートロジック（0/1/2+件分岐）とJS制御を�
 
 ---
 
-## 2.3. OAuth認証関数 (`auth-functions.test.mjs`) — 10件
+## 2.3. OAuth認証関数 (`auth-functions.test.mjs`) — 14件
 
 Cloudflare Functions の認証エンドポイントに対し、モックリクエストを入力してレスポンスを検証する。
 
@@ -554,6 +556,15 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 | 8 | GitHub APIエラー時に400エラーを返す | /auth/callback | M-06, M-07, M-08 | fetchモックがエラーを返した際にステータス400 |
 | 9 | 成功時にDecap CMSハンドシェイクHTMLを返す | /auth/callback | M-06, M-07 | ステータス200、HTMLにpostMessageハンドシェイクコードが含まれる |
 | 10 | GitHubへのリクエストパラメータが正しい | /auth/callback | M-07 | fetchモックに渡されたURLとbodyが仕様通りである |
+
+### 2.3.1 セキュリティ検証（4件）
+
+| No. | テストケース | 検証対象 | テスト手法 | 期待結果 |
+| :--- | :--- | :--- | :--- | :--- |
+| 1 | escapeForScript関数でテンプレート変数をエスケープしている（SEC-02） | callback.js | M-02 | `escapeForScript`関数が存在し、`access_token`と`origin`の両方をエスケープしている |
+| 2 | postMessageの送信先がワイルドカード"*"でない（SEC-06） | callback.js | M-02, M-09 | `postMessage`の第2引数に`"*"`が使用されず、`expectedOrigin`が使用されている |
+| 3 | postMessage受信時にevent.originを検証している（SEC-06） | callback.js | M-02 | `event.origin !== expectedOrigin`による検証が含まれる |
+| 4 | OAuthスコープが最小権限である（SEC-07） | index.js | M-02, M-09 | `public_repo`と`read:user`が使用され、`repo`単体や`user`単体が使用されていない |
 
 ---
 
@@ -669,7 +680,7 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 
 ---
 
-## 2.6. 管理画面HTML検証 (`admin-html.test.mjs`) — 68件
+## 2.6. 管理画面HTML検証 (`admin-html.test.mjs`) — 77件
 
 `public/admin/index.html`のHTML/CSS/JavaScript内容を文字列パターンマッチングで検証する。
 
@@ -801,6 +812,20 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 | 4 | 画像スタイル（border-radius, margin）が設定されている | M-02 | `border-radius: 4px`と`margin: 1rem 0`が含まれる |
 | 5 | コードブロックスタイルが設定されている | M-02 | `background: #f5f5f5`が含まれる |
 
+### 2.6.12 セキュリティ検証（9件）
+
+| No. | テストケース | テスト手法 | 期待結果 |
+| :--- | :--- | :--- | :--- |
+| 1 | innerHTML/outerHTMLを使用していない（SEC-01） | M-02, M-09 | scriptブロック内に`innerHTML`/`outerHTML`が含まれない |
+| 2 | CDN外部スクリプトのバージョンが正確に固定されている（SEC-03） | M-02 | unpkg.comのURLに`^`/`~`が含まれない |
+| 3 | target="_blank"リンクにrel="noopener"が付与されている（SEC-04） | M-02 | target="_blank"の数とrel="noopener"の数が一致する |
+| 4 | eval()/Function()/document.write()を使用していない（SEC-05） | M-02, M-09 | scriptブロック内に`eval(`/`new Function(`/`document.write(`が含まれない |
+| 5 | console.logが本番コードに含まれていない（SEC-09） | M-02, M-09 | scriptブロック内に`console.log(`が含まれない（console.warnはエラーハンドリング用に許可） |
+| 6 | ハードコードされたサイトURLが含まれていない（SEC-08） | M-02, M-09 | scriptブロック内に`reiwa.casa`が含まれない |
+| 7 | Decap CMSのバージョンが正確に指定されている（SEC-03） | M-02 | `decap-cms@X.Y.Z`形式（^/~なし）でバージョンが指定されている |
+| 8 | strictモードが有効である（Q-02） | M-02 | `'use strict'`が含まれる |
+| 9 | var宣言が使用されていない（Q-01） | M-02, M-09 | scriptブロック内に`var `宣言が含まれない |
+
 ---
 
 # 第3部 要件トレーサビリティ
@@ -811,7 +836,7 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 
 要件トレーサビリティマトリクスは **docs/DOCUMENTATION.md 1.5章** に移動した。要件定義と同一ファイルで管理することで、要件追加時のトレース漏れを防止する。
 
-現在の充足状況: **全要件（FR-01〜FR-14, CMS-01〜CMS-16, NFR-01〜NFR-04）がテストで充足されている。未テスト要件なし。**
+現在の充足状況: **全要件（FR-01〜FR-14, CMS-01〜CMS-16, NFR-01〜NFR-04, SEC-01〜SEC-09）がテストで充足されている。未テスト要件なし。**
 
 ---
 
@@ -982,12 +1007,12 @@ npm run build
 | テストファイル | テスト数 | 結果 | 実行時間 |
 | :--- | :--- | :--- | :--- |
 | `cms-config.test.mjs` | 44 | PASS | 4ms |
-| `admin-html.test.mjs` | 68 | PASS | 6ms |
+| `admin-html.test.mjs` | 77 | PASS | 6ms |
 | `rehype-image-caption.test.mjs` | 8 | PASS | 2ms |
-| `auth-functions.test.mjs` | 10 | PASS | 29ms |
-| `content-validation.test.mjs` | 67 | PASS | 24ms |
-| `build.test.mjs` | 50 | PASS | 1521ms |
-| **合計** | **247** | **全PASS** | **1.67s** |
+| `auth-functions.test.mjs` | 14 | PASS | 26ms |
+| `content-validation.test.mjs` | 67 | PASS | 45ms |
+| `build.test.mjs` | 50 | PASS | 1558ms |
+| **合計** | **260** | **全PASS** | **1.72s** |
 
 ### 4.3.3 E2Eテスト最新実行結果（Playwright）
 
