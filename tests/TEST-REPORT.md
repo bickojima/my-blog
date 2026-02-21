@@ -26,6 +26,7 @@
 | 1.19 | 2026-02-21 | 機能観点の要件定義対応: FR-15〜FR-21, NFR-05要件追加。cms-config基本機能保護テスト5件追加（2.4.1章）、build パイプライン検証1件追加（2.5.2章）、admin-html環境分離検証1件追加（2.6.13章）。終了基準テスト件数更新（491+240=731） |
 | 1.20 | 2026-02-21 | バグ#28（Cloudflare Pages `_headers`ヘッダー重複送信）修正対応: build.test.mjsセキュリティヘッダー検証を5件→7件に再構成＋重複防止検証2件追加（2.5.3章）。fuzz-validationヘッダーテスト4件修正＋1件追加（2.7.8章、2.7.12章）。終了基準テスト件数更新（496+240=736） |
 | 1.21 | 2026-02-21 | バグ#29（CSP connect-src blob:不足による画像付き記事保存失敗）修正対応: build.test.mjs CSP connect-src blob:検証1件追加（2.5.1章 #8）、fuzz-validation CSP connect-src blob:検証1件追加（2.7.12章）。終了基準テスト件数更新（498+240=738） |
+| 1.22 | 2026-02-21 | E2E CRUDテスト追加（E-22〜E-24: cms-crud.spec.ts 11テスト×3デバイス=33テスト）、アクセシビリティテスト追加（E-25〜E-27: accessibility.spec.ts 6テスト×3デバイス=18テスト）。色コントラスト比修正、見出し階層修正。NFR-06要件追加。終了基準テスト件数更新（498+291=789） |
 
 ## テスト基盤の変更履歴
 
@@ -44,6 +45,7 @@
 | 2026-02-21 | **機能観点の要件定義・基本機能保護テスト追加**: cms-config基本機能保護5件（2.4.1章: Backend完全性/削除許可/Markdown編集/メディアライブラリ）、buildパイプライン検証1件（2.5.2章）、admin-html環境分離検証1件（2.6.13章）。FR-15〜FR-21/NFR-05対応。計491 Vitest + 240 E2E = 731テスト | - |
 | 2026-02-21 | **バグ#28修正・ヘッダー重複防止テスト追加**: Cloudflare Pages `_headers`重複送信問題修正。build.test.mjsセキュリティヘッダー検証を再構成（5→7件＋重複防止2件）、fuzz-validationヘッダーテスト修正＋1件追加。計496 Vitest + 240 E2E = 736テスト | - |
 | 2026-02-21 | **バグ#29修正・CSP connect-src blob:テスト追加**: CSP `connect-src`に`blob:`不足による画像付き記事保存失敗を修正。build.test.mjs CSP connect-src blob:検証1件追加、fuzz-validation connect-src blob:検証1件追加。計498 Vitest + 240 E2E = 738テスト | - |
+| 2026-02-21 | **E2E CRUDテスト・アクセシビリティテスト追加**: cms-crud.spec.ts新規作成（E-22〜E-24: 記事作成・編集・削除 11テスト）、accessibility.spec.ts新規作成（E-25〜E-27: axe-core WCAG 2.1 AA検証 6テスト）、@axe-core/playwright導入。色コントラスト比修正（WCAG AA 4.5:1準拠）、見出し階層修正。計498 Vitest + 291 E2E = 789テスト | - |
 
 ---
 
@@ -437,7 +439,7 @@ admin-html.test.mjs              -     ●     -     -     -     -     -     -  
 
 | No. | 基準 |
 | :--- | :--- |
-| 1 | 全テストケース（Vitest 498件 + E2E 240件 = 738件）がPASSであること |
+| 1 | 全テストケース（Vitest 498件 + E2E 291件 = 789件）がPASSであること |
 | 2 | `npm run build` が正常に完了すること |
 | 3 | 要件トレーサビリティマトリクス（docs/DOCUMENTATION.md 1.5章）において全要件が「充足」であること |
 
@@ -1110,9 +1112,29 @@ OAuth認証はGitHub実環境が必要なため、postMessage APIによるシミ
 | E-18 | EXIF画像処理・アップロード | Canvas EXIF正規化、HEIC制限accept属性、画像プレビューCSS（object-fit、max-height） | 構造検証 |
 | E-19 | 削除ボタン動作・メディアライブラリ | 選択解除ラベル・CSS、完全削除ラベル・CSS、無効化ロジック（borderColor判定）、disabled状態CSS | 構造検証 |
 
+#### CMS CRUDテスト (`tests/e2e/cms-crud.spec.ts`)
+
+GitHub APIをモックし、記事の作成・編集・削除の一連のCRUD操作を実際にUI上で実行・検証する。実リポジトリへの変更は一切発生しない。
+
+| No. | テストケース | 検証内容 | テスト手法 |
+| :--- | :--- | :--- | :--- |
+| E-22 | 記事作成（CRUD: Create） | 新規記事画面遷移、タイトル入力、本文入力（Slateエディタ）、ハッシュルート正常遷移 | モック/フォーム操作 |
+| E-23 | 記事編集（CRUD: Update） | 編集画面遷移、フォーム要素存在、タイトル編集可能、本文エディタ表示 | モック/フォーム操作 |
+| E-24 | 記事削除（CRUD: Delete） | 削除ボタン存在、コレクション一覧戻り、削除機能HTML実装 | モック/動作検証 |
+
+#### アクセシビリティテスト (`tests/e2e/accessibility.spec.ts`)
+
+axe-coreエンジン（@axe-core/playwright）を使用してWCAG 2.1 Level AA準拠を自動検証する。
+
+| No. | テストケース | 検証内容 | テスト手法 |
+| :--- | :--- | :--- | :--- |
+| E-25 | トップページ・記事ページのアクセシビリティ | トップページと記事詳細ページにcritical/seriousなa11y違反がないこと | axe-core WCAG 2.1 AA |
+| E-26 | 固定ページ・ナビゲーションのアクセシビリティ | 固定ページのa11y違反なし、画像alt属性、見出し階層（h1→h2スキップなし） | axe-core WCAG 2.1 AA + DOM検証 |
+| E-27 | CMS管理画面のアクセシビリティ | CMS管理画面にcriticalなa11y違反がないこと（サードパーティCMSのためcriticalのみ） | axe-core WCAG 2.1 AA |
+
 ### 4.1.4 デバイス別テスト
 
-全テストケースを以下の3デバイスで実行する（合計240テスト）。
+全テストケースを以下の3デバイスで実行する（合計291テスト）。
 
 | デバイス | ビューポート | 用途 |
 | :--- | :--- | :--- |
@@ -1211,9 +1233,9 @@ npm run build
 
 | 項目 | 結果 |
 | :--- | :--- |
-| 実行日時 | 2026-02-21 07:21 |
+| 実行日時 | 2026-02-21 17:24 |
 | Playwright バージョン | v1.58.2 |
-| 実行時間 | 52s |
+| 実行時間 | 4.0min |
 | 合否判定 | **合格** |
 
 | テストファイル | PC | iPad | iPhone | 合計 |
@@ -1221,7 +1243,9 @@ npm run build
 | `site.spec.ts`（E-01〜E-06, E-20〜E-21） | 30 PASS | 30 PASS | 30 PASS | 90 |
 | `cms.spec.ts`（E-07〜E-12） | 12 PASS | 12 PASS | 12 PASS | 36 |
 | `cms-customizations.spec.ts`（E-13〜E-19） | 38 PASS | 38 PASS | 38 PASS | 114 |
-| **合計** | **80** | **80** | **80** | **240 全PASS** |
+| `cms-crud.spec.ts`（E-22〜E-24） | 11 PASS | 11 PASS | 11 PASS | 33 |
+| `accessibility.spec.ts`（E-25〜E-27） | 6 PASS | 6 PASS | 6 PASS | 18 |
+| **合計** | **97** | **97** | **97** | **291 全PASS** |
 
 ### 4.3.4 ビルド実行結果
 
