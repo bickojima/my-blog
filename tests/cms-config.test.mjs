@@ -5,7 +5,12 @@ import yaml from 'js-yaml';
 
 const configPath = join(process.cwd(), 'public/admin/config.yml');
 const configRaw = readFileSync(configPath, 'utf-8');
-const config = yaml.load(configRaw);
+let config;
+try {
+  config = yaml.load(configRaw);
+} catch (e) {
+  throw new Error(`config.yml のYAML解析に失敗: ${e.message}`);
+}
 
 const docPath = join(process.cwd(), 'docs/DOCUMENTATION.md');
 const docContent = readFileSync(docPath, 'utf-8');
@@ -138,10 +143,12 @@ describe('CMS設定（config.yml）の検証', () => {
           expect(slug.pattern[0]).toBe('^[a-z0-9-]+$');
         });
 
-        it('orderフィールドがnumberウィジェット', () => {
+        it('orderフィールドがnumberウィジェット（min:1で不正値を防止）', () => {
           const order = fields.find(f => f.name === 'order');
           expect(order.widget).toBe('number');
           expect(order.value_type).toBe('int');
+          expect(order.min).toBe(1);
+          expect(order.default).toBeGreaterThanOrEqual(1);
         });
 
         it('draftフィールドがbooleanウィジェットでデフォルトfalse', () => {
@@ -271,6 +278,57 @@ describe('CMS設定（config.yml）の検証', () => {
           expect(body.widget).toBe('markdown');
         });
       });
+    });
+  });
+});
+
+describe('基本機能保護テスト（FR-15〜FR-19）', () => {
+  describe('コンテンツ保存・公開の前提条件（FR-15）', () => {
+    it('backend設定に保存に必要な全フィールドが存在する', () => {
+      // 保存操作に必要な5つのフィールドが全て設定されていること
+      expect(config.backend.name).toBeDefined();
+      expect(config.backend.repo).toBeDefined();
+      expect(config.backend.branch).toBeDefined();
+      expect(config.backend.base_url).toBeDefined();
+      expect(config.backend.auth_endpoint).toBeDefined();
+    });
+  });
+
+  describe('コンテンツ削除の許可（FR-16）', () => {
+    it('全コレクションでdeleteが明示的に無効化されていない', () => {
+      // Decap CMSではcreate: trueのコレクションでdeleteはデフォルト有効
+      // delete: false が明示的に設定されていないことを検証
+      for (const collection of config.collections) {
+        expect(
+          collection.delete,
+          `${collection.name}コレクションでdelete: falseが設定されている`
+        ).not.toBe(false);
+      }
+    });
+  });
+
+  describe('リッチテキスト編集（FR-17）', () => {
+    it('postsのbodyフィールドがmarkdownウィジェットである', () => {
+      const posts = config.collections.find(c => c.name === 'posts');
+      const body = posts.fields.find(f => f.name === 'body');
+      expect(body.widget).toBe('markdown');
+    });
+
+    it('pagesのbodyフィールドがmarkdownウィジェットである', () => {
+      const pages = config.collections.find(c => c.name === 'pages');
+      const body = pages.fields.find(f => f.name === 'body');
+      expect(body.widget).toBe('markdown');
+    });
+  });
+
+  describe('メディアライブラリ設定（FR-19）', () => {
+    it('全コレクションにmedia_folderが設定されている', () => {
+      for (const collection of config.collections) {
+        expect(
+          collection.media_folder,
+          `${collection.name}コレクションにmedia_folderが未設定`
+        ).toBeDefined();
+      }
     });
   });
 });

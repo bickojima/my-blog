@@ -57,7 +57,7 @@ const firstPage = publishedPages[0];
 
 describe('ビルド検証', () => {
   beforeAll(() => {
-    execSync('npm run build', {
+    execSync('npm run build:raw', {
       cwd: process.cwd(),
       stdio: 'pipe',
       timeout: 120000,
@@ -327,11 +327,10 @@ describe('ビルド検証', () => {
         DIST_DIR,
         `posts/${firstPost.year}/${firstPost.month}/${firstPost.title}/index.html`
       );
-      if (existsSync(postHtml)) {
-        const html = readFileSync(postHtml, 'utf-8');
-        expect(html).toContain('記事一覧に戻る');
-        expect(html).toContain('href="/"');
-      }
+      expect(existsSync(postHtml), `記事HTMLが存在しない: ${postHtml}`).toBe(true);
+      const html = readFileSync(postHtml, 'utf-8');
+      expect(html).toContain('記事一覧に戻る');
+      expect(html).toContain('href="/"');
     });
   });
 
@@ -427,6 +426,7 @@ describe('ビルド検証', () => {
       function searchForFigure(dir) {
         if (!existsSync(dir)) return;
         for (const entry of readdirSync(dir, { withFileTypes: true })) {
+          if (foundFigure) return;
           const fullPath = join(dir, entry.name);
           if (entry.isDirectory()) {
             searchForFigure(fullPath);
@@ -437,13 +437,128 @@ describe('ビルド検証', () => {
               // figure/figcaptionが存在する記事で追加検証
               expect(html).toContain('loading="lazy"');
               expect(html).toContain('decoding="async"');
-              return;
             }
           }
         }
       }
       searchForFigure(postsDir);
       expect(foundFigure, 'figure/figcaptionを含む記事が1件もない').toBe(true);
+    });
+  });
+
+  describe('ビルドパイプライン完全性検証（FR-20）', () => {
+    const packageJson = JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'utf-8'));
+
+    it('buildスクリプトに4段階パイプラインが定義されている', () => {
+      const buildScript = packageJson.scripts['build:raw'] || '';
+      // 4段階: normalize-images → organize-posts → astro build
+      // (image-optimizeはAstro integration経由で自動実行)
+      expect(buildScript).toContain('normalize-images');
+      expect(buildScript).toContain('organize-posts');
+      expect(buildScript).toContain('astro build');
+    });
+  });
+
+  describe('セキュリティヘッダー検証（SEC-10）', () => {
+    const headersPath = join(process.cwd(), 'public/_headers');
+    const headersContent = readFileSync(headersPath, 'utf-8');
+    // パスルール行（行頭 /admin/*）以降を admin セクションとして抽出
+    const adminMatch = headersContent.match(/^\/admin\/\*\n([\s\S]*)$/m);
+    const adminSection = adminMatch ? adminMatch[1] : '';
+
+    it('X-Content-Type-Optionsが設定されている', () => {
+      expect(headersContent).toContain('X-Content-Type-Options: nosniff');
+    });
+
+    it('Referrer-Policyが設定されている', () => {
+      expect(headersContent).toContain('Referrer-Policy: strict-origin-when-cross-origin');
+    });
+
+    it('Permissions-Policyが設定されている', () => {
+      expect(headersContent).toContain('Permissions-Policy:');
+    });
+
+    it('Strict-Transport-Securityが設定されている', () => {
+      expect(headersContent).toContain('Strict-Transport-Security:');
+    });
+
+    it('/admin/*にContent-Security-Policyが設定されている', () => {
+      expect(adminSection).toContain('Content-Security-Policy:');
+    });
+
+    it('/admin/*にX-Frame-Options: SAMEORIGINが設定されている', () => {
+      expect(adminSection).toContain('X-Frame-Options: SAMEORIGIN');
+    });
+
+    it('/admin/*にCOOP: same-origin-allow-popupsが設定されている', () => {
+      expect(adminSection).toContain('Cross-Origin-Opener-Policy: same-origin-allow-popups');
+    });
+
+    it('CSP connect-src に blob: が含まれている（Bug #29: Decap CMS画像保存時の fetch(blobURL) に必要）', () => {
+      const cspMatch = adminSection.match(/Content-Security-Policy:(.+)/);
+      expect(cspMatch, 'CSPヘッダーが見つからない').toBeTruthy();
+      const connectSrcMatch = cspMatch[1].match(/connect-src\s+([^;]+)/);
+      expect(connectSrcMatch, 'connect-srcディレクティブが見つからない').toBeTruthy();
+      expect(connectSrcMatch[1]).toContain('blob:');
+    });
+  });
+
+  describe('_headersヘッダー重複防止検証（Bug #28 再発防止）', () => {
+    const headersPath = join(process.cwd(), 'public/_headers');
+    const headersContent = readFileSync(headersPath, 'utf-8');
+
+    // Cloudflare Pages は /* と /admin/* で同名ヘッダーを指定すると
+    // オーバーライドではなくAppend（重複送信）する。
+    // ブラウザは重複ヘッダーの最も厳しい値を採用するため、
+    // 管理画面で緩和が必要なヘッダーを /* に含めてはならない。
+    const adminOnlyHeaders = [
+      'Cross-Origin-Opener-Policy',
+      'Cross-Origin-Resource-Policy',
+      'X-Frame-Options',
+    ];
+
+    // _headers ファイルをパースして各パスルールのヘッダーを抽出
+    function parseHeadersFile(content) {
+      const sections = {};
+      let currentPath = null;
+      for (const line of content.split('\n')) {
+        const trimmed = line.trim();
+        if (trimmed.startsWith('#') || trimmed === '') continue;
+        if (!trimmed.startsWith(' ') && !trimmed.startsWith('\t') && !trimmed.includes(':')) {
+          // 空白で始まらず : を含まない = パスルール
+          currentPath = trimmed;
+          if (!sections[currentPath]) sections[currentPath] = [];
+        } else if (trimmed.startsWith('/')) {
+          currentPath = trimmed;
+          if (!sections[currentPath]) sections[currentPath] = [];
+        } else if (currentPath && trimmed.includes(':')) {
+          const headerName = trimmed.split(':')[0].trim();
+          sections[currentPath].push(headerName);
+        }
+      }
+      return sections;
+    }
+
+    it('/* と /admin/* で同名ヘッダーが重複していない', () => {
+      const sections = parseHeadersFile(headersContent);
+      const globalHeaders = sections['/*'] || [];
+      const adminHeaders = sections['/admin/*'] || [];
+      const duplicates = globalHeaders.filter(h => adminHeaders.includes(h));
+      expect(
+        duplicates,
+        `/* と /admin/* で重複するヘッダー: ${duplicates.join(', ')}。Cloudflare Pagesはオーバーライドせずappendするため、管理画面で異なる値が必要なヘッダーを /* に含めてはならない。`
+      ).toEqual([]);
+    });
+
+    it('管理画面で緩和が必要なヘッダーが /* に含まれていない', () => {
+      const sections = parseHeadersFile(headersContent);
+      const globalHeaders = sections['/*'] || [];
+      for (const header of adminOnlyHeaders) {
+        expect(
+          globalHeaders,
+          `${header} は /admin/* で異なる値が必要なため /* に含めてはならない`
+        ).not.toContain(header);
+      }
     });
   });
 });

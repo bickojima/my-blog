@@ -4,7 +4,8 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "node scripts/normalize-images.mjs && node scripts/organize-posts.mjs && astro dev",
-    "build": "node scripts/normalize-images.mjs && node scripts/organize-posts.mjs && astro build",
+    "build:raw": "node scripts/normalize-images.mjs && node scripts/organize-posts.mjs && astro build",
+    "build": "vitest run --exclude tests/build.test.mjs && node scripts/normalize-images.mjs && node scripts/organize-posts.mjs && astro build",
     "preview": "astro preview",
     "astro": "astro",
     "test": "vitest run",
@@ -18,6 +19,7 @@
     "unist-util-visit": "^5.1.0"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.11.1",
     "@playwright/test": "^1.58.2",
     "gray-matter": "^4.0.3",
     "js-yaml": "^4.1.1",
