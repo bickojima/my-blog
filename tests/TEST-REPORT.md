@@ -22,6 +22,7 @@
 | 1.15 | 2026-02-21 | セキュリティ検証テスト追加: admin-html 2.6.12章（9件）、auth-functions 2.3.1章（4件）。SEC-01〜SEC-09要件の充足テスト。終了基準テスト件数更新（260+240=500） |
 | 1.16 | 2026-02-21 | 第2回ペネトレーションテスト対応: SEC-10〜SEC-13テスト追加。build.test.mjs セキュリティヘッダー検証5件（2.5.1章）、auth-functions セキュリティ検証3件追加（2.3.1章 #5〜#7）、admin-html SRI検証2件追加（2.6.12章 #10〜#11）。終了基準テスト件数更新（270+240=510） |
 | 1.17 | 2026-02-21 | SEC-14〜SEC-20対応: fuzz-validation.test.mjs新規追加（207テスト）。ファズテスト（XSS/SQLi/パストラバーサル/コマンドインジェクション/プロトタイプ汚染ペイロード注入）、order境界値テスト（最大値/最小値/小数/NaN/Infinity/文字列/配列/null）、slugバリデーション（攻撃ペイロード/予約語/大文字/日本語/特殊文字）、OAuth異常値注入テスト、セキュリティヘッダー包括検証（HSTS/COOP/CORP/Permissions-Policy）、情報漏洩防止テスト、コードセキュリティ品質テスト。ビルドパイプライン再構成（build:raw+buildテスト必須化）。order=-1バグ修正・再発防止。終了基準テスト件数更新（477+240=717） |
+| 1.18 | 2026-02-21 | バグ#27（iPhone記事保存失敗）修正対応: admin-htmlに`</script>`閉じタグ検証テスト2件追加（2.6.1章）、fuzz-validationに管理画面ヘッダーオーバーライド検証テスト5件追加（2.7.12章）、frame-ancestorsテスト更新。終了基準テスト件数更新（484+240=724） |
 
 ## テスト基盤の変更履歴
 
@@ -36,6 +37,7 @@
 | 2026-02-21 | **コードリファクタリング・テスト追加**: 固定ページ番号バッジフォーマットテスト1件追加（admin-html 67→68件）。image-optimize.mjs writeFile整理、テスト変数重複排除。計243 Vitest + 237 E2E = 480テスト | - |
 | 2026-02-21 | **固定ページ一覧改善・品質向上**: 下書きバッジテスト更新、sortable_fields互換性テスト追加（#40）、orderデフォルトソート昇順テスト追加（#41）、config.ymlスキーマエラー検知E2Eテスト追加（E-07）、要件トレーサビリティ検証テスト追加（#42,#43）。CMS-16要件追加。計247 Vitest + 240 E2E = 487テスト | - |
 | 2026-02-21 | **セキュリティ検証テスト追加**: admin-html セキュリティ検証9件（2.6.12章: SEC-01, SEC-03〜SEC-05, SEC-08, SEC-09, Q-01, Q-02）、auth-functions セキュリティ検証4件（2.3.1章: SEC-02, SEC-06, SEC-07）追加。計260 Vitest + 240 E2E = 500テスト | - |
+| 2026-02-21 | **バグ#27再発防止テスト追加**: admin-html CDNスクリプト閉じタグ検証2件（2.6.1章）、fuzz-validation 管理画面ヘッダーオーバーライド検証5件（2.7.12章: COOP/X-Frame-Options/CORP/frame-src/COOP緩和度）、frame-ancestorsテスト更新。計484 Vitest + 240 E2E = 724テスト | - |
 
 ---
 
@@ -695,11 +697,11 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 
 ---
 
-## 2.6. 管理画面HTML検証 (`admin-html.test.mjs`) — 79件
+## 2.6. 管理画面HTML検証 (`admin-html.test.mjs`) — 81件
 
 `public/admin/index.html`のHTML/CSS/JavaScript内容を文字列パターンマッチングで検証する。
 
-### 2.6.1 基本構造（5件）
+### 2.6.1 基本構造（7件）
 
 | No. | テストケース | テスト手法 | 期待結果 |
 | :--- | :--- | :--- | :--- |
@@ -708,6 +710,8 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 | 3 | robots noindex が設定されている | M-02 | `noindex`が含まれる |
 | 4 | viewportメタタグが設定されている | M-02 | `viewport`が含まれる |
 | 5 | Decap CMSのスクリプトが読み込まれている | M-02 | `decap-cms`のスクリプトURLが含まれる |
+| 6 | CDN scriptタグが`</script>`で正しく閉じられている（バグ#27再発防止） | M-02 | `<script src="...cdn..."></script>`形式であること。閉じタグ欠落で後続スクリプトブロックが飲み込まれる致命的バグを検出 |
+| 7 | CMS.registerPreviewStyleが独立した`<script>`ブロック内にある（バグ#27再発防止） | M-02 | registerPreviewStyleが`<script>...</script>`内にあり、CDNスクリプトのインライン内容に含まれていないこと |
 
 ### 2.6.2 PC端末対応（6件）
 
@@ -843,7 +847,7 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 | 10 | CDNスクリプトにintegrity属性が設定されている（SEC-12） | M-02 | unpkg.comのscriptタグに`integrity="sha384-..."`属性が含まれる |
 | 11 | CDNスクリプトにcrossorigin属性が設定されている（SEC-12） | M-02 | unpkg.comのscriptタグに`crossorigin="anonymous"`属性が含まれる |
 
-### 2.7 ファズテスト・不整合値テスト（fuzz-validation.test.mjs: 207件）
+### 2.7 ファズテスト・不整合値テスト（fuzz-validation.test.mjs: 212件）
 
 SEC-14〜SEC-20に対応するファズテスト。ビルド時に必ず実行される必須テスト。XSS/SQLi/パストラバーサル/コマンドインジェクション/プロトタイプ汚染の攻撃ペイロードに対する耐性を検証する。
 
@@ -933,7 +937,7 @@ SEC-14〜SEC-20に対応するファズテスト。ビルド時に必ず実行�
 | 12 | CORP: Cross-Origin-Resource-Policy: same-origin | M-02 | SEC-15 |
 | 13 | X-DNS-Prefetch-Control: off | M-02 | SEC-16 |
 | 14 | X-Permitted-Cross-Domain-Policies: none | M-02 | SEC-16 |
-| 15 | CSP: admin配下にdefault-src, frame-ancestors設定 | M-02 | CSP検証 |
+| 15 | CSP: admin配下にdefault-src, frame-ancestors 'self' 設定 | M-02 | CSP検証（'none'→'self'にバグ#27で修正） |
 
 #### 2.7.9 コードセキュリティ品質テスト
 
@@ -963,6 +967,16 @@ SEC-14〜SEC-20に対応するファズテスト。ビルド時に必ず実行�
 | 1 | __proto__, __defineGetter__, __defineSetter__ がslugパターンで拒否 | M-09 | アンダースコア付きペイロード |
 | 2 | constructor, prototype がslugパターン通過するが安全 | M-02 | 小文字英字のみ、URL衝突なし |
 | 3 | 全プロトタイプ汚染ペイロードがorder値として拒否 | M-09 | 型チェックで防止 |
+
+#### 2.7.12 管理画面セキュリティヘッダーオーバーライド検証（バグ#27再発防止）
+
+| # | テストケース | 手法 | 備考 |
+| :--- | :--- | :--- | :--- |
+| 1 | COOP が same-origin-allow-popups にオーバーライド | M-02 | OAuth popup許可（window.opener維持） |
+| 2 | X-Frame-Options が SAMEORIGIN にオーバーライド | M-02 | CMSプレビューiframe許可 |
+| 3 | CORP が same-site にオーバーライド | M-02 | クロスサイトリソース読み込み許可 |
+| 4 | CSP frame-src に blob: 含む | M-02 | CMSプレビュー用blob URL許可 |
+| 5 | 管理画面COOPが全ページCOOPより緩和されている | M-02 | same-origin-allow-popups vs same-origin |
 
 ---
 
@@ -1135,23 +1149,23 @@ npm run build
 
 | 項目 | 結果 |
 | :--- | :--- |
-| 実行日時 | 2026-02-21 12:06 |
+| 実行日時 | 2026-02-21 12:34 |
 | Vitest バージョン | v4.0.18 |
-| 実行時間 | 1.86s |
+| 実行時間 | 1.91s |
 | 合否判定 | **合格** |
 
 ### 4.3.2 テストファイル別結果
 
 | テストファイル | テスト数 | 結果 | 実行時間 |
 | :--- | :--- | :--- | :--- |
-| `cms-config.test.mjs` | 44 | PASS | 8ms |
-| `admin-html.test.mjs` | 79 | PASS | 6ms |
-| `rehype-image-caption.test.mjs` | 8 | PASS | 3ms |
-| `auth-functions.test.mjs` | 17 | PASS | 29ms |
-| `fuzz-validation.test.mjs` | 207 | PASS | 40ms |
-| `content-validation.test.mjs` | 67 | PASS | 53ms |
-| `build.test.mjs` | 55 | PASS | 1680ms |
-| **合計** | **477** | **全PASS** | **1.86s** |
+| `cms-config.test.mjs` | 44 | PASS | 5ms |
+| `admin-html.test.mjs` | 81 | PASS | 9ms |
+| `rehype-image-caption.test.mjs` | 8 | PASS | 4ms |
+| `auth-functions.test.mjs` | 17 | PASS | 36ms |
+| `fuzz-validation.test.mjs` | 212 | PASS | 42ms |
+| `content-validation.test.mjs` | 67 | PASS | 49ms |
+| `build.test.mjs` | 55 | PASS | 1709ms |
+| **合計** | **484** | **全PASS** | **1.91s** |
 
 ### 4.3.3 E2Eテスト最新実行結果（Playwright）
 
