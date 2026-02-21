@@ -425,6 +425,15 @@ describe('管理画面HTML（public/admin/index.html）の検証', () => {
     });
   });
 
+  describe('環境分離検証（FR-21）', () => {
+    it('staging環境検知ロジックが存在する（hostname判定）', () => {
+      // admin/index.html でhostnameベースのstaging検知がある
+      expect(adminHtml).toContain('hostname');
+      // STAGING ラベル表示ロジック
+      expect(adminHtml).toMatch(/STAGING|staging/);
+    });
+  });
+
   describe('セキュリティ検証', () => {
     it('innerHTML/outerHTMLを使用していない（SEC-01: XSS防止）', () => {
       // scriptブロック内のJS部分を抽出して検査（HTML部分のinnerHTMLコメント等は除外）
