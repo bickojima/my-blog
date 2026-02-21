@@ -25,7 +25,7 @@ npm run build        # テスト必須ビルド（vitest run → normalize-image
 npm run build:raw    # テストなしビルド（build.test.mjs内部で使用、Cloudflare Pages用）
 npm test             # Vitest 全テスト実行（498テスト、記事数により変動）
 npm run test:watch   # Vitest ウォッチモード
-npm run test:e2e     # Playwright E2Eテスト（要: npm run build 済み、291テスト）
+npm run test:e2e     # Playwright E2Eテスト（要: npm run build 済み、375テスト：367実行+8スキップ）
 ```
 
 ## ディレクトリ構成
@@ -58,7 +58,7 @@ functions/auth/              # Cloudflare Functions: GitHub OAuth proxy
 tests/
 ├── *.test.mjs               # Vitest単体・統合テスト（7ファイル）
 ├── fuzz-validation.test.mjs # ファズテスト（XSS/SQLi/パストラバーサル/プロトタイプ汚染等、214テスト）
-├── e2e/                     # Playwright E2E（site, cms, cms-customizations, cms-crud, accessibility）
+├── e2e/                     # Playwright E2E（site, cms, cms-customizations, cms-crud, cms-operations, accessibility）
 └── TEST-REPORT.md           # テスト計画書・テストケース一覧・実行結果
 ```
 
@@ -94,10 +94,11 @@ tests/
 ## テスト
 
 - **Vitest**: 設定検証、コンテンツ検証、単体テスト、ビルド統合テスト、セキュリティ検証、ファズテスト、基本機能保護テスト（498テスト、記事数により変動）
-- **Playwright**: PC/iPad/iPhone 3デバイス × 97テスト = 291テスト（ローカルのみ、CIでは未実行）
+- **Playwright**: PC/iPad/iPhone 3デバイス × 125テスト = 375テスト（367実行+8スキップ、ローカルのみ、CIでは未実行）
 - コンテンツ検証テストは記事数・ページ数に応じて動的展開される
 - テスト実行後、失敗がある場合は原因を調査し修正する（テストを削除・スキップしない）
 - **テストにコンテンツをハードコードしない**: 記事名・固定ページ名・URL等はソースから動的取得する（コンテンツ変更でテストが壊れない設計）
+- **CMS E2Eテストの必須方式**: OAuthモック（postMessageシミュレーション）＋ GitHub APIモック（`page.route()`全面インターセプト）を統一使用する。今後のCMSテスト追加時もこの方式に従うこと
 
 ## ドキュメント体系
 
