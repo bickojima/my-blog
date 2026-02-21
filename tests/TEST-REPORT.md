@@ -20,6 +20,7 @@
 | 1.13 | 2026-02-21 | CMS-16要件追加、要件トレーサビリティ検証テスト2件追加（#42,#43）、テスト基盤変更履歴補完（247テスト） |
 | 1.14 | 2026-02-21 | 第三者セキュリティ診断対応: OAuthスコープテスト更新（public_repo,read:user）、admin-htmlテスト更新（target属性DOM API対応）、テスト対象外からurl-map.json削除（テスト実装済みのため矛盾解消）、終了基準テスト件数更新（247+240=487） |
 | 1.15 | 2026-02-21 | セキュリティ検証テスト追加: admin-html 2.6.12章（9件）、auth-functions 2.3.1章（4件）。SEC-01〜SEC-09要件の充足テスト。終了基準テスト件数更新（260+240=500） |
+| 1.16 | 2026-02-21 | 第2回ペネトレーションテスト対応: SEC-10〜SEC-13テスト追加。build.test.mjs セキュリティヘッダー検証5件（2.5.1章）、auth-functions セキュリティ検証3件追加（2.3.1章 #5〜#7）、admin-html SRI検証2件追加（2.6.12章 #10〜#11）。終了基準テスト件数更新（270+240=510） |
 
 ## テスト基盤の変更履歴
 
@@ -427,7 +428,7 @@ admin-html.test.mjs              -     ●     -     -     -     -     -     -  
 
 | No. | 基準 |
 | :--- | :--- |
-| 1 | 全テストケース（Vitest 260件 + E2E 240件 = 500件）がPASSであること |
+| 1 | 全テストケース（Vitest 270件 + E2E 240件 = 510件）がPASSであること |
 | 2 | `npm run build` が正常に完了すること |
 | 3 | 要件トレーサビリティマトリクス（docs/DOCUMENTATION.md 1.5章）において全要件が「充足」であること |
 
@@ -557,7 +558,7 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 | 9 | 成功時にDecap CMSハンドシェイクHTMLを返す | /auth/callback | M-06, M-07 | ステータス200、HTMLにpostMessageハンドシェイクコードが含まれる |
 | 10 | GitHubへのリクエストパラメータが正しい | /auth/callback | M-07 | fetchモックに渡されたURLとbodyが仕様通りである |
 
-### 2.3.1 セキュリティ検証（4件）
+### 2.3.1 セキュリティ検証（7件）
 
 | No. | テストケース | 検証対象 | テスト手法 | 期待結果 |
 | :--- | :--- | :--- | :--- | :--- |
@@ -565,6 +566,9 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 | 2 | postMessageの送信先がワイルドカード"*"でない（SEC-06） | callback.js | M-02, M-09 | `postMessage`の第2引数に`"*"`が使用されず、`expectedOrigin`が使用されている |
 | 3 | postMessage受信時にevent.originを検証している（SEC-06） | callback.js | M-02 | `event.origin !== expectedOrigin`による検証が含まれる |
 | 4 | OAuthスコープが最小権限である（SEC-07） | index.js | M-02, M-09 | `public_repo`と`read:user`が使用され、`repo`単体や`user`単体が使用されていない |
+| 5 | OAuth開始時にstateパラメータを生成している（SEC-11） | index.js | M-02 | `state`パラメータの生成（`crypto.randomUUID`）とCookie保存（`oauth_state`）が含まれる |
+| 6 | OAuthコールバックでstateパラメータを検証している（SEC-11） | callback.js | M-02 | URLの`state`パラメータとCookie内の`oauth_state`を照合し、不一致時に403を返す |
+| 7 | OAuthエラーメッセージが汎化されている（SEC-13） | callback.js | M-02, M-09 | `error_description`がクライアントに返されず、汎用メッセージ「Authentication failed」を使用 |
 
 ---
 
@@ -621,7 +625,7 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 
 ---
 
-## 2.5. ビルド検証 (`build.test.mjs`) — 50件
+## 2.5. ビルド検証 (`build.test.mjs`) — 55件
 
 `npm run build`を実行し、パイプライン全体（normalize-images → organize-posts → astro build → image-optimize）の出力を検証する。全テストケースはビルド完了後に実行される。
 
@@ -678,9 +682,19 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 | 49 | url-map.jsonの値が/posts/YYYY/MM/スラグ形式のURLパスである | URLマッピング | M-03, M-02 | 全値が`/^\/posts\/\d{4}\/\d{2}\/.+$/`にマッチ |
 | 50 | url-map.jsonのキーと値のスラグ部分が一致している | URLマッピング | M-03, M-02 | `value === "/posts/" + key` |
 
+### 2.5.1 セキュリティヘッダー検証（5件）
+
+| No. | テストケース | カテゴリ | テスト手法 | 期待結果 |
+| :--- | :--- | :--- | :--- | :--- |
+| 1 | _headersにX-Content-Type-Optionsが設定されている（SEC-10） | セキュリティヘッダー | M-02 | `X-Content-Type-Options: nosniff`が含まれる |
+| 2 | _headersにX-Frame-Optionsが設定されている（SEC-10） | セキュリティヘッダー | M-02 | `X-Frame-Options: DENY`が含まれる |
+| 3 | _headersにReferrer-Policyが設定されている（SEC-10） | セキュリティヘッダー | M-02 | `Referrer-Policy: strict-origin-when-cross-origin`が含まれる |
+| 4 | _headersにPermissions-Policyが設定されている（SEC-10） | セキュリティヘッダー | M-02 | `Permissions-Policy`ディレクティブが含まれる |
+| 5 | /admin/*にContent-Security-Policyが設定されている（SEC-10） | セキュリティヘッダー | M-02 | `Content-Security-Policy`ディレクティブが`/admin/*`セクションに含まれる |
+
 ---
 
-## 2.6. 管理画面HTML検証 (`admin-html.test.mjs`) — 77件
+## 2.6. 管理画面HTML検証 (`admin-html.test.mjs`) — 79件
 
 `public/admin/index.html`のHTML/CSS/JavaScript内容を文字列パターンマッチングで検証する。
 
@@ -812,7 +826,7 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 | 4 | 画像スタイル（border-radius, margin）が設定されている | M-02 | `border-radius: 4px`と`margin: 1rem 0`が含まれる |
 | 5 | コードブロックスタイルが設定されている | M-02 | `background: #f5f5f5`が含まれる |
 
-### 2.6.12 セキュリティ検証（9件）
+### 2.6.12 セキュリティ検証（11件）
 
 | No. | テストケース | テスト手法 | 期待結果 |
 | :--- | :--- | :--- | :--- |
@@ -825,6 +839,8 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 | 7 | Decap CMSのバージョンが正確に指定されている（SEC-03） | M-02 | `decap-cms@X.Y.Z`形式（^/~なし）でバージョンが指定されている |
 | 8 | strictモードが有効である（Q-02） | M-02 | `'use strict'`が含まれる |
 | 9 | var宣言が使用されていない（Q-01） | M-02, M-09 | scriptブロック内に`var `宣言が含まれない |
+| 10 | CDNスクリプトにintegrity属性が設定されている（SEC-12） | M-02 | unpkg.comのscriptタグに`integrity="sha384-..."`属性が含まれる |
+| 11 | CDNスクリプトにcrossorigin属性が設定されている（SEC-12） | M-02 | unpkg.comのscriptタグに`crossorigin="anonymous"`属性が含まれる |
 
 ---
 
@@ -997,9 +1013,9 @@ npm run build
 
 | 項目 | 結果 |
 | :--- | :--- |
-| 実行日時 | 2026-02-21 00:43 |
+| 実行日時 | 2026-02-21 10:01 |
 | Vitest バージョン | v4.0.18 |
-| 実行時間 | 1.75s |
+| 実行時間 | 1.47s |
 | 合否判定 | **合格** |
 
 ### 4.3.2 テストファイル別結果
@@ -1007,12 +1023,12 @@ npm run build
 | テストファイル | テスト数 | 結果 | 実行時間 |
 | :--- | :--- | :--- | :--- |
 | `cms-config.test.mjs` | 44 | PASS | 4ms |
-| `admin-html.test.mjs` | 77 | PASS | 6ms |
-| `rehype-image-caption.test.mjs` | 8 | PASS | 2ms |
-| `auth-functions.test.mjs` | 14 | PASS | 26ms |
-| `content-validation.test.mjs` | 67 | PASS | 45ms |
-| `build.test.mjs` | 50 | PASS | 1558ms |
-| **合計** | **260** | **全PASS** | **1.72s** |
+| `admin-html.test.mjs` | 79 | PASS | 6ms |
+| `rehype-image-caption.test.mjs` | 8 | PASS | 3ms |
+| `auth-functions.test.mjs` | 17 | PASS | 27ms |
+| `content-validation.test.mjs` | 67 | PASS | 21ms |
+| `build.test.mjs` | 55 | PASS | 1318ms |
+| **合計** | **270** | **全PASS** | **1.47s** |
 
 ### 4.3.3 E2Eテスト最新実行結果（Playwright）
 

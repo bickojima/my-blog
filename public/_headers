@@ -1,6 +1,14 @@
 # Cloudflare Pages Headers Configuration
 # https://developers.cloudflare.com/pages/platform/headers/
 
-# Decap CMS admin page should not be indexed
+# 全ページ共通セキュリティヘッダー
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: geolocation=(), microphone=(), camera=()
+
+# Decap CMS admin page: SEO除外 + CSP
 /admin/*
   X-Robots-Tag: noindex
+  Content-Security-Policy: default-src 'none'; script-src 'self' https://unpkg.com 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://github.com https://api.github.com https://*.githubusercontent.com; img-src 'self' https: data: blob:; font-src 'self' data:; frame-src 'self'; frame-ancestors 'none'; form-action 'self' https://github.com; base-uri 'self'

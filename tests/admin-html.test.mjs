@@ -491,5 +491,23 @@ describe('管理画面HTML（public/admin/index.html）の検証', () => {
         expect(jsContent).not.toMatch(/\bvar\s+\w/);
       }
     });
+
+    it('CDNスクリプトにintegrity属性が設定されている（SEC-12: SRI）', () => {
+      // unpkg.comのscriptタグにintegrity属性が含まれること
+      const cdnScriptTags = adminHtml.match(/<script\s[^>]*src="https?:\/\/[^"]*unpkg\.com[^"]*"[^>]*>/gi) || [];
+      expect(cdnScriptTags.length).toBeGreaterThan(0);
+      for (const tag of cdnScriptTags) {
+        expect(tag).toMatch(/integrity="sha384-[A-Za-z0-9+/=]+"/);
+      }
+    });
+
+    it('CDNスクリプトにcrossorigin属性が設定されている（SEC-12: SRI）', () => {
+      // unpkg.comのscriptタグにcrossorigin="anonymous"が含まれること
+      const cdnScriptTags = adminHtml.match(/<script\s[^>]*src="https?:\/\/[^"]*unpkg\.com[^"]*"[^>]*>/gi) || [];
+      expect(cdnScriptTags.length).toBeGreaterThan(0);
+      for (const tag of cdnScriptTags) {
+        expect(tag).toContain('crossorigin="anonymous"');
+      }
+    });
   });
 });
