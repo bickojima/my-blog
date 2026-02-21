@@ -24,6 +24,7 @@
 | 1.17 | 2026-02-21 | SEC-14〜SEC-20対応: fuzz-validation.test.mjs新規追加（207テスト）。ファズテスト（XSS/SQLi/パストラバーサル/コマンドインジェクション/プロトタイプ汚染ペイロード注入）、order境界値テスト（最大値/最小値/小数/NaN/Infinity/文字列/配列/null）、slugバリデーション（攻撃ペイロード/予約語/大文字/日本語/特殊文字）、OAuth異常値注入テスト、セキュリティヘッダー包括検証（HSTS/COOP/CORP/Permissions-Policy）、情報漏洩防止テスト、コードセキュリティ品質テスト。ビルドパイプライン再構成（build:raw+buildテスト必須化）。order=-1バグ修正・再発防止。終了基準テスト件数更新（477+240=717） |
 | 1.18 | 2026-02-21 | バグ#27（iPhone記事保存失敗）修正対応: admin-htmlに`</script>`閉じタグ検証テスト2件追加（2.6.1章）、fuzz-validationに管理画面ヘッダーオーバーライド検証テスト5件追加（2.7.12章）、frame-ancestorsテスト更新。終了基準テスト件数更新（484+240=724） |
 | 1.19 | 2026-02-21 | 機能観点の要件定義対応: FR-15〜FR-21, NFR-05要件追加。cms-config基本機能保護テスト5件追加（2.4.1章）、build パイプライン検証1件追加（2.5.2章）、admin-html環境分離検証1件追加（2.6.13章）。終了基準テスト件数更新（491+240=731） |
+| 1.20 | 2026-02-21 | バグ#28（Cloudflare Pages `_headers`ヘッダー重複送信）修正対応: build.test.mjsセキュリティヘッダー検証を5件→7件に再構成＋重複防止検証2件追加（2.5.3章）。fuzz-validationヘッダーテスト4件修正＋1件追加（2.7.8章、2.7.12章）。終了基準テスト件数更新（496+240=736） |
 
 ## テスト基盤の変更履歴
 
@@ -40,6 +41,7 @@
 | 2026-02-21 | **セキュリティ検証テスト追加**: admin-html セキュリティ検証9件（2.6.12章: SEC-01, SEC-03〜SEC-05, SEC-08, SEC-09, Q-01, Q-02）、auth-functions セキュリティ検証4件（2.3.1章: SEC-02, SEC-06, SEC-07）追加。計260 Vitest + 240 E2E = 500テスト | - |
 | 2026-02-21 | **バグ#27再発防止テスト追加**: admin-html CDNスクリプト閉じタグ検証2件（2.6.1章）、fuzz-validation 管理画面ヘッダーオーバーライド検証5件（2.7.12章: COOP/X-Frame-Options/CORP/frame-src/COOP緩和度）、frame-ancestorsテスト更新。計484 Vitest + 240 E2E = 724テスト | - |
 | 2026-02-21 | **機能観点の要件定義・基本機能保護テスト追加**: cms-config基本機能保護5件（2.4.1章: Backend完全性/削除許可/Markdown編集/メディアライブラリ）、buildパイプライン検証1件（2.5.2章）、admin-html環境分離検証1件（2.6.13章）。FR-15〜FR-21/NFR-05対応。計491 Vitest + 240 E2E = 731テスト | - |
+| 2026-02-21 | **バグ#28修正・ヘッダー重複防止テスト追加**: Cloudflare Pages `_headers`重複送信問題修正。build.test.mjsセキュリティヘッダー検証を再構成（5→7件＋重複防止2件）、fuzz-validationヘッダーテスト修正＋1件追加。計496 Vitest + 240 E2E = 736テスト | - |
 
 ---
 
@@ -433,7 +435,7 @@ admin-html.test.mjs              -     ●     -     -     -     -     -     -  
 
 | No. | 基準 |
 | :--- | :--- |
-| 1 | 全テストケース（Vitest 491件 + E2E 240件 = 731件）がPASSであること |
+| 1 | 全テストケース（Vitest 496件 + E2E 240件 = 736件）がPASSであること |
 | 2 | `npm run build` が正常に完了すること |
 | 3 | 要件トレーサビリティマトリクス（docs/DOCUMENTATION.md 1.5章）において全要件が「充足」であること |
 
@@ -640,7 +642,7 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 
 ---
 
-## 2.5. ビルド検証 (`build.test.mjs`) — 56件
+## 2.5. ビルド検証 (`build.test.mjs`) — 60件
 
 `npm run build`を実行し、パイプライン全体（normalize-images → organize-posts → astro build → image-optimize）の出力を検証する。全テストケースはビルド完了後に実行される。
 
@@ -697,15 +699,24 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 | 49 | url-map.jsonの値が/posts/YYYY/MM/スラグ形式のURLパスである | URLマッピング | M-03, M-02 | 全値が`/^\/posts\/\d{4}\/\d{2}\/.+$/`にマッチ |
 | 50 | url-map.jsonのキーと値のスラグ部分が一致している | URLマッピング | M-03, M-02 | `value === "/posts/" + key` |
 
-### 2.5.1 セキュリティヘッダー検証（5件）
+### 2.5.1 セキュリティヘッダー検証（7件）
 
 | No. | テストケース | カテゴリ | テスト手法 | 期待結果 |
 | :--- | :--- | :--- | :--- | :--- |
 | 1 | _headersにX-Content-Type-Optionsが設定されている（SEC-10） | セキュリティヘッダー | M-02 | `X-Content-Type-Options: nosniff`が含まれる |
-| 2 | _headersにX-Frame-Optionsが設定されている（SEC-10） | セキュリティヘッダー | M-02 | `X-Frame-Options: DENY`が含まれる |
-| 3 | _headersにReferrer-Policyが設定されている（SEC-10） | セキュリティヘッダー | M-02 | `Referrer-Policy: strict-origin-when-cross-origin`が含まれる |
-| 4 | _headersにPermissions-Policyが設定されている（SEC-10） | セキュリティヘッダー | M-02 | `Permissions-Policy`ディレクティブが含まれる |
+| 2 | _headersにReferrer-Policyが設定されている（SEC-10） | セキュリティヘッダー | M-02 | `Referrer-Policy: strict-origin-when-cross-origin`が含まれる |
+| 3 | _headersにPermissions-Policyが設定されている（SEC-10） | セキュリティヘッダー | M-02 | `Permissions-Policy`ディレクティブが含まれる |
+| 4 | _headersにStrict-Transport-Securityが設定されている（SEC-10） | セキュリティヘッダー | M-02 | `Strict-Transport-Security`が含まれる |
 | 5 | /admin/*にContent-Security-Policyが設定されている（SEC-10） | セキュリティヘッダー | M-02 | `Content-Security-Policy`ディレクティブが`/admin/*`セクションに含まれる |
+| 6 | /admin/*にX-Frame-Options: SAMEORIGINが設定されている（SEC-10） | セキュリティヘッダー | M-02 | `X-Frame-Options: SAMEORIGIN`が`/admin/*`セクションに含まれる |
+| 7 | /admin/*にCOOP: same-origin-allow-popupsが設定されている（SEC-10） | セキュリティヘッダー | M-02 | `Cross-Origin-Opener-Policy: same-origin-allow-popups`が`/admin/*`セクションに含まれる |
+
+### 2.5.3 _headersヘッダー重複防止検証（Bug #28再発防止、2件）
+
+| No. | テストケース | カテゴリ | テスト手法 | 期待結果 |
+| :--- | :--- | :--- | :--- | :--- |
+| 57 | /* と /admin/* で同名ヘッダーが重複していない | 重複防止 | M-02 | `/*`セクションと`/admin/*`セクションで同名ヘッダーが存在しない |
+| 58 | 管理画面で緩和が必要なヘッダーが /* に含まれていない | 重複防止 | M-02 | COOP/CORP/X-Frame-Optionsが`/*`セクションに含まれない |
 
 ### 2.5.2 ビルドパイプライン検証（1件）
 
@@ -871,7 +882,7 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 | :--- | :--- | :--- | :--- |
 | 8 | staging環境検知ロジックが存在する（FR-21: hostname判定） | M-02 | `hostname`文字列と`STAGING`/`staging`関連ロジックが存在する |
 
-### 2.7 ファズテスト・不整合値テスト（fuzz-validation.test.mjs: 212件）
+### 2.7 ファズテスト・不整合値テスト（fuzz-validation.test.mjs: 213件）
 
 SEC-14〜SEC-20に対応するファズテスト。ビルド時に必ず実行される必須テスト。XSS/SQLi/パストラバーサル/コマンドインジェクション/プロトタイプ汚染の攻撃ペイロードに対する耐性を検証する。
 
@@ -948,7 +959,7 @@ SEC-14〜SEC-20に対応するファズテスト。ビルド時に必ず実行�
 | # | テストケース | 手法 | 備考 |
 | :--- | :--- | :--- | :--- |
 | 1 | X-Content-Type-Options: nosniff 設定確認 | M-02 | OWASP推奨 |
-| 2 | X-Frame-Options: DENY 設定確認 | M-02 | クリックジャッキング防止 |
+| 2 | X-Frame-Options が /admin/* に設定確認 | M-02 | クリックジャッキング防止（Bug #28: /* でなく /admin/* のみに設定） |
 | 3 | Referrer-Policy が安全な値に設定 | M-02 | 情報漏洩防止 |
 | 4 | Permissions-Policy で geolocation 無効化 | M-02 | プライバシー保護 |
 | 5 | Permissions-Policy で camera/microphone 無効化 | M-02 | プライバシー保護 |
@@ -957,8 +968,9 @@ SEC-14〜SEC-20に対応するファズテスト。ビルド時に必ず実行�
 | 8 | HSTS: max-age≧15768000秒（6ヶ月以上） | M-02 | HSTS Preload要件 |
 | 9 | HSTS: includeSubDomains 設定確認 | M-02 | サブドメイン保護 |
 | 10 | HSTS: preload 設定確認 | M-02 | HSTS Preload List |
-| 11 | COOP: Cross-Origin-Opener-Policy: same-origin | M-02 | SEC-15 |
-| 12 | CORP: Cross-Origin-Resource-Policy: same-origin | M-02 | SEC-15 |
+| 11 | COOP: /admin/* に same-origin-allow-popups が設定 | M-02 | SEC-15（Bug #28: /* でなく /admin/* のみ） |
+| 12 | CORP: /admin/* に same-site が設定 | M-02 | SEC-15（Bug #28: /* でなく /admin/* のみ） |
+| 16 | COOP/CORP/X-Frame-Options が /* に含まれていない | M-02 | Bug #28 再発防止（重複送信防止） |
 | 13 | X-DNS-Prefetch-Control: off | M-02 | SEC-16 |
 | 14 | X-Permitted-Cross-Domain-Policies: none | M-02 | SEC-16 |
 | 15 | CSP: admin配下にdefault-src, frame-ancestors 'self' 設定 | M-02 | CSP検証（'none'→'self'にバグ#27で修正） |
@@ -1000,7 +1012,7 @@ SEC-14〜SEC-20に対応するファズテスト。ビルド時に必ず実行�
 | 2 | X-Frame-Options が SAMEORIGIN にオーバーライド | M-02 | CMSプレビューiframe許可 |
 | 3 | CORP が same-site にオーバーライド | M-02 | クロスサイトリソース読み込み許可 |
 | 4 | CSP frame-src に blob: 含む | M-02 | CMSプレビュー用blob URL許可 |
-| 5 | 管理画面COOPが全ページCOOPより緩和されている | M-02 | same-origin-allow-popups vs same-origin |
+| 5 | /* と /admin/* で同名ヘッダーが重複していない（Bug #28再発防止） | M-02 | Cloudflare Pages Append動作による重複送信防止 |
 
 ---
 
@@ -1012,7 +1024,7 @@ SEC-14〜SEC-20に対応するファズテスト。ビルド時に必ず実行�
 
 要件トレーサビリティマトリクスは **docs/DOCUMENTATION.md 1.5章** に移動した。要件定義と同一ファイルで管理することで、要件追加時のトレース漏れを防止する。
 
-現在の充足状況: **全要件（FR-01〜FR-14, CMS-01〜CMS-16, NFR-01〜NFR-04, SEC-01〜SEC-20）がテストで充足されている。未テスト要件なし。**
+現在の充足状況: **全要件（FR-01〜FR-21, CMS-01〜CMS-16, NFR-01〜NFR-05, SEC-01〜SEC-20）がテストで充足されている。未テスト要件なし。**
 
 ---
 
