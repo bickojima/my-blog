@@ -91,7 +91,7 @@ tests/
 
 ## テスト
 
-- **Vitest**: 設定検証、コンテンツ検証、単体テスト、ビルド統合テスト（247テスト、記事数により変動）
+- **Vitest**: 設定検証、コンテンツ検証、単体テスト、ビルド統合テスト、セキュリティ検証（260テスト、記事数により変動）
 - **Playwright**: PC/iPad/iPhone 3デバイス × 80テスト = 240テスト（ローカルのみ、CIでは未実行）
 - コンテンツ検証テストは記事数・ページ数に応じて動的展開される
 - テスト実行後、失敗がある場合は原因を調査し修正する（テストを削除・スキップしない）
@@ -121,9 +121,10 @@ DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を�
 3. admin/index.html を変更した場合は `admin-html.test.mjs` との整合性を確認する
 4. config.yml を変更した場合は `cms-config.test.mjs` との整合性を確認する
 5. コンテンツ（記事・固定ページ）を追加した場合は `content-validation.test.mjs` の動的テストが対応する
+6. **作業完了後は必ず staging ブランチにコミット・プッシュする**（テスト全PASS確認後）
 
 ### 新機能追加時（要件トレーサビリティの維持）
-1. docs/DOCUMENTATION.md の要件一覧（1.2章 FR / 1.3章 CMS / 1.4章 NFR）に要件IDを追加
+1. docs/DOCUMENTATION.md の要件一覧（1.2章 FR / 1.3章 CMS / 1.4.1章 NFR / 1.4.2章 SEC）に要件IDを追加
 2. テストを実装し、tests/TEST-REPORT.md のテストケース一覧に追記
 3. docs/DOCUMENTATION.md のトレーサビリティマトリクス（1.5章）に要件ID→テストケースの対応を追加
 4. トレーサビリティマトリクスに「未テスト」が残らないことを確認
@@ -155,11 +156,11 @@ DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を�
 - OAuth scope は `public_repo,read:user` に限定する（`repo` / `user` 禁止）
 - HTMLテンプレートに埋め込む変数は必ずエスケープする
 - 変数宣言は `const` / `let` のみ（`var` 禁止）、`'use strict'` を使用
-- 詳細は DOCUMENTATION.md 4.7章のセキュリティチェックリスト・品質向上策を参照
+- セキュリティ要件は DOCUMENTATION.md 1.4.2章（SEC-01〜SEC-09）、品質基準は 4.7章を参照
 
 ### やってはいけないこと
 - テストを削除・スキップして通す（必ず原因を修正する）
-- 要件IDなしに機能を追加する（必ず FR/CMS/NFR IDを付与する）
+- 要件IDなしに機能を追加する（必ず FR/CMS/NFR/SEC IDを付与する）
 - トレーサビリティマトリクスを更新せずに要件・テストを追加する
 - ドキュメントを更新せずにコード変更をコミットする
 - ハードコードされたURL（`reiwa.casa`）を admin/index.html に追加する（`window.location.origin` を使用）
