@@ -556,7 +556,7 @@
               continue;
             }
             // 固定ページ: "番号 | draft | タイトル" 形式（summary: "{{order}} | {{draft}} | {{title}}"）
-            const pagesMatch = text.match(/^(\d+)\s*\|\s*(true|false)\s*\|\s*(.+)$/);
+            const pagesMatch = text.match(/^(-?\d+)\s*\|\s*(true|false)\s*\|\s*(.+)$/);
             if (pagesMatch) {
               el.dataset.formatted = 'true';
               const orderSpan = document.createElement('span');

@@ -21,8 +21,9 @@
 
 ```bash
 npm run dev          # 開発サーバー起動（前処理含む）
-npm run build        # 本番ビルド（normalize-images → organize-posts → astro build → image-optimize）
-npm test             # Vitest 全テスト実行（270テスト、記事数により変動）
+npm run build        # テスト必須ビルド（vitest run → normalize-images → organize-posts → astro build → image-optimize）
+npm run build:raw    # テストなしビルド（build.test.mjs内部で使用、Cloudflare Pages用）
+npm test             # Vitest 全テスト実行（477テスト、記事数により変動）
 npm run test:watch   # Vitest ウォッチモード
 npm run test:e2e     # Playwright E2Eテスト（要: npm run build 済み、240テスト）
 ```
@@ -55,7 +56,8 @@ docs/
 functions/auth/              # Cloudflare Functions: GitHub OAuth proxy
 
 tests/
-├── *.test.mjs               # Vitest単体・統合テスト（6ファイル）
+├── *.test.mjs               # Vitest単体・統合テスト（7ファイル）
+├── fuzz-validation.test.mjs # ファズテスト（XSS/SQLi/パストラバーサル/プロトタイプ汚染等、207テスト）
 ├── e2e/                     # Playwright E2E（site.spec.ts, cms.spec.ts, cms-customizations.spec.ts）
 └── TEST-REPORT.md           # テスト計画書・テストケース一覧・実行結果
 ```
@@ -91,7 +93,7 @@ tests/
 
 ## テスト
 
-- **Vitest**: 設定検証、コンテンツ検証、単体テスト、ビルド統合テスト、セキュリティ検証（270テスト、記事数により変動）
+- **Vitest**: 設定検証、コンテンツ検証、単体テスト、ビルド統合テスト、セキュリティ検証、ファズテスト（477テスト、記事数により変動）
 - **Playwright**: PC/iPad/iPhone 3デバイス × 80テスト = 240テスト（ローカルのみ、CIでは未実行）
 - コンテンツ検証テストは記事数・ページ数に応じて動的展開される
 - テスト実行後、失敗がある場合は原因を調査し修正する（テストを削除・スキップしない）
@@ -156,7 +158,8 @@ DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を�
 - OAuth scope は `public_repo,read:user` に限定する（`repo` / `user` 禁止）
 - HTMLテンプレートに埋め込む変数は必ずエスケープする
 - 変数宣言は `const` / `let` のみ（`var` 禁止）、`'use strict'` を使用
-- セキュリティ要件は DOCUMENTATION.md 1.4.2章（SEC-01〜SEC-09）、品質基準は 4.7章を参照
+- セキュリティ要件は DOCUMENTATION.md 1.4.2章（SEC-01〜SEC-20）、品質基準は 4.7章を参照
+- `npm run build` はビルド前に自動でテスト実行（build.test.mjs以外）。テスト失敗時はビルド中断
 
 ### やってはいけないこと
 - テストを削除・スキップして通す（必ず原因を修正する）

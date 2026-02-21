@@ -21,6 +21,7 @@
 | 1.14 | 2026-02-21 | 第三者セキュリティ診断対応: OAuthスコープテスト更新（public_repo,read:user）、admin-htmlテスト更新（target属性DOM API対応）、テスト対象外からurl-map.json削除（テスト実装済みのため矛盾解消）、終了基準テスト件数更新（247+240=487） |
 | 1.15 | 2026-02-21 | セキュリティ検証テスト追加: admin-html 2.6.12章（9件）、auth-functions 2.3.1章（4件）。SEC-01〜SEC-09要件の充足テスト。終了基準テスト件数更新（260+240=500） |
 | 1.16 | 2026-02-21 | 第2回ペネトレーションテスト対応: SEC-10〜SEC-13テスト追加。build.test.mjs セキュリティヘッダー検証5件（2.5.1章）、auth-functions セキュリティ検証3件追加（2.3.1章 #5〜#7）、admin-html SRI検証2件追加（2.6.12章 #10〜#11）。終了基準テスト件数更新（270+240=510） |
+| 1.17 | 2026-02-21 | SEC-14〜SEC-20対応: fuzz-validation.test.mjs新規追加（207テスト）。ファズテスト（XSS/SQLi/パストラバーサル/コマンドインジェクション/プロトタイプ汚染ペイロード注入）、order境界値テスト（最大値/最小値/小数/NaN/Infinity/文字列/配列/null）、slugバリデーション（攻撃ペイロード/予約語/大文字/日本語/特殊文字）、OAuth異常値注入テスト、セキュリティヘッダー包括検証（HSTS/COOP/CORP/Permissions-Policy）、情報漏洩防止テスト、コードセキュリティ品質テスト。ビルドパイプライン再構成（build:raw+buildテスト必須化）。order=-1バグ修正・再発防止。終了基準テスト件数更新（477+240=717） |
 
 ## テスト基盤の変更履歴
 
@@ -428,7 +429,7 @@ admin-html.test.mjs              -     ●     -     -     -     -     -     -  
 
 | No. | 基準 |
 | :--- | :--- |
-| 1 | 全テストケース（Vitest 270件 + E2E 240件 = 510件）がPASSであること |
+| 1 | 全テストケース（Vitest 477件 + E2E 240件 = 717件）がPASSであること |
 | 2 | `npm run build` が正常に完了すること |
 | 3 | 要件トレーサビリティマトリクス（docs/DOCUMENTATION.md 1.5章）において全要件が「充足」であること |
 
@@ -842,6 +843,127 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 | 10 | CDNスクリプトにintegrity属性が設定されている（SEC-12） | M-02 | unpkg.comのscriptタグに`integrity="sha384-..."`属性が含まれる |
 | 11 | CDNスクリプトにcrossorigin属性が設定されている（SEC-12） | M-02 | unpkg.comのscriptタグに`crossorigin="anonymous"`属性が含まれる |
 
+### 2.7 ファズテスト・不整合値テスト（fuzz-validation.test.mjs: 207件）
+
+SEC-14〜SEC-20に対応するファズテスト。ビルド時に必ず実行される必須テスト。XSS/SQLi/パストラバーサル/コマンドインジェクション/プロトタイプ汚染の攻撃ペイロードに対する耐性を検証する。
+
+#### 2.7.1 固定ページ order フィールドのファズテスト（SEC-19）
+
+| # | テストケース | 手法 | 備考 |
+| :--- | :--- | :--- | :--- |
+| 1 | order=1（最小有効値）が受理される | M-02 | Zodスキーマ safeParse |
+| 2 | order=0, -1, -999, MIN_SAFE_INTEGER が拒否される | M-02, M-09 | 負数・ゼロの境界値テスト |
+| 3 | order=NaN, Infinity, -Infinity が拒否される | M-09 | 特殊数値テスト |
+| 4 | order=1.5, 0.999, 1.001（小数）が拒否される | M-09 | 整数制約テスト |
+| 5 | order="1", "abc", null, true, [], {} が拒否される | M-09 | 型不正テスト |
+| 6 | XSSペイロード10種がorder値として拒否される | M-09 | 攻撃ペイロード注入 |
+| 7 | CMS config.yml に min:1, value_type:int 制約がある | M-02 | CMS層バリデーション |
+| 8 | 既存全ページのorderが1以上の正の整数 | M-02 | 実データ整合性検証 |
+
+#### 2.7.2 固定ページ slug フィールドのファズテスト（SEC-19）
+
+| # | テストケース | 手法 | 備考 |
+| :--- | :--- | :--- | :--- |
+| 1 | 有効なslug（英数字・ハイフン）が受理される | M-02 | 正常系6パターン |
+| 2 | 大文字・スペース・アンダースコア・日本語等が拒否される | M-02 | 無効slug10パターン |
+| 3 | XSSペイロード10種が拒否される | M-09 | `<script>`, `onerror=` 等 |
+| 4 | SQLiペイロード5種が拒否される | M-09 | `' OR '1'='1` 等 |
+| 5 | パストラバーサル6種が拒否される | M-09 | `../../../etc/passwd` 等 |
+| 6 | コマンドインジェクション5種が拒否される | M-09 | `; ls -la`, `` `whoami` `` 等 |
+| 7 | 既存ページに予約語slugが使われていない | M-02 | posts, tags, admin |
+
+#### 2.7.3 title フィールドのファズテスト
+
+| # | テストケース | 手法 | 備考 |
+| :--- | :--- | :--- | :--- |
+| 1 | null, 数値, オブジェクト, 配列が拒否される | M-09 | 型チェック |
+| 2 | XSSペイロードはスキーマ上受理されるがSSGでエスケープ | M-02 | Astro自動エスケープ確認 |
+
+#### 2.7.4 date フィールドのファズテスト
+
+| # | テストケース | 手法 | 備考 |
+| :--- | :--- | :--- | :--- |
+| 1 | YYYY-MM-DD形式・Dateオブジェクトが受理される | M-02 | 正常系 |
+| 2 | 数値, null, オブジェクト, 配列, boolean が拒否される | M-09 | 型チェック |
+
+#### 2.7.5 tags フィールドのファズテスト
+
+| # | テストケース | 手法 | 備考 |
+| :--- | :--- | :--- | :--- |
+| 1 | 空配列・文字列配列が有効 | M-02 | 正常系 |
+| 2 | 数値配列, ネスト配列, オブジェクト配列, 文字列が拒否 | M-09 | 型チェック |
+| 3 | XSSペイロードはスキーマ上受理されるがSSGでエスケープ | M-02 | Astro自動エスケープ |
+
+#### 2.7.6 draft フィールドのファズテスト
+
+| # | テストケース | 手法 | 備考 |
+| :--- | :--- | :--- | :--- |
+| 1 | true/false が有効、"true"/"false"/1/0/null が拒否 | M-09 | 厳密boolean型チェック |
+
+#### 2.7.7 OAuth認証エンドポイントのファズテスト（SEC-11, SEC-13）
+
+| # | テストケース | 手法 | 備考 |
+| :--- | :--- | :--- | :--- |
+| 1 | 空文字列CLIENT_IDで500エラー | M-09 | 環境変数異常値 |
+| 2 | 超長URL（10000文字）でクラッシュしない | M-09 | バッファオーバーフロー対策 |
+| 3 | XSSペイロードURL注入でリダイレクト先に反映されない | M-09 | リフレクション防止 |
+| 4 | 空code, state不一致, Cookie不在で適切なエラーコード | M-06 | CSRF防止検証 |
+| 5 | XSSペイロード10種のcode注入でHTMLに反映されない | M-09 | XSSペイロード注入 |
+| 6 | 超長code（10000文字）でクラッシュしない | M-09 | バッファオーバーフロー |
+| 7 | SQLiペイロード5種のcode注入でクラッシュしない | M-09 | SQLi耐性 |
+| 8 | パストラバーサル6種のcode注入でクラッシュしない | M-09 | パストラバーサル耐性 |
+| 9 | `</script>`含むトークンでHTMLが壊れない | M-09 | escapeForScript検証 |
+| 10 | バックスラッシュ・改行含むトークンの安全性検証 | M-02 | ソースコードレベル検証 |
+
+#### 2.7.8 セキュリティヘッダー包括検証（SEC-10, SEC-14〜SEC-17）
+
+| # | テストケース | 手法 | 備考 |
+| :--- | :--- | :--- | :--- |
+| 1 | X-Content-Type-Options: nosniff 設定確認 | M-02 | OWASP推奨 |
+| 2 | X-Frame-Options: DENY 設定確認 | M-02 | クリックジャッキング防止 |
+| 3 | Referrer-Policy が安全な値に設定 | M-02 | 情報漏洩防止 |
+| 4 | Permissions-Policy で geolocation 無効化 | M-02 | プライバシー保護 |
+| 5 | Permissions-Policy で camera/microphone 無効化 | M-02 | プライバシー保護 |
+| 6 | Permissions-Policy で interest-cohort(FLoC) 無効化 | M-02 | 広告トラッキング拒否 |
+| 7 | HSTS: Strict-Transport-Security 設定確認 | M-02 | SEC-14 |
+| 8 | HSTS: max-age≧15768000秒（6ヶ月以上） | M-02 | HSTS Preload要件 |
+| 9 | HSTS: includeSubDomains 設定確認 | M-02 | サブドメイン保護 |
+| 10 | HSTS: preload 設定確認 | M-02 | HSTS Preload List |
+| 11 | COOP: Cross-Origin-Opener-Policy: same-origin | M-02 | SEC-15 |
+| 12 | CORP: Cross-Origin-Resource-Policy: same-origin | M-02 | SEC-15 |
+| 13 | X-DNS-Prefetch-Control: off | M-02 | SEC-16 |
+| 14 | X-Permitted-Cross-Domain-Policies: none | M-02 | SEC-16 |
+| 15 | CSP: admin配下にdefault-src, frame-ancestors設定 | M-02 | CSP検証 |
+
+#### 2.7.9 コードセキュリティ品質テスト
+
+| # | テストケース | 手法 | 備考 |
+| :--- | :--- | :--- | :--- |
+| 1 | callback.js/index.jsにvar宣言なし | M-02 | コード品質 |
+| 2 | admin/index.htmlにinnerHTML/outerHTML使用なし | M-02 | SEC-01 |
+| 3 | CDNスクリプトにSRI integrity属性あり | M-02 | SEC-12 |
+| 4 | CDNスクリプトにcrossorigin属性あり | M-02 | SEC-12 |
+
+#### 2.7.10 情報漏洩防止テスト（SEC-18）
+
+| # | テストケース | 手法 | 備考 |
+| :--- | :--- | :--- | :--- |
+| 1 | public配下に.envファイルが存在しない | M-02 | 秘密情報漏洩防止 |
+| 2 | public配下に.gitディレクトリが存在しない | M-02 | ソースコード漏洩防止 |
+| 3 | public配下にpackage.jsonが存在しない | M-02 | 依存関係情報漏洩防止 |
+| 4 | public配下にwrangler.tomlが存在しない | M-02 | インフラ設定漏洩防止 |
+| 5 | public配下にnode_modulesが存在しない | M-02 | ソース漏洩防止 |
+| 6 | config.ymlにシークレット情報が含まれていない | M-02 | 秘密情報ハードコード検出 |
+| 7 | admin/index.htmlにシークレット/ハードコードURL含まれない | M-02 | SEC-08 |
+
+#### 2.7.11 プロトタイプ汚染攻撃テスト
+
+| # | テストケース | 手法 | 備考 |
+| :--- | :--- | :--- | :--- |
+| 1 | __proto__, __defineGetter__, __defineSetter__ がslugパターンで拒否 | M-09 | アンダースコア付きペイロード |
+| 2 | constructor, prototype がslugパターン通過するが安全 | M-02 | 小文字英字のみ、URL衝突なし |
+| 3 | 全プロトタイプ汚染ペイロードがorder値として拒否 | M-09 | 型チェックで防止 |
+
 ---
 
 # 第3部 要件トレーサビリティ
@@ -852,7 +974,7 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 
 要件トレーサビリティマトリクスは **docs/DOCUMENTATION.md 1.5章** に移動した。要件定義と同一ファイルで管理することで、要件追加時のトレース漏れを防止する。
 
-現在の充足状況: **全要件（FR-01〜FR-14, CMS-01〜CMS-16, NFR-01〜NFR-04, SEC-01〜SEC-09）がテストで充足されている。未テスト要件なし。**
+現在の充足状況: **全要件（FR-01〜FR-14, CMS-01〜CMS-16, NFR-01〜NFR-04, SEC-01〜SEC-20）がテストで充足されている。未テスト要件なし。**
 
 ---
 
@@ -1013,22 +1135,23 @@ npm run build
 
 | 項目 | 結果 |
 | :--- | :--- |
-| 実行日時 | 2026-02-21 10:01 |
+| 実行日時 | 2026-02-21 12:06 |
 | Vitest バージョン | v4.0.18 |
-| 実行時間 | 1.47s |
+| 実行時間 | 1.86s |
 | 合否判定 | **合格** |
 
 ### 4.3.2 テストファイル別結果
 
 | テストファイル | テスト数 | 結果 | 実行時間 |
 | :--- | :--- | :--- | :--- |
-| `cms-config.test.mjs` | 44 | PASS | 4ms |
+| `cms-config.test.mjs` | 44 | PASS | 8ms |
 | `admin-html.test.mjs` | 79 | PASS | 6ms |
 | `rehype-image-caption.test.mjs` | 8 | PASS | 3ms |
-| `auth-functions.test.mjs` | 17 | PASS | 27ms |
-| `content-validation.test.mjs` | 67 | PASS | 21ms |
-| `build.test.mjs` | 55 | PASS | 1318ms |
-| **合計** | **270** | **全PASS** | **1.47s** |
+| `auth-functions.test.mjs` | 17 | PASS | 29ms |
+| `fuzz-validation.test.mjs` | 207 | PASS | 40ms |
+| `content-validation.test.mjs` | 67 | PASS | 53ms |
+| `build.test.mjs` | 55 | PASS | 1680ms |
+| **合計** | **477** | **全PASS** | **1.86s** |
 
 ### 4.3.3 E2Eテスト最新実行結果（Playwright）
 
