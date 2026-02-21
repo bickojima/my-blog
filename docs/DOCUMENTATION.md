@@ -23,6 +23,7 @@
 | 1.16 | 2026-02-21 | CMS-16要件追加（固定ページデフォルトソート）、トレーサビリティマトリクス更新、システム変更履歴・テスト基盤変更履歴の欠落補完 |
 | 1.17 | 2026-02-21 | 第三者セキュリティ診断に基づく修正: XSS脆弱性修正（callback.js escapeForScript、admin/index.html innerHTML排除）、postMessageオリジン検証、OAuthスコープ最小化（public_repo,read:user）、CDNバージョン固定、MutationObserver統合、var→const/let統一、セキュリティチェックリスト・品質向上策（4.7章）追加、バグ一覧No.18〜24追加、ドキュメント不整合修正（テスト件数・行数・章番号参照） |
 | 1.18 | 2026-02-21 | セキュリティ要件を1.4.2章（SEC-01〜SEC-09）として独立、セキュリティ検証テスト追加（admin-html 9件、auth-functions 4件）、トレーサビリティマトリクス1.5.4章追加、4.7章を品質向上策・定期診断に再構成、TOC整備 |
+| 1.19 | 2026-02-21 | 第2回ペネトレーションテスト実施: SEC-10〜SEC-13追加（HTTPセキュリティヘッダー、OAuth CSRF防止stateパラメータ、SRI、エラー情報漏洩防止）、_headers全面強化（CSP/X-Frame-Options/X-Content-Type-Options）、callback.js var→const修正・エラーメッセージ汎化、admin/index.html SRI属性追加 |
 
 ## システム変更履歴
 
@@ -279,6 +280,10 @@ PR履歴に基づく主要なシステム変更の記録である。
 | SEC-07 | OAuth最小権限: スコープを必要最小限に制限する | `functions/auth/index.js` | public_repo, read:user のみ。repo, user は禁止 |
 | SEC-08 | 秘密情報保護: APIキー・トークンをソースコードにハードコードしない | `functions/auth/` | 環境変数で管理 |
 | SEC-09 | デバッグコード排除: 本番コードにconsole.log等を残さない | 全ソースコード | デバッグ情報からの情報漏洩を防止 |
+| SEC-10 | HTTPセキュリティヘッダー: CSP, X-Frame-Options, X-Content-Type-Options等を設定する | `_headers` | Cloudflare Pages Headers設定。CSPはadmin配下のみ（Decap CMS要件） |
+| SEC-11 | OAuth CSRF防止: stateパラメータでCSRFを防止する | `functions/auth/` | crypto.randomUUID()でstate生成、HttpOnly Cookieで保存・照合 |
+| SEC-12 | SRI（Subresource Integrity）: 外部CDNスクリプトの完全性を検証する | `admin/index.html` | integrity属性 + crossorigin="anonymous" |
+| SEC-13 | エラー情報漏洩防止: OAuthエラーメッセージを汎化する | `functions/auth/callback.js` | GitHubエラー詳細をクライアントに返さない |
 
 ---
 
@@ -348,8 +353,12 @@ PR履歴に基づく主要なシステム変更の記録である。
 | SEC-07 | OAuth最小権限 | auth-functions | 2.3章 #1, 2.3.1章 #4 | M-06, M-02 | 充足 |
 | SEC-08 | 秘密情報保護 | admin-html | 2.6.12章 #6 | M-02 | 充足 |
 | SEC-09 | デバッグコード排除 | admin-html | 2.6.12章 #5 | M-02 | 充足 |
+| SEC-10 | HTTPセキュリティヘッダー | build | 2.5.1章 #1〜#5 | M-02 | 充足 |
+| SEC-11 | OAuth CSRF防止 | auth-functions | 2.3.1章 #5, #6 | M-02 | 充足 |
+| SEC-12 | SRI（Subresource Integrity） | admin-html | 2.6.12章 #10, #11 | M-02 | 充足 |
+| SEC-13 | エラー情報漏洩防止 | auth-functions | 2.3.1章 #7 | M-02 | 充足 |
 
-**充足状況: 全要件（FR-01〜FR-14, CMS-01〜CMS-16, NFR-01〜NFR-04, SEC-01〜SEC-09）がテストで充足されている。未テスト要件なし。**
+**充足状況: 全要件（FR-01〜FR-14, CMS-01〜CMS-16, NFR-01〜NFR-04, SEC-01〜SEC-13）がテストで充足されている。未テスト要件なし。**
 
 ---
 

@@ -2,9 +2,19 @@ export async function onRequest(context) {
   const { request, env } = context;
   const url = new URL(request.url);
   const code = url.searchParams.get('code');
+  const state = url.searchParams.get('state');
 
   if (!code) {
     return new Response('No code provided', { status: 400 });
+  }
+
+  // CSRF防止: stateパラメータとCookie内のstateを照合
+  const cookies = request.headers.get('Cookie') || '';
+  const stateMatch = cookies.match(/(?:^|;\s*)oauth_state=([^;]+)/);
+  const savedState = stateMatch ? stateMatch[1] : null;
+
+  if (!state || !savedState || state !== savedState) {
+    return new Response('Invalid state parameter', { status: 403 });
   }
 
   const clientId = env.OAUTH_CLIENT_ID;
@@ -13,6 +23,9 @@ export async function onRequest(context) {
   if (!clientId || !clientSecret) {
     return new Response('OAuth credentials not configured', { status: 500 });
   }
+
+  // state Cookie を即座に削除
+  const clearStateCookie = 'oauth_state=; Path=/auth; HttpOnly; Secure; SameSite=Lax; Max-Age=0';
 
   try {
     // Exchange code for access token
@@ -32,7 +45,10 @@ export async function onRequest(context) {
     const data = await tokenResponse.json();
 
     if (data.error) {
-      return new Response(`Error: ${data.error_description}`, { status: 400 });
+      return new Response('Authentication failed', {
+        status: 400,
+        headers: { 'Set-Cookie': clearStateCookie },
+      });
     }
 
     // HTMLに安全に埋め込むためのエスケープ関数
@@ -62,10 +78,10 @@ export async function onRequest(context) {
   <p id="status">Processing...</p>
   <script>
     (function() {
-      var token = "${token}";
-      var provider = "github";
-      var expectedOrigin = "${escapedOrigin}";
-      var statusEl = document.getElementById('status');
+      const token = "${token}";
+      const provider = "github";
+      const expectedOrigin = "${escapedOrigin}";
+      const statusEl = document.getElementById('status');
 
       if (!token) {
         statusEl.textContent = "Error: No token received";
@@ -90,7 +106,7 @@ export async function onRequest(context) {
         statusEl.textContent = "Received acknowledgment. Sending token...";
 
         // Step 3: Send success message with token
-        var message = "authorization:github:success:" + JSON.stringify({
+        const message = "authorization:github:success:" + JSON.stringify({
           token: token,
           provider: provider
         });
@@ -111,9 +127,13 @@ export async function onRequest(context) {
     return new Response(html, {
       headers: {
         'Content-Type': 'text/html',
+        'Set-Cookie': clearStateCookie,
       },
     });
   } catch (error) {
-    return new Response(`Error: ${error.message}`, { status: 500 });
+    return new Response('Authentication failed', {
+      status: 500,
+      headers: { 'Set-Cookie': clearStateCookie },
+    });
   }
 }
