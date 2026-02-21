@@ -21,6 +21,7 @@
 | 1.14 | 2026-02-21 | ブランチマージ手順（4.6章）追加、3.3.4章コレクション順序修正（posts先頭）、CMS-05固定ページ番号バッジ追加、コードリファクタリング（image-optimize.mjs writeFile整理、テスト変数重複排除） |
 | 1.15 | 2026-02-21 | 固定ページ一覧に下書きバッジ表示追加（CMS-05更新）、固定ページデフォルトソートをorder昇順に設定（`{field: order, default_sort: asc}`）、config.ymlスキーマエラー検知E2Eテスト追加 |
 | 1.16 | 2026-02-21 | CMS-16要件追加（固定ページデフォルトソート）、トレーサビリティマトリクス更新、システム変更履歴・テスト基盤変更履歴の欠落補完 |
+| 1.17 | 2026-02-21 | 第三者セキュリティ診断に基づく修正: XSS脆弱性修正（callback.js escapeForScript、admin/index.html innerHTML排除）、postMessageオリジン検証、OAuthスコープ最小化（public_repo,read:user）、CDNバージョン固定、MutationObserver統合、var→const/let統一、セキュリティチェックリスト・品質向上策（4.7章）追加、バグ一覧No.18〜24追加、ドキュメント不整合修正（テスト件数・行数・章番号参照） |
 
 ## システム変更履歴
 
@@ -338,7 +339,7 @@ my-blog/
 │       └── callback.js                 # OAuthコールバック
 ├── public/                             # 静的ファイル（そのままdistにコピー）
 │   ├── admin/
-│   │   ├── index.html                  # CMS管理画面（CSS/JS含む約950行）
+│   │   ├── index.html                  # CMS管理画面（CSS/JS含む約1020行）
 │   │   └── config.yml                  # CMS設定定義
 │   ├── images/uploads/                 # アップロード画像（Git管理）
 │   ├── _headers                        # HTTPレスポンスヘッダー
@@ -423,8 +424,8 @@ my-blog/
 | ホスティング | Cloudflare Pages | - | 静的配信 + Functions |
 | 認証 | GitHub OAuth App | - | CMS管理者認証 |
 | 画像処理 | sharp | v0.34.5 | 画像圧縮・回転・リサイズ |
-| テスト（単体・統合） | Vitest | v4.0.18 | 単体テスト・統合テスト（242テスト） |
-| テスト（E2E） | Playwright | v1.58.2 | ブラウザE2Eテスト（PC/iPad/iPhone 237テスト） |
+| テスト（単体・統合） | Vitest | v4.0.18 | 単体テスト・統合テスト（247テスト） |
+| テスト（E2E） | Playwright | v1.58.2 | ブラウザE2Eテスト（PC/iPad/iPhone 240テスト） |
 | コンテンツ | Markdown | - | frontmatter形式 |
 
 ### 2.2.2 選定理由
@@ -534,7 +535,9 @@ GitHub OAuth 2.0 を使用する。Decap CMS は CMS 自体に GitHub API への
      │                   │                     │ 3.認可URL構築      │
      │                   │                     │  client_id       │
      │                   │                     │  redirect_uri    │
-     │                   │                     │  scope=repo,user │
+     │                   │                     │  scope=          │
+     │                   │                     │  public_repo,    │
+     │                   │                     │  read:user       │
      │←──────────────────────────────302──────│                  │
      │                                         │                  │
      │ 4.GitHub認可画面表示                      │                  │
@@ -637,7 +640,7 @@ const redirectUri = `${request.origin}/auth/callback`;
 const githubUrl = `https://github.com/login/oauth/authorize`
   + `?client_id=${OAUTH_CLIENT_ID}`
   + `&redirect_uri=${redirectUri}`
-  + `&scope=repo,user`;
+  + `&scope=public_repo,read:user`;
 return Response.redirect(githubUrl, 302);
 ```
 
@@ -645,7 +648,7 @@ return Response.redirect(githubUrl, 302);
 | :--- | :--- | :--- |
 | `client_id` | 環境変数 `OAUTH_CLIENT_ID` | GitHub OAuth App の識別子 |
 | `redirect_uri` | `https://reiwa.casa/auth/callback` | コールバックURL（オリジンから自動構築） |
-| `scope` | `repo,user` | リポジトリ操作権限とユーザー情報 |
+| `scope` | `public_repo,read:user` | 公開リポジトリ操作権限とユーザー情報（読取） |
 
 #### 2.4.5.2 `/auth/callback` エンドポイント（`functions/auth/callback.js`）
 
@@ -663,11 +666,13 @@ const { access_token } = await tokenResponse.json();
 // 2. ハンドシェイクHTML返却
 return new Response(`
   <script>
-    // Step 1: 認証開始通知
-    window.opener.postMessage("authorizing:github", "*");
-    // Step 2: 親ウィンドウからの応答を待機
+    // Step 1: 認証開始通知（オリジン制限付き）
+    const expectedOrigin = url.origin;  // サーバーサイドで算出
+    window.opener.postMessage("authorizing:github", expectedOrigin);
+    // Step 2: 親ウィンドウからの応答を待機（オリジン検証）
     window.addEventListener("message", function(event) {
-      // Step 3: トークン送信
+      if (event.origin !== expectedOrigin) return;
+      // Step 3: トークン送信（XSSエスケープ済み）
       const msg = "authorization:github:success:" + JSON.stringify({token, provider});
       window.opener.postMessage(msg, event.origin);
       // Step 4: ポップアップを閉じる
@@ -683,8 +688,10 @@ return new Response(`
 | :--- | :--- |
 | Client Secret の保護 | `OAUTH_CLIENT_SECRET` はサーバーサイド（Cloudflare Functions）でのみ使用し、ブラウザには露出しない |
 | トークン交換 | 認可コード→アクセストークンの交換はサーバーサイドで実行する（ブラウザで行うと Secret が漏洩する） |
-| postMessage のオリジン検証 | callback.js は `event.origin` を使用してトークン送信先を制限する |
-| scope の最小化 | `repo,user` のみを要求し、不要な権限は取得しない |
+| postMessage のオリジン検証 | callback.js は `expectedOrigin`（サーバーサイド算出）で `postMessage` の送信先を制限し、`event.origin` で受信元を検証する。ワイルドカード `"*"` は使用しない |
+| scope の最小化 | `public_repo,read:user` のみを要求し、不要な権限は取得しない。`repo` スコープ（プライベートリポジトリ含む全アクセス）は使用しない |
+| XSS 対策 | callback.js でトークン値をHTMLに埋め込む際に `escapeForScript()` でエスケープし、スクリプト注入を防止する。admin/index.html では innerHTML を使用せず DOM API（createElement/textContent）で安全にDOM構築する |
+| CDN バージョン固定 | Decap CMS の CDN URL はキャレット範囲（`^3.10.0`）ではなく正確なバージョン（`3.10.0`）を指定し、サプライチェーン攻撃のリスクを軽減する |
 | トークンの保管 | ブラウザの localStorage に保管される。XSS 対策として管理画面に `noindex` を設定し外部からのアクセスを制限する |
 
 ### 2.4.7 環境変数
@@ -974,26 +981,27 @@ collections:
 
 ```
 ┌───────────────────────────────────────────────────────┐
-│               admin/index.html (1006行)                │
+│               admin/index.html (1021行)                │
 │                                                       │
 │  ┌─────────────────┐  ┌────────────────────────────┐ │
-│  │   CSS (Style)    │  │   JavaScript              │ │
+│  │   CSS (Style)    │  │   JavaScript（単一IIFE）    │ │
+│  │                 │  │   'use strict' / const/let │ │
+│  │ PC向けスタイル    │  │                            │ │
+│  │   日付バッジ     │  │ MutationObserver（単一、    │ │
+│  │   削除ボタン色   │  │  RAFデバウンス済み）        │ │
+│  │                 │  │   ├ addSiteLink            │ │
+│  │ モバイル         │  │   ├ formatCollectionEntries│ │
+│  │   (≤799px)      │  │   ├ relabelImageButtons   │ │
+│  │   sticky header │  │   ├ updateDeleteButtonState│ │
+│  │   ボトムシート   │  │   ├ showPublicUrl          │ │
+│  │                 │  │   ├ manageDropdownOverlay │ │
+│  │   2列グリッド    │  │   ├ hideCodeBlockOnMobile  │ │
+│  │   44pxタップ領域 │  │   └ restrictImageInputAccept│ │
 │  │                 │  │                            │ │
-│  │ PC向けスタイル    │  │ MutationObserver(※RAF     │ │
-│  │   日付バッジ     │  │  デバウンス済み)            │ │
-│  │   削除ボタン色   │  │   ├ addSiteLink            │ │
-│  │                 │  │   ├ formatCollectionEntries│ │
-│  │ モバイル         │  │   ├ relabelImageButtons   │ │
-│  │   (≤799px)      │  │   ├ updateDeleteButtonState│ │
-│  │   sticky header │  │   ├ showPublicUrl          │ │
-│  │   ボトムシート   │  │   ├ manageDropdownOverlay │ │
-│  │                 │  │   └ hideCodeBlockOnMobile  │ │
-│  │   2列グリッド    │  │                            │ │
-│  │   44pxタップ領域 │  │ hashchange リスナー        │ │
-│  │                 │  │   └ showPublicUrl再実行    │ │
-│  │ iOS対応         │  │                            │ │
-│  │   16px font     │  │ HEIC accept制御            │ │
-│  │   image-orient. │  │ EXIF canvas補正（upload時） │ │
+│  │ iOS対応         │  │ hashchange リスナー        │ │
+│  │   16px font     │  │   └ showPublicUrl再実行    │ │
+│  │   image-orient. │  │                            │ │
+│  │                 │  │ EXIF canvas補正（upload時） │ │
 │  │                 │  │ pull-to-refresh無効化      │ │
 │  │                 │  │   touchstart/touchmove     │ │
 │  │                 │  │   (エディタ内は除外)        │ │
@@ -1071,7 +1079,7 @@ CMS管理画面での画像表示はCSS `image-orientation: from-image` に委�
 `CMS.registerPreviewStyle()` で本番サイト相当のCSSをプレビューiframeに注入し、編集中のプレビュー表示を本番に近づける。注入するスタイルは `Base.astro` のグローバルスタイルと `[slug].astro` の `.post-content` スタイルを統合したもの。
 
 **注入対象:**
-- フォントファミリー（-apple-system, ヒラギノ角ゴ等）、行間（1.9）、文字色（#333）
+- フォントファミリー（-apple-system, ヒラギノ角ゴ等）、行間（グローバル: 1.8、記事本文: 1.9）、文字色（#333）
 - 画像: `max-width: 100%`, `border-radius: 4px`, `margin: 1rem 0`, `image-orientation: from-image`
 - 見出し: h2（1.3rem）、h3（1.1rem）と適切なマージン
 - コードブロック: `background: #f5f5f5`, `border-radius: 4px`
@@ -1299,7 +1307,7 @@ GitHubリポジトリが利用可能な場合、以下の手順でシステム�
 ### 4.3.3 転用手順
 
 1. リポジトリをフォークする
-2. 17.1 の変更箇所一覧に従い各ファイルを更新する
+2. 4.3.1 の変更箇所一覧に従い各ファイルを更新する
 3. `src/content/posts/` 配下の記事を削除し、新サイトの記事を配置する
 4. `public/images/uploads/` 配下の画像を新サイトのものに差し替える
 5. GitHub OAuth Appを新規作成し、Client ID / Secret を取得する
@@ -1357,6 +1365,13 @@ GitHubリポジトリが利用可能な場合、以下の手順でシステム�
 | 15 | 2026-02-20 | ドロップダウンメニューgap: ページ名にホバー後、メニューへマウス移動するとメニューが消える | menu `margin-top`がホバー判定の隙間を作る | `padding-top`に変更 + mouseleave 300ms遅延 | build 2.5章, E-21 |
 | 16 | 2026-02-21 | sortable_fieldsプロパティ名エラー: `{field: order, default: true}`でCMS起動時にスキーマエラー | `default`プロパティが非対応。正しくは`default_sort: asc\|desc` | `{field: order, default_sort: asc}`に修正 | cms-config 2.4章 #40, #41, E-07 |
 | 17 | 2026-02-21 | 要件ID・ドキュメント更新漏れ: デフォルトソート機能に要件ID（CMS-16）が付与されず、システム変更履歴・テスト基盤変更履歴・README改訂履歴が未更新のまま放置 | 機能実装時に要件ID付与とドキュメント履歴更新を同時に行わなかった | CMS-16追加、全履歴テーブル補完、再発防止テスト追加 | cms-config 2.4章 #42 |
+| 18 | 2026-02-21 | XSS脆弱性（callback.js）: OAuthコールバックHTMLでトークン値を未エスケープでscriptタグに埋め込み。悪意あるレスポンスでスクリプト注入可能 | HTMLテンプレートリテラル内に値を直接展開 | `escapeForScript()`関数でHTML特殊文字・改行をエスケープ | auth-functions 2.3章 |
+| 19 | 2026-02-21 | postMessageオリジン未検証（callback.js）: `postMessage("authorizing:github", "*")`でワイルドカード送信し、受信側でもオリジン検証なし | Decap CMS公式サンプルの踏襲 | `expectedOrigin`（サーバーサイド算出）で送信先を制限し、`event.origin`で受信元を検証 | auth-functions 2.3章 |
+| 20 | 2026-02-21 | XSS脆弱性（admin/index.html showPublicUrl）: `innerHTML`で公開URLバーを構築しており、URLに含まれるスクリプトが実行される可能性 | innerHTML使用 | DOM API（createElement/textContent）に置換し、innerHTML使用を排除 | admin-html 2.6.6章 |
+| 21 | 2026-02-21 | OAuthスコープ過剰（auth/index.js）: `scope=repo,user`でプライベートリポジトリ全アクセス権を含む不要な権限を要求 | 初期実装時の過剰設定 | `scope=public_repo,read:user`に最小化（公開リポジトリ操作+ユーザー情報読取のみ） | auth-functions 2.3章 |
+| 22 | 2026-02-21 | CDNバージョン範囲指定（admin/index.html）: `decap-cms@^3.10.0`でキャレット範囲を使用しており、サプライチェーン攻撃で悪意あるバージョンが配信される可能性 | npmのキャレット構文をCDN URLにそのまま使用 | `decap-cms@3.10.0`に正確なバージョンを固定 | admin-html 2.6.1章 |
+| 23 | 2026-02-21 | MutationObserver二重定義（admin/index.html）: 2つの独立したMutationObserverが存在し、片方はRAFデバウンスなし | 機能追加時の統合漏れ | 単一MutationObserverに統合し、全監視をRAFデバウンス付きで一元管理 | admin-html 2.6.6章 |
+| 24 | 2026-02-21 | var/let/const混在（admin/index.html）: varとconst/letが混在し、変数スコープが不明確 | 段階的な機能追加でコーディングスタイルが統一されなかった | 全変数を'use strict'モードでconst/letに統一 | admin-html 2.6.6章 |
 
 ---
 
@@ -1431,4 +1446,71 @@ git push origin staging
 
 ---
 
-**最終更新**: 2026年2月21日（v1.16）
+## 4.7. セキュリティチェックリスト・品質向上策
+
+第三者セキュリティ診断（2026年2月21日実施）で検出された問題と対策を踏まえ、再発防止のためのチェックリストと品質向上策を定める。
+
+### 4.7.1 セキュリティチェックリスト
+
+コード変更時・機能追加時に以下の項目を確認する。
+
+#### フロントエンド（admin/index.html）
+
+| No. | チェック項目 | 判定基準 |
+|:---|:---|:---|
+| S-01 | innerHTML / outerHTML を使用していないこと | DOM API（createElement, textContent, appendChild）で構築すること。ユーザー入力やURLを含む文字列をHTMLとして挿入しない |
+| S-02 | CDN外部スクリプトのバージョンが正確に固定されていること | キャレット範囲（`^`）やチルダ範囲（`~`）ではなく、正確なバージョン番号（例: `@3.10.0`）を指定する |
+| S-03 | `target="_blank"` を含むリンクに `rel="noopener"` が付与されていること | `window.opener` 経由の逆参照攻撃を防止する |
+| S-04 | eval() / Function() / document.write() を使用していないこと | コード注入の経路を排除する |
+
+#### サーバーサイド（functions/auth/）
+
+| No. | チェック項目 | 判定基準 |
+|:---|:---|:---|
+| S-05 | HTMLテンプレートに埋め込む変数が全てエスケープされていること | `escapeForScript()` 等でHTML特殊文字（`<`, `>`, `"`, `'`）・改行をエスケープする |
+| S-06 | postMessage の送信先が `"*"`（ワイルドカード）でないこと | サーバーサイドで算出した `expectedOrigin` を使用する |
+| S-07 | postMessage の受信時に `event.origin` を検証していること | 想定外のオリジンからのメッセージを拒否する |
+| S-08 | OAuth scope が必要最小限であること | `public_repo`（公開リポジトリのみ）と `read:user`（ユーザー情報読取のみ）に限定する。`repo`（全リポジトリ）や `user`（書込含む）は使用しない |
+| S-09 | Client Secret がクライアントサイドに露出していないこと | 環境変数としてサーバーサイドでのみ使用する |
+
+#### 共通
+
+| No. | チェック項目 | 判定基準 |
+|:---|:---|:---|
+| S-10 | 秘密情報（APIキー、トークン、パスワード）がソースコードにハードコードされていないこと | 環境変数または安全な設定管理を使用する |
+| S-11 | デバッグ用のコード（console.log、デバッグ用DOM要素）が本番コードに残っていないこと | デバッグ情報からの情報漏洩を防止する |
+
+### 4.7.2 品質向上策
+
+#### コード品質基準
+
+| No. | 基準 | 詳細 |
+|:---|:---|:---|
+| Q-01 | 変数宣言は `const` / `let` を使用し `var` を使用しない | ブロックスコープにより変数の影響範囲を明確化し、意図しない再代入を防止する |
+| Q-02 | `'use strict'` モードを有効にする | 未宣言変数の使用やサイレントエラーを検出する |
+| Q-03 | YAML/frontmatter のパース処理には専用ライブラリを使用する | 正規表現による独自パースは脆弱であるため、gray-matter 等の実績あるライブラリを使用する |
+| Q-04 | MutationObserver は用途に関わらず単一インスタンスに統合する | 複数Observerによるパフォーマンス劣化とデバウンス漏れを防止する |
+| Q-05 | テストのアサーションは明示的に失敗させる | `if (condition) { ... }` で暗黙にスキップせず、`expect(condition).toBe(true)` で失敗を検知する |
+| Q-06 | sharp等のリソース消費ライブラリはインスタンスを最小限にする | 同一ファイルに対する重複インスタンス生成を排除する |
+
+#### ドキュメント品質基準
+
+| No. | 基準 | 詳細 |
+|:---|:---|:---|
+| D-01 | コード中の数値（行数・テスト件数等）とドキュメントの記載が一致すること | 自動テスト（要件トレーサビリティ検証）で検知可能な範囲を拡大する |
+| D-02 | 章番号の相互参照が正しいこと | 章番号を変更する場合は全ドキュメントの参照を検索・更新する |
+| D-03 | テスト対象外テーブルの内容が実態と矛盾しないこと | テスト実装済みの機能が「テスト対象外」に記載されたまま放置しない |
+| D-04 | 擬似コード・シーケンス図がコードの実装と一致すること | セキュリティ修正等でコードを変更した場合はドキュメントの擬似コードも更新する |
+
+### 4.7.3 定期セキュリティ診断
+
+| 項目 | 内容 |
+|:---|:---|
+| 実施頻度 | 機能追加時、および四半期に1回 |
+| 対象範囲 | フロントエンド（admin/index.html）、サーバーサイド（functions/auth/）、外部依存関係（CDN、npm） |
+| 診断手法 | コードレビュー、OWASP Top 10チェック、依存関係の脆弱性スキャン |
+| 記録方法 | 検出事項はバグ一覧（4.5章）に追記し、対策と再発防止テストを実施する |
+
+---
+
+**最終更新**: 2026年2月21日（v1.17）

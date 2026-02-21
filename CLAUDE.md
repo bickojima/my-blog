@@ -41,7 +41,7 @@ src/
 └── content.config.ts        # Zodスキーマ定義
 
 public/
-├── admin/index.html         # Decap CMS管理画面（CSS/JS カスタマイズ含む、約1000行）
+├── admin/index.html         # Decap CMS管理画面（CSS/JS カスタマイズ含む、約1020行）
 ├── admin/config.yml         # CMS設定（GitHub backend, OAuth）
 └── images/uploads/          # アップロード画像
 
@@ -68,10 +68,10 @@ tests/
 - アップロード時にcanvasでEXIF正規化、ビルド時にsharp `.rotate()` で二重保証
 
 ### CMS管理画面 (admin/index.html)
-- Decap CMS v3.10.0 をDOM操作でカスタマイズ（MutationObserver、RAFデバウンス済み）
+- Decap CMS v3.10.0 をDOM操作でカスタマイズ（単一MutationObserver、RAFデバウンス済み、単一IIFE、'use strict'/const/let統一）
 - モバイル: ドロップダウンは `position: fixed; bottom: 0` のボトムシート形式
 - プレビュースタイル: `CMS.registerPreviewStyle()` で本番サイト相当のCSSをプレビューiframeに注入
-- 主要JS関数: `addSiteLink`, `formatCollectionEntries`, `relabelImageButtons`, `updateDeleteButtonState`, `showPublicUrl`, `manageDropdownOverlay`, `hideCodeBlockOnMobile`
+- 主要JS関数: `addSiteLink`, `formatCollectionEntries`, `relabelImageButtons`, `updateDeleteButtonState`, `showPublicUrl`, `manageDropdownOverlay`, `hideCodeBlockOnMobile`, `restrictImageInputAccept`
 - `showPublicUrl`: EditorControlBarの表示状態（`getBoundingClientRect`）でエディタ画面を判定。ハッシュURLからコレクション種別（posts/pages）を判定し、記事は`/posts/年/月/タイトル`、固定ページは`/slug`形式でURL生成
 - `manageDropdownOverlay`: ドロップダウン表示時のみURLバーを退避（`hiddenByDropdown`フラグで誤復元を防止）
 - **Slate codeblockクラッシュ対策**: モバイル（≤799px）でcodeblockボタン非表示、`toSlatePoint`エラーハンドラ、touchmoveエディタ除外
@@ -110,7 +110,7 @@ tests/
 
 DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を採用:
 
-- **DOCUMENTATION.md**: 第1部（1.1〜1.5）要件定義、第2部（2.1〜2.5）基本設計、第3部（3.1〜3.5）詳細設計、第4部（4.1〜4.6）運用設計
+- **DOCUMENTATION.md**: 第1部（1.1〜1.5）要件定義、第2部（2.1〜2.5）基本設計、第3部（3.1〜3.5）詳細設計、第4部（4.1〜4.7）運用設計
 - **TEST-REPORT.md**: 第1部（1.1〜1.6）テスト計画、第2部（2.1〜2.6）テストケース、第3部（3.1）トレーサビリティ、第4部（4.1〜4.3）テスト実行
 
 ## 変更時のルール
@@ -147,6 +147,15 @@ DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を�
 4. マージ後、`config.yml` の `branch` / `base_url` が main の値（`main` / `https://reiwa.casa`）であることを確認する
 5. main ブランチでテストを実行し、全PASS を確認してからプッシュする
 6. 詳細手順は DOCUMENTATION.md 4.6章を参照
+
+### セキュリティ・品質チェック（コード変更時）
+- admin/index.html で `innerHTML` / `outerHTML` を使用しない（DOM API を使用）
+- CDN外部スクリプトのバージョンは正確に固定する（キャレット `^` 禁止）
+- `postMessage` のオリジンは `"*"` ではなくサーバーサイド算出値を使用する
+- OAuth scope は `public_repo,read:user` に限定する（`repo` / `user` 禁止）
+- HTMLテンプレートに埋め込む変数は必ずエスケープする
+- 変数宣言は `const` / `let` のみ（`var` 禁止）、`'use strict'` を使用
+- 詳細は DOCUMENTATION.md 4.7章のセキュリティチェックリスト・品質向上策を参照
 
 ### やってはいけないこと
 - テストを削除・スキップして通す（必ず原因を修正する）

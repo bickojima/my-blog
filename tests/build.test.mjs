@@ -327,11 +327,10 @@ describe('ビルド検証', () => {
         DIST_DIR,
         `posts/${firstPost.year}/${firstPost.month}/${firstPost.title}/index.html`
       );
-      if (existsSync(postHtml)) {
-        const html = readFileSync(postHtml, 'utf-8');
-        expect(html).toContain('記事一覧に戻る');
-        expect(html).toContain('href="/"');
-      }
+      expect(existsSync(postHtml), `記事HTMLが存在しない: ${postHtml}`).toBe(true);
+      const html = readFileSync(postHtml, 'utf-8');
+      expect(html).toContain('記事一覧に戻る');
+      expect(html).toContain('href="/"');
     });
   });
 
@@ -427,6 +426,7 @@ describe('ビルド検証', () => {
       function searchForFigure(dir) {
         if (!existsSync(dir)) return;
         for (const entry of readdirSync(dir, { withFileTypes: true })) {
+          if (foundFigure) return;
           const fullPath = join(dir, entry.name);
           if (entry.isDirectory()) {
             searchForFigure(fullPath);
@@ -437,7 +437,6 @@ describe('ビルド検証', () => {
               // figure/figcaptionが存在する記事で追加検証
               expect(html).toContain('loading="lazy"');
               expect(html).toContain('decoding="async"');
-              return;
             }
           }
         }
