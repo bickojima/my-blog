@@ -1007,6 +1007,14 @@ describe('セキュリティヘッダー構成の包括的検証', () => {
       expect(adminSection).toContain('blob:');
     });
 
+    it('CSP connect-src に blob: が含まれている（Bug #29: 画像保存時の fetch(blobURL) に必要）', () => {
+      const cspLine = adminSection.split('\n').find(l => l.includes('Content-Security-Policy:'));
+      expect(cspLine, 'CSPヘッダーが見つからない').toBeTruthy();
+      const connectSrcMatch = cspLine.match(/connect-src\s+([^;]+)/);
+      expect(connectSrcMatch, 'connect-srcが見つからない').toBeTruthy();
+      expect(connectSrcMatch[1]).toContain('blob:');
+    });
+
     it('/* と /admin/* で同名ヘッダーが重複していない（Bug #28 再発防止）', () => {
       // Cloudflare Pages は同名ヘッダーをオーバーライドせずAppendするため重複禁止
       // コメント行を除外して実際のヘッダー行のみを検証
