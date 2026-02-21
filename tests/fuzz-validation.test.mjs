@@ -884,14 +884,21 @@ describe('OAuth認証エンドポイントのファズテスト', () => {
 
 describe('セキュリティヘッダー構成の包括的検証', () => {
   const headersContent = readFileSync(join(process.cwd(), 'public/_headers'), 'utf-8');
+  // パスルール行（行頭 /admin/*）で分割してセクション抽出（コメント行内の /admin/* を除外）
+  const adminRuleIndex = headersContent.search(/^\/admin\/\*/m);
+  const globalSection = adminRuleIndex >= 0 ? headersContent.substring(0, adminRuleIndex) : headersContent;
+  const adminSectionAll = adminRuleIndex >= 0 ? headersContent.substring(adminRuleIndex) : '';
 
   describe('OWASP推奨ヘッダー（全ページ）', () => {
     it('X-Content-Type-Options: nosniff が設定されている', () => {
       expect(headersContent).toContain('X-Content-Type-Options: nosniff');
     });
 
-    it('X-Frame-Options: DENY が設定されている', () => {
-      expect(headersContent).toContain('X-Frame-Options: DENY');
+    it('X-Frame-Options が /admin/* に設定されている', () => {
+      // Bug #28: COOP/CORP/X-Frame-Optionsは /* に含めると /admin/* と重複送信される
+      // そのため /admin/* セクションのみに設定する
+      const adminSection = adminSectionAll;
+      expect(adminSection).toContain('X-Frame-Options: SAMEORIGIN');
     });
 
     it('Referrer-Policy が安全な値に設定されている', () => {
@@ -953,21 +960,36 @@ describe('セキュリティヘッダー構成の包括的検証', () => {
   });
 
   describe('Cross-Originヘッダー', () => {
-    it('Cross-Origin-Opener-Policy: same-origin が全ページに設定されている', () => {
-      // /*セクションでsame-originが設定されていること
-      const globalSection = headersContent.split('/admin/')[0] || '';
-      expect(globalSection).toContain('Cross-Origin-Opener-Policy: same-origin');
+    // Bug #28 再発防止: COOP/CORPは /* に含めると /admin/* と重複送信される。
+    // Cloudflare Pages は同名ヘッダーをオーバーライドせずAppendするため、
+    // ブラウザが最も厳しい値を採用し管理画面が壊れる。
+    // そのため /admin/* セクションのみに設定する。
+
+    it('Cross-Origin-Opener-Policy が /admin/* に設定されている', () => {
+      const adminSection = adminSectionAll;
+      expect(adminSection).toContain('Cross-Origin-Opener-Policy: same-origin-allow-popups');
     });
 
-    it('Cross-Origin-Resource-Policy: same-origin が設定されている', () => {
-      expect(headersContent).toContain('Cross-Origin-Resource-Policy: same-origin');
+    it('Cross-Origin-Resource-Policy が /admin/* に設定されている', () => {
+      const adminSection = adminSectionAll;
+      expect(adminSection).toContain('Cross-Origin-Resource-Policy: same-site');
+    });
+
+    it('COOP/CORP/X-Frame-Options が /* セクションのヘッダー行に含まれていない（重複送信防止）', () => {
+      // コメント行を除外して実際のヘッダー行のみを検証
+      const globalHeaders = globalSection.split('\n')
+        .filter(line => !line.trim().startsWith('#') && line.trim() !== '')
+        .join('\n');
+      expect(globalHeaders).not.toContain('Cross-Origin-Opener-Policy');
+      expect(globalHeaders).not.toContain('Cross-Origin-Resource-Policy');
+      expect(globalHeaders).not.toContain('X-Frame-Options');
     });
   });
 
   // バグ#27再発防止: COOP same-originがOAuth popupのwindow.openerをnullにし、
   // Decap CMSのGitHub認証が失敗→記事保存時「TypeError: Load failed」が発生した
   describe('管理画面（/admin/*）セキュリティヘッダーオーバーライド', () => {
-    const adminSection = headersContent.split('/admin/')[1] || '';
+    const adminSection = adminSectionAll;
 
     it('COOP が same-origin-allow-popups にオーバーライドされている（OAuth popup許可）', () => {
       expect(adminSection).toContain('Cross-Origin-Opener-Policy: same-origin-allow-popups');
@@ -985,13 +1007,21 @@ describe('セキュリティヘッダー構成の包括的検証', () => {
       expect(adminSection).toContain('blob:');
     });
 
-    it('管理画面のCOOPが全ページのCOOPより緩和されている', () => {
-      // 全ページ: same-origin（厳格）、管理画面: same-origin-allow-popups（popup許可）
-      const globalSection = headersContent.split('/admin/')[0] || '';
-      expect(globalSection).toContain('Cross-Origin-Opener-Policy: same-origin');
-      expect(adminSection).toContain('Cross-Origin-Opener-Policy: same-origin-allow-popups');
-      // 管理画面にsame-origin（厳格版）が単独で設定されていないことを確認
-      expect(adminSection).not.toMatch(/Cross-Origin-Opener-Policy:\s*same-origin\s*$/m);
+    it('/* と /admin/* で同名ヘッダーが重複していない（Bug #28 再発防止）', () => {
+      // Cloudflare Pages は同名ヘッダーをオーバーライドせずAppendするため重複禁止
+      // コメント行を除外して実際のヘッダー行のみを検証
+      const globalHeaders = globalSection.split('\n')
+        .filter(line => !line.trim().startsWith('#') && line.trim() !== '')
+        .join('\n');
+      const adminHeaders = adminSection.split('\n')
+        .filter(line => line.trim() && line.includes(':') && !line.trim().startsWith('#'))
+        .map(line => line.trim().split(':')[0].trim());
+      for (const header of adminHeaders) {
+        expect(
+          globalHeaders,
+          `${header} が /* と /admin/* で重複している`
+        ).not.toContain(`${header}:`);
+      }
     });
   });
 
@@ -1006,7 +1036,7 @@ describe('セキュリティヘッダー構成の包括的検証', () => {
   });
 
   describe('CSP（Content Security Policy）for admin', () => {
-    const adminSection = headersContent.split('/admin/')[1] || '';
+    const adminSection = adminSectionAll;
 
     it('default-src が設定されている', () => {
       expect(adminSection).toContain("default-src 'none'");

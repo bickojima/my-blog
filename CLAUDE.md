@@ -23,7 +23,7 @@
 npm run dev          # 開発サーバー起動（前処理含む）
 npm run build        # テスト必須ビルド（vitest run → normalize-images → organize-posts → astro build → image-optimize）
 npm run build:raw    # テストなしビルド（build.test.mjs内部で使用、Cloudflare Pages用）
-npm test             # Vitest 全テスト実行（491テスト、記事数により変動）
+npm test             # Vitest 全テスト実行（496テスト、記事数により変動）
 npm run test:watch   # Vitest ウォッチモード
 npm run test:e2e     # Playwright E2Eテスト（要: npm run build 済み、240テスト）
 ```
@@ -93,7 +93,7 @@ tests/
 
 ## テスト
 
-- **Vitest**: 設定検証、コンテンツ検証、単体テスト、ビルド統合テスト、セキュリティ検証、ファズテスト、基本機能保護テスト（491テスト、記事数により変動）
+- **Vitest**: 設定検証、コンテンツ検証、単体テスト、ビルド統合テスト、セキュリティ検証、ファズテスト、基本機能保護テスト（496テスト、記事数により変動）
 - **Playwright**: PC/iPad/iPhone 3デバイス × 80テスト = 240テスト（ローカルのみ、CIでは未実行）
 - コンテンツ検証テストは記事数・ページ数に応じて動的展開される
 - テスト実行後、失敗がある場合は原因を調査し修正する（テストを削除・スキップしない）
@@ -166,6 +166,7 @@ DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を�
   - COOP `same-origin` は OAuth popup を破壊する → 管理画面は `same-origin-allow-popups` を使用
   - `X-Frame-Options: DENY` は CMS プレビュー iframe を阻害する → 管理画面は `SAMEORIGIN` を使用
   - CSP `frame-ancestors 'none'` は同上 → 管理画面は `frame-ancestors 'self'` を使用
+- **Cloudflare Pages `_headers` 制約（Bug #28）**: `/*` と `/admin/*` で同名ヘッダーを指定すると、オーバーライドではなく **Append（重複送信）** される。ブラウザは最も厳しい値を採用するため、管理画面で異なる値が必要なヘッダー（COOP, CORP, X-Frame-Options）は `/*` セクションに含めてはならない。`/admin/*` セクションにのみ設定する
 
 ### やってはいけないこと
 - テストを削除・スキップして通す（必ず原因を修正する）
