@@ -1,0 +1,1635 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>staging.reiwa.casa 検証エビデンスレポート - 2026-02-23</title>
+<style>
+  :root {
+    --color-pass: #16a34a;
+    --color-pass-bg: #dcfce7;
+    --color-fail: #dc2626;
+    --color-fail-bg: #fef2f2;
+    --color-primary: #1e3a5f;
+    --color-primary-light: #2563eb;
+    --color-border: #e2e8f0;
+    --color-bg-section: #f8fafc;
+    --color-bg-card: #ffffff;
+    --color-text: #1e293b;
+    --color-text-muted: #64748b;
+    --color-accent: #f59e0b;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);
+    --radius: 8px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans JP', sans-serif;
+    color: var(--color-text);
+    background: #f1f5f9;
+    line-height: 1.6;
+  }
+
+  /* Header */
+  .report-header {
+    background: linear-gradient(135deg, var(--color-primary) 0%, #0f172a 100%);
+    color: #fff;
+    padding: 40px 0 32px;
+    border-bottom: 4px solid var(--color-primary-light);
+  }
+  .report-header .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+  .report-header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    margin-bottom: 8px;
+  }
+  .report-header .subtitle {
+    font-size: 15px;
+    color: #94a3b8;
+    margin-bottom: 20px;
+  }
+  .header-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    font-size: 14px;
+    color: #cbd5e1;
+  }
+  .header-meta span { display: flex; align-items: center; gap: 6px; }
+  .header-meta .label { color: #94a3b8; }
+
+  /* Container */
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* Summary Section */
+  .summary-section {
+    padding: 32px 0;
+  }
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .summary-card {
+    background: var(--color-bg-card);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-border);
+    text-align: center;
+  }
+  .summary-card .card-label {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+  }
+  .summary-card .card-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--color-primary);
+  }
+  .summary-card .card-detail {
+    font-size: 13px;
+    color: var(--color-text-muted);
+    margin-top: 4px;
+  }
+
+  /* Summary Table */
+  .summary-table-wrapper {
+    background: var(--color-bg-card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-border);
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+  .summary-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  .summary-table thead {
+    background: var(--color-primary);
+    color: #fff;
+  }
+  .summary-table th {
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.03em;
+  }
+  .summary-table td {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .summary-table tbody tr:last-child td { border-bottom: none; }
+  .summary-table tbody tr:hover { background: #f8fafc; }
+  .summary-table .total-row {
+    background: #f1f5f9;
+    font-weight: 700;
+  }
+  .summary-table .total-row td { border-top: 2px solid var(--color-primary); }
+
+  /* Badges */
+  .badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+  .badge-pass {
+    background: var(--color-pass-bg);
+    color: var(--color-pass);
+    border: 1px solid #bbf7d0;
+  }
+  .badge-fail {
+    background: var(--color-fail-bg);
+    color: var(--color-fail);
+    border: 1px solid #fecaca;
+  }
+  .badge-skip {
+    background: #fef9c3;
+    color: #a16207;
+    border: 1px solid #fde68a;
+  }
+  .badge-info {
+    background: #dbeafe;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+  }
+
+  /* Part Section */
+  .part-section {
+    padding: 32px 0 16px;
+  }
+  .part-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 8px;
+  }
+  .part-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: var(--color-primary);
+    color: #fff;
+    border-radius: 50%;
+    font-size: 18px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .part-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--color-primary);
+  }
+  .part-description {
+    font-size: 14px;
+    color: var(--color-text-muted);
+    margin-bottom: 24px;
+    margin-left: 56px;
+  }
+
+  /* Scenario Card */
+  .scenario-card {
+    background: var(--color-bg-card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-border);
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+  .scenario-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    background: var(--color-bg-section);
+    border-bottom: 1px solid var(--color-border);
+  }
+  .scenario-id {
+    font-family: 'SFMono-Regular', 'Consolas', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--color-primary-light);
+    background: #dbeafe;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-right: 12px;
+  }
+  .scenario-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--color-text);
+    flex: 1;
+  }
+  .scenario-bugs {
+    display: flex;
+    gap: 4px;
+    margin-left: 12px;
+    flex-wrap: wrap;
+  }
+  .bug-ref {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fde68a;
+    white-space: nowrap;
+  }
+  .scenario-body {
+    padding: 16px 20px;
+  }
+  .device-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .device-cell {
+    text-align: center;
+  }
+  .device-label {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-text-muted);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .device-label .device-icon {
+    font-size: 14px;
+  }
+  .device-cell img {
+    width: 100%;
+    height: auto;
+    border-radius: 6px;
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-md);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+  }
+  .device-cell img:hover {
+    transform: scale(1.02);
+    box-shadow: var(--shadow-lg);
+  }
+
+  /* Lightbox */
+  .lightbox-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+    cursor: zoom-out;
+  }
+  .lightbox-overlay.active { display: flex; }
+  .lightbox-overlay img {
+    max-width: 95vw;
+    max-height: 95vh;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+  }
+
+  /* Footer */
+  .report-footer {
+    padding: 32px 0;
+    text-align: center;
+    color: var(--color-text-muted);
+    font-size: 13px;
+    border-top: 1px solid var(--color-border);
+    margin-top: 24px;
+    background: var(--color-bg-card);
+  }
+
+  /* Divider */
+  .section-divider {
+    border: none;
+    border-top: 2px solid var(--color-border);
+    margin: 8px 0;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .device-grid {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    .summary-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .header-meta { flex-direction: column; gap: 8px; }
+  }
+
+  /* Print */
+  @media print {
+    body { background: #fff; }
+    .report-header { background: var(--color-primary); }
+    .scenario-card { break-inside: avoid; }
+    .device-cell img { box-shadow: none; border: 1px solid #ccc; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="report-header">
+  <div class="container">
+    <h1>staging.reiwa.casa 検証エビデンスレポート</h1>
+    <p class="subtitle">tbiのブログ -- Staging環境 総合検証結果</p>
+    <div class="header-meta">
+      <span><span class="label">検証日:</span> 2026-02-23</span>
+      <span><span class="label">対象環境:</span> staging.reiwa.casa</span>
+      <span><span class="label">ブランチ:</span> staging</span>
+      <span><span class="label">エビデンス総数:</span> 99 スクリーンショット</span>
+      <span><span class="label">検証デバイス:</span> PC / iPad / iPhone</span>
+    </div>
+  </div>
+</header>
+
+<!-- Summary -->
+<section class="summary-section">
+  <div class="container">
+    <div class="summary-grid">
+      <div class="summary-card">
+        <div class="card-label">サイト基本動作</div>
+        <div class="card-value">21/21</div>
+        <div class="card-detail">7 checks &times; 3 devices</div>
+      </div>
+      <div class="summary-card">
+        <div class="card-label">サイト操作性</div>
+        <div class="card-value">30/30</div>
+        <div class="card-detail">10 scenarios &times; 3 devices</div>
+      </div>
+      <div class="summary-card">
+        <div class="card-label">CMS操作性</div>
+        <div class="card-value">48/48</div>
+        <div class="card-detail">16 scenarios &times; 3 devices</div>
+      </div>
+      <div class="summary-card">
+        <div class="card-label">Vitest</div>
+        <div class="card-value">458/458</div>
+        <div class="card-detail">Windows sharp lock excluded</div>
+      </div>
+      <div class="summary-card">
+        <div class="card-label">E2E (Playwright)</div>
+        <div class="card-value">367/367</div>
+        <div class="card-detail">8 skip</div>
+      </div>
+      <div class="summary-card">
+        <div class="card-label">重複検出</div>
+        <div class="card-value">0</div>
+        <div class="card-detail">overlaps detected</div>
+      </div>
+    </div>
+
+    <div class="summary-table-wrapper">
+      <table class="summary-table">
+        <thead>
+          <tr>
+            <th>検証カテゴリ</th>
+            <th>検証スクリプト</th>
+            <th>シナリオ数</th>
+            <th>デバイス</th>
+            <th>スクリーンショット</th>
+            <th>結果</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Part 1: サイト基本動作検証</td>
+            <td><code>verify-staging.mjs</code></td>
+            <td>7</td>
+            <td>PC / iPad / iPhone</td>
+            <td>21</td>
+            <td><span class="badge badge-pass">ALL PASS</span></td>
+          </tr>
+          <tr>
+            <td>Part 2: サイト操作性検証</td>
+            <td><code>verify-site-interactive.mjs</code></td>
+            <td>10</td>
+            <td>PC / iPad / iPhone</td>
+            <td>30</td>
+            <td><span class="badge badge-pass">ALL PASS</span></td>
+          </tr>
+          <tr>
+            <td>Part 3: CMS操作性検証</td>
+            <td><code>verify-cms-interactive.mjs</code></td>
+            <td>16</td>
+            <td>PC / iPad / iPhone</td>
+            <td>48</td>
+            <td><span class="badge badge-pass">ALL PASS</span></td>
+          </tr>
+          <tr>
+            <td>Vitest 単体/統合テスト</td>
+            <td><code>vitest run</code></td>
+            <td>458</td>
+            <td>--</td>
+            <td>--</td>
+            <td><span class="badge badge-pass">ALL PASS</span></td>
+          </tr>
+          <tr>
+            <td>Playwright E2E</td>
+            <td><code>playwright test</code></td>
+            <td>367 + <span class="badge badge-skip">8 skip</span></td>
+            <td>PC / iPad / iPhone</td>
+            <td>--</td>
+            <td><span class="badge badge-pass">ALL PASS</span></td>
+          </tr>
+          <tr class="total-row">
+            <td>合計</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>99</td>
+            <td><span class="badge badge-pass">ALL PASS</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ============================================================ -->
+<!-- Part 1: サイト基本動作検証 -->
+<!-- ============================================================ -->
+<section class="part-section">
+  <div class="container">
+    <div class="part-header">
+      <span class="part-number">1</span>
+      <h2 class="part-title">サイト基本動作検証</h2>
+    </div>
+    <p class="part-description">verify-staging.mjs -- staging環境の基本ページ表示とレスポンスヘッダーの確認 (screenshots/)</p>
+
+    <!-- 1-top -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">1</span>
+          <span class="scenario-name">トップページ表示</span>
+        </div>
+        <span class="badge badge-pass">PASS</span>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid">
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128187;</span> PC</div>
+            <img src="screenshots/1-top_PC.png" alt="トップページ - PC" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128195;</span> iPad</div>
+            <img src="screenshots/1-top_iPad.png" alt="トップページ - iPad" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128241;</span> iPhone</div>
+            <img src="screenshots/1-top_iPhone.png" alt="トップページ - iPhone" onclick="openLightbox(this)">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2-article -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">2</span>
+          <span class="scenario-name">記事ページ表示</span>
+        </div>
+        <span class="badge badge-pass">PASS</span>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid">
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128187;</span> PC</div>
+            <img src="screenshots/2-article_PC.png" alt="記事ページ - PC" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128195;</span> iPad</div>
+            <img src="screenshots/2-article_iPad.png" alt="記事ページ - iPad" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128241;</span> iPhone</div>
+            <img src="screenshots/2-article_iPhone.png" alt="記事ページ - iPhone" onclick="openLightbox(this)">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3-draft-hidden -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">3</span>
+          <span class="scenario-name">下書き記事非表示確認</span>
+        </div>
+        <span class="badge badge-pass">PASS</span>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid">
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128187;</span> PC</div>
+            <img src="screenshots/3-draft-hidden_PC.png" alt="下書き非表示 - PC" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128195;</span> iPad</div>
+            <img src="screenshots/3-draft-hidden_iPad.png" alt="下書き非表示 - iPad" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128241;</span> iPhone</div>
+            <img src="screenshots/3-draft-hidden_iPhone.png" alt="下書き非表示 - iPhone" onclick="openLightbox(this)">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4-fixed-page -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">4</span>
+          <span class="scenario-name">固定ページ表示</span>
+        </div>
+        <span class="badge badge-pass">PASS</span>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid">
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128187;</span> PC</div>
+            <img src="screenshots/4-fixed-page_PC.png" alt="固定ページ - PC" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128195;</span> iPad</div>
+            <img src="screenshots/4-fixed-page_iPad.png" alt="固定ページ - iPad" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128241;</span> iPhone</div>
+            <img src="screenshots/4-fixed-page_iPhone.png" alt="固定ページ - iPhone" onclick="openLightbox(this)">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5-404 -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">5</span>
+          <span class="scenario-name">404ページ表示</span>
+        </div>
+        <span class="badge badge-pass">PASS</span>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid">
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128187;</span> PC</div>
+            <img src="screenshots/5-404_PC.png" alt="404ページ - PC" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128195;</span> iPad</div>
+            <img src="screenshots/5-404_iPad.png" alt="404ページ - iPad" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128241;</span> iPhone</div>
+            <img src="screenshots/5-404_iPhone.png" alt="404ページ - iPhone" onclick="openLightbox(this)">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6-admin -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">6</span>
+          <span class="scenario-name">CMS管理画面ロード</span>
+        </div>
+        <span class="badge badge-pass">PASS</span>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid">
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128187;</span> PC</div>
+            <img src="screenshots/6-admin_PC.png" alt="管理画面 - PC" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128195;</span> iPad</div>
+            <img src="screenshots/6-admin_iPad.png" alt="管理画面 - iPad" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128241;</span> iPhone</div>
+            <img src="screenshots/6-admin_iPhone.png" alt="管理画面 - iPhone" onclick="openLightbox(this)">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7-headers -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">7</span>
+          <span class="scenario-name">セキュリティヘッダー確認</span>
+        </div>
+        <span class="badge badge-pass">PASS</span>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid">
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128187;</span> PC</div>
+            <img src="screenshots/7-headers_PC.png" alt="ヘッダー確認 - PC" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128195;</span> iPad</div>
+            <img src="screenshots/7-headers_iPad.png" alt="ヘッダー確認 - iPad" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128241;</span> iPhone</div>
+            <img src="screenshots/7-headers_iPhone.png" alt="ヘッダー確認 - iPhone" onclick="openLightbox(this)">
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ============================================================ -->
+<!-- Part 2: サイト操作性検証 -->
+<!-- ============================================================ -->
+<section class="part-section">
+  <div class="container">
+    <div class="part-header">
+      <span class="part-number">2</span>
+      <h2 class="part-title">サイト操作性検証</h2>
+    </div>
+    <p class="part-description">verify-site-interactive.mjs -- ユーザー操作を伴うサイト機能の検証 (site-interactive/)</p>
+
+    <!-- S01-top -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">S01</span>
+          <span class="scenario-name">トップページ: ヘッダー・ナビ・記事リンク</span>
+        </div>
+        <span class="badge badge-pass">PASS</span>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid">
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128187;</span> PC</div>
+            <img src="site-interactive/S01-top_PC.png" alt="S01 トップページ - PC" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128195;</span> iPad</div>
+            <img src="site-interactive/S01-top_iPad.png" alt="S01 トップページ - iPad" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128241;</span> iPhone</div>
+            <img src="site-interactive/S01-top_iPhone.png" alt="S01 トップページ - iPhone" onclick="openLightbox(this)">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- S02-dropdown-open -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">S02</span>
+          <span class="scenario-name">ドロップダウン展開</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="scenario-bugs">
+            <span class="bug-ref">Bug #14</span>
+            <span class="bug-ref">Bug #15</span>
+            <span class="bug-ref">Bug #31</span>
+          </div>
+          <span class="badge badge-pass">PASS</span>
+        </div>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid">
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128187;</span> PC</div>
+            <img src="site-interactive/S02-dropdown-open_PC.png" alt="S02 ドロップダウン - PC" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128195;</span> iPad</div>
+            <img src="site-interactive/S02-dropdown-open_iPad.png" alt="S02 ドロップダウン - iPad" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128241;</span> iPhone</div>
+            <img src="site-interactive/S02-dropdown-open_iPhone.png" alt="S02 ドロップダウン - iPhone" onclick="openLightbox(this)">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- S03-dropdown-scroll -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">S03</span>
+          <span class="scenario-name">ドロップダウン+スクロール</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="scenario-bugs">
+            <span class="bug-ref">Bug #15</span>
+          </div>
+          <span class="badge badge-pass">PASS</span>
+        </div>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid">
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128187;</span> PC</div>
+            <img src="site-interactive/S03-dropdown-scroll_PC.png" alt="S03 スクロール - PC" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128195;</span> iPad</div>
+            <img src="site-interactive/S03-dropdown-scroll_iPad.png" alt="S03 スクロール - iPad" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128241;</span> iPhone</div>
+            <img src="site-interactive/S03-dropdown-scroll_iPhone.png" alt="S03 スクロール - iPhone" onclick="openLightbox(this)">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- S04-article -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">S04</span>
+          <span class="scenario-name">記事詳細: 画像・タグリンク</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="scenario-bugs">
+            <span class="bug-ref">Bug #5</span>
+            <span class="bug-ref">Bug #33</span>
+          </div>
+          <span class="badge badge-pass">PASS</span>
+        </div>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid">
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128187;</span> PC</div>
+            <img src="site-interactive/S04-article_PC.png" alt="S04 記事詳細 - PC" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128195;</span> iPad</div>
+            <img src="site-interactive/S04-article_iPad.png" alt="S04 記事詳細 - iPad" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128241;</span> iPhone</div>
+            <img src="site-interactive/S04-article_iPhone.png" alt="S04 記事詳細 - iPhone" onclick="openLightbox(this)">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- S05-fixed-page -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">S05</span>
+          <span class="scenario-name">固定ページ</span>
+        </div>
+        <span class="badge badge-pass">PASS</span>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid">
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128187;</span> PC</div>
+            <img src="site-interactive/S05-fixed-page_PC.png" alt="S05 固定ページ - PC" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128195;</span> iPad</div>
+            <img src="site-interactive/S05-fixed-page_iPad.png" alt="S05 固定ページ - iPad" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128241;</span> iPhone</div>
+            <img src="site-interactive/S05-fixed-page_iPhone.png" alt="S05 固定ページ - iPhone" onclick="openLightbox(this)">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- S06-404 -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">S06</span>
+          <span class="scenario-name">404ページ</span>
+        </div>
+        <span class="badge badge-pass">PASS</span>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid">
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128187;</span> PC</div>
+            <img src="site-interactive/S06-404_PC.png" alt="S06 404 - PC" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128195;</span> iPad</div>
+            <img src="site-interactive/S06-404_iPad.png" alt="S06 404 - iPad" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128241;</span> iPhone</div>
+            <img src="site-interactive/S06-404_iPhone.png" alt="S06 404 - iPhone" onclick="openLightbox(this)">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- S07-archive -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">S07</span>
+          <span class="scenario-name">アーカイブ</span>
+        </div>
+        <span class="badge badge-pass">PASS</span>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid">
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128187;</span> PC</div>
+            <img src="site-interactive/S07-archive_PC.png" alt="S07 アーカイブ - PC" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128195;</span> iPad</div>
+            <img src="site-interactive/S07-archive_iPad.png" alt="S07 アーカイブ - iPad" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128241;</span> iPhone</div>
+            <img src="site-interactive/S07-archive_iPhone.png" alt="S07 アーカイブ - iPhone" onclick="openLightbox(this)">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- S08-tag -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">S08</span>
+          <span class="scenario-name">タグページ</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="scenario-bugs">
+            <span class="bug-ref">Bug #33</span>
+          </div>
+          <span class="badge badge-pass">PASS</span>
+        </div>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid">
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128187;</span> PC</div>
+            <img src="site-interactive/S08-tag_PC.png" alt="S08 タグ - PC" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128195;</span> iPad</div>
+            <img src="site-interactive/S08-tag_iPad.png" alt="S08 タグ - iPad" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128241;</span> iPhone</div>
+            <img src="site-interactive/S08-tag_iPhone.png" alt="S08 タグ - iPhone" onclick="openLightbox(this)">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- S09-draft-hidden -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">S09</span>
+          <span class="scenario-name">下書き非表示</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="scenario-bugs">
+            <span class="bug-ref">Bug #30</span>
+            <span class="bug-ref">SEC-21</span>
+          </div>
+          <span class="badge badge-pass">PASS</span>
+        </div>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid">
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128187;</span> PC</div>
+            <img src="site-interactive/S09-draft-hidden_PC.png" alt="S09 下書き非表示 - PC" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128195;</span> iPad</div>
+            <img src="site-interactive/S09-draft-hidden_iPad.png" alt="S09 下書き非表示 - iPad" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128241;</span> iPhone</div>
+            <img src="site-interactive/S09-draft-hidden_iPhone.png" alt="S09 下書き非表示 - iPhone" onclick="openLightbox(this)">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- S10-admin -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">S10</span>
+          <span class="scenario-name">CMS管理画面ロード</span>
+        </div>
+        <span class="badge badge-pass">PASS</span>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid">
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128187;</span> PC</div>
+            <img src="site-interactive/S10-admin_PC.png" alt="S10 管理画面 - PC" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128195;</span> iPad</div>
+            <img src="site-interactive/S10-admin_iPad.png" alt="S10 管理画面 - iPad" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128241;</span> iPhone</div>
+            <img src="site-interactive/S10-admin_iPhone.png" alt="S10 管理画面 - iPhone" onclick="openLightbox(this)">
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ============================================================ -->
+<!-- Part 3: CMS操作性検証 -->
+<!-- ============================================================ -->
+<section class="part-section">
+  <div class="container">
+    <div class="part-header">
+      <span class="part-number">3</span>
+      <h2 class="part-title">CMS操作性検証（重点）</h2>
+    </div>
+    <p class="part-description">verify-cms-interactive.mjs -- OAuthモック＋GitHub APIモック環境でのCMS操作検証 (cms-interactive/)</p>
+
+    <!-- T01-login -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">T01</span>
+          <span class="scenario-name">ログイン画面ボタン</span>
+        </div>
+        <span class="badge badge-pass">PASS</span>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid">
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128187;</span> PC</div>
+            <img src="cms-interactive/T01-login_PC.png" alt="T01 ログイン - PC" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128195;</span> iPad</div>
+            <img src="cms-interactive/T01-login_iPad.png" alt="T01 ログイン - iPad" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128241;</span> iPhone</div>
+            <img src="cms-interactive/T01-login_iPhone.png" alt="T01 ログイン - iPhone" onclick="openLightbox(this)">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- T02-collection-list -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">T02</span>
+          <span class="scenario-name">記事一覧・新規ボタン</span>
+        </div>
+        <span class="badge badge-pass">PASS</span>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid">
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128187;</span> PC</div>
+            <img src="cms-interactive/T02-collection-list_PC.png" alt="T02 記事一覧 - PC" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128195;</span> iPad</div>
+            <img src="cms-interactive/T02-collection-list_iPad.png" alt="T02 記事一覧 - iPad" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128241;</span> iPhone</div>
+            <img src="cms-interactive/T02-collection-list_iPhone.png" alt="T02 記事一覧 - iPhone" onclick="openLightbox(this)">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- T03-editor -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">T03</span>
+          <span class="scenario-name">記事編集ツールバー・保存ボタン・URLバー</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="scenario-bugs">
+            <span class="bug-ref">Bug #1</span>
+            <span class="bug-ref">Bug #8</span>
+            <span class="bug-ref">Bug #11</span>
+          </div>
+          <span class="badge badge-pass">PASS</span>
+        </div>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid">
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128187;</span> PC</div>
+            <img src="cms-interactive/T03-editor_PC.png" alt="T03 エディタ - PC" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128195;</span> iPad</div>
+            <img src="cms-interactive/T03-editor_iPad.png" alt="T03 エディタ - iPad" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128241;</span> iPhone</div>
+            <img src="cms-interactive/T03-editor_iPhone.png" alt="T03 エディタ - iPhone" onclick="openLightbox(this)">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- T04-toolbar-buttons -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">T04</span>
+          <span class="scenario-name">ツールバーボタン・Code Block非表示</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="scenario-bugs">
+            <span class="bug-ref">Bug #9</span>
+          </div>
+          <span class="badge badge-pass">PASS</span>
+        </div>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid">
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128187;</span> PC</div>
+            <img src="cms-interactive/T04-toolbar-buttons_PC.png" alt="T04 ツールバー - PC" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128195;</span> iPad</div>
+            <img src="cms-interactive/T04-toolbar-buttons_iPad.png" alt="T04 ツールバー - iPad" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128241;</span> iPhone</div>
+            <img src="cms-interactive/T04-toolbar-buttons_iPhone.png" alt="T04 ツールバー - iPhone" onclick="openLightbox(this)">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- T05-editor-plus-menu -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">T05</span>
+          <span class="scenario-name">エディタ+メニュー展開</span>
+        </div>
+        <span class="badge badge-pass">PASS</span>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid">
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128187;</span> PC</div>
+            <img src="cms-interactive/T05-editor-plus-menu_PC.png" alt="T05 +メニュー - PC" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128195;</span> iPad</div>
+            <img src="cms-interactive/T05-editor-plus-menu_iPad.png" alt="T05 +メニュー - iPad" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128241;</span> iPhone</div>
+            <img src="cms-interactive/T05-editor-plus-menu_iPhone.png" alt="T05 +メニュー - iPhone" onclick="openLightbox(this)">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- T06-delete-buttons -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">T06</span>
+          <span class="scenario-name">削除ボタンラベル確認</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="scenario-bugs">
+            <span class="bug-ref">Bug #4</span>
+          </div>
+          <span class="badge badge-pass">PASS</span>
+        </div>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid">
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128187;</span> PC</div>
+            <img src="cms-interactive/T06-delete-buttons_PC.png" alt="T06 削除ボタン - PC" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128195;</span> iPad</div>
+            <img src="cms-interactive/T06-delete-buttons_iPad.png" alt="T06 削除ボタン - iPad" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128241;</span> iPhone</div>
+            <img src="cms-interactive/T06-delete-buttons_iPhone.png" alt="T06 削除ボタン - iPhone" onclick="openLightbox(this)">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- T07-url-bar-transition -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">T07</span>
+          <span class="scenario-name">URLバー表示/非表示遷移</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="scenario-bugs">
+            <span class="bug-ref">Bug #8</span>
+            <span class="bug-ref">Bug #11</span>
+          </div>
+          <span class="badge badge-pass">PASS</span>
+        </div>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid">
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128187;</span> PC</div>
+            <img src="cms-interactive/T07-url-bar-transition_PC.png" alt="T07 URLバー遷移 - PC" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128195;</span> iPad</div>
+            <img src="cms-interactive/T07-url-bar-transition_iPad.png" alt="T07 URLバー遷移 - iPad" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128241;</span> iPhone</div>
+            <img src="cms-interactive/T07-url-bar-transition_iPhone.png" alt="T07 URLバー遷移 - iPhone" onclick="openLightbox(this)">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- T08-pages-editor -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">T08</span>
+          <span class="scenario-name">固定ページ編集・公開URL</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="scenario-bugs">
+            <span class="bug-ref">Bug #13</span>
+          </div>
+          <span class="badge badge-pass">PASS</span>
+        </div>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid">
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128187;</span> PC</div>
+            <img src="cms-interactive/T08-pages-editor_PC.png" alt="T08 固定ページ編集 - PC" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128195;</span> iPad</div>
+            <img src="cms-interactive/T08-pages-editor_iPad.png" alt="T08 固定ページ編集 - iPad" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128241;</span> iPhone</div>
+            <img src="cms-interactive/T08-pages-editor_iPhone.png" alt="T08 固定ページ編集 - iPhone" onclick="openLightbox(this)">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- T09-dropdown-urlbar -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">T09</span>
+          <span class="scenario-name">ドロップダウン+URLバー競合</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="scenario-bugs">
+            <span class="bug-ref">Bug #32</span>
+          </div>
+          <span class="badge badge-pass">PASS</span>
+        </div>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid">
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128187;</span> PC</div>
+            <img src="cms-interactive/T09-dropdown-urlbar_PC.png" alt="T09 ドロップダウン競合 - PC" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128195;</span> iPad</div>
+            <img src="cms-interactive/T09-dropdown-urlbar_iPad.png" alt="T09 ドロップダウン競合 - iPad" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128241;</span> iPhone</div>
+            <img src="cms-interactive/T09-dropdown-urlbar_iPhone.png" alt="T09 ドロップダウン競合 - iPhone" onclick="openLightbox(this)">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- T10-new-entry -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">T10</span>
+          <span class="scenario-name">新規記事作成</span>
+        </div>
+        <span class="badge badge-pass">PASS</span>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid">
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128187;</span> PC</div>
+            <img src="cms-interactive/T10-new-entry_PC.png" alt="T10 新規記事 - PC" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128195;</span> iPad</div>
+            <img src="cms-interactive/T10-new-entry_iPad.png" alt="T10 新規記事 - iPad" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128241;</span> iPhone</div>
+            <img src="cms-interactive/T10-new-entry_iPhone.png" alt="T10 新規記事 - iPhone" onclick="openLightbox(this)">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- T11-image-widget -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">T11</span>
+          <span class="scenario-name">画像ウィジェット</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="scenario-bugs">
+            <span class="bug-ref">Bug #5</span>
+            <span class="bug-ref">Bug #6</span>
+            <span class="bug-ref">Bug #29</span>
+          </div>
+          <span class="badge badge-pass">PASS</span>
+        </div>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid">
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128187;</span> PC</div>
+            <img src="cms-interactive/T11-image-widget_PC.png" alt="T11 画像ウィジェット - PC" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128195;</span> iPad</div>
+            <img src="cms-interactive/T11-image-widget_iPad.png" alt="T11 画像ウィジェット - iPad" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128241;</span> iPhone</div>
+            <img src="cms-interactive/T11-image-widget_iPhone.png" alt="T11 画像ウィジェット - iPhone" onclick="openLightbox(this)">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- T12-media-library -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">T12</span>
+          <span class="scenario-name">メディアライブラリモーダル</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="scenario-bugs">
+            <span class="bug-ref">Bug #29</span>
+            <span class="bug-ref">Bug #32</span>
+          </div>
+          <span class="badge badge-pass">PASS</span>
+        </div>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid">
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128187;</span> PC</div>
+            <img src="cms-interactive/T12-media-library_PC.png" alt="T12 メディアライブラリ - PC" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128195;</span> iPad</div>
+            <img src="cms-interactive/T12-media-library_iPad.png" alt="T12 メディアライブラリ - iPad" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128241;</span> iPhone</div>
+            <img src="cms-interactive/T12-media-library_iPhone.png" alt="T12 メディアライブラリ - iPhone" onclick="openLightbox(this)">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- T13-bottom-sheet -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">T13</span>
+          <span class="scenario-name">モバイルボトムシート</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="scenario-bugs">
+            <span class="bug-ref">Bug #7</span>
+          </div>
+          <span class="badge badge-pass">PASS</span>
+        </div>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid">
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128187;</span> PC</div>
+            <img src="cms-interactive/T13-bottom-sheet_PC.png" alt="T13 ボトムシート - PC" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128195;</span> iPad</div>
+            <img src="cms-interactive/T13-bottom-sheet_iPad.png" alt="T13 ボトムシート - iPad" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128241;</span> iPhone</div>
+            <img src="cms-interactive/T13-bottom-sheet_iPhone.png" alt="T13 ボトムシート - iPhone" onclick="openLightbox(this)">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- T14-entry-format -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">T14</span>
+          <span class="scenario-name">エントリ整形表示</span>
+        </div>
+        <span class="badge badge-pass">PASS</span>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid">
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128187;</span> PC</div>
+            <img src="cms-interactive/T14-entry-format_PC.png" alt="T14 整形表示 - PC" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128195;</span> iPad</div>
+            <img src="cms-interactive/T14-entry-format_iPad.png" alt="T14 整形表示 - iPad" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128241;</span> iPhone</div>
+            <img src="cms-interactive/T14-entry-format_iPhone.png" alt="T14 整形表示 - iPhone" onclick="openLightbox(this)">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- T15-multi-operation -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">T15</span>
+          <span class="scenario-name">記事→戻る→固定ページ連続遷移</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="scenario-bugs">
+            <span class="bug-ref">Bug #8</span>
+            <span class="bug-ref">Bug #11</span>
+          </div>
+          <span class="badge badge-pass">PASS</span>
+        </div>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid">
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128187;</span> PC</div>
+            <img src="cms-interactive/T15-multi-operation_PC.png" alt="T15 連続遷移 - PC" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128195;</span> iPad</div>
+            <img src="cms-interactive/T15-multi-operation_iPad.png" alt="T15 連続遷移 - iPad" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128241;</span> iPhone</div>
+            <img src="cms-interactive/T15-multi-operation_iPhone.png" alt="T15 連続遷移 - iPhone" onclick="openLightbox(this)">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- T16-sticky-scroll -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">T16</span>
+          <span class="scenario-name">スクロール時sticky保存ボタン</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="scenario-bugs">
+            <span class="bug-ref">Bug #1</span>
+          </div>
+          <span class="badge badge-pass">PASS</span>
+        </div>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid">
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128187;</span> PC</div>
+            <img src="cms-interactive/T16-sticky-scroll_PC.png" alt="T16 sticky保存 - PC" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128195;</span> iPad</div>
+            <img src="cms-interactive/T16-sticky-scroll_iPad.png" alt="T16 sticky保存 - iPad" onclick="openLightbox(this)">
+          </div>
+          <div class="device-cell">
+            <div class="device-label"><span class="device-icon">&#128241;</span> iPhone</div>
+            <img src="cms-interactive/T16-sticky-scroll_iPhone.png" alt="T16 sticky保存 - iPhone" onclick="openLightbox(this)">
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ============================================================ -->
+<!-- Part 4: テスト結果サマリ -->
+<!-- ============================================================ -->
+<section class="part-section">
+  <div class="container">
+    <div class="part-header">
+      <span class="part-number">4</span>
+      <h2 class="part-title">テスト結果サマリ</h2>
+    </div>
+    <p class="part-description">全検証カテゴリの最終結果一覧</p>
+
+    <div class="summary-table-wrapper">
+      <table class="summary-table">
+        <thead>
+          <tr>
+            <th style="width:30%;">検証カテゴリ</th>
+            <th style="width:15%;">PASS</th>
+            <th style="width:15%;">FAIL</th>
+            <th style="width:15%;">SKIP</th>
+            <th style="width:25%;">判定</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>サイト基本動作検証 (7 checks &times; 3 devices)</td>
+            <td>21</td>
+            <td>0</td>
+            <td>0</td>
+            <td><span class="badge badge-pass">21/21 PASS</span></td>
+          </tr>
+          <tr>
+            <td>サイト操作性検証 (10 scenarios &times; 3 devices)</td>
+            <td>30</td>
+            <td>0</td>
+            <td>0</td>
+            <td><span class="badge badge-pass">30/30 PASS</span></td>
+          </tr>
+          <tr>
+            <td>CMS操作性検証 (16 scenarios &times; 3 devices)</td>
+            <td>48</td>
+            <td>0</td>
+            <td>0</td>
+            <td><span class="badge badge-pass">48/48 PASS</span></td>
+          </tr>
+          <tr>
+            <td>Vitest 単体/統合テスト (Windows sharp lock excluded)</td>
+            <td>458</td>
+            <td>0</td>
+            <td>0</td>
+            <td><span class="badge badge-pass">458/458 PASS</span></td>
+          </tr>
+          <tr>
+            <td>Playwright E2Eテスト</td>
+            <td>367</td>
+            <td>0</td>
+            <td>8</td>
+            <td><span class="badge badge-pass">367/367 PASS</span> <span class="badge badge-skip">8 SKIP</span></td>
+          </tr>
+          <tr class="total-row">
+            <td>エビデンス スクリーンショット合計</td>
+            <td>99</td>
+            <td>0</td>
+            <td>0</td>
+            <td><span class="badge badge-pass">ALL PASS</span></td>
+          </tr>
+          <tr>
+            <td>ボタン重複検出</td>
+            <td colspan="3">--</td>
+            <td><span class="badge badge-info">0 overlaps detected</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="background:var(--color-bg-card);border-radius:var(--radius);border:1px solid var(--color-border);padding:20px;box-shadow:var(--shadow-sm);margin-top:16px;">
+      <h3 style="font-size:16px;font-weight:700;color:var(--color-primary);margin-bottom:12px;">検証環境情報</h3>
+      <table style="font-size:14px;line-height:1.8;">
+        <tr><td style="color:var(--color-text-muted);padding-right:16px;">対象環境</td><td>staging.reiwa.casa</td></tr>
+        <tr><td style="color:var(--color-text-muted);padding-right:16px;">ブランチ</td><td>staging</td></tr>
+        <tr><td style="color:var(--color-text-muted);padding-right:16px;">検証日時</td><td>2026-02-23</td></tr>
+        <tr><td style="color:var(--color-text-muted);padding-right:16px;">検証デバイス</td><td>PC (1280&times;720), iPad (810&times;1080), iPhone (390&times;844)</td></tr>
+        <tr><td style="color:var(--color-text-muted);padding-right:16px;">検証ツール</td><td>Playwright + カスタム検証スクリプト</td></tr>
+        <tr><td style="color:var(--color-text-muted);padding-right:16px;">テストフレームワーク</td><td>Vitest (単体/統合), Playwright (E2E)</td></tr>
+        <tr><td style="color:var(--color-text-muted);padding-right:16px;">エビデンス総数</td><td>99 スクリーンショット (21 + 30 + 48)</td></tr>
+      </table>
+    </div>
+
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="report-footer">
+  <div class="container">
+    <p>staging.reiwa.casa 検証エビデンスレポート &mdash; 2026-02-23 &mdash; Generated by verification scripts</p>
+    <p style="margin-top:4px;">tbiのブログ &mdash; Astro SSG + Decap CMS + Cloudflare Pages</p>
+  </div>
+</footer>
+
+<!-- Lightbox -->
+<div class="lightbox-overlay" id="lightbox" onclick="closeLightbox()">
+  <img id="lightbox-img" src="" alt="">
+</div>
+
+<script>
+  function openLightbox(el) {
+    const overlay = document.getElementById('lightbox');
+    const img = document.getElementById('lightbox-img');
+    img.src = el.src;
+    img.alt = el.alt;
+    overlay.classList.add('active');
+  }
+  function closeLightbox() {
+    document.getElementById('lightbox').classList.remove('active');
+  }
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeLightbox();
+  });
+</script>
+
+</body>
+</html>

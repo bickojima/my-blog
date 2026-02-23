@@ -1,0 +1,302 @@
+[
+  {
+    "device": "PC",
+    "test": "トップページ: ヘッダー・ナビ・記事リンク",
+    "id": "S01-top",
+    "bugRef": null,
+    "overlaps": 0,
+    "annotationCount": 9,
+    "pass": true,
+    "screenshot": "S01-top_PC.png"
+  },
+  {
+    "device": "PC",
+    "test": "ドロップダウン展開: メニュー表示・重なり（Bug #14,#15,#31）",
+    "id": "S02-dropdown-open",
+    "bugRef": "Bug #14 ▾閉じない, Bug #15 gap, Bug #31 モバイルhover",
+    "overlaps": 0,
+    "annotationCount": 9,
+    "pass": true,
+    "screenshot": "S02-dropdown-open_PC.png"
+  },
+  {
+    "device": "PC",
+    "test": "ドロップダウン+スクロール: メニューが追従するか",
+    "id": "S03-dropdown-scroll",
+    "bugRef": "Bug #15 ドロップダウンgap",
+    "overlaps": 0,
+    "annotationCount": 1,
+    "pass": true,
+    "screenshot": "S03-dropdown-scroll_PC.png"
+  },
+  {
+    "device": "PC",
+    "test": "記事詳細: 画像・タグリンク・戻るリンク",
+    "id": "S04-article",
+    "bugRef": "Bug #5 EXIF回転, Bug #33 タグURLエンコード",
+    "overlaps": 0,
+    "annotationCount": 5,
+    "pass": true,
+    "screenshot": "S04-article_PC.png"
+  },
+  {
+    "device": "PC",
+    "test": "固定ページ: ナビゲーション・コンテンツ表示",
+    "id": "S05-fixed-page",
+    "bugRef": null,
+    "overlaps": 0,
+    "annotationCount": 7,
+    "pass": true,
+    "screenshot": "S05-fixed-page_PC.png"
+  },
+  {
+    "device": "PC",
+    "test": "404ページ: エラー表示・戻るリンク",
+    "id": "S06-404",
+    "bugRef": null,
+    "overlaps": 0,
+    "annotationCount": 4,
+    "pass": true,
+    "screenshot": "S06-404_PC.png"
+  },
+  {
+    "device": "PC",
+    "test": "アーカイブ: 月別記事一覧",
+    "id": "S07-archive",
+    "bugRef": null,
+    "overlaps": 0,
+    "annotationCount": 4,
+    "pass": true,
+    "screenshot": "S07-archive_PC.png"
+  },
+  {
+    "device": "PC",
+    "test": "タグページ: タグ別記事一覧（Bug #33 URLエンコード）",
+    "id": "S08-tag",
+    "bugRef": "Bug #33 タグURL未エンコード",
+    "overlaps": 0,
+    "annotationCount": 4,
+    "pass": true,
+    "screenshot": "S08-tag_PC.png"
+  },
+  {
+    "device": "PC",
+    "test": "下書き記事非表示: 404確認（Bug #30, SEC-21）",
+    "id": "S09-draft-hidden",
+    "bugRef": "Bug #30 下書きビルド公開",
+    "overlaps": 0,
+    "annotationCount": 1,
+    "pass": true,
+    "screenshot": "S09-draft-hidden_PC.png"
+  },
+  {
+    "device": "PC",
+    "test": "CMS管理画面: ロード確認",
+    "id": "S10-admin",
+    "bugRef": null,
+    "overlaps": 0,
+    "annotationCount": 1,
+    "pass": true,
+    "screenshot": "S10-admin_PC.png"
+  },
+  {
+    "device": "iPad",
+    "test": "トップページ: ヘッダー・ナビ・記事リンク",
+    "id": "S01-top",
+    "bugRef": null,
+    "overlaps": 0,
+    "annotationCount": 9,
+    "pass": true,
+    "screenshot": "S01-top_iPad.png"
+  },
+  {
+    "device": "iPad",
+    "test": "ドロップダウン展開: メニュー表示・重なり（Bug #14,#15,#31）",
+    "id": "S02-dropdown-open",
+    "bugRef": "Bug #14 ▾閉じない, Bug #15 gap, Bug #31 モバイルhover",
+    "overlaps": 0,
+    "annotationCount": 5,
+    "pass": true,
+    "screenshot": "S02-dropdown-open_iPad.png"
+  },
+  {
+    "device": "iPad",
+    "test": "ドロップダウン+スクロール: メニューが追従するか",
+    "id": "S03-dropdown-scroll",
+    "bugRef": "Bug #15 ドロップダウンgap",
+    "overlaps": 0,
+    "annotationCount": 1,
+    "pass": true,
+    "screenshot": "S03-dropdown-scroll_iPad.png"
+  },
+  {
+    "device": "iPad",
+    "test": "記事詳細: 画像・タグリンク・戻るリンク",
+    "id": "S04-article",
+    "bugRef": "Bug #5 EXIF回転, Bug #33 タグURLエンコード",
+    "overlaps": 0,
+    "annotationCount": 5,
+    "pass": true,
+    "screenshot": "S04-article_iPad.png"
+  },
+  {
+    "device": "iPad",
+    "test": "固定ページ: ナビゲーション・コンテンツ表示",
+    "id": "S05-fixed-page",
+    "bugRef": null,
+    "overlaps": 0,
+    "annotationCount": 7,
+    "pass": true,
+    "screenshot": "S05-fixed-page_iPad.png"
+  },
+  {
+    "device": "iPad",
+    "test": "404ページ: エラー表示・戻るリンク",
+    "id": "S06-404",
+    "bugRef": null,
+    "overlaps": 0,
+    "annotationCount": 4,
+    "pass": true,
+    "screenshot": "S06-404_iPad.png"
+  },
+  {
+    "device": "iPad",
+    "test": "アーカイブ: 月別記事一覧",
+    "id": "S07-archive",
+    "bugRef": null,
+    "overlaps": 0,
+    "annotationCount": 4,
+    "pass": true,
+    "screenshot": "S07-archive_iPad.png"
+  },
+  {
+    "device": "iPad",
+    "test": "タグページ: タグ別記事一覧（Bug #33 URLエンコード）",
+    "id": "S08-tag",
+    "bugRef": "Bug #33 タグURL未エンコード",
+    "overlaps": 0,
+    "annotationCount": 4,
+    "pass": true,
+    "screenshot": "S08-tag_iPad.png"
+  },
+  {
+    "device": "iPad",
+    "test": "下書き記事非表示: 404確認（Bug #30, SEC-21）",
+    "id": "S09-draft-hidden",
+    "bugRef": "Bug #30 下書きビルド公開",
+    "overlaps": 0,
+    "annotationCount": 1,
+    "pass": true,
+    "screenshot": "S09-draft-hidden_iPad.png"
+  },
+  {
+    "device": "iPad",
+    "test": "CMS管理画面: ロード確認",
+    "id": "S10-admin",
+    "bugRef": null,
+    "overlaps": 0,
+    "annotationCount": 1,
+    "pass": true,
+    "screenshot": "S10-admin_iPad.png"
+  },
+  {
+    "device": "iPhone",
+    "test": "トップページ: ヘッダー・ナビ・記事リンク",
+    "id": "S01-top",
+    "bugRef": null,
+    "overlaps": 0,
+    "annotationCount": 9,
+    "pass": true,
+    "screenshot": "S01-top_iPhone.png"
+  },
+  {
+    "device": "iPhone",
+    "test": "ドロップダウン展開: メニュー表示・重なり（Bug #14,#15,#31）",
+    "id": "S02-dropdown-open",
+    "bugRef": "Bug #14 ▾閉じない, Bug #15 gap, Bug #31 モバイルhover",
+    "overlaps": 0,
+    "annotationCount": 5,
+    "pass": true,
+    "screenshot": "S02-dropdown-open_iPhone.png"
+  },
+  {
+    "device": "iPhone",
+    "test": "ドロップダウン+スクロール: メニューが追従するか",
+    "id": "S03-dropdown-scroll",
+    "bugRef": "Bug #15 ドロップダウンgap",
+    "overlaps": 0,
+    "annotationCount": 1,
+    "pass": true,
+    "screenshot": "S03-dropdown-scroll_iPhone.png"
+  },
+  {
+    "device": "iPhone",
+    "test": "記事詳細: 画像・タグリンク・戻るリンク",
+    "id": "S04-article",
+    "bugRef": "Bug #5 EXIF回転, Bug #33 タグURLエンコード",
+    "overlaps": 0,
+    "annotationCount": 5,
+    "pass": true,
+    "screenshot": "S04-article_iPhone.png"
+  },
+  {
+    "device": "iPhone",
+    "test": "固定ページ: ナビゲーション・コンテンツ表示",
+    "id": "S05-fixed-page",
+    "bugRef": null,
+    "overlaps": 0,
+    "annotationCount": 7,
+    "pass": true,
+    "screenshot": "S05-fixed-page_iPhone.png"
+  },
+  {
+    "device": "iPhone",
+    "test": "404ページ: エラー表示・戻るリンク",
+    "id": "S06-404",
+    "bugRef": null,
+    "overlaps": 0,
+    "annotationCount": 4,
+    "pass": true,
+    "screenshot": "S06-404_iPhone.png"
+  },
+  {
+    "device": "iPhone",
+    "test": "アーカイブ: 月別記事一覧",
+    "id": "S07-archive",
+    "bugRef": null,
+    "overlaps": 0,
+    "annotationCount": 4,
+    "pass": true,
+    "screenshot": "S07-archive_iPhone.png"
+  },
+  {
+    "device": "iPhone",
+    "test": "タグページ: タグ別記事一覧（Bug #33 URLエンコード）",
+    "id": "S08-tag",
+    "bugRef": "Bug #33 タグURL未エンコード",
+    "overlaps": 0,
+    "annotationCount": 4,
+    "pass": true,
+    "screenshot": "S08-tag_iPhone.png"
+  },
+  {
+    "device": "iPhone",
+    "test": "下書き記事非表示: 404確認（Bug #30, SEC-21）",
+    "id": "S09-draft-hidden",
+    "bugRef": "Bug #30 下書きビルド公開",
+    "overlaps": 0,
+    "annotationCount": 1,
+    "pass": true,
+    "screenshot": "S09-draft-hidden_iPhone.png"
+  },
+  {
+    "device": "iPhone",
+    "test": "CMS管理画面: ロード確認",
+    "id": "S10-admin",
+    "bugRef": null,
+    "overlaps": 0,
+    "annotationCount": 1,
+    "pass": true,
+    "screenshot": "S10-admin_iPhone.png"
+  }
+]
