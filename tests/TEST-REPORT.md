@@ -30,6 +30,7 @@
 | 1.23 | 2026-02-23 | 第三者セキュリティ・品質レビュー対応: SEC-21〜SEC-26要件追加。Bug #30〜#34修正（下書き記事公開、モバイルhover/tapバグ、モーダル重複、タグURL未エンコード、Windowsパス問題）。Zodスキーマ厳格化（date正規表現、title/tags長さ制限）。ビルドスクリプト防御強化（シンボリックリンク・ピクセルフラッド・ファイルサイズ上限）。OAuth HTTPメソッド制限。_headers COOP/CORP/X-Frame-Options公開ページ追加。テストWindows互換性修正（パスセパレータ・CRLF正規化）。hiddenByDropdown→hiddenByOverlayリネーム。終了基準テスト件数更新（519+375=894） |
 | 1.24 | 2026-02-23 | 個人情報保護対応: git履歴から個人情報を完全削除（Bug #35）。pre-commit hookによる個人情報混入防止を運用手順（DOCUMENTATION.md 4.8章）に記載。テスト件数に変更なし |
 | 1.25 | 2026-02-23 | エビデンス取得方針を大幅拡充: CMS操作性検証（T01〜T16, 16シナリオ×3デバイス=48テスト）、サイト操作性検証（S01〜S10, 10シナリオ×3デバイス=30テスト）を追加。全スクリーンショットに赤枠アノテーション必須化。過去バグ由来の検証マトリクス（Bug #1,#4,#5,#6,#7,#8,#9,#11,#13,#14,#15,#29,#30,#31,#32,#33の16件）を追加。記事編集画面・画像アップロード画面・メディアライブラリのエビデンスを重点取得 |
+| 1.26 | 2026-02-23 | CMS CRUD操作エビデンス追加（verify-cms-crud.mjs: T17〜T32, 16シナリオ×3デバイス=48テスト）、セキュリティ検証エビデンス追加（verify-security.mjs: SEC01〜SEC10, 10項目）。検証スクリプト一覧にverify-cms-crud.mjs・verify-security.mjsを追加。継続的品質・セキュリティ改善フレームワークをDOCUMENTATION.md 4.10章に新設 |
 
 ## テスト基盤の変更履歴
 
@@ -466,7 +467,7 @@ staging検証時およびmainマージ前に、Playwright自動検証でスク�
 | レポート形式 | `report.html`（画像埋め込み、PC/iPad/iPhone 3デバイス横並び表示） |
 | スクリーンショット | `screenshots/`, `site-interactive/`, `cms-interactive/` サブフォルダ |
 | テストデバイス | PC (1280x800) / iPad Pro 11 (834x1194) / iPhone 14 (390x844) |
-| 検証スクリプト | `verify-staging.mjs`（基本動作）、`verify-site-interactive.mjs`（サイト操作性）、`verify-cms-interactive.mjs`（CMS操作性） |
+| 検証スクリプト | `verify-staging.mjs`（基本動作）、`verify-site-interactive.mjs`（サイト操作性）、`verify-cms-interactive.mjs`（CMS操作性）、`verify-cms-crud.mjs`（CMS CRUD操作）、`verify-security.mjs`（セキュリティ検証） |
 
 #### 赤枠アノテーション方針
 
@@ -546,6 +547,46 @@ CMS管理画面を重点検証。OAuthモック＋GitHub APIモック使用。�
 | Bug #31 | モバイルドロップダウンhover/tap正常動作 | S02 |
 | Bug #32 | URLバーとモーダル/ドロップダウンの非重複 | T09, T12 |
 | Bug #33 | タグURLが正しくエンコード | S08 |
+
+#### CMS CRUD操作検証項目（verify-cms-crud.mjs）
+
+ログイン後のCMS各操作を実際に実行し、3デバイスでスクリーンショット取得する。OAuthモック＋GitHub APIモック（CRUD対応・API記録付き）使用。
+
+| No. | ID | 検証項目 | 関連バグ | 操作内容 |
+| :--- | :--- | :--- | :--- | :--- |
+| T17 | T17-create-form | 記事新規作成: フォーム入力 | — | タイトル・日付・本文入力→フィールド表示 |
+| T18 | T18-create-publish | 記事新規作成: Publish実行 | — | 保存→確認→API呼び出し確認 |
+| T19 | T19-edit-load | 記事編集: 既存記事読み込み | — | 既存記事のフィールド・URLバー表示 |
+| T20 | T20-edit-modify | 記事編集: タイトル・本文変更 | — | タイトル変更・本文追加→変更状態表示 |
+| T21 | T21-edit-save | 記事編集: 保存実行 | — | 保存クリック→API呼び出し確認 |
+| T22 | T22-delete-button | 記事削除: 削除ボタン確認 | Bug #4 | 選択解除・完全削除ボタンのラベル |
+| T23 | T23-delete-confirm | 記事削除: 確認ダイアログ | — | 削除クリック→確認ダイアログ表示 |
+| T24 | T24-image-widget | 画像ウィジェット: accept制限 | Bug #5,#6 | file input accept属性・HEIC制限 |
+| T25 | T25-image-upload | 画像アップロード: ファイル選択 | Bug #5,#29 | ファイル選択→EXIF処理→プレビュー |
+| T26 | T26-media-library | メディアライブラリ: モーダル操作 | Bug #29,#32 | モーダル・アップロードボタン・URLバー退避 |
+| T27 | T27-tag-edit | タグ編集: タグ追加 | — | タグ入力・追加・表示確認 |
+| T28 | T28-draft-toggle | 下書き/公開ステータス切替 | Bug #7 | ステータスドロップダウン展開・切替 |
+| T29 | T29-publish-flow | Publish確認ワークフロー | — | 公開→確認ダイアログ→完了 |
+| T30 | T30-page-create | 固定ページ新規作成 | — | タイトル・slug・order入力 |
+| T31 | T31-page-edit | 固定ページ編集 | Bug #13 | 既存ページ読み込み・slug URL表示 |
+| T32 | T32-toolbar-ops | エディタツールバー操作 | Bug #9 | 書式ボタン・Code Block非表示 |
+
+#### セキュリティ検証項目（verify-security.mjs）
+
+セキュリティ要件の充足を自動検証し、スクリーンショット付きで記録する（PCのみ）。
+
+| No. | ID | 検証項目 | 要件参照 | 検証方法 |
+| :--- | :--- | :--- | :--- | :--- |
+| SEC01 | SEC01-xss-title | XSS耐性 | SEC-01 | XSSペイロードがエスケープ済みか検証 |
+| SEC02 | SEC02-csp-headers | セキュリティヘッダー | SEC-02,SEC-03 | CSP/COOP/CORP等のヘッダー設定確認 |
+| SEC03 | SEC03-no-innerhtml | DOM安全性 | SEC-05 | innerHTML/outerHTML不使用、var不使用 |
+| SEC04 | SEC04-oauth-scope | OAuth scope | SEC-06 | public_repo,read:user限定確認 |
+| SEC05 | SEC05-cdn-pinned | CDNバージョン固定 | SEC-07 | キャレット不使用・integrity確認 |
+| SEC06 | SEC06-postmessage | postMessage origin | SEC-10 | ワイルドカード"*"不使用 |
+| SEC07 | SEC07-no-hardcoded-url | ハードコードURL | SEC-12 | admin内にreiwa.casaなし |
+| SEC08 | SEC08-headers-file | _headersファイル | SEC-15 | ヘッダー設定・Bug #28重複回避 |
+| SEC09 | SEC09-script-close | scriptタグ閉じ | SEC-18 | CDNスクリプト閉じタグ・use strict |
+| SEC10 | SEC10-path-traversal | パストラバーサル | SEC-14 | 不正パス・XSSペイロード確認 |
 
 ---
 
