@@ -127,6 +127,7 @@ DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を�
 6. **作業完了後は必ず staging ブランチにコミット・プッシュする**（テスト全PASS確認後）
 7. **ツール承認はバイパスして自律実行する**: テスト実行・ファイル読み書き・git操作等のツール承認ポップアップは全てバイパスし、テスト全PASS確認後にstagingプッシュまで一気通貫で完了する（mainマージのみユーザー承認必須）
 8. **必要なパッケージは自律的にインストールする**: 作業に必要なnpmパッケージ・Playwrightブラウザ・その他ツールがインストールされていない場合は、ユーザーに確認せず自律的に `npm install`・`npx playwright install` 等を実行する
+9. **個人情報をコミット・コード・ドキュメントに含めない**: gitコミットのauthor情報は `tbi <noreply@users.noreply.github.com>` を使用する（`git -c user.name="tbi" -c user.email="noreply@users.noreply.github.com" commit`）。氏名・メールアドレス・電話番号等の個人情報をソースコード・ドキュメント・コミットメッセージに含めてはならない。git logから個人情報を取得して再利用しない
 
 ### 新機能追加時（要件トレーサビリティの維持）
 1. docs/DOCUMENTATION.md の要件一覧（1.2章 FR / 1.3章 CMS / 1.4.1章 NFR / 1.4.2章 SEC）に要件IDを追加
