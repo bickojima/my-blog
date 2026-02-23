@@ -1,0 +1,82 @@
+[
+  {
+    "device": "PC",
+    "test": "XSS耐性: 記事タイトルにスクリプト注入",
+    "id": "SEC01-xss-title",
+    "secRef": "SEC-01",
+    "pass": true,
+    "screenshot": "SEC01-xss-title_PC.png"
+  },
+  {
+    "device": "PC",
+    "test": "セキュリティヘッダー: CSP・COOP・CORP確認",
+    "id": "SEC02-csp-headers",
+    "secRef": "SEC-02,SEC-03",
+    "pass": true,
+    "screenshot": "SEC02-csp-headers_PC.png"
+  },
+  {
+    "device": "PC",
+    "test": "DOM安全性: innerHTML/outerHTML不使用確認",
+    "id": "SEC03-no-innerhtml",
+    "secRef": "SEC-05",
+    "pass": true,
+    "screenshot": "SEC03-no-innerhtml_PC.png"
+  },
+  {
+    "device": "PC",
+    "test": "OAuth: scopeがpublic_repo,read:user限定",
+    "id": "SEC04-oauth-scope",
+    "secRef": "SEC-06",
+    "pass": true,
+    "screenshot": "SEC04-oauth-scope_PC.png"
+  },
+  {
+    "device": "PC",
+    "test": "CDN: スクリプトバージョン固定・integrity確認",
+    "id": "SEC05-cdn-pinned",
+    "secRef": "SEC-07",
+    "pass": true,
+    "screenshot": "SEC05-cdn-pinned_PC.png"
+  },
+  {
+    "device": "PC",
+    "test": "postMessage: ワイルドカード\"*\"不使用確認",
+    "id": "SEC06-postmessage",
+    "secRef": "SEC-10",
+    "pass": true,
+    "screenshot": "SEC06-postmessage_PC.png"
+  },
+  {
+    "device": "PC",
+    "test": "ハードコードURL: reiwa.casaがadmin内に存在しない",
+    "id": "SEC07-no-hardcoded-url",
+    "secRef": "SEC-12",
+    "pass": true,
+    "screenshot": "SEC07-no-hardcoded-url_PC.png"
+  },
+  {
+    "device": "PC",
+    "test": "_headersファイル: セキュリティヘッダー設定確認",
+    "id": "SEC08-headers-file",
+    "secRef": "SEC-15",
+    "pass": true,
+    "screenshot": "SEC08-headers-file_PC.png"
+  },
+  {
+    "device": "PC",
+    "test": "scriptタグ: 全CDNスクリプトに閉じタグ確認",
+    "id": "SEC09-script-close",
+    "secRef": "SEC-18",
+    "pass": true,
+    "screenshot": "SEC09-script-close_PC.png"
+  },
+  {
+    "device": "PC",
+    "test": "パストラバーサル: 不正パスへのアクセス確認",
+    "id": "SEC10-path-traversal",
+    "secRef": "SEC-14",
+    "pass": true,
+    "screenshot": "SEC10-path-traversal_PC.png"
+  }
+]

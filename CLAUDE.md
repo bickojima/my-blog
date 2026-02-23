@@ -113,7 +113,7 @@ tests/
 
 DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を採用:
 
-- **DOCUMENTATION.md**: 第1部（1.1〜1.5）要件定義、第2部（2.1〜2.5）基本設計、第3部（3.1〜3.5）詳細設計、第4部（4.1〜4.7）運用設計
+- **DOCUMENTATION.md**: 第1部（1.1〜1.5）要件定義、第2部（2.1〜2.5）基本設計、第3部（3.1〜3.5）詳細設計、第4部（4.1〜4.10）運用設計
 - **TEST-REPORT.md**: 第1部（1.1〜1.6）テスト計画、第2部（2.1〜2.6）テストケース、第3部（3.1）トレーサビリティ、第4部（4.1〜4.3）テスト実行
 
 ## 変更時のルール
@@ -135,7 +135,7 @@ DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を�
 - **保存先**: `evidence/YYYY-MM-DD/` フォルダ（日付ごとに整理）
 - **レポート形式**: `report.html`（画像埋め込み、PC/iPad/iPhone 3デバイス横並び表示）
 - **スクリーンショット**: `screenshots/`, `site-interactive/`, `cms-interactive/` サブフォルダに整理
-- **検証スクリプト**: `verify-staging.mjs`（基本動作確認）、`verify-site-interactive.mjs`（サイト操作性、10シナリオ×3デバイス）、`verify-cms-interactive.mjs`（CMS操作性、16シナリオ×3デバイス）
+- **検証スクリプト**: `verify-staging.mjs`（基本動作確認）、`verify-site-interactive.mjs`（サイト操作性、10シナリオ×3デバイス）、`verify-cms-interactive.mjs`（CMS操作性、16シナリオ×3デバイス）、`verify-cms-crud.mjs`（CMS CRUD操作、16シナリオ×3デバイス）、`verify-security.mjs`（セキュリティ検証、10項目）
 - **赤枠アノテーション**: 全スクリーンショットの注目箇所に赤枠とラベルを必ず付与する（ボタン・メニュー・重なり検出箇所・バグ再発防止確認箇所）
 - **ボタン操作テスト**: ボタンを実際に押下してメニュー展開・モーダル表示をエビデンス取得。複数メニュー同時展開時の操作性も確認
 - **CMS重点検証**: 記事編集画面・画像アップロード画面・メディアライブラリはバグが多いため重点的にエビデンスを取得
@@ -154,6 +154,13 @@ DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を�
 2. 再発防止テストを実装し、tests/TEST-REPORT.md のテストケース一覧に追記
 3. 関連する要件のトレーサビリティマトリクス（1.5章）を更新
 4. テスト件数が変わった場合は CLAUDE.md・TEST-REPORT.md のテスト件数を更新する
+
+### 継続的品質・セキュリティ改善方針
+- **バグ駆動テストケース生成**: バグ一覧（DOCUMENTATION.md 4.5章）の全バグに対して再発防止テストを必ず作成する。過去バグ由来の検証マトリクスをエビデンスにも反映する
+- **定期セキュリティ検証**: コード変更時に `verify-security.mjs` でSEC要件の充足を自動検証する。新SEC要件追加時はスクリプトも更新する
+- **CMS CRUD操作検証**: CMS関連変更時に `verify-cms-crud.mjs` で記事CRUD・画像アップロード・メディアライブラリ等の操作を検証する
+- **品質指標**: テストカバレッジ100%（要件対テストケース）、エビデンス取得率100%（主要機能）、バグ再発防止テスト実装率100%を目標とする
+- 詳細は DOCUMENTATION.md 4.10章を参照
 
 ### ドキュメント変更時
 1. 章番号を変更する場合は、他ドキュメントの相互参照も全て更新する
@@ -175,7 +182,7 @@ DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を�
 - OAuth scope は `public_repo,read:user` に限定する（`repo` / `user` 禁止）
 - HTMLテンプレートに埋め込む変数は必ずエスケープする
 - 変数宣言は `const` / `let` のみ（`var` 禁止）、`'use strict'` を使用
-- セキュリティ要件は DOCUMENTATION.md 1.4.2章（SEC-01〜SEC-20）、品質基準は 4.7章を参照
+- セキュリティ要件は DOCUMENTATION.md 1.4.2章（SEC-01〜SEC-26）、品質基準は 4.7章を参照
 - `npm run build` はビルド前に自動でテスト実行（build.test.mjs以外）。テスト失敗時はビルド中断
 - CDN `<script src="...">` タグは必ず `</script>` で閉じる（閉じタグ欠落で後続スクリプトが飲み込まれる）
 - `_headers` でセキュリティヘッダーを追加する際、管理画面（`/admin/*`）への影響を必ず検証する:

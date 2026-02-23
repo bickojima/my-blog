@@ -371,7 +371,7 @@
       <span><span class="label">検証日:</span> 2026-02-23</span>
       <span><span class="label">対象環境:</span> staging.reiwa.casa</span>
       <span><span class="label">ブランチ:</span> staging</span>
-      <span><span class="label">エビデンス総数:</span> 99 スクリーンショット</span>
+      <span><span class="label">エビデンス総数:</span> 157 スクリーンショット</span>
       <span><span class="label">検証デバイス:</span> PC / iPad / iPhone</span>
     </div>
   </div>
@@ -395,6 +395,16 @@
         <div class="card-label">CMS操作性</div>
         <div class="card-value">48/48</div>
         <div class="card-detail">16 scenarios &times; 3 devices</div>
+      </div>
+      <div class="summary-card">
+        <div class="card-label">CMS CRUD操作</div>
+        <div class="card-value">48/48</div>
+        <div class="card-detail">16 scenarios &times; 3 devices</div>
+      </div>
+      <div class="summary-card">
+        <div class="card-label">セキュリティ検証</div>
+        <div class="card-value">10/10</div>
+        <div class="card-detail">10 security checks</div>
       </div>
       <div class="summary-card">
         <div class="card-label">Vitest</div>
@@ -451,6 +461,22 @@
             <td><span class="badge badge-pass">ALL PASS</span></td>
           </tr>
           <tr>
+            <td>Part 4: CMS CRUD操作検証</td>
+            <td><code>verify-cms-crud.mjs</code></td>
+            <td>16</td>
+            <td>PC / iPad / iPhone</td>
+            <td>48</td>
+            <td><span class="badge badge-pass">ALL PASS</span></td>
+          </tr>
+          <tr>
+            <td>Part 5: セキュリティ検証</td>
+            <td><code>verify-security.mjs</code></td>
+            <td>10</td>
+            <td>PC</td>
+            <td>10</td>
+            <td><span class="badge badge-pass">ALL PASS</span></td>
+          </tr>
+          <tr>
             <td>Vitest 単体/統合テスト</td>
             <td><code>vitest run</code></td>
             <td>458</td>
@@ -471,12 +497,25 @@
             <td></td>
             <td></td>
             <td></td>
-            <td>99</td>
+            <td>157</td>
             <td><span class="badge badge-pass">ALL PASS</span></td>
           </tr>
         </tbody>
       </table>
     </div>
+    <!-- 対応概要 -->
+    <div style="background:var(--color-bg-card);border-radius:var(--radius);border:1px solid var(--color-border);padding:20px;box-shadow:var(--shadow-sm);margin-top:16px;">
+      <h3 style="font-size:16px;font-weight:700;color:var(--color-primary);margin-bottom:12px;">今回の対応概要</h3>
+      <p style="font-size:14px;color:var(--color-text);margin-bottom:12px;">以下のシステム変更・品質改善に伴い、エビデンス取得を実施しました。</p>
+      <table style="font-size:14px;line-height:1.8;width:100%;">
+        <tr><td style="color:var(--color-text-muted);padding-right:16px;vertical-align:top;white-space:nowrap;">v1.23</td><td>第三者セキュリティ・品質レビュー対応: SEC-21〜SEC-26要件追加、Bug #30〜#34修正、Zodスキーマ厳格化、ビルドスクリプト防御強化、OAuth HTTPメソッド制限</td></tr>
+        <tr><td style="color:var(--color-text-muted);padding-right:16px;vertical-align:top;white-space:nowrap;">v1.24</td><td>個人情報保護対応: git履歴から個人情報を完全削除（Bug #35）、pre-commit hookによる防止策</td></tr>
+        <tr><td style="color:var(--color-text-muted);padding-right:16px;vertical-align:top;white-space:nowrap;">v1.25</td><td>エビデンス取得方針の大幅拡充: CMS操作性検証（T01〜T16）、サイト操作性検証（S01〜S10）、過去バグ再発確認マトリクス</td></tr>
+        <tr><td style="color:var(--color-text-muted);padding-right:16px;vertical-align:top;white-space:nowrap;">v1.26</td><td>CMS CRUD操作エビデンス追加（T17〜T32: 記事作成・編集・削除・画像アップロード・メディアライブラリ）、セキュリティ検証エビデンス追加（SEC01〜SEC10）、継続的品質・セキュリティ改善フレームワーク新設</td></tr>
+      </table>
+      <p style="font-size:13px;color:var(--color-text-muted);margin-top:12px;">詳細は docs/DOCUMENTATION.md 改訂履歴および tests/TEST-REPORT.md を参照してください。</p>
+    </div>
+
   </div>
 </section>
 
@@ -1513,12 +1552,543 @@
 <hr class="section-divider">
 
 <!-- ============================================================ -->
-<!-- Part 4: テスト結果サマリ -->
+<!-- Part 4: CMS CRUD操作検証 -->
 <!-- ============================================================ -->
 <section class="part-section">
   <div class="container">
     <div class="part-header">
       <span class="part-number">4</span>
+      <h2 class="part-title">CMS CRUD操作検証</h2>
+    </div>
+    <p class="part-description">verify-cms-crud.mjs -- OAuthモック＋GitHub APIモックによるCMS各操作の検証 (cms-crud/)</p>
+
+    <!-- T17 -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">T17</span>
+          <span class="scenario-name">記事新規作成: フォーム入力</span>
+        </div>
+        <span class="badge badge-pass">PASS</span>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid">
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128187;</span> PC</div><img src="cms-crud/T17-create-form_PC.png" alt="T17 - PC" onclick="openLightbox(this)"></div>
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128195;</span> iPad</div><img src="cms-crud/T17-create-form_iPad.png" alt="T17 - iPad" onclick="openLightbox(this)"></div>
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128241;</span> iPhone</div><img src="cms-crud/T17-create-form_iPhone.png" alt="T17 - iPhone" onclick="openLightbox(this)"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- T18 -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">T18</span>
+          <span class="scenario-name">記事新規作成: Publish実行</span>
+        </div>
+        <span class="badge badge-pass">PASS</span>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid">
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128187;</span> PC</div><img src="cms-crud/T18-create-publish_PC.png" alt="T18 - PC" onclick="openLightbox(this)"></div>
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128195;</span> iPad</div><img src="cms-crud/T18-create-publish_iPad.png" alt="T18 - iPad" onclick="openLightbox(this)"></div>
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128241;</span> iPhone</div><img src="cms-crud/T18-create-publish_iPhone.png" alt="T18 - iPhone" onclick="openLightbox(this)"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- T19 -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">T19</span>
+          <span class="scenario-name">記事編集: 既存記事読み込み</span>
+        </div>
+        <span class="badge badge-pass">PASS</span>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid">
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128187;</span> PC</div><img src="cms-crud/T19-edit-load_PC.png" alt="T19 - PC" onclick="openLightbox(this)"></div>
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128195;</span> iPad</div><img src="cms-crud/T19-edit-load_iPad.png" alt="T19 - iPad" onclick="openLightbox(this)"></div>
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128241;</span> iPhone</div><img src="cms-crud/T19-edit-load_iPhone.png" alt="T19 - iPhone" onclick="openLightbox(this)"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- T20 -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">T20</span>
+          <span class="scenario-name">記事編集: タイトル・本文変更</span>
+        </div>
+        <span class="badge badge-pass">PASS</span>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid">
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128187;</span> PC</div><img src="cms-crud/T20-edit-modify_PC.png" alt="T20 - PC" onclick="openLightbox(this)"></div>
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128195;</span> iPad</div><img src="cms-crud/T20-edit-modify_iPad.png" alt="T20 - iPad" onclick="openLightbox(this)"></div>
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128241;</span> iPhone</div><img src="cms-crud/T20-edit-modify_iPhone.png" alt="T20 - iPhone" onclick="openLightbox(this)"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- T21 -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">T21</span>
+          <span class="scenario-name">記事編集: 保存実行</span>
+        </div>
+        <span class="badge badge-pass">PASS</span>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid">
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128187;</span> PC</div><img src="cms-crud/T21-edit-save_PC.png" alt="T21 - PC" onclick="openLightbox(this)"></div>
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128195;</span> iPad</div><img src="cms-crud/T21-edit-save_iPad.png" alt="T21 - iPad" onclick="openLightbox(this)"></div>
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128241;</span> iPhone</div><img src="cms-crud/T21-edit-save_iPhone.png" alt="T21 - iPhone" onclick="openLightbox(this)"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- T22 -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">T22</span>
+          <span class="scenario-name">記事削除: 削除ボタン確認</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span class="bug-ref">Bug #4</span>
+          <span class="badge badge-pass">PASS</span>
+        </div>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid">
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128187;</span> PC</div><img src="cms-crud/T22-delete-button_PC.png" alt="T22 - PC" onclick="openLightbox(this)"></div>
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128195;</span> iPad</div><img src="cms-crud/T22-delete-button_iPad.png" alt="T22 - iPad" onclick="openLightbox(this)"></div>
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128241;</span> iPhone</div><img src="cms-crud/T22-delete-button_iPhone.png" alt="T22 - iPhone" onclick="openLightbox(this)"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- T23 -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">T23</span>
+          <span class="scenario-name">記事削除: 確認ダイアログ</span>
+        </div>
+        <span class="badge badge-pass">PASS</span>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid">
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128187;</span> PC</div><img src="cms-crud/T23-delete-confirm_PC.png" alt="T23 - PC" onclick="openLightbox(this)"></div>
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128195;</span> iPad</div><img src="cms-crud/T23-delete-confirm_iPad.png" alt="T23 - iPad" onclick="openLightbox(this)"></div>
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128241;</span> iPhone</div><img src="cms-crud/T23-delete-confirm_iPhone.png" alt="T23 - iPhone" onclick="openLightbox(this)"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- T24 -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">T24</span>
+          <span class="scenario-name">画像ウィジェット: accept制限</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span class="bug-ref">Bug #5,#6</span>
+          <span class="badge badge-pass">PASS</span>
+        </div>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid">
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128187;</span> PC</div><img src="cms-crud/T24-image-widget_PC.png" alt="T24 - PC" onclick="openLightbox(this)"></div>
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128195;</span> iPad</div><img src="cms-crud/T24-image-widget_iPad.png" alt="T24 - iPad" onclick="openLightbox(this)"></div>
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128241;</span> iPhone</div><img src="cms-crud/T24-image-widget_iPhone.png" alt="T24 - iPhone" onclick="openLightbox(this)"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- T25 -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">T25</span>
+          <span class="scenario-name">画像アップロード: ファイル選択</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span class="bug-ref">Bug #5,#29</span>
+          <span class="badge badge-pass">PASS</span>
+        </div>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid">
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128187;</span> PC</div><img src="cms-crud/T25-image-upload_PC.png" alt="T25 - PC" onclick="openLightbox(this)"></div>
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128195;</span> iPad</div><img src="cms-crud/T25-image-upload_iPad.png" alt="T25 - iPad" onclick="openLightbox(this)"></div>
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128241;</span> iPhone</div><img src="cms-crud/T25-image-upload_iPhone.png" alt="T25 - iPhone" onclick="openLightbox(this)"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- T26 -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">T26</span>
+          <span class="scenario-name">メディアライブラリ: モーダル操作</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span class="bug-ref">Bug #29,#32</span>
+          <span class="badge badge-pass">PASS</span>
+        </div>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid">
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128187;</span> PC</div><img src="cms-crud/T26-media-library_PC.png" alt="T26 - PC" onclick="openLightbox(this)"></div>
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128195;</span> iPad</div><img src="cms-crud/T26-media-library_iPad.png" alt="T26 - iPad" onclick="openLightbox(this)"></div>
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128241;</span> iPhone</div><img src="cms-crud/T26-media-library_iPhone.png" alt="T26 - iPhone" onclick="openLightbox(this)"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- T27 -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">T27</span>
+          <span class="scenario-name">タグ編集: タグ追加</span>
+        </div>
+        <span class="badge badge-pass">PASS</span>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid">
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128187;</span> PC</div><img src="cms-crud/T27-tag-edit_PC.png" alt="T27 - PC" onclick="openLightbox(this)"></div>
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128195;</span> iPad</div><img src="cms-crud/T27-tag-edit_iPad.png" alt="T27 - iPad" onclick="openLightbox(this)"></div>
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128241;</span> iPhone</div><img src="cms-crud/T27-tag-edit_iPhone.png" alt="T27 - iPhone" onclick="openLightbox(this)"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- T28 -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">T28</span>
+          <span class="scenario-name">下書き/公開ステータス切替</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span class="bug-ref">Bug #7</span>
+          <span class="badge badge-pass">PASS</span>
+        </div>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid">
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128187;</span> PC</div><img src="cms-crud/T28-draft-toggle_PC.png" alt="T28 - PC" onclick="openLightbox(this)"></div>
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128195;</span> iPad</div><img src="cms-crud/T28-draft-toggle_iPad.png" alt="T28 - iPad" onclick="openLightbox(this)"></div>
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128241;</span> iPhone</div><img src="cms-crud/T28-draft-toggle_iPhone.png" alt="T28 - iPhone" onclick="openLightbox(this)"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- T29 -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">T29</span>
+          <span class="scenario-name">Publish確認ワークフロー</span>
+        </div>
+        <span class="badge badge-pass">PASS</span>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid">
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128187;</span> PC</div><img src="cms-crud/T29-publish-flow_PC.png" alt="T29 - PC" onclick="openLightbox(this)"></div>
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128195;</span> iPad</div><img src="cms-crud/T29-publish-flow_iPad.png" alt="T29 - iPad" onclick="openLightbox(this)"></div>
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128241;</span> iPhone</div><img src="cms-crud/T29-publish-flow_iPhone.png" alt="T29 - iPhone" onclick="openLightbox(this)"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- T30 -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">T30</span>
+          <span class="scenario-name">固定ページ新規作成</span>
+        </div>
+        <span class="badge badge-pass">PASS</span>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid">
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128187;</span> PC</div><img src="cms-crud/T30-page-create_PC.png" alt="T30 - PC" onclick="openLightbox(this)"></div>
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128195;</span> iPad</div><img src="cms-crud/T30-page-create_iPad.png" alt="T30 - iPad" onclick="openLightbox(this)"></div>
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128241;</span> iPhone</div><img src="cms-crud/T30-page-create_iPhone.png" alt="T30 - iPhone" onclick="openLightbox(this)"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- T31 -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">T31</span>
+          <span class="scenario-name">固定ページ編集</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span class="bug-ref">Bug #13</span>
+          <span class="badge badge-pass">PASS</span>
+        </div>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid">
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128187;</span> PC</div><img src="cms-crud/T31-page-edit_PC.png" alt="T31 - PC" onclick="openLightbox(this)"></div>
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128195;</span> iPad</div><img src="cms-crud/T31-page-edit_iPad.png" alt="T31 - iPad" onclick="openLightbox(this)"></div>
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128241;</span> iPhone</div><img src="cms-crud/T31-page-edit_iPhone.png" alt="T31 - iPhone" onclick="openLightbox(this)"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- T32 -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">T32</span>
+          <span class="scenario-name">エディタツールバー操作</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span class="bug-ref">Bug #9</span>
+          <span class="badge badge-pass">PASS</span>
+        </div>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid">
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128187;</span> PC</div><img src="cms-crud/T32-toolbar-ops_PC.png" alt="T32 - PC" onclick="openLightbox(this)"></div>
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128195;</span> iPad</div><img src="cms-crud/T32-toolbar-ops_iPad.png" alt="T32 - iPad" onclick="openLightbox(this)"></div>
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128241;</span> iPhone</div><img src="cms-crud/T32-toolbar-ops_iPhone.png" alt="T32 - iPhone" onclick="openLightbox(this)"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ============================================================ -->
+<!-- Part 5: セキュリティ検証 -->
+<!-- ============================================================ -->
+<section class="part-section">
+  <div class="container">
+    <div class="part-header">
+      <span class="part-number">5</span>
+      <h2 class="part-title">セキュリティ検証</h2>
+    </div>
+    <p class="part-description">verify-security.mjs -- セキュリティ要件の自動検証（SEC-01〜SEC-18対応、PCのみ） (security/)</p>
+
+    <!-- SEC01 -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">SEC01</span>
+          <span class="scenario-name">XSS耐性: 記事タイトルにスクリプト注入</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span class="badge badge-info">SEC-01</span>
+          <span class="badge badge-pass">PASS</span>
+        </div>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid" style="grid-template-columns:1fr;">
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128187;</span> PC</div><img src="security/SEC01-xss-title_PC.png" alt="SEC01 XSS - PC" onclick="openLightbox(this)"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEC02 -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">SEC02</span>
+          <span class="scenario-name">セキュリティヘッダー: CSP/COOP/CORP確認</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span class="badge badge-info">SEC-02,SEC-03</span>
+          <span class="badge badge-pass">PASS</span>
+        </div>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid" style="grid-template-columns:1fr;">
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128187;</span> PC</div><img src="security/SEC02-csp-headers_PC.png" alt="SEC02 Headers - PC" onclick="openLightbox(this)"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEC03 -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">SEC03</span>
+          <span class="scenario-name">DOM安全性: innerHTML/outerHTML不使用</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span class="badge badge-info">SEC-05</span>
+          <span class="badge badge-pass">PASS</span>
+        </div>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid" style="grid-template-columns:1fr;">
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128187;</span> PC</div><img src="security/SEC03-no-innerhtml_PC.png" alt="SEC03 DOM - PC" onclick="openLightbox(this)"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEC04 -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">SEC04</span>
+          <span class="scenario-name">OAuth: scopeがpublic_repo,read:user限定</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span class="badge badge-info">SEC-06</span>
+          <span class="badge badge-pass">PASS</span>
+        </div>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid" style="grid-template-columns:1fr;">
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128187;</span> PC</div><img src="security/SEC04-oauth-scope_PC.png" alt="SEC04 OAuth - PC" onclick="openLightbox(this)"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEC05 -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">SEC05</span>
+          <span class="scenario-name">CDN: スクリプトバージョン固定・integrity</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span class="badge badge-info">SEC-07</span>
+          <span class="badge badge-pass">PASS</span>
+        </div>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid" style="grid-template-columns:1fr;">
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128187;</span> PC</div><img src="security/SEC05-cdn-pinned_PC.png" alt="SEC05 CDN - PC" onclick="openLightbox(this)"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEC06 -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">SEC06</span>
+          <span class="scenario-name">postMessage: ワイルドカード"*"不使用</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span class="badge badge-info">SEC-10</span>
+          <span class="badge badge-pass">PASS</span>
+        </div>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid" style="grid-template-columns:1fr;">
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128187;</span> PC</div><img src="security/SEC06-postmessage_PC.png" alt="SEC06 postMessage - PC" onclick="openLightbox(this)"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEC07 -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">SEC07</span>
+          <span class="scenario-name">ハードコードURL: admin内にreiwa.casaなし</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span class="badge badge-info">SEC-12</span>
+          <span class="badge badge-pass">PASS</span>
+        </div>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid" style="grid-template-columns:1fr;">
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128187;</span> PC</div><img src="security/SEC07-no-hardcoded-url_PC.png" alt="SEC07 URL - PC" onclick="openLightbox(this)"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEC08 -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">SEC08</span>
+          <span class="scenario-name">_headersファイル: セキュリティヘッダー設定</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span class="badge badge-info">SEC-15</span>
+          <span class="badge badge-pass">PASS</span>
+        </div>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid" style="grid-template-columns:1fr;">
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128187;</span> PC</div><img src="security/SEC08-headers-file_PC.png" alt="SEC08 Headers - PC" onclick="openLightbox(this)"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEC09 -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">SEC09</span>
+          <span class="scenario-name">scriptタグ: CDNスクリプト閉じタグ</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span class="badge badge-info">SEC-18</span>
+          <span class="badge badge-pass">PASS</span>
+        </div>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid" style="grid-template-columns:1fr;">
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128187;</span> PC</div><img src="security/SEC09-script-close_PC.png" alt="SEC09 Script - PC" onclick="openLightbox(this)"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEC10 -->
+    <div class="scenario-card">
+      <div class="scenario-header">
+        <div style="display:flex;align-items:center;">
+          <span class="scenario-id">SEC10</span>
+          <span class="scenario-name">パストラバーサル: 不正パスアクセス確認</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span class="badge badge-info">SEC-14</span>
+          <span class="badge badge-pass">PASS</span>
+        </div>
+      </div>
+      <div class="scenario-body">
+        <div class="device-grid" style="grid-template-columns:1fr;">
+          <div class="device-cell"><div class="device-label"><span class="device-icon">&#128187;</span> PC</div><img src="security/SEC10-path-traversal_PC.png" alt="SEC10 PathTraversal - PC" onclick="openLightbox(this)"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ============================================================ -->
+<!-- Part 6: テスト結果サマリ -->
+<!-- ============================================================ -->
+<section class="part-section">
+  <div class="container">
+    <div class="part-header">
+      <span class="part-number">6</span>
       <h2 class="part-title">テスト結果サマリ</h2>
     </div>
     <p class="part-description">全検証カテゴリの最終結果一覧</p>
@@ -1557,6 +2127,20 @@
             <td><span class="badge badge-pass">48/48 PASS</span></td>
           </tr>
           <tr>
+            <td>CMS CRUD操作検証 (16 scenarios &times; 3 devices)</td>
+            <td>48</td>
+            <td>0</td>
+            <td>0</td>
+            <td><span class="badge badge-pass">48/48 PASS</span></td>
+          </tr>
+          <tr>
+            <td>セキュリティ検証 (10 checks &times; PC)</td>
+            <td>10</td>
+            <td>0</td>
+            <td>0</td>
+            <td><span class="badge badge-pass">10/10 PASS</span></td>
+          </tr>
+          <tr>
             <td>Vitest 単体/統合テスト (Windows sharp lock excluded)</td>
             <td>458</td>
             <td>0</td>
@@ -1572,7 +2156,7 @@
           </tr>
           <tr class="total-row">
             <td>エビデンス スクリーンショット合計</td>
-            <td>99</td>
+            <td>157</td>
             <td>0</td>
             <td>0</td>
             <td><span class="badge badge-pass">ALL PASS</span></td>
@@ -1595,7 +2179,7 @@
         <tr><td style="color:var(--color-text-muted);padding-right:16px;">検証デバイス</td><td>PC (1280&times;720), iPad (810&times;1080), iPhone (390&times;844)</td></tr>
         <tr><td style="color:var(--color-text-muted);padding-right:16px;">検証ツール</td><td>Playwright + カスタム検証スクリプト</td></tr>
         <tr><td style="color:var(--color-text-muted);padding-right:16px;">テストフレームワーク</td><td>Vitest (単体/統合), Playwright (E2E)</td></tr>
-        <tr><td style="color:var(--color-text-muted);padding-right:16px;">エビデンス総数</td><td>99 スクリーンショット (21 + 30 + 48)</td></tr>
+        <tr><td style="color:var(--color-text-muted);padding-right:16px;">エビデンス総数</td><td>157 スクリーンショット (21 + 30 + 48 + 48 + 10)</td></tr>
       </table>
     </div>
 
