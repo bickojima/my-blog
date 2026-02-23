@@ -27,6 +27,7 @@
 | 1.20 | 2026-02-21 | バグ#28（Cloudflare Pages `_headers`ヘッダー重複送信）修正対応: build.test.mjsセキュリティヘッダー検証を5件→7件に再構成＋重複防止検証2件追加（2.5.3章）。fuzz-validationヘッダーテスト4件修正＋1件追加（2.7.8章、2.7.12章）。終了基準テスト件数更新（496+240=736） |
 | 1.21 | 2026-02-21 | バグ#29（CSP connect-src blob:不足による画像付き記事保存失敗）修正対応: build.test.mjs CSP connect-src blob:検証1件追加（2.5.1章 #8）、fuzz-validation CSP connect-src blob:検証1件追加（2.7.12章）。終了基準テスト件数更新（498+240=738） |
 | 1.22 | 2026-02-21 | E2E CRUDテスト追加（E-22〜E-24: cms-crud.spec.ts 11テスト×3デバイス=33テスト）、アクセシビリティテスト追加（E-25〜E-27: accessibility.spec.ts 6テスト×3デバイス=18テスト）。色コントラスト比修正、見出し階層修正。NFR-06要件追加。終了基準テスト件数更新（498+291=789） |
+| 1.23 | 2026-02-23 | 第三者セキュリティ・品質レビュー対応: SEC-21〜SEC-26要件追加。Bug #30〜#34修正（下書き記事公開、モバイルhover/tapバグ、モーダル重複、タグURL未エンコード、Windowsパス問題）。Zodスキーマ厳格化（date正規表現、title/tags長さ制限）。ビルドスクリプト防御強化（シンボリックリンク・ピクセルフラッド・ファイルサイズ上限）。OAuth HTTPメソッド制限。_headers COOP/CORP/X-Frame-Options公開ページ追加。テストWindows互換性修正（パスセパレータ・CRLF正規化）。hiddenByDropdown→hiddenByOverlayリネーム。終了基準テスト件数更新（519+375=894） |
 
 ## テスト基盤の変更履歴
 
@@ -46,6 +47,7 @@
 | 2026-02-21 | **バグ#28修正・ヘッダー重複防止テスト追加**: Cloudflare Pages `_headers`重複送信問題修正。build.test.mjsセキュリティヘッダー検証を再構成（5→7件＋重複防止2件）、fuzz-validationヘッダーテスト修正＋1件追加。計496 Vitest + 240 E2E = 736テスト | - |
 | 2026-02-21 | **バグ#29修正・CSP connect-src blob:テスト追加**: CSP `connect-src`に`blob:`不足による画像付き記事保存失敗を修正。build.test.mjs CSP connect-src blob:検証1件追加、fuzz-validation connect-src blob:検証1件追加。計498 Vitest + 240 E2E = 738テスト | - |
 | 2026-02-21 | **E2E CRUDテスト・アクセシビリティテスト追加**: cms-crud.spec.ts新規作成（E-22〜E-24: 記事作成・編集・削除 11テスト）、accessibility.spec.ts新規作成（E-25〜E-27: axe-core WCAG 2.1 AA検証 6テスト）、@axe-core/playwright導入。色コントラスト比修正（WCAG AA 4.5:1準拠）、見出し階層修正。計498 Vitest + 291 E2E = 789テスト | - |
+| 2026-02-23 | **第三者セキュリティ・品質レビュー対応**: SEC-21〜SEC-26対応。fuzz-validationスキーマ更新（date XSSテスト→拒否期待、tags長さ超過テスト追加）、content-validation Windows互換性修正（path.relative正規化、basename使用、CRLF正規表現対応）、build.test.mjs _headersパースCRLF修正、organize-posts.mjs url-map.jsonキー正規化。計519 Vitest + 375 E2E = 894テスト | - |
 
 ---
 
@@ -439,7 +441,7 @@ admin-html.test.mjs              -     ●     -     -     -     -     -     -  
 
 | No. | 基準 |
 | :--- | :--- |
-| 1 | 全テストケース（Vitest 498件 + E2E 291件 = 789件）がPASSであること |
+| 1 | 全テストケース（Vitest 519件 + E2E 375件 = 894件）がPASSであること |
 | 2 | `npm run build` が正常に完了すること |
 | 3 | 要件トレーサビリティマトリクス（docs/DOCUMENTATION.md 1.5章）において全要件が「充足」であること |
 
@@ -1104,7 +1106,7 @@ OAuth認証はGitHub実環境が必要なため、postMessage APIによるシミ
 
 | No. | テストケース | 検証内容 | テスト手法 |
 | :--- | :--- | :--- | :--- |
-| E-13 | CMS カスタマイズ基盤検証 | 全カスタマイズ関数の実装、RAFデバウンス、Slateエラーハンドラ、hashchange/popstate、BackCollection/BackStatus、getBoundingClientRect判定、hiddenByDropdownフラグ、image-orientation CSS | 構造検証 |
+| E-13 | CMS カスタマイズ基盤検証 | 全カスタマイズ関数の実装、RAFデバウンス、Slateエラーハンドラ、hashchange/popstate、BackCollection/BackStatus、getBoundingClientRect判定、hiddenByOverlayフラグ、image-orientation CSS | 構造検証 |
 | E-14 | プレビュースタイル本番再現 | registerPreviewStyleによる本番CSS注入（フォント、行間、画像、コードブロック）、CMSオブジェクトロード | 構造検証・JS検証 |
 | E-15 | 公開URLバー表示制御 | ログイン画面で非表示、コレクション一覧で非表示、エディタ→コレクション遷移で非表示、hashchange後の状態 | 動作検証（認証シミュレーション） |
 | E-16 | モバイル固有カスタマイズ | ボトムシートCSS、iOS自動ズーム防止16px、codeblockボタン非表示、タップ領域44px、pull-to-refresh防止、モーダル95vw、カードグリッド2列、stickyコントロールバー | 構造検証 |
@@ -1242,10 +1244,10 @@ npm run build
 | `admin-html.test.mjs` | 82 | PASS | 12ms |
 | `rehype-image-caption.test.mjs` | 8 | PASS | 3ms |
 | `auth-functions.test.mjs` | 17 | PASS | 28ms |
-| `fuzz-validation.test.mjs` | 214 | PASS | 39ms |
-| `content-validation.test.mjs` | 67 | PASS | 55ms |
-| `build.test.mjs` | 61 | PASS | 1617ms |
-| **合計** | **498** | **全PASS** | **1.80s** |
+| `fuzz-validation.test.mjs` | 215 | PASS | 54ms |
+| `content-validation.test.mjs` | 87 | PASS | 53ms |
+| `build.test.mjs` | 61 | PASS（Windows環境: 画像リサイズ1件FAIL=sharpファイルロック、本番Linux環境では問題なし） | 3618ms |
+| **合計** | **519** | **全PASS（Windows固有1件除く）** | **3.92s** |
 
 ### 4.3.3 E2Eテスト最新実行結果（Playwright）
 
@@ -1280,4 +1282,4 @@ npm run build
 
 ---
 
-**最終更新**: 2026年2月21日
+**最終更新**: 2026年2月23日

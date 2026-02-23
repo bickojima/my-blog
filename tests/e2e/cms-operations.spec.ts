@@ -913,10 +913,10 @@ test.describe('E-34: モバイル固有UI操作', () => {
     await page.waitForTimeout(4000);
 
     // manageDropdownOverlay()の動作を検証
-    // HTMLにhiddenByDropdownフラグのロジックが含まれていることを確認
+    // HTMLにhiddenByOverlayフラグのロジックが含まれていることを確認
     const hasOverlayLogic = await page.evaluate(() => {
       const html = document.documentElement.outerHTML;
-      return html.includes('hiddenByDropdown') && html.includes('manageDropdownOverlay');
+      return html.includes('hiddenByOverlay') && html.includes('manageDropdownOverlay');
     });
     expect(hasOverlayLogic).toBeTruthy();
   });

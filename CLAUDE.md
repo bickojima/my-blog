@@ -23,7 +23,7 @@
 npm run dev          # 開発サーバー起動（前処理含む）
 npm run build        # テスト必須ビルド（vitest run → normalize-images → organize-posts → astro build → image-optimize）
 npm run build:raw    # テストなしビルド（build.test.mjs内部で使用、Cloudflare Pages用）
-npm test             # Vitest 全テスト実行（498テスト、記事数により変動）
+npm test             # Vitest 全テスト実行（519テスト、記事数により変動）
 npm run test:watch   # Vitest ウォッチモード
 npm run test:e2e     # Playwright E2Eテスト（要: npm run build 済み、375テスト：367実行+8スキップ）
 ```
@@ -57,7 +57,7 @@ functions/auth/              # Cloudflare Functions: GitHub OAuth proxy
 
 tests/
 ├── *.test.mjs               # Vitest単体・統合テスト（7ファイル）
-├── fuzz-validation.test.mjs # ファズテスト（XSS/SQLi/パストラバーサル/プロトタイプ汚染等、214テスト）
+├── fuzz-validation.test.mjs # ファズテスト（XSS/SQLi/パストラバーサル/プロトタイプ汚染等、215テスト）
 ├── e2e/                     # Playwright E2E（site, cms, cms-customizations, cms-crud, cms-operations, accessibility）
 └── TEST-REPORT.md           # テスト計画書・テストケース一覧・実行結果
 ```
@@ -93,7 +93,7 @@ tests/
 
 ## テスト
 
-- **Vitest**: 設定検証、コンテンツ検証、単体テスト、ビルド統合テスト、セキュリティ検証、ファズテスト、基本機能保護テスト（498テスト、記事数により変動）
+- **Vitest**: 設定検証、コンテンツ検証、単体テスト、ビルド統合テスト、セキュリティ検証、ファズテスト、基本機能保護テスト（519テスト、記事数により変動）
 - **Playwright**: PC/iPad/iPhone 3デバイス × 125テスト = 375テスト（367実行+8スキップ、ローカルのみ、CIでは未実行）
 - コンテンツ検証テストは記事数・ページ数に応じて動的展開される
 - テスト実行後、失敗がある場合は原因を調査し修正する（テストを削除・スキップしない）
@@ -126,6 +126,7 @@ DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を�
 5. コンテンツ（記事・固定ページ）を追加した場合は `content-validation.test.mjs` の動的テストが対応する
 6. **作業完了後は必ず staging ブランチにコミット・プッシュする**（テスト全PASS確認後）
 7. **ツール承認はバイパスして自律実行する**: テスト実行・ファイル読み書き・git操作等のツール承認ポップアップは全てバイパスし、テスト全PASS確認後にstagingプッシュまで一気通貫で完了する（mainマージのみユーザー承認必須）
+8. **必要なパッケージは自律的にインストールする**: 作業に必要なnpmパッケージ・Playwrightブラウザ・その他ツールがインストールされていない場合は、ユーザーに確認せず自律的に `npm install`・`npx playwright install` 等を実行する
 
 ### 新機能追加時（要件トレーサビリティの維持）
 1. docs/DOCUMENTATION.md の要件一覧（1.2章 FR / 1.3章 CMS / 1.4.1章 NFR / 1.4.2章 SEC）に要件IDを追加

@@ -382,6 +382,12 @@ staging環境の検知:
 | SEC-18 | 情報漏洩防止（ファイル）: public配下に.env/.git/package.json等の機密ファイルが存在しないことを保証する | ビルドプロセス | ペネトレーションテストで確認 |
 | SEC-19 | 入力値バリデーション強化: フィールド境界値・不整合値をCMS設定・Zodスキーマ・テストの3層で防止する | `config.yml`, `content.config.ts` | order≧1、slug正規表現、型チェック |
 | SEC-20 | ファズテスト必須化: XSS/SQLi/パストラバーサル/プロトタイプ汚染等の攻撃ペイロードに対する耐性を自動テストで検証する | `fuzz-validation.test.mjs` | ビルド時にファズテスト必須実行 |
+| SEC-21 | 下書き記事静的生成防止: draft=trueの記事がgetStaticPathsから除外され、公開URLでアクセスできないことを保証する | `src/pages/posts/[year]/[month]/[slug].astro` | `.filter(post => !post.data.draft)` |
+| SEC-22 | OAuthコールバックセキュリティヘッダー: トークン応答にCache-Control: no-store, X-Content-Type-Options, X-Frame-Options, CSPを設定する | `functions/auth/callback.js` | トークン漏洩・キャッシュ防止 |
+| SEC-23 | 公開ページCOOP/CORP/X-Frame-Options: `/*`セクションにも管理画面と同一値のCOOP/CORP/X-Frame-Optionsを設定し、Bug #28のAppend動作で安全に重複させる | `_headers` | 同一値重複は安全（ブラウザ動作に影響なし） |
+| SEC-24 | Zodスキーマ厳格化: title max(200), date YYYY-MM-DD正規表現, tags max(50)/max(20), thumbnail startsWith('/images/'), summary max(500) | `content.config.ts` | 入力値を型＋値域の両面で制約 |
+| SEC-25 | ビルドスクリプト防御強化: シンボリックリンクスキップ、ファイルサイズ上限(50MB)、ピクセル数上限(50Mピクセル)、gray-matterエンジン無効化、パス境界チェック | `scripts/`, `src/integrations/` | ピクセルフラッド・シンボリックリンク攻撃防止 |
+| SEC-26 | OAuth HTTPメソッド制限: OAuth関数をonRequestからonRequestGetに変更し、POST/PUT/DELETE等の不要なHTTPメソッドを拒否する | `functions/auth/` | Cloudflare Functions のメソッド別ハンドラ |
 
 ---
 
@@ -471,8 +477,14 @@ staging環境の検知:
 | SEC-18 | 情報漏洩防止（ファイル） | fuzz-validation | 2.7.10章 #1〜#7 | M-02 | 充足 |
 | SEC-19 | 入力値バリデーション強化 | fuzz-validation | 2.7.1〜2.7.6章 | M-02, M-09 | 充足 |
 | SEC-20 | ファズテスト必須化 | fuzz-validation | 2.7章全体 | M-09 | 充足 |
+| SEC-21 | 下書き記事静的生成防止 | build | 2.5章（draft記事が生成されないこと） | M-02 | 充足 |
+| SEC-22 | OAuthコールバックセキュリティヘッダー | auth-functions | 2.3章（レスポンスヘッダー検証） | M-02 | 充足 |
+| SEC-23 | 公開ページCOOP/CORP/X-Frame-Options | fuzz-validation, build | 2.7.8章, 2.5.1章 | M-02 | 充足 |
+| SEC-24 | Zodスキーマ厳格化 | fuzz-validation | 2.7.2〜2.7.6章 | M-09 | 充足 |
+| SEC-25 | ビルドスクリプト防御強化 | build | ビルドパイプライン検証 | M-02 | 充足 |
+| SEC-26 | OAuth HTTPメソッド制限 | auth-functions | 2.3章 | M-02 | 充足 |
 
-**充足状況: 全要件（FR-01〜FR-21, CMS-01〜CMS-16, NFR-01〜NFR-06, SEC-01〜SEC-20）がテストで充足されている。未テスト要件なし。**
+**充足状況: 全要件（FR-01〜FR-21, CMS-01〜CMS-16, NFR-01〜NFR-06, SEC-01〜SEC-26）がテストで充足されている。未テスト要件なし。**
 
 ---
 
@@ -1532,6 +1544,11 @@ GitHubリポジトリが利用可能な場合、以下の手順でシステム�
 | 27 | 2026-02-21 | iPhone記事保存失敗「TypeError: Load failed」: 4つのバグが複合。(1) コミット`295b44f`でSRI追加時に`</script>`閉じタグが脱落し、後続の`CMS.registerPreviewStyle`ブロックがCDNスクリプトのインライン内容としてHTMLパーサーに飲み込まれた。(2) コミット`a92ccbd`でCOOP `same-origin`を全ページに適用しOAuth popupの`window.opener`が`null`になり認証フロー破壊。(3) コミット`295b44f`でCSP `frame-ancestors 'none'`がCMSプレビューiframeを阻害。(4) 同コミットで`X-Frame-Options: DENY`が同上 | バグ#26修正（セキュリティヘッダー追加）とSRI追加（SEC-12）時に、管理画面（Decap CMS）固有の要件（OAuth popup: window.opener、プレビューiframe: frame-ancestors/X-Frame-Options）との互換性を検証しなかった。SRI追加時の単純な編集ミスで閉じタグ脱落 | (1) `</script>`閉じタグ復元。(2) /admin/*でCOOP: same-origin-allow-popupsにオーバーライド。(3) CSP frame-ancestors 'self'に変更。(4) /admin/*でX-Frame-Options: SAMEORIGINにオーバーライド。再発防止: CDNスクリプト閉じタグ自動テスト、管理画面ヘッダーオーバーライド自動テスト、CLAUDE.mdにヘッダー追加時の管理画面影響チェック義務化 | admin-html 2.6.1章, fuzz-validation 2.7.8章 |
 | 28 | 2026-02-21 | iPhone記事保存失敗「TypeError: Load failed」（バグ#27修正不完全）: バグ#27の対策として`_headers`で`/admin/*`にCOOP/CORP/X-Frame-Optionsのオーバーライドを追加したが、Cloudflare Pagesは`/*`と`/admin/*`で同名ヘッダーを**オーバーライドではなくAppend（重複送信）する**。ブラウザは重複ヘッダーの最も厳しい値を採用するため、実質的にCOOP: same-origin（OAuth popup破壊）、X-Frame-Options: DENY（プレビューiframe破壊）、CORP: same-origin（CDNリソース制限）が適用され続けた | Cloudflare Pages `_headers`ファイルのヘッダーマージ仕様を誤解。同名ヘッダーが`/*`と`/admin/*`両方に存在する場合、より具体的なパスの値でオーバーライドされると想定したが、実際にはHTTPレスポンスに両方の値がAppendされる | (1) COOP/CORP/X-Frame-Optionsを`/*`セクションから完全削除。(2) これらのヘッダーは`/admin/*`セクションにのみ設定。(3) 非管理画面ページはこれらのヘッダーなし（公開ブログとして許容範囲）。再発防止: `_headers`ヘッダー重複検知テスト追加（build.test.mjs）、`/*`と`/admin/*`の同名ヘッダー禁止テスト追加（fuzz-validation）、CLAUDE.mdにCloudflare Pages `_headers`動作仕様を記載 | build 2.5.1章, fuzz-validation 2.7.8章 |
 | 29 | 2026-02-21 | 画像付き記事保存失敗「TypeError: Load failed」: テキストのみの記事保存は成功するが、画像を含む記事の保存が失敗する。CSP `connect-src`に`blob:`が不足しており、Decap CMS v3.10.0が画像保存時に内部で実行する`fetch(blobURL)`がブラウザにブロックされる | Decap CMSは画像アップロード時に`URL.createObjectURL()`でblob: URLを生成し、エントリ永続化時に`fetch(blobURL).then(e => e.blob())`でファイルデータを読み戻す。CSP `connect-src`に`blob:`が含まれていないため、このfetchが`Refused to connect to 'blob:...'`エラーとなる。テキストのみの保存ではblob: URLのfetchが発生しないため成功する（GitHub Issue #6829） | CSP `connect-src`に`blob:`を追加。再発防止: CSP connect-src blob:検証テスト追加（build.test.mjs、fuzz-validation.test.mjs）、CLAUDE.mdにCSP connect-src要件を記載 | build 2.5.1章, fuzz-validation 2.7.8章 |
+| 30 | 2026-02-23 | 下書き記事がビルド公開される: draft=trueの記事がgetStaticPathsでフィルタされておらず、静的生成され公開URLでアクセス可能 | getStaticPathsにdraftフィルタが未実装 | `.filter(post => !post.data.draft)`をgetStaticPathsに追加 | build 2.5章 |
+| 31 | 2026-02-23 | モバイルドロップダウンhover/tapバグ: タッチデバイスでBase.astroのヘッダーナビドロップダウンが一瞬開いてすぐ閉じる | mouseenterイベントがタッチデバイスでもclickより先に発火し、is-openを追加→即座にmouseleaveで削除 | `(hover: hover)`メディアクエリでhover可能デバイスのみmouseenter/mouseleaveを登録 | content-validation ドロップダウンJS検証 |
+| 32 | 2026-02-23 | CMS公開URLバーとモーダル重複: CMSのStyledModalダイアログ表示時に公開URLバーが重なり、z-index競合でUI操作不能 | manageDropdownOverlayがモーダルを検知していなかった | StyledModal検出ロジック追加、モーダル表示時にURLバーを退避 | E2E cms-operations |
+| 33 | 2026-02-23 | タグURL未エンコード: 日本語タグのhref属性にencodeURIComponentが適用されておらず、一部ブラウザで正しく遷移できない可能性 | テンプレートでタグ文字列をそのままhrefに使用 | `encodeURIComponent(tag)`を追加（index.astro, [slug].astro） | build 2.5章（タグリンク存在検証） |
+| 34 | 2026-02-23 | Windowsパスセパレータ問題: organize-posts.mjsのurl-map.json生成でpath.relativeがバックスラッシュを使用し、Windows環境でキー形式が不正 | path.relative()がOSのパスセパレータを使用 | `.replace(/\\\\/g, '/')`でurl-map.jsonキーを正規化。テストコードも同様に正規化 | build 2.5章（URLマッピング検証）, content-validation |
 
 ---
 
@@ -1694,4 +1711,4 @@ git push origin staging
 
 ---
 
-**最終更新**: 2026年2月21日（v1.26）
+**最終更新**: 2026年2月23日（v1.27）

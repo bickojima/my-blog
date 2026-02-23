@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync, existsSync } from 'fs';
-import { join, extname, relative } from 'path';
+import { join, extname, relative, basename } from 'path';
 import matter from 'gray-matter';
 
 const POSTS_DIR = join(process.cwd(), 'src/content/posts');
@@ -32,7 +32,7 @@ describe('コンテンツ（Markdownファイル）の検証', () => {
   });
 
   describe.each(
-    markdownFiles.map((f) => [f.replace(process.cwd() + '/', ''), f])
+    markdownFiles.map((f) => [relative(process.cwd(), f).replace(/\\/g, '/'), f])
   )('%s', (_relativePath, filePath) => {
     const raw = readFileSync(filePath, 'utf-8');
     const { data: frontmatter, content } = matter(raw);
@@ -68,12 +68,12 @@ describe('コンテンツ（Markdownファイル）の検証', () => {
     });
 
     it('ファイルがyyyy/mm/ディレクトリに配置されている', () => {
-      const relPath = relative(POSTS_DIR, filePath);
+      const relPath = relative(POSTS_DIR, filePath).replace(/\\/g, '/');
       expect(relPath).toMatch(/^\d{4}\/\d{2}\/.+\.md$/);
     });
 
     it('ファイルのディレクトリがfrontmatterの日付と一致する', () => {
-      const relPath = relative(POSTS_DIR, filePath);
+      const relPath = relative(POSTS_DIR, filePath).replace(/\\/g, '/');
       const [dirYear, dirMonth] = relPath.split('/');
       const dateStr =
         frontmatter.date instanceof Date
@@ -121,7 +121,7 @@ describe('固定ページ（pages）コンテンツの検証', () => {
   });
 
   describe.each(
-    pageFiles.map(f => [f.replace(process.cwd() + '/', ''), f])
+    pageFiles.map(f => [relative(process.cwd(), f).replace(/\\/g, '/'), f])
   )('%s', (_relativePath, filePath) => {
     const raw = readFileSync(filePath, 'utf-8');
     const { data: frontmatter, content } = matter(raw);
@@ -140,7 +140,7 @@ describe('固定ページ（pages）コンテンツの検証', () => {
     it('ファイル名がslugフィールドと一致する', () => {
       // CMS config.ymlのslugテンプレートが{{fields.slug}}であることの実データ検証
       // {{slug}}（タイトルベース）だとファイル名が日本語タイトルになる不具合の再発防止
-      const fileName = filePath.split('/').pop().replace('.md', '');
+      const fileName = basename(filePath, '.md');
       expect(fileName).toBe(frontmatter.slug);
     });
 
@@ -184,7 +184,7 @@ describe('ヘッダーナビゲーション条件分岐の検証（Base.astroソ
       // 1件分岐: navPages.length === 1 のチェックが存在する
       expect(baseAstro).toContain('navPages.length === 1');
       // nav-dropdown-linkクラスではなく素の<a>タグ
-      expect(baseAstro).toMatch(/navPages\.length === 1.*\n.*<a href/);
+      expect(baseAstro).toMatch(/navPages\.length === 1.*[\r\n]+.*<a href/);
     });
 
     it('2件以上分岐: navPages.length > 1 → ドロップダウン構造', () => {
@@ -247,7 +247,7 @@ describe('固定ページフィールドの境界値・一意性検証', () => {
   const allPages = pageFiles.map(f => {
     const raw = readFileSync(f, 'utf-8');
     const { data } = matter(raw);
-    return { file: f.split('/').pop(), ...data };
+    return { file: basename(f), ...data };
   });
 
   it('全固定ページのorderが整数である', () => {
