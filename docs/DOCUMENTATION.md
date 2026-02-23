@@ -31,6 +31,8 @@
 | 1.24 | 2026-02-21 | バグNo.29修正: CSP `connect-src`に`blob:`不足による画像付き記事保存失敗。Decap CMSは画像保存時に`fetch(blobURL)`を実行するため`connect-src`に`blob:`が必要。再発防止テスト2件追加。全498テスト |
 | 1.25 | 2026-02-21 | E2E CRUDテスト追加（E-22〜E-24: 記事作成・編集・削除）、アクセシビリティテスト追加（E-25〜E-27: axe-core WCAG 2.1 AA検証）、NFR-06（アクセシビリティ）要件追加。色コントラスト比修正（#888→#595959、#999→#767676、#aaa→#767676、#ccc→#767676）、見出し階層修正（h3→h2）。E2E 291テスト、全498+291=789テスト |
 | 1.26 | 2026-02-21 | CMS実操作E2Eテスト追加（E-28〜E-35: フォーム入力→保存→API検証、UIインタラクション、モバイル固有動作、削除ボタン状態変化）。OAuthモック＋GitHub APIモックをCMS E2Eテストの必須インフラとして規定。E2E 375テスト（367実行+8スキップ）、全498+367=865テスト |
+| 1.27 | 2026-02-23 | 第三者セキュリティ・品質レビュー対応: SEC-21〜SEC-26追加（下書き静的生成防止、OAuthセキュリティヘッダー、公開ページCOOP/CORP、Zodスキーマ厳格化、ビルドスクリプト防御強化、OAuth HTTPメソッド制限）。Bug #30〜#34修正。テストWindows互換性修正（パスセパレータ・CRLF正規化）。全519+375=894テスト |
+| 1.28 | 2026-02-23 | 個人情報保護対応: git履歴から個人情報を完全削除（filter-branch）、ローカルgit設定匿名化、pre-commit hookによる個人情報混入防止、CLAUDE.mdルール9追加。Bug #35追加 |
 
 ## システム変更履歴
 
@@ -1549,6 +1551,7 @@ GitHubリポジトリが利用可能な場合、以下の手順でシステム�
 | 32 | 2026-02-23 | CMS公開URLバーとモーダル重複: CMSのStyledModalダイアログ表示時に公開URLバーが重なり、z-index競合でUI操作不能 | manageDropdownOverlayがモーダルを検知していなかった | StyledModal検出ロジック追加、モーダル表示時にURLバーを退避 | E2E cms-operations |
 | 33 | 2026-02-23 | タグURL未エンコード: 日本語タグのhref属性にencodeURIComponentが適用されておらず、一部ブラウザで正しく遷移できない可能性 | テンプレートでタグ文字列をそのままhrefに使用 | `encodeURIComponent(tag)`を追加（index.astro, [slug].astro） | build 2.5章（タグリンク存在検証） |
 | 34 | 2026-02-23 | Windowsパスセパレータ問題: organize-posts.mjsのurl-map.json生成でpath.relativeがバックスラッシュを使用し、Windows環境でキー形式が不正 | path.relative()がOSのパスセパレータを使用 | `.replace(/\\\\/g, '/')`でurl-map.jsonキーを正規化。テストコードも同様に正規化 | build 2.5章（URLマッピング検証）, content-validation |
+| 35 | 2026-02-23 | git履歴に個人情報（氏名・メールアドレス）が含まれていた: 100件のコミットにauthor/committer情報として個人のフルネーム・Gmailアドレスが記録されていた | gitのグローバル設定に個人メールアドレスが設定されており、リポジトリ固有の設定がなかった | (1) `git filter-branch --env-filter`で全履歴のauthor/committerを匿名化（tbi / noreply@users.noreply.github.com）。(2) ローカルgit設定（`git config user.name/user.email`）を匿名値に設定。(3) pre-commit hookで個人情報パターン検出時にコミット拒否。(4) CLAUDE.mdルール9に個人情報禁止を明文化 | 運用手順（4.8章） |
 
 ---
 
@@ -1627,7 +1630,7 @@ git push origin staging
 
 第三者セキュリティ診断（2026年2月21日実施）で検出された問題と対策を踏まえ、再発防止のための品質向上策と定期診断の運用を定める。
 
-セキュリティ要件は第1部 1.4.2章（SEC-01〜SEC-20）として定義されている。本章では運用面での品質基準、再発防止策、定期診断の手順を定める。
+セキュリティ要件は第1部 1.4.2章（SEC-01〜SEC-26）として定義されている。本章では運用面での品質基準、再発防止策、定期診断の手順を定める。個人情報保護については4.8章を参照。
 
 ### 4.7.1 品質向上策
 
@@ -1711,4 +1714,28 @@ git push origin staging
 
 ---
 
-**最終更新**: 2026年2月23日（v1.27）
+## 4.8. 個人情報保護
+
+### 4.8.1 概要
+
+git履歴に個人情報（氏名・メールアドレス）が含まれていた問題（Bug #35）を契機に、個人情報の混入防止策を導入した。
+
+### 4.8.2 防止策一覧
+
+| No. | 対策 | 内容 | 適用範囲 |
+|:---|:---|:---|:---|
+| 1 | ローカルgit設定 | `user.name=tbi`, `user.email=noreply@users.noreply.github.com` をリポジトリ固有設定として設定 | ローカルコミット |
+| 2 | pre-commit hook | `.git/hooks/pre-commit` でauthor emailとステージファイル内容を検査し、個人情報パターン検出時にコミットを拒否 | ローカルコミット |
+| 3 | CLAUDE.md ルール9 | Claude Codeが個人情報をコード・ドキュメント・コミットに含めないルールを明文化 | AI支援開発 |
+| 4 | GitHub noreply設定 | GitHubアカウントの「Keep my email addresses private」を有効化し、CMS経由のコミットにも個人メールが使われないようにする | CMS経由コミット |
+
+### 4.8.3 pre-commit hook の検査内容
+
+1. **author email検査**: `git config user.email` が個人メールパターン（gmail.com, yahoo.co.jp, hotmail等）に該当する場合、コミットを拒否
+2. **ステージファイル内容検査**: ステージされたテキストファイル内に特定の個人情報パターンが含まれる場合、コミットを拒否
+
+**注意**: `.git/hooks/` はgit管理外のため、リポジトリをクローンした場合はhookを再設定する必要がある。
+
+---
+
+**最終更新**: 2026年2月23日（v1.28）
