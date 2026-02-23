@@ -35,6 +35,7 @@
 | 1.28 | 2026-02-23 | 個人情報保護対応: git履歴から個人情報を完全削除（filter-branch）、ローカルgit設定匿名化、pre-commit hookによる個人情報混入防止、CLAUDE.mdルール9追加。Bug #35追加 |
 | 1.29 | 2026-02-23 | 動作確認エビデンス取得方針追加（4.9章）: CMS操作性検証（T01〜T16）、サイト操作性検証（S01〜S10）、赤枠アノテーション必須化、過去バグ由来の検証マトリクス（16件）を定義 |
 | 1.30 | 2026-02-23 | CMS CRUD操作エビデンス追加（T17〜T32: 記事作成/編集/削除、画像アップロード、メディアライブラリ、タグ編集、下書き切替、固定ページCRUD）、セキュリティ検証エビデンス追加（SEC01〜SEC10: XSS/CSP/OAuth/CDN/postMessage/パストラバーサル）、継続的品質・セキュリティ改善フレームワーク（4.10章）追加 |
+| 1.31 | 2026-02-24 | Bug #36修正: CMS CRUDエビデンス認証不具合（ログイン画面のみ表示問題）。verify-cms-crud.mjsにDecap CMS 3ステップOAuthハンドシェイク実装、Playwright context.route()によるポップアップインターセプト、GitHub APIモックLIFO順序修正。エビデンス48枚を正常な編集画面で再取得。CLAUDE.mdにエビデンス社内レビュー義務化（ルール11）・バグ修正ドキュメント反映義務化（バグフロー5）追加。4.9.8章にエビデンス収集認証方式の技術ノート追加 |
 
 ## システム変更履歴
 
@@ -1557,6 +1558,7 @@ GitHubリポジトリが利用可能な場合、以下の手順でシステム�
 | 33 | 2026-02-23 | タグURL未エンコード: 日本語タグのhref属性にencodeURIComponentが適用されておらず、一部ブラウザで正しく遷移できない可能性 | テンプレートでタグ文字列をそのままhrefに使用 | `encodeURIComponent(tag)`を追加（index.astro, [slug].astro） | build 2.5章（タグリンク存在検証） |
 | 34 | 2026-02-23 | Windowsパスセパレータ問題: organize-posts.mjsのurl-map.json生成でpath.relativeがバックスラッシュを使用し、Windows環境でキー形式が不正 | path.relative()がOSのパスセパレータを使用 | `.replace(/\\\\/g, '/')`でurl-map.jsonキーを正規化。テストコードも同様に正規化 | build 2.5章（URLマッピング検証）, content-validation |
 | 35 | 2026-02-23 | git履歴に個人情報（氏名・メールアドレス）が含まれていた: 100件のコミットにauthor/committer情報として個人のフルネーム・Gmailアドレスが記録されていた | gitのグローバル設定に個人メールアドレスが設定されており、リポジトリ固有の設定がなかった | (1) `git filter-branch --env-filter`で全履歴のauthor/committerを匿名化（tbi / noreply@users.noreply.github.com）。(2) ローカルgit設定（`git config user.name/user.email`）を匿名値に設定。(3) pre-commit hookで個人情報パターン検出時にコミット拒否。(4) CLAUDE.mdルール9に個人情報禁止を明文化 | 運用手順（4.8章） |
+| 36 | 2026-02-24 | CMS CRUDエビデンスが全てログイン画面のみ表示: verify-cms-crud.mjsで取得した48枚のスクリーンショットが全てCMSログインボタン画面のみで、認証後の編集画面が撮影されていなかった | (1) Decap CMS OAuth認証は3ステップハンドシェイク（`authorizing:github` → ACK → `authorization:github:success:{token,provider}`）を要するが、エビデンス収集スクリプトはステップ1-2を省略してトークンを直接送信していたためCMSがメッセージを無視。(2) Playwrightの`page.route()`はポップアップウィンドウのナビゲーションをインターセプトできない（`context.route()`が必要）。(3) globパターン`**/auth`はクエリパラメータ付きURLにマッチしない。(4) config.ymlの`base_url`がstaging URLのままだとlocalhost上のpostMessageがクロスオリジン拒否される | (1) 3ステップOAuthハンドシェイクを完全実装（`context.route()`でポップアップをインターセプトし、`authorizing:github`→ACK待機→`authorization:github:success`の3段階を再現）。(2) `page.route()`→`context.route()`に変更。(3) glob→関数マッチャー（`url => url.pathname === '/auth'`）に変更。(4) GitHub API モックのルート登録順序をLIFO対応（catch-all先登録→具体ルート後登録）に修正。(5) エビデンス提出前の社内レビュー義務化（CLAUDE.mdルール11追加） | verify-cms-crud.mjs, CLAUDE.md |
 
 ---
 
@@ -1793,6 +1795,7 @@ git履歴に個人情報（氏名・メールアドレス）が含まれてい�
 | Bug #31 | モバイルドロップダウンhover/tap | S02 |
 | Bug #32 | URLバーとモーダル非重複 | T09, T12 |
 | Bug #33 | タグURLエンコード | S08 |
+| Bug #36 | CMS認証後エディタ表示（ログイン画面のみ問題） | T17〜T32 全48枚 |
 
 ### 4.9.6 CMS CRUD操作検証（T17〜T32）
 
@@ -1833,6 +1836,28 @@ git履歴に個人情報（氏名・メールアドレス）が含まれてい�
 | SEC08 | _headersファイル | SEC-15 | セキュリティヘッダー設定・Bug #28重複回避確認 |
 | SEC09 | scriptタグ閉じ | SEC-18 | CDNスクリプト閉じタグ完備・use strict確認 |
 | SEC10 | パストラバーサル | SEC-14 | 不正パス・XSSペイロードへのアクセス確認 |
+
+### 4.9.8 エビデンス収集における認証方式（技術ノート）
+
+CMS CRUDエビデンス（verify-cms-crud.mjs）では、Decap CMS OAuth認証をPlaywrightでシミュレートする必要がある。以下の技術的知見に基づいて実装されている。
+
+**Decap CMS OAuth 3ステップハンドシェイク:**
+
+実際のOAuth認証フロー（`functions/auth/callback.js`）は以下の3段階で動作する:
+1. ポップアップが親ウィンドウに `"authorizing:github"` を送信
+2. 親ウィンドウ（CMS）がACKメッセージをポップアップに返信
+3. ポップアップが `"authorization:github:success:" + JSON.stringify({token, provider})` を送信
+
+ステップ1-2を省略してトークンを直接送信すると、CMSはメッセージを無視する（Bug #36）。
+
+**Playwrightの制約と対策:**
+
+| 制約 | 対策 |
+|:---|:---|
+| `page.route()`はポップアップウィンドウのナビゲーションをインターセプトできない | `context.route()`（ブラウザコンテキストレベル）を使用 |
+| glob `**/auth`はクエリパラメータ付きURL（`/auth?provider=github&...`）にマッチしない | 関数マッチャー（`url => url.pathname === '/auth'`）を使用 |
+| Playwrightのルートはデフォルトでマッチ順がLIFO（後登録が先にチェック） | catch-allルートを最初に登録（最後にチェック）、具体ルートを後から登録（先にチェック） |
+| config.ymlの`base_url`がリモートURLだとlocalhost上のpostMessageがクロスオリジン拒否される | エビデンス収集時はconfig.ymlの`base_url`をlocalhostに一時変更（コミット前に復元必須） |
 
 ---
 

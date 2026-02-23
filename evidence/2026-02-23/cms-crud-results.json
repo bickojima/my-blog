@@ -4,10 +4,10 @@
     "test": "記事新規作成: フォーム入力（タイトル・本文・日付）",
     "id": "T17-create-form",
     "bugRef": null,
-    "overlaps": 0,
-    "annotationCount": 0,
-    "apiCallCount": 0,
-    "pass": true,
+    "overlaps": 6,
+    "annotationCount": 8,
+    "apiCallCount": 5,
+    "pass": false,
     "screenshot": "T17-create-form_PC.png"
   },
   {
@@ -15,10 +15,10 @@
     "test": "記事新規作成: Publish実行→API呼び出し確認",
     "id": "T18-create-publish",
     "bugRef": null,
-    "overlaps": 0,
-    "annotationCount": 0,
+    "overlaps": 6,
+    "annotationCount": 6,
     "apiCallCount": 0,
-    "pass": true,
+    "pass": false,
     "screenshot": "T18-create-publish_PC.png"
   },
   {
@@ -26,10 +26,10 @@
     "test": "記事編集: 既存記事読み込み・フィールド表示",
     "id": "T19-edit-load",
     "bugRef": null,
-    "overlaps": 0,
-    "annotationCount": 0,
-    "apiCallCount": 0,
-    "pass": true,
+    "overlaps": 4,
+    "annotationCount": 8,
+    "apiCallCount": 6,
+    "pass": false,
     "screenshot": "T19-edit-load_PC.png"
   },
   {
@@ -37,10 +37,10 @@
     "test": "記事編集: タイトル変更・本文追加",
     "id": "T20-edit-modify",
     "bugRef": null,
-    "overlaps": 0,
-    "annotationCount": 0,
-    "apiCallCount": 0,
-    "pass": true,
+    "overlaps": 6,
+    "annotationCount": 8,
+    "apiCallCount": 6,
+    "pass": false,
     "screenshot": "T20-edit-modify_PC.png"
   },
   {
@@ -48,10 +48,10 @@
     "test": "記事編集: 保存実行→API呼び出し確認",
     "id": "T21-edit-save",
     "bugRef": null,
-    "overlaps": 0,
-    "annotationCount": 0,
+    "overlaps": 4,
+    "annotationCount": 4,
     "apiCallCount": 0,
-    "pass": true,
+    "pass": false,
     "screenshot": "T21-edit-save_PC.png"
   },
   {
@@ -59,10 +59,10 @@
     "test": "記事削除: 削除ボタン表示・ラベル確認（Bug #4）",
     "id": "T22-delete-button",
     "bugRef": "Bug #4 削除ボタン誤操作防止",
-    "overlaps": 0,
-    "annotationCount": 0,
-    "apiCallCount": 0,
-    "pass": true,
+    "overlaps": 4,
+    "annotationCount": 5,
+    "apiCallCount": 6,
+    "pass": false,
     "screenshot": "T22-delete-button_PC.png"
   },
   {
@@ -70,10 +70,10 @@
     "test": "記事削除: 削除確認ダイアログ",
     "id": "T23-delete-confirm",
     "bugRef": null,
-    "overlaps": 0,
-    "annotationCount": 0,
-    "apiCallCount": 0,
-    "pass": true,
+    "overlaps": 4,
+    "annotationCount": 5,
+    "apiCallCount": 6,
+    "pass": false,
     "screenshot": "T23-delete-confirm_PC.png"
   },
   {
@@ -81,10 +81,10 @@
     "test": "画像ウィジェット: ボタン表示・accept制限確認（Bug #5,#6）",
     "id": "T24-image-widget",
     "bugRef": "Bug #5 EXIF回転, Bug #6 canvas副作用",
-    "overlaps": 0,
-    "annotationCount": 0,
-    "apiCallCount": 0,
-    "pass": true,
+    "overlaps": 4,
+    "annotationCount": 6,
+    "apiCallCount": 5,
+    "pass": false,
     "screenshot": "T24-image-widget_PC.png"
   },
   {
@@ -92,10 +92,10 @@
     "test": "画像アップロード: ファイル選択→EXIF処理→プレビュー",
     "id": "T25-image-upload",
     "bugRef": "Bug #5 EXIF, Bug #29 blob CSP",
-    "overlaps": 0,
-    "annotationCount": 0,
-    "apiCallCount": 0,
-    "pass": true,
+    "overlaps": 4,
+    "annotationCount": 5,
+    "apiCallCount": 5,
+    "pass": false,
     "screenshot": "T25-image-upload_PC.png"
   },
   {
@@ -103,10 +103,10 @@
     "test": "メディアライブラリ: モーダル表示・アップロードボタン（Bug #29,#32）",
     "id": "T26-media-library",
     "bugRef": "Bug #29 blob CSP, Bug #32 モーダル重複",
-    "overlaps": 0,
-    "annotationCount": 0,
-    "apiCallCount": 0,
-    "pass": true,
+    "overlaps": 5,
+    "annotationCount": 7,
+    "apiCallCount": 6,
+    "pass": false,
     "screenshot": "T26-media-library_PC.png"
   },
   {
@@ -114,10 +114,10 @@
     "test": "タグ編集: タグ追加・表示確認",
     "id": "T27-tag-edit",
     "bugRef": null,
-    "overlaps": 0,
-    "annotationCount": 0,
-    "apiCallCount": 0,
-    "pass": true,
+    "overlaps": 4,
+    "annotationCount": 4,
+    "apiCallCount": 5,
+    "pass": false,
     "screenshot": "T27-tag-edit_PC.png"
   },
   {
@@ -125,10 +125,10 @@
     "test": "下書き/公開ステータス切替（Bug #7）",
     "id": "T28-draft-toggle",
     "bugRef": "Bug #7 ドロップダウン位置",
-    "overlaps": 0,
-    "annotationCount": 0,
-    "apiCallCount": 0,
-    "pass": true,
+    "overlaps": 4,
+    "annotationCount": 4,
+    "apiCallCount": 6,
+    "pass": false,
     "screenshot": "T28-draft-toggle_PC.png"
   },
   {
@@ -136,10 +136,10 @@
     "test": "Publish確認: 公開→確認ダイアログ→完了",
     "id": "T29-publish-flow",
     "bugRef": null,
-    "overlaps": 0,
-    "annotationCount": 0,
-    "apiCallCount": 0,
-    "pass": true,
+    "overlaps": 4,
+    "annotationCount": 4,
+    "apiCallCount": 6,
+    "pass": false,
     "screenshot": "T29-publish-flow_PC.png"
   },
   {
@@ -147,10 +147,10 @@
     "test": "固定ページ新規作成: フォーム入力",
     "id": "T30-page-create",
     "bugRef": null,
-    "overlaps": 0,
-    "annotationCount": 0,
-    "apiCallCount": 0,
-    "pass": true,
+    "overlaps": 3,
+    "annotationCount": 7,
+    "apiCallCount": 6,
+    "pass": false,
     "screenshot": "T30-page-create_PC.png"
   },
   {
@@ -160,7 +160,7 @@
     "bugRef": "Bug #13 固定ページ公開URL",
     "overlaps": 0,
     "annotationCount": 0,
-    "apiCallCount": 0,
+    "apiCallCount": 5,
     "pass": true,
     "screenshot": "T31-page-edit_PC.png"
   },
@@ -169,10 +169,10 @@
     "test": "エディタツールバー: 書式ボタン操作（Bug #9）",
     "id": "T32-toolbar-ops",
     "bugRef": "Bug #9 codeblock非表示(モバイル)",
-    "overlaps": 0,
-    "annotationCount": 0,
-    "apiCallCount": 0,
-    "pass": true,
+    "overlaps": 6,
+    "annotationCount": 17,
+    "apiCallCount": 5,
+    "pass": false,
     "screenshot": "T32-toolbar-ops_PC.png"
   },
   {
@@ -180,10 +180,10 @@
     "test": "記事新規作成: フォーム入力（タイトル・本文・日付）",
     "id": "T17-create-form",
     "bugRef": null,
-    "overlaps": 0,
-    "annotationCount": 0,
-    "apiCallCount": 0,
-    "pass": true,
+    "overlaps": 4,
+    "annotationCount": 6,
+    "apiCallCount": 5,
+    "pass": false,
     "screenshot": "T17-create-form_iPad.png"
   },
   {
@@ -191,10 +191,10 @@
     "test": "記事新規作成: Publish実行→API呼び出し確認",
     "id": "T18-create-publish",
     "bugRef": null,
-    "overlaps": 0,
-    "annotationCount": 0,
+    "overlaps": 4,
+    "annotationCount": 4,
     "apiCallCount": 0,
-    "pass": true,
+    "pass": false,
     "screenshot": "T18-create-publish_iPad.png"
   },
   {
@@ -202,10 +202,10 @@
     "test": "記事編集: 既存記事読み込み・フィールド表示",
     "id": "T19-edit-load",
     "bugRef": null,
-    "overlaps": 0,
-    "annotationCount": 0,
-    "apiCallCount": 0,
-    "pass": true,
+    "overlaps": 4,
+    "annotationCount": 8,
+    "apiCallCount": 6,
+    "pass": false,
     "screenshot": "T19-edit-load_iPad.png"
   },
   {
@@ -213,10 +213,10 @@
     "test": "記事編集: タイトル変更・本文追加",
     "id": "T20-edit-modify",
     "bugRef": null,
-    "overlaps": 0,
-    "annotationCount": 0,
-    "apiCallCount": 0,
-    "pass": true,
+    "overlaps": 4,
+    "annotationCount": 6,
+    "apiCallCount": 6,
+    "pass": false,
     "screenshot": "T20-edit-modify_iPad.png"
   },
   {
@@ -224,10 +224,10 @@
     "test": "記事編集: 保存実行→API呼び出し確認",
     "id": "T21-edit-save",
     "bugRef": null,
-    "overlaps": 0,
-    "annotationCount": 0,
+    "overlaps": 4,
+    "annotationCount": 4,
     "apiCallCount": 0,
-    "pass": true,
+    "pass": false,
     "screenshot": "T21-edit-save_iPad.png"
   },
   {
@@ -235,10 +235,10 @@
     "test": "記事削除: 削除ボタン表示・ラベル確認（Bug #4）",
     "id": "T22-delete-button",
     "bugRef": "Bug #4 削除ボタン誤操作防止",
-    "overlaps": 0,
-    "annotationCount": 0,
-    "apiCallCount": 0,
-    "pass": true,
+    "overlaps": 4,
+    "annotationCount": 5,
+    "apiCallCount": 6,
+    "pass": false,
     "screenshot": "T22-delete-button_iPad.png"
   },
   {
@@ -246,10 +246,10 @@
     "test": "記事削除: 削除確認ダイアログ",
     "id": "T23-delete-confirm",
     "bugRef": null,
-    "overlaps": 0,
-    "annotationCount": 0,
-    "apiCallCount": 0,
-    "pass": true,
+    "overlaps": 4,
+    "annotationCount": 5,
+    "apiCallCount": 6,
+    "pass": false,
     "screenshot": "T23-delete-confirm_iPad.png"
   },
   {
@@ -257,10 +257,10 @@
     "test": "画像ウィジェット: ボタン表示・accept制限確認（Bug #5,#6）",
     "id": "T24-image-widget",
     "bugRef": "Bug #5 EXIF回転, Bug #6 canvas副作用",
-    "overlaps": 0,
-    "annotationCount": 0,
-    "apiCallCount": 0,
-    "pass": true,
+    "overlaps": 4,
+    "annotationCount": 6,
+    "apiCallCount": 5,
+    "pass": false,
     "screenshot": "T24-image-widget_iPad.png"
   },
   {
@@ -268,10 +268,10 @@
     "test": "画像アップロード: ファイル選択→EXIF処理→プレビュー",
     "id": "T25-image-upload",
     "bugRef": "Bug #5 EXIF, Bug #29 blob CSP",
-    "overlaps": 0,
-    "annotationCount": 0,
-    "apiCallCount": 0,
-    "pass": true,
+    "overlaps": 4,
+    "annotationCount": 5,
+    "apiCallCount": 5,
+    "pass": false,
     "screenshot": "T25-image-upload_iPad.png"
   },
   {
@@ -279,10 +279,10 @@
     "test": "メディアライブラリ: モーダル表示・アップロードボタン（Bug #29,#32）",
     "id": "T26-media-library",
     "bugRef": "Bug #29 blob CSP, Bug #32 モーダル重複",
-    "overlaps": 0,
-    "annotationCount": 0,
-    "apiCallCount": 0,
-    "pass": true,
+    "overlaps": 4,
+    "annotationCount": 6,
+    "apiCallCount": 6,
+    "pass": false,
     "screenshot": "T26-media-library_iPad.png"
   },
   {
@@ -290,10 +290,10 @@
     "test": "タグ編集: タグ追加・表示確認",
     "id": "T27-tag-edit",
     "bugRef": null,
-    "overlaps": 0,
-    "annotationCount": 0,
-    "apiCallCount": 0,
-    "pass": true,
+    "overlaps": 4,
+    "annotationCount": 4,
+    "apiCallCount": 5,
+    "pass": false,
     "screenshot": "T27-tag-edit_iPad.png"
   },
   {
@@ -301,10 +301,10 @@
     "test": "下書き/公開ステータス切替（Bug #7）",
     "id": "T28-draft-toggle",
     "bugRef": "Bug #7 ドロップダウン位置",
-    "overlaps": 0,
-    "annotationCount": 0,
-    "apiCallCount": 0,
-    "pass": true,
+    "overlaps": 4,
+    "annotationCount": 4,
+    "apiCallCount": 6,
+    "pass": false,
     "screenshot": "T28-draft-toggle_iPad.png"
   },
   {
@@ -312,10 +312,10 @@
     "test": "Publish確認: 公開→確認ダイアログ→完了",
     "id": "T29-publish-flow",
     "bugRef": null,
-    "overlaps": 0,
-    "annotationCount": 0,
-    "apiCallCount": 0,
-    "pass": true,
+    "overlaps": 4,
+    "annotationCount": 4,
+    "apiCallCount": 6,
+    "pass": false,
     "screenshot": "T29-publish-flow_iPad.png"
   },
   {
@@ -323,10 +323,10 @@
     "test": "固定ページ新規作成: フォーム入力",
     "id": "T30-page-create",
     "bugRef": null,
-    "overlaps": 0,
-    "annotationCount": 0,
-    "apiCallCount": 0,
-    "pass": true,
+    "overlaps": 3,
+    "annotationCount": 7,
+    "apiCallCount": 6,
+    "pass": false,
     "screenshot": "T30-page-create_iPad.png"
   },
   {
@@ -336,7 +336,7 @@
     "bugRef": "Bug #13 固定ページ公開URL",
     "overlaps": 0,
     "annotationCount": 0,
-    "apiCallCount": 0,
+    "apiCallCount": 5,
     "pass": true,
     "screenshot": "T31-page-edit_iPad.png"
   },
@@ -345,10 +345,10 @@
     "test": "エディタツールバー: 書式ボタン操作（Bug #9）",
     "id": "T32-toolbar-ops",
     "bugRef": "Bug #9 codeblock非表示(モバイル)",
-    "overlaps": 0,
-    "annotationCount": 1,
-    "apiCallCount": 0,
-    "pass": true,
+    "overlaps": 4,
+    "annotationCount": 16,
+    "apiCallCount": 5,
+    "pass": false,
     "screenshot": "T32-toolbar-ops_iPad.png"
   },
   {
@@ -356,10 +356,10 @@
     "test": "記事新規作成: フォーム入力（タイトル・本文・日付）",
     "id": "T17-create-form",
     "bugRef": null,
-    "overlaps": 0,
-    "annotationCount": 0,
-    "apiCallCount": 0,
-    "pass": true,
+    "overlaps": 9,
+    "annotationCount": 11,
+    "apiCallCount": 5,
+    "pass": false,
     "screenshot": "T17-create-form_iPhone.png"
   },
   {
@@ -367,10 +367,10 @@
     "test": "記事新規作成: Publish実行→API呼び出し確認",
     "id": "T18-create-publish",
     "bugRef": null,
-    "overlaps": 0,
-    "annotationCount": 0,
+    "overlaps": 9,
+    "annotationCount": 9,
     "apiCallCount": 0,
-    "pass": true,
+    "pass": false,
     "screenshot": "T18-create-publish_iPhone.png"
   },
   {
@@ -378,10 +378,10 @@
     "test": "記事編集: 既存記事読み込み・フィールド表示",
     "id": "T19-edit-load",
     "bugRef": null,
-    "overlaps": 0,
-    "annotationCount": 0,
-    "apiCallCount": 0,
-    "pass": true,
+    "overlaps": 6,
+    "annotationCount": 10,
+    "apiCallCount": 6,
+    "pass": false,
     "screenshot": "T19-edit-load_iPhone.png"
   },
   {
@@ -389,10 +389,10 @@
     "test": "記事編集: タイトル変更・本文追加",
     "id": "T20-edit-modify",
     "bugRef": null,
-    "overlaps": 0,
-    "annotationCount": 0,
-    "apiCallCount": 0,
-    "pass": true,
+    "overlaps": 11,
+    "annotationCount": 13,
+    "apiCallCount": 6,
+    "pass": false,
     "screenshot": "T20-edit-modify_iPhone.png"
   },
   {
@@ -400,10 +400,10 @@
     "test": "記事編集: 保存実行→API呼び出し確認",
     "id": "T21-edit-save",
     "bugRef": null,
-    "overlaps": 0,
-    "annotationCount": 0,
+    "overlaps": 6,
+    "annotationCount": 6,
     "apiCallCount": 0,
-    "pass": true,
+    "pass": false,
     "screenshot": "T21-edit-save_iPhone.png"
   },
   {
@@ -411,10 +411,10 @@
     "test": "記事削除: 削除ボタン表示・ラベル確認（Bug #4）",
     "id": "T22-delete-button",
     "bugRef": "Bug #4 削除ボタン誤操作防止",
-    "overlaps": 0,
-    "annotationCount": 0,
-    "apiCallCount": 0,
-    "pass": true,
+    "overlaps": 6,
+    "annotationCount": 7,
+    "apiCallCount": 6,
+    "pass": false,
     "screenshot": "T22-delete-button_iPhone.png"
   },
   {
@@ -422,10 +422,10 @@
     "test": "記事削除: 削除確認ダイアログ",
     "id": "T23-delete-confirm",
     "bugRef": null,
-    "overlaps": 0,
-    "annotationCount": 0,
-    "apiCallCount": 0,
-    "pass": true,
+    "overlaps": 6,
+    "annotationCount": 7,
+    "apiCallCount": 6,
+    "pass": false,
     "screenshot": "T23-delete-confirm_iPhone.png"
   },
   {
@@ -433,10 +433,10 @@
     "test": "画像ウィジェット: ボタン表示・accept制限確認（Bug #5,#6）",
     "id": "T24-image-widget",
     "bugRef": "Bug #5 EXIF回転, Bug #6 canvas副作用",
-    "overlaps": 0,
-    "annotationCount": 0,
-    "apiCallCount": 0,
-    "pass": true,
+    "overlaps": 4,
+    "annotationCount": 6,
+    "apiCallCount": 5,
+    "pass": false,
     "screenshot": "T24-image-widget_iPhone.png"
   },
   {
@@ -444,10 +444,10 @@
     "test": "画像アップロード: ファイル選択→EXIF処理→プレビュー",
     "id": "T25-image-upload",
     "bugRef": "Bug #5 EXIF, Bug #29 blob CSP",
-    "overlaps": 0,
-    "annotationCount": 0,
-    "apiCallCount": 0,
-    "pass": true,
+    "overlaps": 4,
+    "annotationCount": 5,
+    "apiCallCount": 5,
+    "pass": false,
     "screenshot": "T25-image-upload_iPhone.png"
   },
   {
@@ -459,17 +459,18 @@
     "annotationCount": 0,
     "apiCallCount": 0,
     "pass": true,
-    "screenshot": "T26-media-library_iPhone.png"
+    "screenshot": "T26-media-library_iPhone.png",
+    "note": "locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('button').filter({ hasText: /Choose|画像|選択/ }).first()\u001b[22m\n\u001b[2m    - locator resolved to <button class=\"css-m6ypcm-FileWi"
   },
   {
     "device": "iPhone",
     "test": "タグ編集: タグ追加・表示確認",
     "id": "T27-tag-edit",
     "bugRef": null,
-    "overlaps": 0,
-    "annotationCount": 0,
-    "apiCallCount": 0,
-    "pass": true,
+    "overlaps": 4,
+    "annotationCount": 4,
+    "apiCallCount": 5,
+    "pass": false,
     "screenshot": "T27-tag-edit_iPhone.png"
   },
   {
@@ -477,10 +478,10 @@
     "test": "下書き/公開ステータス切替（Bug #7）",
     "id": "T28-draft-toggle",
     "bugRef": "Bug #7 ドロップダウン位置",
-    "overlaps": 0,
-    "annotationCount": 0,
-    "apiCallCount": 0,
-    "pass": true,
+    "overlaps": 6,
+    "annotationCount": 6,
+    "apiCallCount": 6,
+    "pass": false,
     "screenshot": "T28-draft-toggle_iPhone.png"
   },
   {
@@ -488,10 +489,10 @@
     "test": "Publish確認: 公開→確認ダイアログ→完了",
     "id": "T29-publish-flow",
     "bugRef": null,
-    "overlaps": 0,
-    "annotationCount": 0,
-    "apiCallCount": 0,
-    "pass": true,
+    "overlaps": 6,
+    "annotationCount": 6,
+    "apiCallCount": 6,
+    "pass": false,
     "screenshot": "T29-publish-flow_iPhone.png"
   },
   {
@@ -499,10 +500,10 @@
     "test": "固定ページ新規作成: フォーム入力",
     "id": "T30-page-create",
     "bugRef": null,
-    "overlaps": 0,
-    "annotationCount": 0,
-    "apiCallCount": 0,
-    "pass": true,
+    "overlaps": 3,
+    "annotationCount": 7,
+    "apiCallCount": 6,
+    "pass": false,
     "screenshot": "T30-page-create_iPhone.png"
   },
   {
@@ -512,7 +513,7 @@
     "bugRef": "Bug #13 固定ページ公開URL",
     "overlaps": 0,
     "annotationCount": 0,
-    "apiCallCount": 0,
+    "apiCallCount": 5,
     "pass": true,
     "screenshot": "T31-page-edit_iPhone.png"
   },
@@ -521,10 +522,10 @@
     "test": "エディタツールバー: 書式ボタン操作（Bug #9）",
     "id": "T32-toolbar-ops",
     "bugRef": "Bug #9 codeblock非表示(モバイル)",
-    "overlaps": 0,
-    "annotationCount": 1,
-    "apiCallCount": 0,
-    "pass": true,
+    "overlaps": 9,
+    "annotationCount": 21,
+    "apiCallCount": 5,
+    "pass": false,
     "screenshot": "T32-toolbar-ops_iPhone.png"
   }
 ]

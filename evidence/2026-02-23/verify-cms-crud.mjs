@@ -2,7 +2,7 @@ import { chromium, devices } from 'playwright';
 import { mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 
-const BASE_URL = 'http://localhost:4321';
+const BASE_URL = 'http://localhost:4173';
 const SCREENSHOT_DIR = join(process.cwd(), 'evidence', '2026-02-23', 'cms-crud');
 mkdirSync(SCREENSHOT_DIR, { recursive: true });
 
@@ -29,13 +29,38 @@ let apiCalls = [];
 async function setupCrudMocks(page) {
   apiCalls = [];
 
-  await page.route('https://api.github.com/user', (route) => {
+  // GitHub API のキャッチオール（未モックのリクエストをログ＆空レスポンス）
+  // LIFO順: 最初に登録 → 最後にチェック（具体的ルートが優先される）
+  await page.route(url => url.hostname === 'api.github.com', (route) => {
+    const method = route.request().method();
+    const reqUrl = route.request().url();
+    console.log(`    [API:UNHANDLED] ${method} ${reqUrl}`);
+    apiCalls.push({ method, url: reqUrl, unhandled: true });
+    route.fulfill({ status: 200, contentType: 'application/json', body: '{}' });
+  });
+
+  await page.route(url => url.hostname === 'api.github.com' && url.pathname === '/user', (route) => {
+    console.log(`    [API:USER] ${route.request().method()} ${route.request().url()}`);
     apiCalls.push({ method: route.request().method(), url: route.request().url() });
     route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ login: 'testuser', id: 12345, name: 'Test User', avatar_url: '' }) });
   });
-  await page.route('https://api.github.com/repos/bickojima/my-blog', (route) => {
+  // リポジトリ情報（完全なレスポンスを返す）
+  await page.route(url => url.hostname === 'api.github.com' && url.pathname === '/repos/bickojima/my-blog', (route) => {
+    console.log(`    [API:REPO] ${route.request().method()} ${route.request().url()}`);
     apiCalls.push({ method: route.request().method(), url: route.request().url() });
-    route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ full_name: 'bickojima/my-blog', default_branch: 'main', permissions: { push: true } }) });
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        id: 12345,
+        name: 'my-blog',
+        full_name: 'bickojima/my-blog',
+        private: false,
+        owner: { login: 'bickojima', id: 1 },
+        default_branch: 'main',
+        permissions: { admin: true, push: true, pull: true },
+      }),
+    });
   });
   await page.route('**/repos/bickojima/my-blog/branches/staging', (route) => {
     apiCalls.push({ method: route.request().method(), url: route.request().url() });
@@ -95,31 +120,85 @@ async function setupCrudMocks(page) {
       route.fulfill({ status: 200, contentType: 'application/json', body: '{}' });
     }
   });
-  await page.route('**/auth', (route) => {
-    route.fulfill({
-      status: 200, contentType: 'text/html',
-      body: `<html><body><script>
-        try { window.opener.postMessage('authorization:github:success:{"token":"mock-token","provider":"github"}', window.opener.location.origin); } catch(e) {}
-        window.close();
-      </script></body></html>`,
-    });
-  });
+  // Note: auth route is set up separately in openCmsWithAuth
 }
 
-// ===== CMS認証 =====
+// ===== CMS認証（context.route + popup.evaluate方式） =====
+// context.routeでポップアップのnavigationをインターセプトし、
+// popup.evaluateで直接postMessageを送信する（タイミング制御のため）。
 async function openCmsWithAuth(page) {
   await setupCrudMocks(page);
-  await page.goto(BASE_URL + '/admin/', { waitUntil: 'networkidle' });
-  await page.waitForTimeout(1000);
-  const loginBtn = page.locator('button').filter({ hasText: /Login|ログイン/ }).first();
-  if (await loginBtn.isVisible().catch(() => false)) {
-    const popupPromise = page.waitForEvent('popup', { timeout: 5000 }).catch(() => null);
-    await loginBtn.click();
-    const popup = await popupPromise;
-    if (popup) await popup.waitForLoadState().catch(() => {});
-    await page.waitForTimeout(3000);
+
+  // context.route で popup の /auth navigation をインターセプト
+  // 実際のcallback.jsと同じ3ステップハンドシェイクを実装
+  const context = page.context();
+  await context.route(url => url.pathname === '/auth', (route) => {
+    console.log('    [AUTH] Route intercepted:', route.request().url());
+    route.fulfill({
+      status: 200,
+      contentType: 'text/html',
+      body: `<!DOCTYPE html>
+<html><body>
+<p id="status">Authenticating...</p>
+<script>
+(function() {
+  var statusEl = document.getElementById('status');
+  if (!window.opener) {
+    statusEl.textContent = 'Error: No parent window';
+    return;
   }
+  var origin = window.opener.location.origin;
+
+  // Step 1: Send authorizing signal
+  statusEl.textContent = 'Sending authorizing signal...';
+  window.opener.postMessage('authorizing:github', origin);
+
+  // Step 2: Wait for ACK from parent, then send token
+  window.addEventListener('message', function(event) {
+    statusEl.textContent = 'ACK received, sending token...';
+    // Step 3: Send success token
+    var message = 'authorization:github:success:' + JSON.stringify({
+      token: 'mock-token',
+      provider: 'github'
+    });
+    window.opener.postMessage(message, origin);
+    statusEl.textContent = 'Token sent! Closing...';
+    setTimeout(function() { window.close(); }, 500);
+  }, { once: true });
+})();
+</script>
+</body></html>`,
+    });
+  });
+
+  await page.goto(BASE_URL + '/admin/');
   await page.waitForTimeout(3000);
+
+  const loginButton = page.locator('button:has-text("GitHub でログインする")');
+  if (await loginButton.isVisible().catch(() => false)) {
+    console.log('    [AUTH] Clicking login...');
+    const popupPromise = page.waitForEvent('popup').catch(() => null);
+    await loginButton.click();
+    const popup = await popupPromise;
+    if (popup) {
+      await popup.waitForLoadState('domcontentloaded').catch(() => {});
+      await popup.waitForTimeout(2000).catch(() => {});
+      await popup.close().catch(() => {});
+    }
+    // CMS が認証を処理しダッシュボードが表示されるまで待機
+    // 「ログインしています...」が消えたら完了
+    for (let i = 0; i < 15; i++) {
+      await page.waitForTimeout(1000);
+      const isLoggingIn = await page.locator('text="ログインしています..."').count().catch(() => 0);
+      const loginBtn = await loginButton.isVisible().catch(() => false);
+      if (!isLoggingIn && !loginBtn) {
+        console.log(`    [AUTH] CMS loaded (${i+1}s)`);
+        break;
+      }
+    }
+  } else {
+    console.log('    [AUTH] Already authenticated');
+  }
 }
 
 // ===== エディタ読み込み待機 =====
@@ -924,18 +1003,33 @@ const CMS_CRUD_TESTS = [
 // ===== メイン =====
 async function run() {
   const { exec } = await import('child_process');
-  console.log('Starting preview server...');
-  const server = exec('npx astro preview --port 4321', { cwd: process.cwd() });
-  await new Promise(r => setTimeout(r, 4000));
+  console.log('Starting serve (matching E2E config)...');
+  const server = exec('npx serve dist -l 4173', { cwd: process.cwd() });
+  await new Promise(r => setTimeout(r, 3000));
 
-  const browser = await chromium.launch();
+  let browser = await chromium.launch();
   const results = [];
 
   for (const device of DEVICES_CONFIG) {
     console.log(`\n========== ${device.name} ==========`);
     for (const test of CMS_CRUD_TESTS) {
-      const context = await browser.newContext({ ...device.config, ignoreHTTPSErrors: true });
-      const page = await context.newPage();
+      // ブラウザがクラッシュした場合は再起動
+      if (!browser.isConnected()) {
+        console.log('  [RECOVERY] Browser crashed, relaunching...');
+        browser = await chromium.launch();
+      }
+
+      let context, page;
+      try {
+        context = await browser.newContext({ ...device.config, ignoreHTTPSErrors: true });
+        page = await context.newPage();
+      } catch(e) {
+        console.log('  [RECOVERY] Context creation failed, relaunching browser...');
+        try { await browser.close(); } catch(_) {}
+        browser = await chromium.launch();
+        context = await browser.newContext({ ...device.config, ignoreHTTPSErrors: true });
+        page = await context.newPage();
+      }
       const screenshotPath = join(SCREENSHOT_DIR, `${test.id}_${device.name}.png`);
 
       try {
