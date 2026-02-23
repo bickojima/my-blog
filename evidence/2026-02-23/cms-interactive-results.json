@@ -1,0 +1,482 @@
+[
+  {
+    "device": "PC",
+    "test": "ログイン画面: ログインボタン表示",
+    "id": "T01-login",
+    "bugRef": null,
+    "overlaps": 0,
+    "annotationCount": 1,
+    "pass": true,
+    "screenshot": "T01-login_PC.png"
+  },
+  {
+    "device": "PC",
+    "test": "記事一覧: エントリ一覧・新規ボタン表示",
+    "id": "T02-collection-list",
+    "bugRef": null,
+    "overlaps": 0,
+    "annotationCount": 0,
+    "pass": true,
+    "screenshot": "T02-collection-list_PC.png"
+  },
+  {
+    "device": "PC",
+    "test": "記事編集: ツールバー・保存ボタン・URLバー（Bug #1,#8,#11）",
+    "id": "T03-editor",
+    "bugRef": "Bug #1 モバイル保存ボタン, Bug #8/#11 公開URLバー",
+    "overlaps": 0,
+    "annotationCount": 0,
+    "pass": true,
+    "screenshot": "T03-editor_PC.png"
+  },
+  {
+    "device": "PC",
+    "test": "ツールバー: 各ボタン表示（Bug #9 codeblock非表示）",
+    "id": "T04-toolbar-buttons",
+    "bugRef": "Bug #9 Slate codeblockクラッシュ対策",
+    "overlaps": 0,
+    "annotationCount": 0,
+    "pass": true,
+    "screenshot": "T04-toolbar-buttons_PC.png"
+  },
+  {
+    "device": "PC",
+    "test": "エディタ: +メニュー展開",
+    "id": "T05-editor-plus-menu",
+    "bugRef": null,
+    "overlaps": 0,
+    "annotationCount": 0,
+    "pass": true,
+    "screenshot": "T05-editor-plus-menu_PC.png"
+  },
+  {
+    "device": "PC",
+    "test": "削除ボタン: ラベル「選択解除」「完全削除」確認（Bug #4）",
+    "id": "T06-delete-buttons",
+    "bugRef": "Bug #4 削除ボタン誤操作",
+    "overlaps": 0,
+    "annotationCount": 0,
+    "pass": true,
+    "screenshot": "T06-delete-buttons_PC.png"
+  },
+  {
+    "device": "PC",
+    "test": "公開URLバー: 一覧→編集→戻り遷移（Bug #8,#11）",
+    "id": "T07-url-bar-transition",
+    "bugRef": "Bug #8 URLバー残留, Bug #11 コレクション一覧残留",
+    "overlaps": 0,
+    "annotationCount": 0,
+    "pass": true,
+    "screenshot": "T07-url-bar-transition_PC.png"
+  },
+  {
+    "device": "PC",
+    "test": "固定ページ: 編集・公開URL（Bug #13）",
+    "id": "T08-pages-editor",
+    "bugRef": "Bug #13 固定ページ公開URL表示",
+    "overlaps": 0,
+    "annotationCount": 0,
+    "pass": true,
+    "screenshot": "T08-pages-editor_PC.png"
+  },
+  {
+    "device": "PC",
+    "test": "ドロップダウン+URLバー競合（Bug #32）",
+    "id": "T09-dropdown-urlbar",
+    "bugRef": "Bug #32 URLバーとモーダル重複",
+    "overlaps": 0,
+    "annotationCount": 0,
+    "pass": true,
+    "screenshot": "T09-dropdown-urlbar_PC.png"
+  },
+  {
+    "device": "PC",
+    "test": "新規記事作成: フィールド・保存ボタン",
+    "id": "T10-new-entry",
+    "bugRef": null,
+    "overlaps": 0,
+    "annotationCount": 0,
+    "pass": true,
+    "screenshot": "T10-new-entry_PC.png"
+  },
+  {
+    "device": "PC",
+    "test": "画像ウィジェット: ボタン配置（Bug #5,#6,#29）",
+    "id": "T11-image-widget",
+    "bugRef": "Bug #5 EXIF, Bug #6 canvas副作用, Bug #29 blob CSP",
+    "overlaps": 0,
+    "annotationCount": 0,
+    "pass": true,
+    "screenshot": "T11-image-widget_PC.png"
+  },
+  {
+    "device": "PC",
+    "test": "メディアライブラリ: モーダル表示（Bug #29,#32）",
+    "id": "T12-media-library",
+    "bugRef": "Bug #29 blob CSP, Bug #32 モーダル重複",
+    "overlaps": 0,
+    "annotationCount": 0,
+    "pass": true,
+    "screenshot": "T12-media-library_PC.png"
+  },
+  {
+    "device": "PC",
+    "test": "モバイル: ボトムシート（Bug #7）",
+    "id": "T13-bottom-sheet",
+    "bugRef": "Bug #7 ドロップダウン位置ずれ",
+    "overlaps": 0,
+    "annotationCount": 0,
+    "pass": true,
+    "screenshot": "T13-bottom-sheet_PC.png"
+  },
+  {
+    "device": "PC",
+    "test": "記事一覧: 日付|下書き|タイトル形式",
+    "id": "T14-entry-format",
+    "bugRef": null,
+    "overlaps": 0,
+    "annotationCount": 0,
+    "pass": true,
+    "screenshot": "T14-entry-format_PC.png"
+  },
+  {
+    "device": "PC",
+    "test": "操作性: 記事→戻る→固定ページ連続遷移（Bug #8,#11）",
+    "id": "T15-multi-operation",
+    "bugRef": "Bug #8,#11 URLバー残留",
+    "overlaps": 0,
+    "annotationCount": 0,
+    "pass": true,
+    "screenshot": "T15-multi-operation_PC.png"
+  },
+  {
+    "device": "PC",
+    "test": "スクロール時sticky保存ボタン（Bug #1）",
+    "id": "T16-sticky-scroll",
+    "bugRef": "Bug #1 モバイル保存ボタン非表示",
+    "overlaps": 0,
+    "annotationCount": 0,
+    "pass": true,
+    "screenshot": "T16-sticky-scroll_PC.png"
+  },
+  {
+    "device": "iPad",
+    "test": "ログイン画面: ログインボタン表示",
+    "id": "T01-login",
+    "bugRef": null,
+    "overlaps": 0,
+    "annotationCount": 1,
+    "pass": true,
+    "screenshot": "T01-login_iPad.png"
+  },
+  {
+    "device": "iPad",
+    "test": "記事一覧: エントリ一覧・新規ボタン表示",
+    "id": "T02-collection-list",
+    "bugRef": null,
+    "overlaps": 0,
+    "annotationCount": 0,
+    "pass": true,
+    "screenshot": "T02-collection-list_iPad.png"
+  },
+  {
+    "device": "iPad",
+    "test": "記事編集: ツールバー・保存ボタン・URLバー（Bug #1,#8,#11）",
+    "id": "T03-editor",
+    "bugRef": "Bug #1 モバイル保存ボタン, Bug #8/#11 公開URLバー",
+    "overlaps": 0,
+    "annotationCount": 0,
+    "pass": true,
+    "screenshot": "T03-editor_iPad.png"
+  },
+  {
+    "device": "iPad",
+    "test": "ツールバー: 各ボタン表示（Bug #9 codeblock非表示）",
+    "id": "T04-toolbar-buttons",
+    "bugRef": "Bug #9 Slate codeblockクラッシュ対策",
+    "overlaps": 0,
+    "annotationCount": 0,
+    "pass": true,
+    "screenshot": "T04-toolbar-buttons_iPad.png"
+  },
+  {
+    "device": "iPad",
+    "test": "エディタ: +メニュー展開",
+    "id": "T05-editor-plus-menu",
+    "bugRef": null,
+    "overlaps": 0,
+    "annotationCount": 0,
+    "pass": true,
+    "screenshot": "T05-editor-plus-menu_iPad.png"
+  },
+  {
+    "device": "iPad",
+    "test": "削除ボタン: ラベル「選択解除」「完全削除」確認（Bug #4）",
+    "id": "T06-delete-buttons",
+    "bugRef": "Bug #4 削除ボタン誤操作",
+    "overlaps": 0,
+    "annotationCount": 0,
+    "pass": true,
+    "screenshot": "T06-delete-buttons_iPad.png"
+  },
+  {
+    "device": "iPad",
+    "test": "公開URLバー: 一覧→編集→戻り遷移（Bug #8,#11）",
+    "id": "T07-url-bar-transition",
+    "bugRef": "Bug #8 URLバー残留, Bug #11 コレクション一覧残留",
+    "overlaps": 0,
+    "annotationCount": 0,
+    "pass": true,
+    "screenshot": "T07-url-bar-transition_iPad.png"
+  },
+  {
+    "device": "iPad",
+    "test": "固定ページ: 編集・公開URL（Bug #13）",
+    "id": "T08-pages-editor",
+    "bugRef": "Bug #13 固定ページ公開URL表示",
+    "overlaps": 0,
+    "annotationCount": 0,
+    "pass": true,
+    "screenshot": "T08-pages-editor_iPad.png"
+  },
+  {
+    "device": "iPad",
+    "test": "ドロップダウン+URLバー競合（Bug #32）",
+    "id": "T09-dropdown-urlbar",
+    "bugRef": "Bug #32 URLバーとモーダル重複",
+    "overlaps": 0,
+    "annotationCount": 0,
+    "pass": true,
+    "screenshot": "T09-dropdown-urlbar_iPad.png"
+  },
+  {
+    "device": "iPad",
+    "test": "新規記事作成: フィールド・保存ボタン",
+    "id": "T10-new-entry",
+    "bugRef": null,
+    "overlaps": 0,
+    "annotationCount": 0,
+    "pass": true,
+    "screenshot": "T10-new-entry_iPad.png"
+  },
+  {
+    "device": "iPad",
+    "test": "画像ウィジェット: ボタン配置（Bug #5,#6,#29）",
+    "id": "T11-image-widget",
+    "bugRef": "Bug #5 EXIF, Bug #6 canvas副作用, Bug #29 blob CSP",
+    "overlaps": 0,
+    "annotationCount": 0,
+    "pass": true,
+    "screenshot": "T11-image-widget_iPad.png"
+  },
+  {
+    "device": "iPad",
+    "test": "メディアライブラリ: モーダル表示（Bug #29,#32）",
+    "id": "T12-media-library",
+    "bugRef": "Bug #29 blob CSP, Bug #32 モーダル重複",
+    "overlaps": 0,
+    "annotationCount": 0,
+    "pass": true,
+    "screenshot": "T12-media-library_iPad.png"
+  },
+  {
+    "device": "iPad",
+    "test": "モバイル: ボトムシート（Bug #7）",
+    "id": "T13-bottom-sheet",
+    "bugRef": "Bug #7 ドロップダウン位置ずれ",
+    "overlaps": 0,
+    "annotationCount": 0,
+    "pass": true,
+    "screenshot": "T13-bottom-sheet_iPad.png"
+  },
+  {
+    "device": "iPad",
+    "test": "記事一覧: 日付|下書き|タイトル形式",
+    "id": "T14-entry-format",
+    "bugRef": null,
+    "overlaps": 0,
+    "annotationCount": 0,
+    "pass": true,
+    "screenshot": "T14-entry-format_iPad.png"
+  },
+  {
+    "device": "iPad",
+    "test": "操作性: 記事→戻る→固定ページ連続遷移（Bug #8,#11）",
+    "id": "T15-multi-operation",
+    "bugRef": "Bug #8,#11 URLバー残留",
+    "overlaps": 0,
+    "annotationCount": 0,
+    "pass": true,
+    "screenshot": "T15-multi-operation_iPad.png"
+  },
+  {
+    "device": "iPad",
+    "test": "スクロール時sticky保存ボタン（Bug #1）",
+    "id": "T16-sticky-scroll",
+    "bugRef": "Bug #1 モバイル保存ボタン非表示",
+    "overlaps": 0,
+    "annotationCount": 0,
+    "pass": true,
+    "screenshot": "T16-sticky-scroll_iPad.png"
+  },
+  {
+    "device": "iPhone",
+    "test": "ログイン画面: ログインボタン表示",
+    "id": "T01-login",
+    "bugRef": null,
+    "overlaps": 0,
+    "annotationCount": 1,
+    "pass": true,
+    "screenshot": "T01-login_iPhone.png"
+  },
+  {
+    "device": "iPhone",
+    "test": "記事一覧: エントリ一覧・新規ボタン表示",
+    "id": "T02-collection-list",
+    "bugRef": null,
+    "overlaps": 0,
+    "annotationCount": 0,
+    "pass": true,
+    "screenshot": "T02-collection-list_iPhone.png"
+  },
+  {
+    "device": "iPhone",
+    "test": "記事編集: ツールバー・保存ボタン・URLバー（Bug #1,#8,#11）",
+    "id": "T03-editor",
+    "bugRef": "Bug #1 モバイル保存ボタン, Bug #8/#11 公開URLバー",
+    "overlaps": 0,
+    "annotationCount": 0,
+    "pass": true,
+    "screenshot": "T03-editor_iPhone.png"
+  },
+  {
+    "device": "iPhone",
+    "test": "ツールバー: 各ボタン表示（Bug #9 codeblock非表示）",
+    "id": "T04-toolbar-buttons",
+    "bugRef": "Bug #9 Slate codeblockクラッシュ対策",
+    "overlaps": 0,
+    "annotationCount": 0,
+    "pass": true,
+    "screenshot": "T04-toolbar-buttons_iPhone.png"
+  },
+  {
+    "device": "iPhone",
+    "test": "エディタ: +メニュー展開",
+    "id": "T05-editor-plus-menu",
+    "bugRef": null,
+    "overlaps": 0,
+    "annotationCount": 0,
+    "pass": true,
+    "screenshot": "T05-editor-plus-menu_iPhone.png"
+  },
+  {
+    "device": "iPhone",
+    "test": "削除ボタン: ラベル「選択解除」「完全削除」確認（Bug #4）",
+    "id": "T06-delete-buttons",
+    "bugRef": "Bug #4 削除ボタン誤操作",
+    "overlaps": 0,
+    "annotationCount": 0,
+    "pass": true,
+    "screenshot": "T06-delete-buttons_iPhone.png"
+  },
+  {
+    "device": "iPhone",
+    "test": "公開URLバー: 一覧→編集→戻り遷移（Bug #8,#11）",
+    "id": "T07-url-bar-transition",
+    "bugRef": "Bug #8 URLバー残留, Bug #11 コレクション一覧残留",
+    "overlaps": 0,
+    "annotationCount": 0,
+    "pass": true,
+    "screenshot": "T07-url-bar-transition_iPhone.png"
+  },
+  {
+    "device": "iPhone",
+    "test": "固定ページ: 編集・公開URL（Bug #13）",
+    "id": "T08-pages-editor",
+    "bugRef": "Bug #13 固定ページ公開URL表示",
+    "overlaps": 0,
+    "annotationCount": 0,
+    "pass": true,
+    "screenshot": "T08-pages-editor_iPhone.png"
+  },
+  {
+    "device": "iPhone",
+    "test": "ドロップダウン+URLバー競合（Bug #32）",
+    "id": "T09-dropdown-urlbar",
+    "bugRef": "Bug #32 URLバーとモーダル重複",
+    "overlaps": 0,
+    "annotationCount": 0,
+    "pass": true,
+    "screenshot": "T09-dropdown-urlbar_iPhone.png"
+  },
+  {
+    "device": "iPhone",
+    "test": "新規記事作成: フィールド・保存ボタン",
+    "id": "T10-new-entry",
+    "bugRef": null,
+    "overlaps": 0,
+    "annotationCount": 0,
+    "pass": true,
+    "screenshot": "T10-new-entry_iPhone.png"
+  },
+  {
+    "device": "iPhone",
+    "test": "画像ウィジェット: ボタン配置（Bug #5,#6,#29）",
+    "id": "T11-image-widget",
+    "bugRef": "Bug #5 EXIF, Bug #6 canvas副作用, Bug #29 blob CSP",
+    "overlaps": 0,
+    "annotationCount": 0,
+    "pass": true,
+    "screenshot": "T11-image-widget_iPhone.png"
+  },
+  {
+    "device": "iPhone",
+    "test": "メディアライブラリ: モーダル表示（Bug #29,#32）",
+    "id": "T12-media-library",
+    "bugRef": "Bug #29 blob CSP, Bug #32 モーダル重複",
+    "overlaps": 0,
+    "annotationCount": 0,
+    "pass": true,
+    "screenshot": "T12-media-library_iPhone.png"
+  },
+  {
+    "device": "iPhone",
+    "test": "モバイル: ボトムシート（Bug #7）",
+    "id": "T13-bottom-sheet",
+    "bugRef": "Bug #7 ドロップダウン位置ずれ",
+    "overlaps": 0,
+    "annotationCount": 0,
+    "pass": true,
+    "screenshot": "T13-bottom-sheet_iPhone.png"
+  },
+  {
+    "device": "iPhone",
+    "test": "記事一覧: 日付|下書き|タイトル形式",
+    "id": "T14-entry-format",
+    "bugRef": null,
+    "overlaps": 0,
+    "annotationCount": 0,
+    "pass": true,
+    "screenshot": "T14-entry-format_iPhone.png"
+  },
+  {
+    "device": "iPhone",
+    "test": "操作性: 記事→戻る→固定ページ連続遷移（Bug #8,#11）",
+    "id": "T15-multi-operation",
+    "bugRef": "Bug #8,#11 URLバー残留",
+    "overlaps": 0,
+    "annotationCount": 0,
+    "pass": true,
+    "screenshot": "T15-multi-operation_iPhone.png"
+  },
+  {
+    "device": "iPhone",
+    "test": "スクロール時sticky保存ボタン（Bug #1）",
+    "id": "T16-sticky-scroll",
+    "bugRef": "Bug #1 モバイル保存ボタン非表示",
+    "overlaps": 0,
+    "annotationCount": 0,
+    "pass": true,
+    "screenshot": "T16-sticky-scroll_iPhone.png"
+  }
+]
