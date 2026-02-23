@@ -1908,11 +1908,40 @@ CMS CRUDエビデンス（verify-cms-crud.mjs）では、Decap CMS OAuth認証�
 - テストスクリプトは `evidence/YYYY-MM-DD/` に保存し、今後の再利用に備える
 - 各スクリプトの検証シナリオはTEST-REPORT.mdに記録
 
+**エビデンス取得後の必須作業:**
+1. **社内レビュー**: スクリーンショット全数を確認し、ログイン画面のみ等の不備がないことを検証する（CLAUDE.md ルール11）
+2. **レポート生成**: `report.html` を更新し、全スクリーンショットをPC/iPad/iPhone横並びで確認可能な形式にまとめる
+3. **作業完了報告書生成**: 変更がある場合は `work-completion-report.html` を作成し、システム要件変更の有無・テスト結果・エビデンス確認結果を記録する
+4. **フォルダ整理**: デバッグ用スクリーンショット・一時ファイルを削除し、正式なフォルダ構成のみを維持する
+
+**フォルダ構成（標準）:**
+```
+evidence/YYYY-MM-DD/
+├── report.html                    # エビデンスレポート（画像参照、PC/iPad/iPhone横並び）
+├── work-completion-report.html    # 作業完了報告書（要件変更確認、テスト結果）
+├── verify-staging.mjs             # Part 1: サイト基本動作検証スクリプト
+├── verify-site-interactive.mjs    # Part 2: サイト操作性検証スクリプト
+├── verify-cms-interactive.mjs     # Part 3: CMS操作性検証スクリプト
+├── verify-cms-crud.mjs            # Part 4: CMS CRUD操作検証スクリプト
+├── verify-security.mjs            # Part 5: セキュリティ検証スクリプト
+├── *-results.json                 # 各検証の結果JSON
+├── screenshots/                   # Part 1: サイト基本動作スクリーンショット
+├── site-interactive/              # Part 2: サイト操作性スクリーンショット
+├── cms-interactive/               # Part 3: CMS操作性スクリーンショット
+├── cms-crud/                      # Part 4: CMS CRUD操作スクリーンショット
+└── security/                      # Part 5: セキュリティ検証スクリーンショット
+```
+
+**CMS CRUDエビデンス取得時の特記事項:**
+- verify-cms-crud.mjsはDecap CMS OAuth 3ステップハンドシェイクをシミュレートする（詳細は4.9.8章参照）
+- 実行前にconfig.ymlの`base_url`をlocalhost（テストサーバーURL）に一時変更する必要がある
+- 実行後は必ず`base_url`を本来の値（`https://staging.reiwa.casa` or `https://reiwa.casa`）に復元してからコミットする
+
 ### 4.10.4 品質指標
 
 | 指標 | 目標値 | 現状 |
 |:---|:---|:---|
-| Vitestテスト全PASS | 100% | 458/458 (100%) |
+| Vitestテスト全PASS | 100% | 518/519 (99.8%, 1件Windows固有) |
 | Playwright E2Eテスト全PASS | 100% | 367/367 (100%) |
 | セキュリティ検証全PASS | 100% | 10/10 (100%) |
 | ボタン重なり検出 | 0件 | 0件 |
@@ -1921,4 +1950,4 @@ CMS CRUDエビデンス（verify-cms-crud.mjs）では、Decap CMS OAuth認証�
 
 ---
 
-**最終更新**: 2026年2月23日（v1.30）
+**最終更新**: 2026年2月24日（v1.31）

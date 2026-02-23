@@ -143,6 +143,9 @@ DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を�
 - **過去バグ検証マトリクス**: Bug #1,#4,#5,#6,#7,#8,#9,#11,#13,#14,#15,#29,#30,#31,#32,#33の再発確認をエビデンスに含める
 - **テストデバイス**: PC (1280x800) / iPad Pro 11 (834x1194) / iPhone 14 (390x844)
 - **社内レビュー**: エビデンス提出前にスクリーンショットの内容を確認し、認証後の編集画面が正しく表示されていることをレビューする。ログイン画面のみのスクリーンショットは不可
+- **エビデンス取得後の必須作業**: (1) 社内レビュー（全数確認）→ (2) report.html更新（PC/iPad/iPhone横並び形式）→ (3) 作業完了報告書（work-completion-report.html）作成 → (4) フォルダ整理（デバッグファイル削除）→ (5) コミット・プッシュ
+- **フォルダ構成**: `evidence/YYYY-MM-DD/` 直下に `report.html`, `work-completion-report.html`, `verify-*.mjs`, `*-results.json` を配置。スクリーンショットは `screenshots/`, `site-interactive/`, `cms-interactive/`, `cms-crud/`, `security/` サブフォルダに整理。デバッグ用スクリーンショットや一時ファイルはコミット前に削除する
+- **CMS CRUD認証**: verify-cms-crud.mjsはDecap CMS 3ステップOAuthハンドシェイクをcontext.route()でシミュレート。実行前にconfig.ymlのbase_urlをlocalhost（テストサーバーURL）に一時変更し、実行後は必ず元の値に復元してからコミットする（詳細: DOCUMENTATION.md 4.9.8章）
 
 ### 新機能追加時（要件トレーサビリティの維持）
 1. docs/DOCUMENTATION.md の要件一覧（1.2章 FR / 1.3章 CMS / 1.4.1章 NFR / 1.4.2章 SEC）に要件IDを追加
