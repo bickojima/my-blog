@@ -8,6 +8,8 @@ function findMdFiles(dir) {
   const results = [];
   if (!fs.existsSync(dir)) return results;
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    // シンボリックリンク防御: ディレクトリ外への参照を防止
+    if (entry.isSymbolicLink()) continue;
     const fullPath = path.join(dir, entry.name);
     if (entry.isDirectory()) {
       results.push(...findMdFiles(fullPath));
@@ -21,7 +23,7 @@ function findMdFiles(dir) {
 function extractFrontmatter(filePath) {
   const content = fs.readFileSync(filePath, 'utf-8');
   try {
-    const { data } = matter(content);
+    const { data } = matter(content, { engines: {} });
     if (!data.date || !data.title) return null;
     const dateStr = data.date instanceof Date
       ? data.date.toISOString().split('T')[0]
@@ -41,11 +43,14 @@ function extractFrontmatter(filePath) {
   }
 }
 
-function removeEmptyDirs(dir) {
+function removeEmptyDirs(dir, rootDir) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (entry.isSymbolicLink()) continue;
     if (entry.isDirectory()) {
       const fullPath = path.join(dir, entry.name);
-      removeEmptyDirs(fullPath);
+      // パス境界チェック: rootDir外への操作を防止
+      if (!path.resolve(fullPath).startsWith(path.resolve(rootDir))) continue;
+      removeEmptyDirs(fullPath, rootDir);
       try { fs.rmdirSync(fullPath); } catch {}
     }
   }
@@ -70,7 +75,7 @@ for (const filePath of files) {
   }
 }
 
-removeEmptyDirs(POSTS_DIR);
+removeEmptyDirs(POSTS_DIR, POSTS_DIR);
 
 if (moved > 0) {
   console.log(`[organize-posts] ${moved} file(s) moved.`);
@@ -83,7 +88,7 @@ const urlMap = {};
 for (const filePath of allFiles) {
   const fm = extractFrontmatter(filePath);
   if (!fm) continue;
-  const relPath = path.relative(POSTS_DIR, filePath).replace(/\.md$/, '');
+  const relPath = path.relative(POSTS_DIR, filePath).replace(/\.md$/, '').replace(/\\/g, '/');
   const fileSlug = path.basename(filePath, '.md');
   urlMap[relPath] = `/posts/${fm.year}/${fm.month}/${fileSlug}`;
 }

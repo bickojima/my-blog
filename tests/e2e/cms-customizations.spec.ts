@@ -195,12 +195,12 @@ test.describe('E-13: CMS カスタマイズ基盤検証', () => {
     expect(html).toContain('cms-public-url');
   });
 
-  test('ドロップダウンとURLバーの競合回避（hiddenByDropdown）が実装されている', async ({ page }) => {
+  test('ドロップダウン・モーダルとURLバーの競合回避（hiddenByOverlay）が実装されている', async ({ page }) => {
     await page.goto('/admin/');
     const html = await page.content();
-    // hiddenByDropdown: showPublicUrlで非表示にしたバーをmanageDropdownOverlayが誤復元するのを防止
-    expect(html).toContain('hiddenByDropdown');
-    // ドロップダウン表示中のURLバーが表示されている場合のみフラグを立てる
+    // hiddenByOverlay: showPublicUrlで非表示にしたバーをmanageDropdownOverlayが誤復元するのを防止
+    expect(html).toContain('hiddenByOverlay');
+    // ドロップダウン・モーダル表示中のURLバーが表示されている場合のみフラグを立てる
     expect(html).toContain("style.display !== 'none'");
   });
 

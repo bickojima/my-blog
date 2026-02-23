@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { onRequest as authIndex } from '../functions/auth/index.js';
-import { onRequest as authCallback } from '../functions/auth/callback.js';
+import { onRequestGet as authIndex } from '../functions/auth/index.js';
+import { onRequestGet as authCallback } from '../functions/auth/callback.js';
 
 /**
  * Cloudflare Functions のコンテキストをモック生成

@@ -1,4 +1,4 @@
-export async function onRequest(context) {
+export async function onRequestGet(context) {
   const { request, env } = context;
   const url = new URL(request.url);
   const code = url.searchParams.get('code');
@@ -128,6 +128,11 @@ export async function onRequest(context) {
       headers: {
         'Content-Type': 'text/html',
         'Set-Cookie': clearStateCookie,
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
+        'Pragma': 'no-cache',
+        'X-Content-Type-Options': 'nosniff',
+        'X-Frame-Options': 'DENY',
+        'Content-Security-Policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'",
       },
     });
   } catch (error) {

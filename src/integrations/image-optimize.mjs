@@ -1,6 +1,6 @@
 import sharp from 'sharp';
-import { readdir, stat, writeFile } from 'fs/promises';
-import { join, extname } from 'path';
+import { readdir, stat, writeFile, lstat } from 'fs/promises';
+import { join, extname, resolve } from 'path';
 import { fileURLToPath } from 'url';
 
 const IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp'];
@@ -8,6 +8,8 @@ const MAX_WIDTH = 1200;
 const JPEG_QUALITY = 80;
 const PNG_QUALITY = 80;
 const WEBP_QUALITY = 80;
+const PIXEL_LIMIT = 50_000_000; // 50メガピクセル（ピクセルフラッド防御）
+const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 
 export default function imageOptimize() {
   return {
@@ -38,15 +40,29 @@ export default function imageOptimize() {
 
         for (const file of imageFiles) {
           const filePath = join(uploadsDir, file);
+
+          // シンボリックリンク防御
+          const fileInfo = await lstat(filePath);
+          if (fileInfo.isSymbolicLink()) {
+            console.warn(`  [image-optimize] Skipping symlink: ${file}`);
+            continue;
+          }
+
           const fileStat = await stat(filePath);
           const originalSize = fileStat.size;
 
+          // ファイルサイズ上限チェック
+          if (originalSize > MAX_FILE_SIZE) {
+            console.warn(`  [image-optimize] Skipping oversized file: ${file} (${(originalSize / 1024 / 1024).toFixed(1)}MB)`);
+            continue;
+          }
+
           try {
-            // メタデータ取得とパイプラインを同一インスタンスで処理
-            const metadata = await sharp(filePath).metadata();
+            // メタデータ取得とパイプラインを同一インスタンスで処理（ピクセル数制限付き）
+            const metadata = await sharp(filePath, { limitInputPixels: PIXEL_LIMIT }).metadata();
 
             // Apply EXIF orientation (iPhone photos store rotation as EXIF metadata)
-            let pipeline = sharp(filePath).rotate();
+            let pipeline = sharp(filePath, { limitInputPixels: PIXEL_LIMIT }).rotate();
 
             // EXIF orientations 5-8 swap width/height (90°/270° rotations)
             const isRotated = metadata.orientation && metadata.orientation >= 5;

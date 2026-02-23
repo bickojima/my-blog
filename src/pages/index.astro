@@ -34,7 +34,7 @@ const posts = allPosts
           {post.data.tags && post.data.tags.length > 0 && (
             <div class="post-tags">
               {post.data.tags.map((tag: string) => (
-                <a href={`/tags/${tag}`} class="tag">{tag}</a>
+                <a href={`/tags/${encodeURIComponent(tag)}`} class="tag">{tag}</a>
               ))}
             </div>
           )}

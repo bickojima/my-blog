@@ -1,0 +1,34 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="ページが見つかりません - tbiのブログ">
+  <div class="not-found">
+    <h1>404</h1>
+    <p>お探しのページは存在しないか、移動された可能性があります。</p>
+    <a href="/" class="back-link">&larr; 記事一覧に戻る</a>
+  </div>
+
+  <style>
+    .not-found {
+      text-align: center;
+      padding: 3rem 0;
+    }
+    .not-found h1 {
+      font-size: 3rem;
+      color: #ccc;
+      margin-bottom: 1rem;
+    }
+    .not-found p {
+      color: #767676;
+      margin-bottom: 1.5rem;
+    }
+    .back-link {
+      font-size: 0.9rem;
+      color: #595959;
+    }
+    .back-link:hover {
+      color: #333;
+    }
+  </style>
+</Base>

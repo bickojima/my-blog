@@ -463,7 +463,7 @@ describe('ビルド検証', () => {
     const headersPath = join(process.cwd(), 'public/_headers');
     const headersContent = readFileSync(headersPath, 'utf-8');
     // パスルール行（行頭 /admin/*）以降を admin セクションとして抽出
-    const adminMatch = headersContent.match(/^\/admin\/\*\n([\s\S]*)$/m);
+    const adminMatch = headersContent.match(/^\/admin\/\*\r?\n([\s\S]*)$/m);
     const adminSection = adminMatch ? adminMatch[1] : '';
 
     it('X-Content-Type-Optionsが設定されている', () => {
@@ -509,15 +509,13 @@ describe('ビルド検証', () => {
 
     // Cloudflare Pages は /* と /admin/* で同名ヘッダーを指定すると
     // オーバーライドではなくAppend（重複送信）する。
-    // ブラウザは重複ヘッダーの最も厳しい値を採用するため、
-    // 管理画面で緩和が必要なヘッダーを /* に含めてはならない。
+    // 同一値の重複は安全だが、異なる値の重複はブラウザが最も厳しい値を採用するため危険。
+    // CSPなど /admin/* でのみ必要なヘッダーは /* に含めてはならない。
     const adminOnlyHeaders = [
-      'Cross-Origin-Opener-Policy',
-      'Cross-Origin-Resource-Policy',
-      'X-Frame-Options',
+      'Content-Security-Policy',  // /admin/* 固有のポリシーが必要
     ];
 
-    // _headers ファイルをパースして各パスルールのヘッダーを抽出
+    // _headers ファイルをパースして各パスルールのヘッダー名と値を抽出
     function parseHeadersFile(content) {
       const sections = {};
       let currentPath = null;
@@ -533,30 +531,38 @@ describe('ビルド検証', () => {
           if (!sections[currentPath]) sections[currentPath] = [];
         } else if (currentPath && trimmed.includes(':')) {
           const headerName = trimmed.split(':')[0].trim();
-          sections[currentPath].push(headerName);
+          const headerValue = trimmed.split(':').slice(1).join(':').trim();
+          sections[currentPath].push({ name: headerName, value: headerValue });
         }
       }
       return sections;
     }
 
-    it('/* と /admin/* で同名ヘッダーが重複していない', () => {
+    it('/* と /admin/* で同名ヘッダーが異なる値で重複していない', () => {
+      // 同一値の重複は安全（ブラウザが正しく処理する）。異なる値の重複のみ検出する。
       const sections = parseHeadersFile(headersContent);
       const globalHeaders = sections['/*'] || [];
       const adminHeaders = sections['/admin/*'] || [];
-      const duplicates = globalHeaders.filter(h => adminHeaders.includes(h));
+      const conflicts = [];
+      for (const admin of adminHeaders) {
+        const global = globalHeaders.find(g => g.name === admin.name);
+        if (global && global.value !== admin.value) {
+          conflicts.push(`${admin.name}: /*="${global.value}" vs /admin/*="${admin.value}"`);
+        }
+      }
       expect(
-        duplicates,
-        `/* と /admin/* で重複するヘッダー: ${duplicates.join(', ')}。Cloudflare Pagesはオーバーライドせずappendするため、管理画面で異なる値が必要なヘッダーを /* に含めてはならない。`
+        conflicts,
+        `/* と /admin/* で異なる値のヘッダー: ${conflicts.join('; ')}`
       ).toEqual([]);
     });
 
-    it('管理画面で緩和が必要なヘッダーが /* に含まれていない', () => {
+    it('/admin/* 固有のヘッダーが /* に含まれていない', () => {
       const sections = parseHeadersFile(headersContent);
-      const globalHeaders = sections['/*'] || [];
+      const globalHeaderNames = (sections['/*'] || []).map(h => h.name);
       for (const header of adminOnlyHeaders) {
         expect(
-          globalHeaders,
-          `${header} は /admin/* で異なる値が必要なため /* に含めてはならない`
+          globalHeaderNames,
+          `${header} は /admin/* 固有のため /* に含めてはならない`
         ).not.toContain(header);
       }
     });

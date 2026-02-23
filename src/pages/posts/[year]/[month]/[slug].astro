@@ -5,7 +5,7 @@ import { getPostUrlParts } from '../../../../lib/posts';
 
 export async function getStaticPaths() {
   const posts = await getCollection('posts');
-  return posts.map((post) => {
+  return posts.filter(post => !post.data.draft).map((post) => {
     const { year, month, slug } = getPostUrlParts(post);
     return {
       params: { year, month, slug },
@@ -26,7 +26,7 @@ const { Content } = await post.render();
       {post.data.tags && post.data.tags.length > 0 && (
         <div class="post-tags">
           {post.data.tags.map((tag: string) => (
-            <a href={`/tags/${tag}`} class="tag">{tag}</a>
+            <a href={`/tags/${encodeURIComponent(tag)}`} class="tag">{tag}</a>
           ))}
         </div>
       )}

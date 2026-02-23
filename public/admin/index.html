@@ -654,7 +654,10 @@
             const isEditor = editorBar && editorBar.getBoundingClientRect().height > 0;
 
             if (!isEditor) {
-              if (urlDisplay) urlDisplay.style.display = 'none';
+              if (urlDisplay) {
+                urlDisplay.style.display = 'none';
+                document.body.style.paddingBottom = '';
+              }
               return;
             }
 
@@ -741,7 +744,10 @@
               const dateVal = (dateInput && dateInput.value) || '';
               const dateMatch = dateVal.match(/(\d{4})[-\/](\d{2})/);
               if (!dateMatch || !title) {
-                if (urlDisplay) urlDisplay.style.display = 'none';
+                if (urlDisplay) {
+                  urlDisplay.style.display = 'none';
+                  document.body.style.paddingBottom = '';
+                }
                 return;
               }
               resolvedPath = '/posts/' + dateMatch[1] + '/' + dateMatch[2] + '/' + title;
@@ -762,6 +768,8 @@
             }
 
             urlDisplay.style.display = '';
+            // URLバー表示時、エディタ下部のコンテンツが隠れないようにbodyにpadding追加
+            document.body.style.paddingBottom = '44px';
             if (urlDisplay.dataset.lastUrl !== displayUrl) {
               urlDisplay.textContent = '';
               const labelSpan = document.createElement('span');
@@ -782,28 +790,41 @@
           }
         }
 
-        // iOS Safari: ドロップダウン表示時にURLバーを退避
-        // ボトムシートと公開URLバーの重なりを防止
+        // ドロップダウン・モーダル表示時にURLバーを退避
+        // ボトムシートやモーダルと公開URLバーの重なりを防止
         function manageDropdownOverlay() {
-          if (window.innerWidth > 799) return;
-
-          const dropdown = document.querySelector('[class*="DropdownList"]');
           const urlBar = document.getElementById('cms-public-url');
+          if (!urlBar) return;
 
-          if (dropdown) {
-            // ドロップダウン表示中: 公開URLバーが表示中の場合のみ一時的に隠す
-            // 既にshowPublicUrlで非表示の場合はフラグを立てない（閉じた時に誤復元しない）
-            if (urlBar && urlBar.style.display !== 'none') {
-              urlBar.dataset.hiddenByDropdown = 'true';
+          // モーダル検出: モーダル表示中はURLバーを隠す（z-index競合防止）
+          const modal = document.querySelector('[class*="StyledModal"]');
+          if (modal) {
+            if (urlBar.style.display !== 'none') {
+              urlBar.dataset.hiddenByOverlay = 'true';
               urlBar.style.display = 'none';
+              document.body.style.paddingBottom = '';
             }
-          } else {
-            // ドロップダウンが閉じた: ドロップダウンで隠した場合のみ復元
-            // （showPublicUrlが非表示にした場合は復元しない）
-            if (urlBar && urlBar.dataset.hiddenByDropdown === 'true') {
-              delete urlBar.dataset.hiddenByDropdown;
-              urlBar.style.display = '';
+            return;
+          }
+
+          // モバイルのみ: ドロップダウン（ボトムシート）検出
+          if (window.innerWidth <= 799) {
+            const dropdown = document.querySelector('[class*="DropdownList"]');
+            if (dropdown) {
+              if (urlBar.style.display !== 'none') {
+                urlBar.dataset.hiddenByOverlay = 'true';
+                urlBar.style.display = 'none';
+                document.body.style.paddingBottom = '';
+              }
+              return;
             }
+          }
+
+          // オーバーレイで隠した場合のみ復元
+          if (urlBar.dataset.hiddenByOverlay === 'true') {
+            delete urlBar.dataset.hiddenByOverlay;
+            urlBar.style.display = '';
+            document.body.style.paddingBottom = '44px';
           }
         }
 
