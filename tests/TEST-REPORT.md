@@ -31,6 +31,7 @@
 | 1.24 | 2026-02-23 | 個人情報保護対応: git履歴から個人情報を完全削除（Bug #35）。pre-commit hookによる個人情報混入防止を運用手順（DOCUMENTATION.md 4.8章）に記載。テスト件数に変更なし |
 | 1.25 | 2026-02-23 | エビデンス取得方針を大幅拡充: CMS操作性検証（T01〜T16, 16シナリオ×3デバイス=48テスト）、サイト操作性検証（S01〜S10, 10シナリオ×3デバイス=30テスト）を追加。全スクリーンショットに赤枠アノテーション必須化。過去バグ由来の検証マトリクス（Bug #1,#4,#5,#6,#7,#8,#9,#11,#13,#14,#15,#29,#30,#31,#32,#33の16件）を追加。記事編集画面・画像アップロード画面・メディアライブラリのエビデンスを重点取得 |
 | 1.26 | 2026-02-23 | CMS CRUD操作エビデンス追加（verify-cms-crud.mjs: T17〜T32, 16シナリオ×3デバイス=48テスト）、セキュリティ検証エビデンス追加（verify-security.mjs: SEC01〜SEC10, 10項目）。検証スクリプト一覧にverify-cms-crud.mjs・verify-security.mjsを追加。継続的品質・セキュリティ改善フレームワークをDOCUMENTATION.md 4.10章に新設 |
+| 1.27 | 2026-02-24 | CMS-17（記事デフォルトソート日付降順）・CMS-18（記事月別グルーピング）対応。Vitestテスト3件追加（#48〜#50: sortable_fields, view_groups検証）。E2E E-36追加（3テスト×3デバイス=9テスト: ソート順検証、view_groupsボタン表示、レイアウト崩れ検証、スクリーンショットエビデンス取得）。E2Eスクリーンショットエビデンスルール追加（4.1.6章: 認証後スクリーンショット必須、context.route()による3ステップOAuthハンドシェイク方式を文書化）。全522+384=906テスト |
 
 ## テスト基盤の変更履歴
 
@@ -721,7 +722,7 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 
 ---
 
-## 2.4. CMS設定検証 (`cms-config.test.mjs`) — 49件
+## 2.4. CMS設定検証 (`cms-config.test.mjs`) — 52件
 
 `public/admin/config.yml`をパースし、設定値の正当性を検証する。
 
@@ -781,6 +782,14 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 | 26b | postsのbodyフィールドがmarkdownウィジェットである（FR-17） | 基本機能 | M-03 | `widget === "markdown"` |
 | 33b | pagesのbodyフィールドがmarkdownウィジェットである（FR-17） | 基本機能 | M-03 | `widget === "markdown"` |
 | 47 | 全コレクションにmedia_folderが設定されている（FR-19） | 基本機能 | M-03 | 各コレクションに`media_folder`が定義されている |
+
+### 2.4.2 記事ソート・グルーピングテスト（3件）
+
+| No. | テストケース | カテゴリ | テスト手法 | 期待結果 |
+| :--- | :--- | :--- | :--- | :--- |
+| 48 | postsのソート可能フィールドにdateとtitleが含まれている（CMS-17） | posts | M-03 | `sortable_fields`に`date`と`title`が含まれる |
+| 49 | postsのdateフィールドがデフォルトで降順ソートに設定されている（CMS-17） | posts | M-03 | `{field: date, default_sort: desc}` |
+| 50 | postsのview_groupsに年・年月グルーピングが設定されている（CMS-18） | posts | M-03 | `view_groups`に「年」（`\d{4}`）・「年月」（`\d{4}-\d{2}`）の2グループ |
 
 ---
 
@@ -1274,6 +1283,7 @@ OAuthモック＋GitHub APIモックを使い、CMS管理画面を実際に操�
 | E-33 | 画像アップロードUI操作 | 画像ウィジェットボタン表示・クリック可能、accept属性HEIC制限、EXIF処理イベント登録 | モック/動作検証 |
 | E-34 | モバイル固有UI操作 | ドロップダウンがボトムシート表示（≤799px）、codeblockボタン非表示、URLバー退避、タップ領域44px以上 | モック/動作検証（iPhoneのみ） |
 | E-35 | 削除ボタン状態変化 | 削除ボタンラベル変更（選択解除/完全削除）、disabled状態CSS、色の視覚的区別、borderColor判定ロジック | モック/動作検証/CSS検証 |
+| E-36 | 記事デフォルトソート・月別グルーピング | 記事一覧の日付降順ソート検証、view_groups「年」「年月」ボタン表示、レイアウト崩れなし（要素重なり検証）。PC/iPad/iPhone 3デバイスでスクリーンショットエビデンス取得（CMS-17, CMS-18） | モック/動作検証/スクリーンショット |
 
 #### アクセシビリティテスト (`tests/e2e/accessibility.spec.ts`)
 
@@ -1302,9 +1312,35 @@ CMS E2Eテストでは以下のモック方式を**必須インフラ**として
 | 項目 | 方式 | 説明 |
 | :--- | :--- | :--- |
 | OAuth認証 | postMessageシミュレーション | `page.route('**/auth')` でOAuthポップアップをモックし、`window.opener.postMessage()` でトークンを送信。実GitHub環境不要 |
+| OAuth認証（認証後スクリーンショット取得時） | `context.route()` + 3ステップOAuthハンドシェイク | `context.route(url => url.pathname === '/auth')` でポップアップnavigationをインターセプト。3ステップ: (1) `authorizing:github` → (2) 親ウィンドウACK待ち → (3) `authorization:github:success:{token}` 送信。`page.route()` ではポップアップウィンドウのnavigationをインターセプトできないため、認証後のCMS画面スクリーンショットが必要な場合は `context.route()` を必ず使用する（Bug #36対応） |
 | GitHub API | Playwright `page.route()` 全面モック | ユーザー情報、リポジトリ、ブランチ、Git Data API（trees/blobs/refs/commits）、Contents APIを全てインターセプト。APIコールを記録して検証可能 |
 | CRUD操作 | モックAPI経由で実UI操作 | フォーム入力→保存ボタンクリック→モックAPIへのPOST発行を検証。実リポジトリへの変更は一切発生しない |
 | 制約 | CMS内部React状態の不完全再現 | postMessageでトークンを注入してもCMS内部のReact状態管理が完全には再現されない場合がある。エディタUIの表示・操作可能性で検証を補完する |
+
+### 4.1.6 E2Eスクリーンショットエビデンス取得ルール（必須）
+
+CMS関連のE2Eテストでは、**認証後のCMS画面のスクリーンショットエビデンス取得を必須**とする。ログイン画面のみのスクリーンショットは不可。
+
+#### 必須要件
+
+1. **認証後のスクリーンショット**: CMS操作に関連するE2Eテストでは、OAuthモック認証後のCMS画面（コレクション一覧・エディタ画面等）のスクリーンショットを取得すること
+2. **3デバイス対応**: PC/iPad/iPhone の3デバイスでスクリーンショットを取得すること
+3. **エビデンス格納先**: `evidence/YYYY-MM-DD/screenshots/` フォルダにファイル名規則 `e{テストID}-{検証項目}-{デバイス名}.png` で保存すること
+4. **レビュー**: スクリーンショットがログイン画面のみになっていないことを社内レビューで確認すること
+
+#### 認証後スクリーンショットの取得方法
+
+認証が必要なCMS画面のスクリーンショットを取得する場合、以下の手順に従う:
+
+1. **`context.route()`** を使用してOAuthポップアップのnavigationをインターセプトする（`page.route()` ではポップアップウィンドウをインターセプトできないため不可）
+2. **3ステップOAuthハンドシェイク**を実装する:
+   - Step 1: ポップアップから親ウィンドウに `authorizing:github` を送信
+   - Step 2: 親ウィンドウのACK（messageイベント）を待機
+   - Step 3: `authorization:github:success:{token,provider}` を送信
+3. **認証完了待機**: ログインボタンと「ログインしています...」テキストが消えるまでポーリング（最大15秒）
+4. **UI安定化待機**: 認証完了後2秒のバッファを設ける
+
+参考実装: `tests/e2e/cms-operations.spec.ts` の `openCmsWithMultiArticles()` 関数、`evidence/2026-02-23/verify-cms-crud.mjs` の `openCmsWithAuth()` 関数
 
 ---
 
@@ -1400,9 +1436,9 @@ npm run build
 | `cms.spec.ts`（E-07〜E-12） | 12 PASS | 12 PASS | 12 PASS | 36 |
 | `cms-customizations.spec.ts`（E-13〜E-19） | 38 PASS | 38 PASS | 38 PASS | 114 |
 | `cms-crud.spec.ts`（E-22〜E-24） | 11 PASS | 11 PASS | 11 PASS | 33 |
-| `cms-operations.spec.ts`（E-28〜E-35） | 24 PASS, 4 skip | 24 PASS, 4 skip | 28 PASS | 76 PASS, 8 skip |
+| `cms-operations.spec.ts`（E-28〜E-36） | 27 PASS, 4 skip | 27 PASS, 4 skip | 31 PASS | 85 PASS, 8 skip |
 | `accessibility.spec.ts`（E-25〜E-27） | 6 PASS | 6 PASS | 6 PASS | 18 |
-| **合計** | **121** | **121** | **125** | **367 PASS, 8 skip** |
+| **合計** | **124** | **124** | **128** | **376 PASS, 8 skip** |
 
 **スキップ内訳**: E-34（モバイル固有UI操作）4テスト × PC・iPad = 8件。ビューポート幅≤799pxのiPhoneでのみ実行。
 

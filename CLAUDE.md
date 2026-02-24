@@ -78,7 +78,8 @@ tests/
 - `manageDropdownOverlay`: ドロップダウン表示時のみURLバーを退避（`hiddenByDropdown`フラグで誤復元を防止）
 - **Slate codeblockクラッシュ対策**: モバイル（≤799px）でcodeblockボタン非表示、`toSlatePoint`エラーハンドラ、touchmoveエディタ除外
 - `formatCollectionEntries`: 記事は「日付 | 下書き | タイトル」、固定ページは「番号 | 下書き | タイトル」形式で一覧を整形。下書き時はオレンジの「下書き」バッジを表示
-- **コレクション表示順序**: config.yml で posts が先頭、pages が2番目（CMS初期表示で記事が最初に表示される）。固定ページはorder昇順がデフォルトソート（`{field: order, default_sort: asc}`）
+- **コレクション表示順序**: config.yml で posts が先頭、pages が2番目（CMS初期表示で記事が最初に表示される）。固定ページはorder昇順がデフォルトソート（`{field: order, default_sort: asc}`）。記事はdate降順がデフォルトソート（`{field: date, default_sort: desc}`）
+- **記事月別グルーピング**: config.yml の `view_groups` で記事一覧を「年」（`\d{4}`パターン）・「年月」（`\d{4}-\d{2}`パターン）でグルーピング表示可能（CMS-18）
 
 ### ビルドパイプライン
 `normalize-images.mjs` → `organize-posts.mjs` → `astro build` → `image-optimize.mjs`（Astro integration）
@@ -93,12 +94,14 @@ tests/
 
 ## テスト
 
-- **Vitest**: 設定検証、コンテンツ検証、単体テスト、ビルド統合テスト、セキュリティ検証、ファズテスト、基本機能保護テスト（519テスト、記事数により変動）
-- **Playwright**: PC/iPad/iPhone 3デバイス × 125テスト = 375テスト（367実行+8スキップ、ローカルのみ、CIでは未実行）
+- **Vitest**: 設定検証、コンテンツ検証、単体テスト、ビルド統合テスト、セキュリティ検証、ファズテスト、基本機能保護テスト（532テスト、記事数により変動）
+- **Playwright**: PC/iPad/iPhone 3デバイス × 128テスト = 384テスト（376実行+8スキップ、ローカルのみ、CIでは未実行）
 - コンテンツ検証テストは記事数・ページ数に応じて動的展開される
 - テスト実行後、失敗がある場合は原因を調査し修正する（テストを削除・スキップしない）
 - **テストにコンテンツをハードコードしない**: 記事名・固定ページ名・URL等はソースから動的取得する（コンテンツ変更でテストが壊れない設計）
-- **CMS E2Eテストの必須方式**: OAuthモック（postMessageシミュレーション）＋ GitHub APIモック（`page.route()`全面インターセプト）を統一使用する。今後のCMSテスト追加時もこの方式に従うこと
+- **CMS E2Eテストの必須方式**: OAuthモック（postMessageシミュレーション）＋ GitHub APIモック（`page.route()`全面インターセプト）を統一使用する。今後のCMSテスト追加時もこの方式に従うこと。**Playwright test runnerでは `window.open` モンキーパッチ方式を使用**（`context.route()`方式はtest runnerで動作しない。詳細: DOCUMENTATION.md 4.9.9章）
+- **E2Eスクリーンショットエビデンス必須**: CMS関連のE2Eテストでは認証後のCMS画面スクリーンショットを必ず取得する。ログイン画面のみのスクリーンショットは不可。3デバイス（PC/iPad/iPhone）で `evidence/YYYY-MM-DD/screenshots/` に保存する
+- **認証後スクリーンショットの取得方法**: OAuthポップアップのインターセプトには `context.route()` を使用する（`page.route()` ではポップアップウィンドウのnavigationをインターセプトできない）。3ステップOAuthハンドシェイク: (1) `authorizing:github` 送信 → (2) 親ACK待ち → (3) `authorization:github:success:{token}` 送信。参考実装: `tests/e2e/cms-operations.spec.ts` の `openCmsWithMultiArticles()`、`evidence/2026-02-23/verify-cms-crud.mjs` の `openCmsWithAuth()`
 
 ## ドキュメント体系
 
@@ -146,6 +149,8 @@ DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を�
 - **エビデンス取得後の必須作業**: (1) 社内レビュー（全数確認）→ (2) report.html更新（PC/iPad/iPhone横並び形式）→ (3) 作業完了報告書（work-completion-report.html）作成 → (4) フォルダ整理（デバッグファイル削除）→ (5) コミット・プッシュ
 - **フォルダ構成**: `evidence/YYYY-MM-DD/` 直下に `report.html`, `work-completion-report.html`, `verify-*.mjs`, `*-results.json` を配置。スクリーンショットは `screenshots/`, `site-interactive/`, `cms-interactive/`, `cms-crud/`, `security/` サブフォルダに整理。デバッグ用スクリーンショットや一時ファイルはコミット前に削除する
 - **CMS CRUD認証**: verify-cms-crud.mjsはDecap CMS 3ステップOAuthハンドシェイクをcontext.route()でシミュレート。実行前にconfig.ymlのbase_urlをlocalhost（テストサーバーURL）に一時変更し、実行後は必ず元の値に復元してからコミットする（詳細: DOCUMENTATION.md 4.9.8章）
+- **E2Eテストのスクリーンショットエビデンス**: CMS関連のE2Eスペックテスト（Playwright）でも認証後のCMS画面スクリーンショットを `evidence/YYYY-MM-DD/screenshots/` に保存する。ファイル名規則: `e{テストID}-{検証項目}-{デバイス名}.png`。認証には `context.route()` + 3ステップOAuthハンドシェイクを使用する。`page.route()` ではOAuthポップアップをインターセプトできないため不可（Bug #36）
+- **エビデンスの格納ルール**: エビデンス（スクリーンショット・レポート・検証結果JSON）は必ず `evidence/YYYY-MM-DD/` フォルダに格納する。ルートディレクトリや他の日付フォルダに格納してはならない。過去日付のエビデンスフォルダを上書き・削除しないこと
 
 ### 新機能追加時（要件トレーサビリティの維持）
 1. docs/DOCUMENTATION.md の要件一覧（1.2章 FR / 1.3章 CMS / 1.4.1章 NFR / 1.4.2章 SEC）に要件IDを追加

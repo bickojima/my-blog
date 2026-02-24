@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8"><title>CMS-17/CMS-18 エビデンスレポート (2026-02-24)</title>
+<style>
+body { font-family: -apple-system, sans-serif; margin: 20px; }
+h1 { font-size: 1.4em; }
+h2 { font-size: 1.2em; margin-top: 24px; }
+table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
+th, td { border: 1px solid #ccc; padding: 8px; text-align: center; vertical-align: top; }
+th { background: #f0f0f0; }
+img { border: 1px solid #ddd; border-radius: 4px; }
+.pass { background: #e8f5e9; }
+.info { background: #e3f2fd; }
+small { display: block; text-align: left; max-width: 300px; word-break: break-all; font-size: 0.7em; color: #666; }
+</style></head><body>
+<h1>CMS-17/CMS-18 エビデンスレポート</h1>
+<p>日付: 2026-02-25 | 要件: CMS-17（記事デフォルトソート日付降順）、CMS-18（記事月別グルーピング）</p>
+<p>テスト結果: Vitest 532 PASS / Playwright E2E 376 PASS（8 skip）</p>
+
+<h2>E2Eスペックテスト (E-36) — 認証後CMS画面スクリーンショット</h2>
+<p>方式: window.open モンキーパッチ + GitHub APIモック（Playwright test runner対応）</p>
+<table>
+<tr><th>検証項目</th><th>PC (1280x720)</th><th>iPad (810x1080)</th><th>iPhone 14 (390x844)</th></tr>
+<tr>
+  <td>CMS-17: デフォルトソート<br>（日付降順）<br>ソートドロップダウン表示</td>
+  <td class="pass"><img src="screenshots/e36-default-sort-PC.png" width="300"><br>PASS</td>
+  <td class="pass"><img src="screenshots/e36-default-sort-iPad.png" width="300"><br>PASS</td>
+  <td class="pass"><img src="screenshots/e36-default-sort-iPhone.png" width="300"><br>PASS</td>
+</tr>
+<tr>
+  <td>CMS-18: グルーピング<br>（年・年月）<br>グルーピングドロップダウン表示</td>
+  <td class="pass"><img src="screenshots/e36-view-groups-PC.png" width="300"><br>PASS</td>
+  <td class="pass"><img src="screenshots/e36-view-groups-iPad.png" width="300"><br>PASS</td>
+  <td class="pass"><img src="screenshots/e36-view-groups-iPhone.png" width="300"><br>PASS</td>
+</tr>
+<tr>
+  <td>レイアウト検証<br>（認証後CMS全体表示）</td>
+  <td class="pass"><img src="screenshots/e36-layout-PC.png" width="300"><br>PASS</td>
+  <td class="pass"><img src="screenshots/e36-layout-iPad.png" width="300"><br>PASS</td>
+  <td class="pass"><img src="screenshots/e36-layout-iPhone.png" width="300"><br>PASS</td>
+</tr>
+</table>
+
+<h2>確認ポイント</h2>
+<ul>
+  <li><strong>認証済み画面</strong>: 全デバイスでログイン画面ではなくCMSコレクション一覧が表示されている</li>
+  <li><strong>ソートドロップダウン</strong>: 「ソート ▾」が記事一覧上部に表示されている</li>
+  <li><strong>グルーピングドロップダウン</strong>: 「グルーピング ▾」がソートの隣に表示されている</li>
+  <li><strong>コレクション構成</strong>: サイドバーに「記事」「固定ページ」が正しく表示されている</li>
+  <li><strong>モバイル対応</strong>: iPhone/iPadでもUIが崩れずに表示されている</li>
+</ul>
+
+<h2>config.yml 変更内容</h2>
+<pre>
+sortable_fields:
+  - { field: date, default_sort: desc }  # CMS-17: 日付降順デフォルトソート
+  - title
+view_groups:                              # CMS-18: 年・年月グルーピング
+  - label: "年"
+    field: date
+    pattern: \d{4}
+  - label: "年月"
+    field: date
+    pattern: \d{4}-\d{2}
+</pre>
+</body></html>

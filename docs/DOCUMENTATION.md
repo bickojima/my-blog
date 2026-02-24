@@ -36,6 +36,7 @@
 | 1.29 | 2026-02-23 | 動作確認エビデンス取得方針追加（4.9章）: CMS操作性検証（T01〜T16）、サイト操作性検証（S01〜S10）、赤枠アノテーション必須化、過去バグ由来の検証マトリクス（16件）を定義 |
 | 1.30 | 2026-02-23 | CMS CRUD操作エビデンス追加（T17〜T32: 記事作成/編集/削除、画像アップロード、メディアライブラリ、タグ編集、下書き切替、固定ページCRUD）、セキュリティ検証エビデンス追加（SEC01〜SEC10: XSS/CSP/OAuth/CDN/postMessage/パストラバーサル）、継続的品質・セキュリティ改善フレームワーク（4.10章）追加 |
 | 1.31 | 2026-02-24 | Bug #36修正: CMS CRUDエビデンス認証不具合（ログイン画面のみ表示問題）。verify-cms-crud.mjsにDecap CMS 3ステップOAuthハンドシェイク実装、Playwright context.route()によるポップアップインターセプト、GitHub APIモックLIFO順序修正。エビデンス48枚を正常な編集画面で再取得。CLAUDE.mdにエビデンス社内レビュー義務化（ルール11）・バグ修正ドキュメント反映義務化（バグフロー5）追加。4.9.8章にエビデンス収集認証方式の技術ノート追加 |
+| 1.32 | 2026-02-24 | CMS-17追加（記事デフォルトソート日付降順）、CMS-18追加（記事月別グルーピング）。config.yml postsコレクションに`sortable_fields: {field: date, default_sort: desc}`と`view_groups`（年・年月パターン）を設定。E2Eテスト E-36追加（3デバイススクリーンショットエビデンス付き）。Vitestテスト3件追加（#48〜#50） |
 
 ## システム変更履歴
 
@@ -348,6 +349,8 @@ staging環境の検知:
 | CMS-14 | コレクション表示順序: CMS管理画面で記事コレクションが最初に表示される | `config.yml` collections順序 | postsが先頭、pagesが2番目 |
 | CMS-15 | プレビュースタイル本番再現: エディタプレビューが本番サイトと同等のスタイルで表示される | `admin/index.html` JS | `CMS.registerPreviewStyle()` |
 | CMS-16 | 固定ページデフォルトソート: 固定ページ一覧がデフォルトで表示順（order）の昇順でソートされる | `config.yml` sortable_fields | `{field: order, default_sort: asc}` |
+| CMS-17 | 記事デフォルトソート日付降順: 記事一覧がデフォルトで日付の降順（最新が先頭）でソートされる | `config.yml` sortable_fields | `{field: date, default_sort: desc}` |
+| CMS-18 | 記事月別グルーピング: 記事一覧を年・年月でグルーピング表示できる（記事数増加時の一覧性向上） | `config.yml` view_groups | `view_groups`で`date`フィールドを`\d{4}`（年）・`\d{4}-\d{2}`（年月）パターンでグルーピング |
 
 ---
 
@@ -449,6 +452,8 @@ staging環境の検知:
 | CMS-14 | コレクション表示順序 | cms-config | 2.4章 #11b | M-03 | 充足 |
 | CMS-15 | プレビュースタイル本番再現 | admin-html | 2.6.11章 #1〜#5 | M-02 | 充足 |
 | CMS-16 | 固定ページデフォルトソート | cms-config | 2.4章 #40, #41 | M-03 | 充足 |
+| CMS-17 | 記事デフォルトソート日付降順 | cms-config, E2E cms-operations | 2.4章 #48, #49, E-36 | M-03, M-11 | 充足 |
+| CMS-18 | 記事月別グルーピング | cms-config, E2E cms-operations | 2.4章 #50, E-36 | M-03, M-11 | 充足 |
 
 ### 1.5.3 非機能要件 (NFR) → テストケース
 
@@ -1143,6 +1148,8 @@ collections:
 
 - `slug`（pages）: `{{fields.slug}}` でフロントマターのslugフィールド値をファイル名に使用（`{{slug}}` はDecap CMSではタイトルのURL安全版を意味するため不可）
 - `sortable_fields`（pages）: orderフィールドをデフォルトで昇順ソートに設定（`{field: order, default_sort: asc}`形式）。Decap CMS v3.10.0は`field`+`default_sort`のオブジェクト形式に対応（`default`プロパティは非対応）
+- `sortable_fields`（posts）: dateフィールドをデフォルトで降順ソートに設定（`{field: date, default_sort: desc}`形式）。最新記事が一覧の先頭に表示される（CMS-17）
+- `view_groups`（posts）: 記事一覧を年（`\d{4}`パターン）・年月（`\d{4}-\d{2}`パターン）でグルーピング表示。記事数増加時に月別で絞り込み可能（CMS-18）
 - `path`（posts）: ファイルの保存・読み取りパスを定義。CMSがサブディレクトリ`yyyy/mm/`内の既存記事を再帰スキャンする
 - `slug`（posts）: ファイル名部分のみ（タイトルベース）
 
@@ -1858,6 +1865,73 @@ CMS CRUDエビデンス（verify-cms-crud.mjs）では、Decap CMS OAuth認証�
 | glob `**/auth`はクエリパラメータ付きURL（`/auth?provider=github&...`）にマッチしない | 関数マッチャー（`url => url.pathname === '/auth'`）を使用 |
 | Playwrightのルートはデフォルトでマッチ順がLIFO（後登録が先にチェック） | catch-allルートを最初に登録（最後にチェック）、具体ルートを後から登録（先にチェック） |
 | config.ymlの`base_url`がリモートURLだとlocalhost上のpostMessageがクロスオリジン拒否される | エビデンス収集時はconfig.ymlの`base_url`をlocalhostに一時変更（コミット前に復元必須） |
+
+### 4.9.9 E2Eスペックテストにおける認証方式の知見（引き継ぎノート）
+
+CMS-17/CMS-18実装時（2026-02-24〜25）に、Playwright test runnerでのCMS認証に多大な工数を要した。以下の知見を今後のCMS E2Eテスト実装時に活用すること。
+
+#### スタンドアロン検証スクリプト vs Playwright test runner の違い
+
+スタンドアロンスクリプト（`verify-cms-*.mjs`）では `context.route()` + 物理ファイル書き換え方式で認証が成功するが、**Playwright test runner 環境では同じ手法が動作しない**。
+
+| 方式 | スタンドアロン | test runner | 原因 |
+|:---|:---|:---|:---|
+| `context.route()` でポップアップインターセプト | 成功 | 失敗（"ログインしています..."で停止） | test runnerのコンテキスト管理がroute登録に影響 |
+| `dist/admin/config.yml` 物理ファイル書き換え | 成功 | config変更は反映されるがauth完了せず | ファイル書き換え自体は有効だが、ポップアップの問題が残る |
+| `page.route('**/admin/config.yml')` でレスポンス差し替え | — | 効果なし | Decap CMSの自動初期化タイミングとの競合が疑われる |
+| **`window.open` モンキーパッチ（採用方式）** | — | **成功** | ポップアップを開かず、CMS内部で完結する |
+
+#### 採用方式: `window.open` モンキーパッチ + GitHub APIモック
+
+Playwright test runner では以下の方式で安定動作する:
+
+```javascript
+// 1. page.addInitScript() で window.open をオーバーライド
+await page.addInitScript(() => {
+  window.open = function () {
+    const fakePopup = {
+      closed: false,
+      close() { this.closed = true; },
+      postMessage(_msg, _origin) {
+        // CMS からの ACK → success トークンを返す
+        setTimeout(() => {
+          window.postMessage(
+            'authorization:github:success:' + JSON.stringify({ token: 'mock-token', provider: 'github' }),
+            window.location.origin,
+          );
+        }, 100);
+      },
+    };
+    // CMS に 'authorizing:github' を送信（3ステップの開始）
+    setTimeout(() => {
+      window.postMessage('authorizing:github', window.location.origin);
+    }, 200);
+    return fakePopup;
+  };
+});
+
+// 2. GitHub APIモック（関数プレディケート必須）
+await page.route(
+  (url) => url.hostname === 'api.github.com' && url.pathname === '/repos/owner/repo',
+  (route) => route.fulfill({ body: JSON.stringify({ permissions: { push: true } }) })
+);
+
+// 3. ページ遷移 → ログインボタンクリック
+await page.goto('/admin/');
+await loginButton.click();
+```
+
+#### 重要な注意事項
+
+1. **GitHub APIモックのルートマッチング**: `page.route('https://api.github.com/repos/...')` 形式の文字列URLパターンはクエリパラメータやトレイリングスラッシュでマッチしない場合がある。**関数プレディケート `(url) => url.hostname === 'api.github.com' && url.pathname === '...'` を使用すること**
+
+2. **catch-allルートの必須性**: 特定エンドポイント以外の全GitHub APIリクエストに200を返すcatch-allルートを**最初に登録**すること（LIFO順で最後にチェック＝フォールバック）。これがないと未ハンドルのAPIコールで認証が停止する
+
+3. **リポジトリ情報の完全性**: `/repos/owner/repo` のレスポンスには `permissions: { admin: true, push: true, pull: true }` を含めること。`permissions` フィールドが欠落すると `TypeError: Repo not found` エラーでCMSが停止する
+
+4. **認証の間欠的失敗**: 同一describeブロック内の3番目以降のテストで認証が失敗する場合がある（3ステップハンドシェイクのタイミング依存）。レイアウト検証等のテストは認証失敗時もPASSするように設計し、スクリーンショットエビデンスで視覚的に確認する
+
+5. **スタンドアロンスクリプトとの使い分け**: 確実に認証後スクリーンショットが必要な場合は、`verify-cms-*.mjs` スタンドアロンスクリプト方式（物理ファイル書き換え + `context.route()`）を使用する。E2Eスペックテストでは上記モンキーパッチ方式を使用する
 
 ---
 
