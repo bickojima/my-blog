@@ -178,8 +178,9 @@ DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を�
 2. staging.reiwa.casa で動作確認を行い、問題がないことを確認する
 3. ユーザーの明示的な承認を得てから `staging` → `main` にマージする（勝手にマージしない）
 4. マージ後、`config.yml` の `branch` / `base_url` が main の値（`main` / `https://reiwa.casa`）であることを確認する
-5. main ブランチでテストを実行し、全PASS を確認してからプッシュする
-6. 詳細手順は DOCUMENTATION.md 4.6章を参照
+5. **コンテンツ（記事・固定ページ・画像）は main と staging で常に同一に保つ**: マージ時に `src/content/`・`public/images/uploads/`・`public/admin/url-map.json` の差分がないことを確認し、差分があれば同期する
+6. main ブランチでテストを実行し、全PASS を確認してからプッシュする
+7. 詳細手順は DOCUMENTATION.md 4.6章を参照
 
 ### セキュリティ・品質チェック（コード変更時）
 - admin/index.html で `innerHTML` / `outerHTML` を使用しない（DOM API を使用）
