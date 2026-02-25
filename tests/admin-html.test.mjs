@@ -275,6 +275,14 @@ describe('管理画面HTML（public/admin/index.html）の検証', () => {
       // rgb\( はJS正規表現内で使用されている
       expect(adminHtml).toMatch(/rgb/);
     });
+
+    it('グルーピング表示時にグループを降順に並べ替える機能がある（CMS-19）', () => {
+      // Decap CMSのview_groupsはデフォルト昇順のため、DOM操作で降順に並べ替え
+      expect(adminHtml).toContain('reverseViewGroups');
+      expect(adminHtml).toContain('GroupHeading');
+      // テキスト比較で既に降順かを判定し、無限ループを防止
+      expect(adminHtml).toContain('first >= second');
+    });
   });
 
   describe('iPad対応（タッチUI）', () => {

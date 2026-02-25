@@ -850,6 +850,31 @@
           }
         }
 
+        // グルーピング表示時にグループを降順（最新が先頭）に並べ替え（CMS-19）
+        // Decap CMSのview_groupsはグループ見出しをデフォルトで昇順表示するが、
+        // 日付降順ソートに合わせてグループも降順に並べ替える
+        function reverseViewGroups() {
+          const headings = document.querySelectorAll('[class*="GroupHeading"]');
+          if (headings.length < 2) return;
+
+          // 先頭と2番目のテキストを比較（降順なら先頭 >= 2番目）
+          const first = (headings[0].textContent || '').trim();
+          const second = (headings[1].textContent || '').trim();
+          if (first >= second) return; // 既に降順または同値
+
+          // グループコンテナ（見出しの親要素）を逆順に並べ替え
+          const containers = [];
+          for (const h of headings) {
+            if (h.parentElement) containers.push(h.parentElement);
+          }
+          const parent = containers[0].parentElement;
+          if (!parent) return;
+
+          for (let i = containers.length - 1; i >= 0; i--) {
+            parent.appendChild(containers[i]);
+          }
+        }
+
         // iPhoneからのHEICファイルを制限（JPEG/PNG/WebP/GIFのみ受付）
         // 画像input要素のaccept属性を制限し、iPhoneはHEICを自動的にJPEGに変換
         function restrictImageInputAccept() {
@@ -873,6 +898,7 @@
             showPublicUrl();
             manageDropdownOverlay();
             hideCodeBlockOnMobile();
+            reverseViewGroups();
             restrictImageInputAccept();
           }
 
