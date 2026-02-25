@@ -73,13 +73,14 @@ tests/
 - Decap CMS v3.10.0 をDOM操作でカスタマイズ（単一MutationObserver、RAFデバウンス済み、単一IIFE、'use strict'/const/let統一）
 - モバイル: ドロップダウンは `position: fixed; bottom: 0` のボトムシート形式
 - プレビュースタイル: `CMS.registerPreviewStyle()` で本番サイト相当のCSSをプレビューiframeに注入
-- 主要JS関数: `addSiteLink`, `formatCollectionEntries`, `relabelImageButtons`, `updateDeleteButtonState`, `showPublicUrl`, `manageDropdownOverlay`, `hideCodeBlockOnMobile`, `restrictImageInputAccept`
+- 主要JS関数: `addSiteLink`, `formatCollectionEntries`, `relabelImageButtons`, `updateDeleteButtonState`, `showPublicUrl`, `manageDropdownOverlay`, `hideCodeBlockOnMobile`, `reverseViewGroups`, `restrictImageInputAccept`
 - `showPublicUrl`: EditorControlBarの表示状態（`getBoundingClientRect`）でエディタ画面を判定。ハッシュURLからコレクション種別（posts/pages）を判定し、記事は`/posts/年/月/タイトル`、固定ページは`/slug`形式でURL生成
 - `manageDropdownOverlay`: ドロップダウン表示時のみURLバーを退避（`hiddenByDropdown`フラグで誤復元を防止）
 - **Slate codeblockクラッシュ対策**: モバイル（≤799px）でcodeblockボタン非表示、`toSlatePoint`エラーハンドラ、touchmoveエディタ除外
 - `formatCollectionEntries`: 記事は「日付 | 下書き | タイトル」、固定ページは「番号 | 下書き | タイトル」形式で一覧を整形。下書き時はオレンジの「下書き」バッジを表示
 - **コレクション表示順序**: config.yml で posts が先頭、pages が2番目（CMS初期表示で記事が最初に表示される）。固定ページはorder昇順がデフォルトソート（`{field: order, default_sort: asc}`）。記事はdate降順がデフォルトソート（`{field: date, default_sort: desc}`）
 - **記事月別グルーピング**: config.yml の `view_groups` で記事一覧を「年」（`\d{4}`パターン）・「年月」（`\d{4}-\d{2}`パターン）でグルーピング表示可能（CMS-18）
+- **グルーピング降順表示**: Decap CMSのview_groupsはデフォルト昇順表示のため、`reverseViewGroups()`でGroupHeading要素のテキスト比較→DOM並べ替えにより降順（最新が先頭）に表示（CMS-19）
 
 ### ビルドパイプライン
 `normalize-images.mjs` → `organize-posts.mjs` → `astro build` → `image-optimize.mjs`（Astro integration）
