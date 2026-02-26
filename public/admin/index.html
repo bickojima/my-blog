@@ -850,16 +850,71 @@
           }
         }
 
+        // 記事一覧: 年月グルーピングをデフォルト有効化（CMS-19）
+        // postsコレクション表示時にview_groupsの年月グルーピングを自動選択
+        // Decap CMSのGroupControlはreact-aria-menubutton製ドロップダウンで、
+        // メニューは開くまでDOMに存在しないため2段階操作が必要
+        function activateDefaultGrouping() {
+          const hash = window.location.hash || '';
+          if (hash.indexOf('/collections/posts') === -1 || hash.indexOf('/entries/') !== -1) return;
+
+          // 既にグルーピング有効ならスキップ
+          if (document.querySelectorAll('[class*="GroupHeading"]').length > 0) return;
+
+          // 二重実行防止
+          if (document.getElementById('cms-group-activated')) return;
+
+          // グルーピングドロップダウンのトリガーを探す
+          // role="button" + aria-haspopup="true" のうち、ソート以外のもの
+          const triggers = document.querySelectorAll('[role="button"][aria-haspopup="true"]');
+          let groupTrigger = null;
+          for (const t of triggers) {
+            const text = (t.textContent || '').trim();
+            // ソートドロップダウンはスキップ
+            if (text.indexOf('ソート') !== -1 || text.toLowerCase().indexOf('sort') !== -1) continue;
+            groupTrigger = t;
+            break;
+          }
+          if (!groupTrigger) return;
+
+          // 二重実行防止マーカー
+          const marker = document.createElement('span');
+          marker.id = 'cms-group-activated';
+          marker.style.display = 'none';
+          document.body.appendChild(marker);
+
+          // ドロップダウンを開く
+          groupTrigger.click();
+
+          // メニューがReactで描画されるのを待ってから年月を選択
+          setTimeout(function() {
+            const items = document.querySelectorAll('[role="menuitem"]');
+            for (const item of items) {
+              if ((item.textContent || '').trim() === '年月') {
+                item.click();
+                break;
+              }
+            }
+          }, 100);
+        }
+
         // グルーピング表示時にグループを降順（最新が先頭）に並べ替え（CMS-19）
-        // Decap CMSのview_groupsはグループ見出しをデフォルトで昇順表示するが、
-        // 日付降順ソートに合わせてグループも降順に並べ替える
+        // ISO形式（"年月 2026-02"）と日本語形式（"2026年2月"）の両方に対応
         function reverseViewGroups() {
           const headings = document.querySelectorAll('[class*="GroupHeading"]');
           if (headings.length < 2) return;
 
-          // 先頭と2番目のテキストを比較（降順なら先頭 >= 2番目）
-          const first = (headings[0].textContent || '').trim();
-          const second = (headings[1].textContent || '').trim();
+          // ソートキーを抽出（YYYYMM形式に正規化）
+          function getSortKey(text) {
+            const iso = text.match(/(\d{4})-(\d{2})/);
+            if (iso) return iso[1] + iso[2];
+            const jp = text.match(/(\d{4})年(\d{1,2})月/);
+            if (jp) return jp[1] + jp[2].padStart(2, '0');
+            return text;
+          }
+
+          const first = getSortKey((headings[0].textContent || '').trim());
+          const second = getSortKey((headings[1].textContent || '').trim());
           if (first >= second) return; // 既に降順または同値
 
           // グループコンテナ（見出しの親要素）を逆順に並べ替え
@@ -873,6 +928,97 @@
           for (let i = containers.length - 1; i >= 0; i--) {
             parent.appendChild(containers[i]);
           }
+        }
+
+        // グルーピング見出しを日本語形式に変換（CMS-19）
+        // "年月 2026-02" → "2026年2月"
+        function formatGroupHeadings() {
+          const headings = document.querySelectorAll('[class*="GroupHeading"]');
+          for (const h of headings) {
+            if (h.dataset.jaFormatted) continue;
+            const text = (h.textContent || '').trim();
+            const m = text.match(/(\d{4})-(\d{2})/);
+            if (m) {
+              h.textContent = m[1] + '年' + parseInt(m[2], 10) + '月';
+              h.dataset.jaFormatted = 'true';
+            }
+          }
+        }
+
+        // 年月選択プルダウン作成（CMS-19）
+        // グループ見出しから年月リストを生成し、選択で該当グループにスクロール
+        // 元のグルーピングドロップダウンを非表示にし、代わりに月セレクターを配置
+        function createMonthSelector() {
+          const hash = window.location.hash || '';
+          const isPostsList = hash.indexOf('/collections/posts') !== -1 && hash.indexOf('/entries/') === -1;
+
+          const selector = document.getElementById('cms-month-selector');
+
+          if (!isPostsList) {
+            if (selector) selector.style.display = 'none';
+            return;
+          }
+
+          const headings = document.querySelectorAll('[class*="GroupHeading"]');
+          if (headings.length === 0) {
+            if (selector) selector.style.display = 'none';
+            return;
+          }
+
+          // 見出し数が同じなら更新不要
+          if (selector && selector.dataset.count === String(headings.length)) {
+            selector.style.display = '';
+            return;
+          }
+
+          // 元のグルーピングドロップダウンを非表示
+          const triggers = document.querySelectorAll('[role="button"][aria-haspopup="true"]');
+          for (const t of triggers) {
+            const text = (t.textContent || '').trim();
+            if (text.indexOf('ソート') !== -1 || text.toLowerCase().indexOf('sort') !== -1) continue;
+            // グルーピングトリガーのラッパーを非表示
+            const wrapper = t.parentElement;
+            if (wrapper) {
+              wrapper.style.display = 'none';
+            }
+            break;
+          }
+
+          // セレクター要素の作成または更新
+          let sel = selector;
+          if (!sel) {
+            sel = document.createElement('select');
+            sel.id = 'cms-month-selector';
+            sel.style.cssText = 'padding:8px 12px;border:1px solid #ddd;border-radius:6px;font-size:14px;background:#fff;cursor:pointer;margin-left:6px;';
+
+            // CollectionControls付近に配置
+            const controlsArea = document.querySelector('[class*="CollectionControls"]')
+              || document.querySelector('[class*="ViewControls"]');
+            if (controlsArea) {
+              controlsArea.appendChild(sel);
+            } else {
+              return;
+            }
+          }
+
+          // オプション生成
+          sel.textContent = '';
+          const arr = Array.from(headings);
+          for (const h of arr) {
+            const opt = document.createElement('option');
+            opt.textContent = h.textContent;
+            sel.appendChild(opt);
+          }
+          sel.dataset.count = String(headings.length);
+          sel.style.display = '';
+
+          // 選択変更時にスクロール
+          sel.onchange = function() {
+            const idx = sel.selectedIndex;
+            if (idx >= 0 && idx < arr.length) {
+              arr[idx].scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+          };
         }
 
         // iPhoneからのHEICファイルを制限（JPEG/PNG/WebP/GIFのみ受付）
@@ -898,7 +1044,10 @@
             showPublicUrl();
             manageDropdownOverlay();
             hideCodeBlockOnMobile();
+            activateDefaultGrouping();
             reverseViewGroups();
+            formatGroupHeadings();
+            createMonthSelector();
             restrictImageInputAccept();
           }
 

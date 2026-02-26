@@ -238,17 +238,12 @@ describe('CMS設定（config.yml）の検証', () => {
         expect(dateField.default_sort).toBe('desc');
       });
 
-      it('view_groupsに年・年月グルーピングが設定されている', () => {
+      it('view_groupsに年月グルーピングが設定されている', () => {
         expect(collection.view_groups).toBeDefined();
-        expect(collection.view_groups).toHaveLength(2);
+        expect(collection.view_groups).toHaveLength(1);
 
-        const yearGroup = collection.view_groups.find(g => g.label === '年');
-        expect(yearGroup).toBeDefined();
-        expect(yearGroup.field).toBe('date');
-        expect(yearGroup.pattern).toMatch(/\\d\{4\}/);
-
-        const monthGroup = collection.view_groups.find(g => g.label === '年月');
-        expect(monthGroup).toBeDefined();
+        const monthGroup = collection.view_groups[0];
+        expect(monthGroup.label).toBe('年月');
         expect(monthGroup.field).toBe('date');
         expect(monthGroup.pattern).toMatch(/\\d\{4\}-\\d\{2\}/);
       });

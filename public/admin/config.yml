@@ -32,9 +32,6 @@ collections:
       - { field: date, default_sort: desc }
       - title
     view_groups:
-      - label: "年"
-        field: date
-        pattern: \d{4}
       - label: "年月"
         field: date
         pattern: \d{4}-\d{2}

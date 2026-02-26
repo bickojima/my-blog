@@ -33,6 +33,7 @@
 | 1.26 | 2026-02-23 | CMS CRUD操作エビデンス追加（verify-cms-crud.mjs: T17〜T32, 16シナリオ×3デバイス=48テスト）、セキュリティ検証エビデンス追加（verify-security.mjs: SEC01〜SEC10, 10項目）。検証スクリプト一覧にverify-cms-crud.mjs・verify-security.mjsを追加。継続的品質・セキュリティ改善フレームワークをDOCUMENTATION.md 4.10章に新設 |
 | 1.27 | 2026-02-24 | CMS-17（記事デフォルトソート日付降順）・CMS-18（記事月別グルーピング）対応。Vitestテスト3件追加（#48〜#50: sortable_fields, view_groups検証）。E2E E-36追加（3テスト×3デバイス=9テスト: ソート順検証、view_groupsボタン表示、レイアウト崩れ検証、スクリーンショットエビデンス取得）。E2Eスクリーンショットエビデンスルール追加（4.1.6章: 認証後スクリーンショット必須、context.route()による3ステップOAuthハンドシェイク方式を文書化）。全522+384=906テスト |
 | 1.28 | 2026-02-25 | CMS-19（グルーピング降順表示）対応。admin-htmlテスト1件追加（reverseViewGroups関数検証） |
+| 1.29 | 2026-02-26 | CMS-19拡張（年月グルーピングUI改善）。config.yml view_groups簡略化（年削除→年月のみ）。admin-htmlテスト3件追加（activateDefaultGrouping, formatGroupHeadings, createMonthSelector）。cms-configテスト view_groups検証を1グループに更新 |
 
 ## テスト基盤の変更履歴
 
@@ -961,7 +962,10 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 | 8 | 固定ページの公開URLがslugフィールドから生成される | M-02 | `/collections/pages/`判定とslugInputによるURL構築処理が含まれる |
 | 9 | 選択状態の判定がborderColorで行われている | M-02 | `borderColor`による選択判定ロジックが含まれる |
 | 10 | 固定ページ一覧の番号・下書きフォーマット処理がある | M-02 | `pagesMatch`正規表現（`番号 \| draft \| タイトル`形式）と番号バッジ・下書きバッジ表示処理が含まれる |
-| 11 | グルーピング表示時にグループを降順に並べ替える機能がある（CMS-19） | M-02 | `reverseViewGroups`関数・`GroupHeading`セレクタ・テキスト比較ガードが含まれる |
+| 11 | グルーピング表示時にグループを降順に並べ替える機能がある（CMS-19） | M-02 | `reverseViewGroups`関数・`getSortKey`ヘルパー・ISO/日本語両形式対応 |
+| 12 | 年月グルーピングがデフォルトで自動有効化される（CMS-19） | M-02 | `activateDefaultGrouping`関数・`cms-group-activated`マーカー・`aria-haspopup`トリガー検索 |
+| 13 | グループ見出しが日本語形式に変換される（CMS-19） | M-02 | `formatGroupHeadings`関数・`jaFormatted`マーカー |
+| 14 | 年月選択プルダウンが作成される（CMS-19） | M-02 | `createMonthSelector`関数・`cms-month-selector`要素・`scrollIntoView`連携 |
 
 ### 2.6.7 iPad対応（4件）
 

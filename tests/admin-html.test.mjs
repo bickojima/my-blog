@@ -280,8 +280,29 @@ describe('管理画面HTML（public/admin/index.html）の検証', () => {
       // Decap CMSのview_groupsはデフォルト昇順のため、DOM操作で降順に並べ替え
       expect(adminHtml).toContain('reverseViewGroups');
       expect(adminHtml).toContain('GroupHeading');
-      // テキスト比較で既に降順かを判定し、無限ループを防止
+      // ISO形式・日本語形式両対応のソートキー抽出
+      expect(adminHtml).toContain('getSortKey');
       expect(adminHtml).toContain('first >= second');
+    });
+
+    it('年月グルーピングがデフォルトで自動有効化される（CMS-19）', () => {
+      // postsコレクション表示時にグルーピングドロップダウンを自動操作
+      expect(adminHtml).toContain('activateDefaultGrouping');
+      expect(adminHtml).toContain('cms-group-activated');
+      expect(adminHtml).toContain('aria-haspopup');
+    });
+
+    it('グループ見出しが日本語形式に変換される（CMS-19）', () => {
+      // "年月 2026-02" → "2026年2月"
+      expect(adminHtml).toContain('formatGroupHeadings');
+      expect(adminHtml).toContain('jaFormatted');
+    });
+
+    it('年月選択プルダウンが作成される（CMS-19）', () => {
+      // グルーピング見出しから年月リストを生成し、選択でスクロール
+      expect(adminHtml).toContain('createMonthSelector');
+      expect(adminHtml).toContain('cms-month-selector');
+      expect(adminHtml).toContain('scrollIntoView');
     });
   });
 

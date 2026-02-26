@@ -38,6 +38,7 @@
 | 1.31 | 2026-02-24 | Bug #36修正: CMS CRUDエビデンス認証不具合（ログイン画面のみ表示問題）。verify-cms-crud.mjsにDecap CMS 3ステップOAuthハンドシェイク実装、Playwright context.route()によるポップアップインターセプト、GitHub APIモックLIFO順序修正。エビデンス48枚を正常な編集画面で再取得。CLAUDE.mdにエビデンス社内レビュー義務化（ルール11）・バグ修正ドキュメント反映義務化（バグフロー5）追加。4.9.8章にエビデンス収集認証方式の技術ノート追加 |
 | 1.32 | 2026-02-24 | CMS-17追加（記事デフォルトソート日付降順）、CMS-18追加（記事月別グルーピング）。config.yml postsコレクションに`sortable_fields: {field: date, default_sort: desc}`と`view_groups`（年・年月パターン）を設定。E2Eテスト E-36追加（3デバイススクリーンショットエビデンス付き）。Vitestテスト3件追加（#48〜#50） |
 | 1.33 | 2026-02-25 | CMS-19追加（グルーピング降順表示）。admin/index.htmlに`reverseViewGroups()`追加：Decap CMSのview_groupsがデフォルト昇順のため、GroupHeading要素のテキスト比較→DOM並べ替えで降順表示に変更。admin-htmlテスト1件追加 |
+| 1.34 | 2026-02-26 | CMS-19拡張（年月グルーピングUI改善）。config.ymlから「年」グルーピング削除（年月のみに簡略化）。`activateDefaultGrouping()`（デフォルト自動有効化）・`formatGroupHeadings()`（日本語表記変換）・`createMonthSelector()`（年月選択プルダウン）追加。`reverseViewGroups()`を`getSortKey()`で日本語形式対応に修正 |
 
 ## システム変更履歴
 
@@ -351,8 +352,8 @@ staging環境の検知:
 | CMS-15 | プレビュースタイル本番再現: エディタプレビューが本番サイトと同等のスタイルで表示される | `admin/index.html` JS | `CMS.registerPreviewStyle()` |
 | CMS-16 | 固定ページデフォルトソート: 固定ページ一覧がデフォルトで表示順（order）の昇順でソートされる | `config.yml` sortable_fields | `{field: order, default_sort: asc}` |
 | CMS-17 | 記事デフォルトソート日付降順: 記事一覧がデフォルトで日付の降順（最新が先頭）でソートされる | `config.yml` sortable_fields | `{field: date, default_sort: desc}` |
-| CMS-18 | 記事月別グルーピング: 記事一覧を年・年月でグルーピング表示できる（記事数増加時の一覧性向上） | `config.yml` view_groups | `view_groups`で`date`フィールドを`\d{4}`（年）・`\d{4}-\d{2}`（年月）パターンでグルーピング |
-| CMS-19 | グルーピング降順表示: グルーピング選択時にグループ見出しが降順（最新が先頭）で表示される | `admin/index.html` JS | `reverseViewGroups()`でGroupHeading要素のテキスト比較→降順に並べ替え |
+| CMS-18 | 記事月別グルーピング: 記事一覧を年月でグルーピング表示できる | `config.yml` view_groups | `view_groups`で`date`フィールドを`\d{4}-\d{2}`（年月）パターンでグルーピング |
+| CMS-19 | 年月グルーピングUI: 記事一覧でデフォルト年月グルーピング有効、降順表示、日本語見出し（「2026年2月」形式）、年月選択プルダウン | `admin/index.html` JS | `activateDefaultGrouping()`（自動有効化）、`reverseViewGroups()`（降順）、`formatGroupHeadings()`（日本語化）、`createMonthSelector()`（プルダウン） |
 
 ---
 
@@ -456,7 +457,7 @@ staging環境の検知:
 | CMS-16 | 固定ページデフォルトソート | cms-config | 2.4章 #40, #41 | M-03 | 充足 |
 | CMS-17 | 記事デフォルトソート日付降順 | cms-config, E2E cms-operations | 2.4章 #48, #49, E-36 | M-03, M-11 | 充足 |
 | CMS-18 | 記事月別グルーピング | cms-config, E2E cms-operations | 2.4章 #50, E-36 | M-03, M-11 | 充足 |
-| CMS-19 | グルーピング降順表示 | admin-html | 2.6章 | M-02 | 充足 |
+| CMS-19 | 年月グルーピングUI | admin-html | 2.6章 #11〜#14 | M-02 | 充足 |
 
 ### 1.5.3 非機能要件 (NFR) → テストケース
 
@@ -1152,7 +1153,7 @@ collections:
 - `slug`（pages）: `{{fields.slug}}` でフロントマターのslugフィールド値をファイル名に使用（`{{slug}}` はDecap CMSではタイトルのURL安全版を意味するため不可）
 - `sortable_fields`（pages）: orderフィールドをデフォルトで昇順ソートに設定（`{field: order, default_sort: asc}`形式）。Decap CMS v3.10.0は`field`+`default_sort`のオブジェクト形式に対応（`default`プロパティは非対応）
 - `sortable_fields`（posts）: dateフィールドをデフォルトで降順ソートに設定（`{field: date, default_sort: desc}`形式）。最新記事が一覧の先頭に表示される（CMS-17）
-- `view_groups`（posts）: 記事一覧を年（`\d{4}`パターン）・年月（`\d{4}-\d{2}`パターン）でグルーピング表示。記事数増加時に月別で絞り込み可能（CMS-18）。Decap CMSはグループ見出しをデフォルトで昇順表示するため、`admin/index.html`の`reverseViewGroups()`でDOM操作により降順（最新が先頭）に並べ替え（CMS-19）
+- `view_groups`（posts）: 記事一覧を年月（`\d{4}-\d{2}`パターン）でグルーピング表示（CMS-18）。`admin/index.html`で以下のUI改善を実施（CMS-19）: `activateDefaultGrouping()`でpostsコレクション表示時に自動有効化、`reverseViewGroups()`で降順並べ替え（`getSortKey()`でISO/日本語両形式対応）、`formatGroupHeadings()`で見出しを「2026年2月」形式に変換、`createMonthSelector()`で年月選択プルダウンを作成（元のグルーピングドロップダウンを非表示にし`<select>`要素で代替）
 - `path`（posts）: ファイルの保存・読み取りパスを定義。CMSがサブディレクトリ`yyyy/mm/`内の既存記事を再帰スキャンする
 - `slug`（posts）: ファイル名部分のみ（タイトルベース）
 
@@ -1181,7 +1182,10 @@ collections:
 │  │   ボトムシート   │  │   ├ showPublicUrl          │ │
 │  │                 │  │   ├ manageDropdownOverlay │ │
 │  │   2列グリッド    │  │   ├ hideCodeBlockOnMobile  │ │
-│  │   44pxタップ領域 │  │   ├ reverseViewGroups      │ │
+│  │   44pxタップ領域 │  │   ├ activateDefaultGrouping│ │
+│  │                 │  │   ├ reverseViewGroups      │ │
+│  │                 │  │   ├ formatGroupHeadings    │ │
+│  │                 │  │   ├ createMonthSelector    │ │
 │  │                 │  │   └ restrictImageInputAccept│ │
 │  │                 │  │                            │ │
 │  │ iOS対応         │  │ hashchange リスナー        │ │
