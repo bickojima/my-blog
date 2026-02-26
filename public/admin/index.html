@@ -937,14 +937,19 @@
           }
 
           // エントリの日付からソート方向を検出
-          // formatCollectionEntriesが生成した .entry-date 要素を参照
+          // 同一グループコンテナ内の .entry-date を比較（グローバル比較はグループ順に影響されるため不可）
           let isDescending = true;
-          const dates = document.querySelectorAll('.entry-date');
-          if (dates.length >= 2) {
-            const firstDate = (dates[0].textContent || '').trim();
-            const lastDate = (dates[dates.length - 1].textContent || '').trim();
-            if (firstDate && lastDate) {
-              isDescending = firstDate >= lastDate;
+          for (const h of headings) {
+            const container = h.parentElement;
+            if (!container) continue;
+            const groupDates = container.querySelectorAll('.entry-date');
+            if (groupDates.length >= 2) {
+              const first = (groupDates[0].textContent || '').trim();
+              const last = (groupDates[groupDates.length - 1].textContent || '').trim();
+              if (first && last && first !== last) {
+                isDescending = first > last;
+                break;
+              }
             }
           }
 
