@@ -292,6 +292,11 @@ describe('管理画面HTML（public/admin/index.html）の検証', () => {
       expect(adminHtml).toContain('aria-haspopup');
     });
 
+    it('グルーピングドロップダウンが常時非表示になる（CMS-19）', () => {
+      // hideGroupControlはMutationObserverから毎回呼ばれ、React再描画後も再非表示
+      expect(adminHtml).toContain('hideGroupControl');
+    });
+
     it('グループ見出しが日本語形式に変換される（CMS-19）', () => {
       // "年月 2026-02" → "2026年2月"
       expect(adminHtml).toContain('formatGroupHeadings');
