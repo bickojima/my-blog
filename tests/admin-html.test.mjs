@@ -276,13 +276,15 @@ describe('管理画面HTML（public/admin/index.html）の検証', () => {
       expect(adminHtml).toMatch(/rgb/);
     });
 
-    it('グルーピング表示時にグループを降順に並べ替える機能がある（CMS-19）', () => {
-      // Decap CMSのview_groupsはデフォルト昇順のため、DOM操作で降順に並べ替え
+    it('グルーピング表示時にグループ順をソート方向に合わせる機能がある（CMS-19）', () => {
+      // Decap CMSのview_groupsはデフォルト昇順のため、ソート方向に応じてDOM並べ替え
       expect(adminHtml).toContain('reverseViewGroups');
       expect(adminHtml).toContain('GroupHeading');
       // ISO形式・日本語形式両対応のソートキー抽出
       expect(adminHtml).toContain('getSortKey');
-      expect(adminHtml).toContain('first >= second');
+      // エントリ日付からソート方向を検出（.entry-date要素を参照）
+      expect(adminHtml).toContain('isDescending');
+      expect(adminHtml).toContain('entry-date');
     });
 
     it('年月グルーピングがデフォルトで自動有効化される（CMS-19）', () => {
