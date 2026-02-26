@@ -294,7 +294,9 @@ describe('管理画面HTML（public/admin/index.html）の検証', () => {
 
     it('グルーピングドロップダウンが常時非表示になる（CMS-19）', () => {
       // hideGroupControlはMutationObserverから毎回呼ばれ、React再描画後も再非表示
+      // 「グルーピング」テキストを明示的に検索（「新規作成」等の誤マッチ防止）
       expect(adminHtml).toContain('hideGroupControl');
+      expect(adminHtml).toMatch(/グルーピング.*group/is);
     });
 
     it('グループ見出しが日本語形式に変換される（CMS-19）', () => {

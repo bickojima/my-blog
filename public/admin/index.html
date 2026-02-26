@@ -853,6 +853,8 @@
         // 記事一覧: グルーピングドロップダウンを常時非表示（CMS-19）
         // postsコレクションではグルーピングボタンの代わりに年月セレクターを表示する
         // MutationObserverから毎回呼ばれるため、Reactの再描画で復活しても即座に再非表示
+        // [role="button"][aria-haspopup="true"]は「新規作成」「ソート」等にも付くため
+        // テキスト「グルーピング」または「Group」を含む要素を明示的に特定する
         function hideGroupControl() {
           const hash = window.location.hash || '';
           if (hash.indexOf('/collections/posts') === -1 || hash.indexOf('/entries/') !== -1) return;
@@ -860,11 +862,11 @@
           const triggers = document.querySelectorAll('[role="button"][aria-haspopup="true"]');
           for (const t of triggers) {
             const text = (t.textContent || '').trim();
-            if (text.indexOf('ソート') !== -1 || text.toLowerCase().indexOf('sort') !== -1) continue;
-            // グルーピングコントロール全体を非表示
-            const wrapper = t.parentElement;
-            if (wrapper) wrapper.style.display = 'none';
-            break;
+            if (text.indexOf('グルーピング') !== -1 || text.toLowerCase().indexOf('group') !== -1) {
+              const wrapper = t.parentElement;
+              if (wrapper) wrapper.style.display = 'none';
+              break;
+            }
           }
         }
 
@@ -883,15 +885,16 @@
           if (document.getElementById('cms-group-activated')) return;
 
           // グルーピングドロップダウンのトリガーを探す
-          // role="button" + aria-haspopup="true" のうち、ソート以外のもの
+          // role="button" + aria-haspopup="true" は「新規作成」「ソート」等にも付くため
+          // テキスト「グルーピング」または「Group」を含む要素を明示的に特定する
           const triggers = document.querySelectorAll('[role="button"][aria-haspopup="true"]');
           let groupTrigger = null;
           for (const t of triggers) {
             const text = (t.textContent || '').trim();
-            // ソートドロップダウンはスキップ
-            if (text.indexOf('ソート') !== -1 || text.toLowerCase().indexOf('sort') !== -1) continue;
-            groupTrigger = t;
-            break;
+            if (text.indexOf('グルーピング') !== -1 || text.toLowerCase().indexOf('group') !== -1) {
+              groupTrigger = t;
+              break;
+            }
           }
           if (!groupTrigger) return;
 
