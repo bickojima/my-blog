@@ -919,7 +919,9 @@
           }, 100);
         }
 
-        // グルーピング表示時にグループを降順（最新が先頭）に並べ替え（CMS-19）
+        // グルーピング表示時にグループ順をソート方向に合わせる（CMS-19）
+        // デフォルト（日付降順）→ グループ降順（最新が先頭）
+        // 日付昇順ソート時 → グループ昇順（古い月が先頭）
         // ISO形式（"年月 2026-02"）と日本語形式（"2026年2月"）の両方に対応
         function reverseViewGroups() {
           const headings = document.querySelectorAll('[class*="GroupHeading"]');
@@ -934,9 +936,24 @@
             return text;
           }
 
-          const first = getSortKey((headings[0].textContent || '').trim());
-          const second = getSortKey((headings[1].textContent || '').trim());
-          if (first >= second) return; // 既に降順または同値
+          // エントリの日付からソート方向を検出
+          // formatCollectionEntriesが生成した .entry-date 要素を参照
+          let isDescending = true;
+          const dates = document.querySelectorAll('.entry-date');
+          if (dates.length >= 2) {
+            const firstDate = (dates[0].textContent || '').trim();
+            const lastDate = (dates[dates.length - 1].textContent || '').trim();
+            if (firstDate && lastDate) {
+              isDescending = firstDate >= lastDate;
+            }
+          }
+
+          const firstKey = getSortKey((headings[0].textContent || '').trim());
+          const secondKey = getSortKey((headings[1].textContent || '').trim());
+
+          // ソート方向とグループ順が一致していれば何もしない
+          if (isDescending && firstKey >= secondKey) return;
+          if (!isDescending && firstKey <= secondKey) return;
 
           // グループコンテナ（見出しの親要素）を逆順に並べ替え
           const containers = [];
