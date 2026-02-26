@@ -850,6 +850,24 @@
           }
         }
 
+        // 記事一覧: グルーピングドロップダウンを常時非表示（CMS-19）
+        // postsコレクションではグルーピングボタンの代わりに年月セレクターを表示する
+        // MutationObserverから毎回呼ばれるため、Reactの再描画で復活しても即座に再非表示
+        function hideGroupControl() {
+          const hash = window.location.hash || '';
+          if (hash.indexOf('/collections/posts') === -1 || hash.indexOf('/entries/') !== -1) return;
+
+          const triggers = document.querySelectorAll('[role="button"][aria-haspopup="true"]');
+          for (const t of triggers) {
+            const text = (t.textContent || '').trim();
+            if (text.indexOf('ソート') !== -1 || text.toLowerCase().indexOf('sort') !== -1) continue;
+            // グルーピングコントロール全体を非表示
+            const wrapper = t.parentElement;
+            if (wrapper) wrapper.style.display = 'none';
+            break;
+          }
+        }
+
         // 記事一覧: 年月グルーピングをデフォルト有効化（CMS-19）
         // postsコレクション表示時にview_groupsの年月グルーピングを自動選択
         // Decap CMSのGroupControlはreact-aria-menubutton製ドロップダウンで、
@@ -971,19 +989,6 @@
             return;
           }
 
-          // 元のグルーピングドロップダウンを非表示
-          const triggers = document.querySelectorAll('[role="button"][aria-haspopup="true"]');
-          for (const t of triggers) {
-            const text = (t.textContent || '').trim();
-            if (text.indexOf('ソート') !== -1 || text.toLowerCase().indexOf('sort') !== -1) continue;
-            // グルーピングトリガーのラッパーを非表示
-            const wrapper = t.parentElement;
-            if (wrapper) {
-              wrapper.style.display = 'none';
-            }
-            break;
-          }
-
           // セレクター要素の作成または更新
           let sel = selector;
           if (!sel) {
@@ -1044,6 +1049,7 @@
             showPublicUrl();
             manageDropdownOverlay();
             hideCodeBlockOnMobile();
+            hideGroupControl();
             activateDefaultGrouping();
             reverseViewGroups();
             formatGroupHeadings();
