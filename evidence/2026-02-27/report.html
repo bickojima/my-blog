@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8"><title>CMS-19 エビデンスレポート (2026-02-27)</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 20px; color: #333; }
+h1 { font-size: 1.5em; border-bottom: 2px solid #333; padding-bottom: 8px; }
+h2 { font-size: 1.2em; margin-top: 24px; }
+.summary { background: #e8f5e9; padding: 12px 16px; border-radius: 6px; margin: 12px 0; font-weight: bold; }
+table { border-collapse: collapse; width: 100%; margin: 16px 0; }
+th, td { border: 1px solid #ccc; padding: 8px; text-align: center; vertical-align: top; }
+th { background: #f5f5f5; }
+img { border: 1px solid #ddd; border-radius: 4px; max-width: 300px; }
+.pass { background: #e8f5e9; }
+.fail { background: #ffebee; }
+small { display: block; text-align: left; max-width: 300px; font-size: 0.8em; color: #555; margin-top: 4px; }
+</style></head><body>
+<h1>CMS-19 年月グルーピングUI改善 エビデンスレポート</h1>
+<p>日付: 2026-02-27 | 要件: CMS-19（年月グルーピングUI改善）</p>
+<div class="summary">9/9 PASS</div>
+
+<h2>検証項目</h2>
+<ul>
+  <li><strong>デフォルト表示</strong>: 年月グルーピング自動有効、降順（最新月が先頭）、グルーピングボタン非表示、月セレクター表示、見出し日本語表記</li>
+  <li><strong>ソート昇順切替</strong>: 日付昇順ソート時にグループ見出しも昇順（古い月が先頭）になる</li>
+  <li><strong>ソート降順復帰</strong>: 日付降順に戻すとグループ見出しも降順に復帰する</li>
+</ul>
+
+<h2>エビデンス</h2>
+<table>
+<tr><th>検証項目</th><th>PC (1280×800)</th><th>iPad Pro 11 (834×1194)</th><th>iPhone 14 (390×844)</th></tr>
+<tr><td>デフォルト表示（降順・グルーピング有効・月セレクター）</td><td class="pass"><img src="screenshots/cms19-cms19-default-PC.png" width="300"><br><strong>PASS ✓</strong><br><small>見出し: 2026年2月 → 2026年1月 → 2025年12月<br>グルーピングボタン非表示: ✓<br>月セレクター: ✓<br>日本語表記: ✓<br></small></td><td class="pass"><img src="screenshots/cms19-cms19-default-iPad.png" width="300"><br><strong>PASS ✓</strong><br><small>見出し: 2026年2月 → 2026年1月 → 2025年12月<br>グルーピングボタン非表示: ✓<br>月セレクター: ✓<br>日本語表記: ✓<br></small></td><td class="pass"><img src="screenshots/cms19-cms19-default-iPhone.png" width="300"><br><strong>PASS ✓</strong><br><small>見出し: 2026年2月 → 2026年1月 → 2025年12月<br>グルーピングボタン非表示: ✓<br>月セレクター: ✓<br>日本語表記: ✓<br></small></td></tr><tr><td>ソート昇順切替→グループ昇順</td><td class="pass"><img src="screenshots/cms19-cms19-sort-asc-PC.png" width="300"><br><strong>PASS ✓</strong><br><small>見出し: 2025年12月 → 2026年1月 → 2026年2月<br></small></td><td class="pass"><img src="screenshots/cms19-cms19-sort-asc-iPad.png" width="300"><br><strong>PASS ✓</strong><br><small>見出し: 2025年12月 → 2026年1月 → 2026年2月<br></small></td><td class="pass"><img src="screenshots/cms19-cms19-sort-asc-iPhone.png" width="300"><br><strong>PASS ✓</strong><br><small>見出し: 2025年12月 → 2026年1月 → 2026年2月<br></small></td></tr><tr><td>ソート降順復帰→グループ降順</td><td class="pass"><img src="screenshots/cms19-cms19-sort-desc-restore-PC.png" width="300"><br><strong>PASS ✓</strong><br><small>見出し: 2026年2月 → 2026年1月 → 2025年12月<br></small></td><td class="pass"><img src="screenshots/cms19-cms19-sort-desc-restore-iPad.png" width="300"><br><strong>PASS ✓</strong><br><small>見出し: 2026年2月 → 2026年1月 → 2025年12月<br></small></td><td class="pass"><img src="screenshots/cms19-cms19-sort-desc-restore-iPhone.png" width="300"><br><strong>PASS ✓</strong><br><small>見出し: 2026年2月 → 2026年1月 → 2025年12月<br></small></td></tr>
+</table>
+
+<h2>テスト環境</h2>
+<ul>
+  <li>Playwright + Chromium (headless)</li>
+  <li>GitHub API / OAuth モック使用</li>
+  <li>モック記事: 4件（2025年12月×1、2026年1月×1、2026年2月×2）</li>
+</ul>
+</body></html>
