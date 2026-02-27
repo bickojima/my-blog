@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>CMS-19 年月グルーピングUI改善 作業完了報告書 (2026-02-27)</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 20px; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; }
+h1 { font-size: 1.5em; border-bottom: 2px solid #333; padding-bottom: 8px; }
+h2 { font-size: 1.2em; margin-top: 28px; border-left: 4px solid #1a73e8; padding-left: 8px; }
+h3 { font-size: 1.05em; margin-top: 16px; }
+table { border-collapse: collapse; width: 100%; margin: 12px 0; }
+th, td { border: 1px solid #ccc; padding: 8px 10px; text-align: left; }
+th { background: #f5f5f5; white-space: nowrap; }
+.pass { background: #e8f5e9; color: #2e7d32; font-weight: bold; }
+.summary-box { background: #e8f5e9; border: 1px solid #a5d6a7; border-radius: 6px; padding: 16px; margin: 16px 0; }
+.info-box { background: #e3f2fd; border: 1px solid #90caf9; border-radius: 6px; padding: 12px 16px; margin: 12px 0; }
+ul { padding-left: 20px; }
+li { margin: 4px 0; }
+code { background: #f5f5f5; padding: 2px 6px; border-radius: 3px; font-size: 0.9em; }
+.commits { font-family: monospace; font-size: 0.85em; }
+.label { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 0.8em; font-weight: bold; }
+.label-new { background: #e8f5e9; color: #2e7d32; }
+.label-fix { background: #fff3e0; color: #e65100; }
+.label-mod { background: #e3f2fd; color: #1565c0; }
+</style>
+</head>
+<body>
+
+<h1>CMS-19 年月グルーピングUI改善 作業完了報告書</h1>
+<p>日付: 2026-02-27 | ブランチ: staging | 要件ID: CMS-19</p>
+
+<div class="summary-box">
+  <strong>結果: 9/9 PASS</strong> &#x2014; 全3デバイス × 3シナリオで正常動作を確認
+</div>
+
+<h2>1. 作業概要</h2>
+<p>CMS記事一覧の年月グルーピング機能について、以下のUX課題を修正しました。</p>
+
+<table>
+<tr><th>課題</th><th>対応</th><th>ステータス</th></tr>
+<tr>
+  <td>グルーピングボタンが常時表示（手動で「年月」を毎回選択する必要）</td>
+  <td><span class="label label-new">新規</span> <code>activateDefaultGrouping()</code> で自動有効化 + <code>hideGroupControl()</code> でボタン非表示</td>
+  <td class="pass">完了</td>
+</tr>
+<tr>
+  <td>グループ見出しが「年月 2026-02」形式で読みにくい</td>
+  <td><span class="label label-new">新規</span> <code>formatGroupHeadings()</code> で「2026年2月」形式に変換</td>
+  <td class="pass">完了</td>
+</tr>
+<tr>
+  <td>年月を直接選べるUIが欲しい</td>
+  <td><span class="label label-new">新規</span> <code>createMonthSelector()</code> で月セレクター（select要素）を配置</td>
+  <td class="pass">完了</td>
+</tr>
+<tr>
+  <td>日付ソート切替時にグループ順が追従しない</td>
+  <td><span class="label label-fix">修正</span> <code>reverseViewGroups()</code> をグループ内ソート方向検出に改善</td>
+  <td class="pass">完了</td>
+</tr>
+<tr>
+  <td>グルーピングボタン非表示が「新規作成」ボタンを誤ターゲット</td>
+  <td><span class="label label-fix">修正</span> テキスト「グルーピング」で明示的にボタンを特定</td>
+  <td class="pass">完了</td>
+</tr>
+</table>
+
+<h2>2. 変更ファイル</h2>
+<table>
+<tr><th>ファイル</th><th>変更内容</th></tr>
+<tr>
+  <td><code>public/admin/index.html</code></td>
+  <td>
+    <span class="label label-new">新規</span> <code>hideGroupControl()</code>, <code>activateDefaultGrouping()</code>, <code>formatGroupHeadings()</code>, <code>createMonthSelector()</code><br>
+    <span class="label label-mod">修正</span> <code>reverseViewGroups()</code> &#x2014; グループ内ソート方向検出（within-group detection）に変更
+  </td>
+</tr>
+<tr>
+  <td><code>public/admin/config.yml</code></td>
+  <td><span class="label label-mod">修正</span> <code>view_groups</code>: 「年」グループ削除、「年月」のみに簡略化</td>
+</tr>
+<tr>
+  <td><code>tests/admin-html.test.mjs</code></td>
+  <td><span class="label label-mod">修正</span> CMS-19テスト更新（hideGroupControl, isDescending, entry-date検証追加）</td>
+</tr>
+<tr>
+  <td><code>tests/cms-config.test.mjs</code></td>
+  <td><span class="label label-mod">修正</span> view_groups: 2グループ→1グループ（年月のみ）</td>
+</tr>
+</table>
+
+<h2>3. コミット履歴</h2>
+<div class="commits">
+<table>
+<tr><th>SHA</th><th>メッセージ</th></tr>
+<tr><td>2a7126f</td><td>Fix grouping button targeting: explicitly match "グルーピング" text</td></tr>
+<tr><td>2550121</td><td>Add sort direction detection to reverseViewGroups</td></tr>
+<tr><td>2ac2e63</td><td>Fix within-group sort detection for reverseViewGroups</td></tr>
+</table>
+</div>
+
+<h2>4. テスト結果</h2>
+<h3>4.1 自動テスト</h3>
+<div class="info-box">
+  <code>npm test</code>: 全テストPASS<br>
+  <code>npm run build</code>: ビルド成功
+</div>
+
+<h3>4.2 エビデンス検証（Playwright自動操作）</h3>
+<table>
+<tr><th>シナリオ</th><th>PC (1280×800)</th><th>iPad Pro 11</th><th>iPhone 14</th></tr>
+<tr>
+  <td><strong>デフォルト表示</strong><br>降順グルーピング・月セレクター・日本語見出し</td>
+  <td class="pass">PASS</td>
+  <td class="pass">PASS</td>
+  <td class="pass">PASS</td>
+</tr>
+<tr>
+  <td><strong>ソート昇順切替</strong><br>グループが古い月→新しい月の順に変化</td>
+  <td class="pass">PASS</td>
+  <td class="pass">PASS</td>
+  <td class="pass">PASS</td>
+</tr>
+<tr>
+  <td><strong>ソート降順復帰</strong><br>グループが新しい月→古い月の順に復帰</td>
+  <td class="pass">PASS</td>
+  <td class="pass">PASS</td>
+  <td class="pass">PASS</td>
+</tr>
+</table>
+
+<h2>5. 技術詳細</h2>
+<h3>5.1 ソート方向検出の改善</h3>
+<p>当初はグローバルな<code>.entry-date</code>要素の先頭・末尾を比較していましたが、グループ並べ替え後のDOM順序に影響されて正しく検出できませんでした。</p>
+<p><strong>修正</strong>: 同一グループコンテナ内の<code>.entry-date</code>を比較する方式（within-group detection）に変更。グループ内のエントリ順序はCMSのソート方向を正確に反映するため、確実に検出できます。</p>
+
+<h3>5.2 MutationObserverカスケード動作</h3>
+<ol>
+  <li><code>activateDefaultGrouping()</code>: グルーピングメニューをプログラム的に操作 → DOM変更トリガー</li>
+  <li><code>reverseViewGroups()</code>: GroupHeading出現 → ソート方向に応じて並べ替え</li>
+  <li><code>formatGroupHeadings()</code>: 「年月 2026-02」→「2026年2月」に変換</li>
+  <li><code>createMonthSelector()</code>: 月セレクター（select要素）生成</li>
+  <li><code>hideGroupControl()</code>: 元のグルーピングボタンを非表示</li>
+</ol>
+
+<h2>6. エビデンスファイル一覧</h2>
+<table>
+<tr><th>ファイル</th><th>説明</th></tr>
+<tr><td><code>report.html</code></td><td>3デバイス横並びエビデンスレポート</td></tr>
+<tr><td><code>work-completion-report.html</code></td><td>本報告書</td></tr>
+<tr><td><code>verify-cms19-grouping.mjs</code></td><td>検証スクリプト</td></tr>
+<tr><td><code>cms19-results.json</code></td><td>検証結果JSON</td></tr>
+<tr><td><code>screenshots/cms19-*.png</code></td><td>スクリーンショット（9枚: 3シナリオ×3デバイス）</td></tr>
+</table>
+
+</body>
+</html>
