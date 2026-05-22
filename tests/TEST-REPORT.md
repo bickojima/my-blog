@@ -28,6 +28,7 @@
 | 1.21 | 2026-02-21 | バグ#29（CSP connect-src blob:不足による画像付き記事保存失敗）修正対応: build.test.mjs CSP connect-src blob:検証1件追加（2.5.1章 #8）、fuzz-validation CSP connect-src blob:検証1件追加（2.7.12章）。終了基準テスト件数更新（498+240=738） |
 | 1.22 | 2026-02-21 | E2E CRUDテスト追加（E-22〜E-24: cms-crud.spec.ts 11テスト×3デバイス=33テスト）、アクセシビリティテスト追加（E-25〜E-27: accessibility.spec.ts 6テスト×3デバイス=18テスト）。色コントラスト比修正、見出し階層修正。NFR-06要件追加。終了基準テスト件数更新（498+291=789） |
 | 1.23 | 2026-02-23 | 第三者セキュリティ・品質レビュー対応: SEC-21〜SEC-26要件追加。Bug #30〜#34修正（下書き記事公開、モバイルhover/tapバグ、モーダル重複、タグURL未エンコード、Windowsパス問題）。Zodスキーマ厳格化（date正規表現、title/tags長さ制限）。ビルドスクリプト防御強化（シンボリックリンク・ピクセルフラッド・ファイルサイズ上限）。OAuth HTTPメソッド制限。_headers COOP/CORP/X-Frame-Options公開ページ追加。テストWindows互換性修正（パスセパレータ・CRLF正規化）。hiddenByDropdown→hiddenByOverlayリネーム。終了基準テスト件数更新（519+375=894） |
+| 1.24 | 2026-05-22 | Modern Web Guidance準拠検証追加（staging先行）: トップページ先頭サムネイルのLCP優先度、コンテナクエリ、ナビゲーション`aria-expanded`同期、CMS独自プレビュースタイルのコントラスト、スクリーンショットエビデンス保存を検証。NFR-07対応 |
 | 1.24 | 2026-02-23 | 個人情報保護対応: git履歴から個人情報を完全削除（Bug #35）。pre-commit hookによる個人情報混入防止を運用手順（DOCUMENTATION.md 4.8章）に記載。テスト件数に変更なし |
 | 1.25 | 2026-02-23 | エビデンス取得方針を大幅拡充: CMS操作性検証（T01〜T16, 16シナリオ×3デバイス=48テスト）、サイト操作性検証（S01〜S10, 10シナリオ×3デバイス=30テスト）を追加。全スクリーンショットに赤枠アノテーション必須化。過去バグ由来の検証マトリクス（Bug #1,#4,#5,#6,#7,#8,#9,#11,#13,#14,#15,#29,#30,#31,#32,#33の16件）を追加。記事編集画面・画像アップロード画面・メディアライブラリのエビデンスを重点取得 |
 | 1.26 | 2026-02-23 | CMS CRUD操作エビデンス追加（verify-cms-crud.mjs: T17〜T32, 16シナリオ×3デバイス=48テスト）、セキュリティ検証エビデンス追加（verify-security.mjs: SEC01〜SEC10, 10項目）。検証スクリプト一覧にverify-cms-crud.mjs・verify-security.mjsを追加。継続的品質・セキュリティ改善フレームワークをDOCUMENTATION.md 4.10章に新設 |
@@ -470,7 +471,7 @@ staging検証時およびmainマージ前に、Playwright自動検証でスク�
 | レポート形式 | `report.html`（画像埋め込み、PC/iPad/iPhone 3デバイス横並び表示） |
 | スクリーンショット | `screenshots/`, `site-interactive/`, `cms-interactive/` サブフォルダ |
 | テストデバイス | PC (1280x800) / iPad Pro 11 (834x1194) / iPhone 14 (390x844) |
-| 検証スクリプト | `verify-staging.mjs`（基本動作）、`verify-site-interactive.mjs`（サイト操作性）、`verify-cms-interactive.mjs`（CMS操作性）、`verify-cms-crud.mjs`（CMS CRUD操作）、`verify-security.mjs`（セキュリティ検証） |
+| 検証スクリプト | `verify-staging.mjs`（基本動作）、`verify-site-interactive.mjs`（サイト操作性）、`verify-cms-interactive.mjs`（CMS操作性）、`verify-cms-crud.mjs`（CMS CRUD操作）、`verify-security.mjs`（セキュリティ検証）、`evidence/2026-05-22/verify-modern-web-guidance.mjs`（Modern Web Guidance準拠） |
 
 #### 赤枠アノテーション方針
 
@@ -1183,7 +1184,7 @@ SEC-14〜SEC-20に対応するファズテスト。ビルド時に必ず実行�
 
 要件トレーサビリティマトリクスは **docs/DOCUMENTATION.md 1.5章** に移動した。要件定義と同一ファイルで管理することで、要件追加時のトレース漏れを防止する。
 
-現在の充足状況: **全要件（FR-01〜FR-21, CMS-01〜CMS-16, NFR-01〜NFR-05, SEC-01〜SEC-20）がテストで充足されている。未テスト要件なし。**
+現在の充足状況: **全要件（FR-01〜FR-21, CMS-01〜CMS-16, NFR-01〜NFR-07, SEC-01〜SEC-26）がテストで充足されている。未テスト要件なし。** Modern Web Guidanceエビデンスは `test-results/evidence/modern-web-guidance/` に保存する。
 
 ---
 

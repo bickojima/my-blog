@@ -191,6 +191,8 @@ describe('ビルド検証', () => {
       if (publishedPages.length >= 2) {
         expect(indexHtml).toContain('nav-dropdown-toggle');
         expect(indexHtml).toContain('▾');
+        expect(indexHtml).toContain('aria-expanded="false"');
+        expect(indexHtml).toContain('aria-controls="page-menu"');
       }
     });
 
@@ -227,6 +229,7 @@ describe('ビルド検証', () => {
       expect(indexHtml).toContain('mouseleave');
       expect(indexHtml).toContain('nav-dropdown-toggle');
       expect(indexHtml).toContain('is-open');
+      expect(indexHtml).toContain('aria-expanded');
     });
 
     it('mouseleaveに300ms遅延が設定されている', () => {
@@ -302,6 +305,19 @@ describe('ビルド検証', () => {
 
     it('タグリンクが含まれている', () => {
       expect(indexHtml).toContain('href="/tags/');
+    });
+
+    it('先頭サムネイルはLCP候補として高優先度で読み込む', () => {
+      const firstThumbnailMatch = indexHtml.match(/<img[^>]*class="post-thumbnail"[^>]*>/);
+      expect(firstThumbnailMatch).not.toBeNull();
+      expect(firstThumbnailMatch[0]).toContain('loading="eager"');
+      expect(firstThumbnailMatch[0]).toContain('fetchpriority="high"');
+      expect(firstThumbnailMatch[0]).toContain('decoding="async"');
+    });
+
+    it('記事カードはコンテナクエリでサイズに応じたレイアウトを適用する', () => {
+      expect(indexHtml).toContain('container-type:inline-size');
+      expect(indexHtml).toContain('@container');
     });
 
     it('アーカイブナビゲーションが含まれている', () => {
