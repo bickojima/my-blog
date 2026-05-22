@@ -93,6 +93,13 @@ tests/
 - ドロップダウン: ページ名部分は直接リンク（即遷移）、▾ボタンはトグル
 - PC: mouseenter/mouseleave（300ms遅延閉じ）、モバイル: タップでトグル
 
+### Modern Web Guidance準拠
+- 独自実装部はGoogle公式Modern Web Guidanceスキル準拠を基本方針とする
+- 対象は公開サイトのAstro実装と `public/admin/index.html` の独自カスタマイズのみ
+- Decap CMS本体UIは引用元レポジトリの実装を尊重し、保存・OAuth・プレビュー互換性を壊す変更は非準拠許容とする
+- 明確なLCP候補のみ `fetchpriority="high"` と非lazyを適用する。Markdown本文画像の一律高優先度化は禁止
+- コンテナクエリ、ARIA状態同期、コントラスト改善など、Baseline対応済みでリスクの低い改善を優先する
+
 ## テスト
 
 - **Vitest**: 設定検証、コンテンツ検証、単体テスト、ビルド統合テスト、セキュリティ検証、ファズテスト、基本機能保護テスト（532テスト、記事数により変動）
@@ -134,6 +141,8 @@ DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を�
 9. **個人情報をコミット・コード・ドキュメントに含めない**: gitコミットのauthor情報は `tbi <noreply@users.noreply.github.com>` を使用する（`git -c user.name="tbi" -c user.email="noreply@users.noreply.github.com" commit`）。氏名・メールアドレス・電話番号等の個人情報をソースコード・ドキュメント・コミットメッセージに含めてはならない。git logから個人情報を取得して再利用しない
 10. **動作確認エビデンスを取得する**: コード変更のstaging検証時・mainマージ前に、Playwright自動検証でスクリーンショット付きHTMLエビデンスレポートを作成する。詳細は下記「エビデンス取得方針」を参照
 11. **エビデンス提出前に社内レビューを実施する**: エビデンス（スクリーンショット・レポート）は提出前に必ず内容を確認し、期待通りのスクリーンショットが取得できているか（ログイン画面のみ等になっていないか）をレビューする
+12. **staging先行を徹底する**: ユーザーが明示的にmain反映を指示しない限り、コード・ドキュメント変更はstagingブランチへ先行反映する。mainへの直接pushは禁止
+13. **Modern Web Guidance対応時のE2Eエビデンス**: 過去エビデンススクリプト（`evidence/YYYY-MM-DD/verify-*.mjs`）の方式を優先して使う。CMS画面はOAuthモックとGitHub APIモックを使い、認証後画面のスクリーンショットを保存する
 
 ### エビデンス取得方針
 - **取得タイミング**: staging検証時、mainマージ前
@@ -141,6 +150,8 @@ DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を�
 - **レポート形式**: `report.html`（画像埋め込み、PC/iPad/iPhone 3デバイス横並び表示）
 - **スクリーンショット**: `screenshots/`, `site-interactive/`, `cms-interactive/` サブフォルダに整理
 - **検証スクリプト**: `verify-staging.mjs`（基本動作確認）、`verify-site-interactive.mjs`（サイト操作性、10シナリオ×3デバイス）、`verify-cms-interactive.mjs`（CMS操作性、16シナリオ×3デバイス）、`verify-cms-crud.mjs`（CMS CRUD操作、16シナリオ×3デバイス）、`verify-security.mjs`（セキュリティ検証、10項目）
+- **過去手法の優先**: 新しいE2Eエビデンスを作る場合も、既存の `verify-site-interactive.mjs` / `verify-cms-interactive.mjs` / `verify-cms-crud.mjs` / `verify-cms19-grouping.mjs` の構成（スタンドアロンPlaywright、赤枠アノテーション、HTMLレポート、結果JSON）を踏襲する
+- **CMS OAuthモック必須**: CMSエビデンスは実GitHub認証に依存させず、OAuth 3ステップハンドシェイクとGitHub APIモックで擬似ログインする。認証後のCMS独自カスタマイズ画面を撮影すること
 - **赤枠アノテーション**: 全スクリーンショットの注目箇所に赤枠とラベルを必ず付与する（ボタン・メニュー・重なり検出箇所・バグ再発防止確認箇所）
 - **ボタン操作テスト**: ボタンを実際に押下してメニュー展開・モーダル表示をエビデンス取得。複数メニュー同時展開時の操作性も確認
 - **CMS重点検証**: 記事編集画面・画像アップロード画面・メディアライブラリはバグが多いため重点的にエビデンスを取得
