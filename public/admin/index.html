@@ -989,7 +989,7 @@
         }
 
         // 年月選択プルダウン作成（CMS-19）
-        // グループ見出しから年月リストを生成し、選択で該当グループにスクロール
+        // グループ見出しから年月リストを生成し、選択で該当年月だけに絞り込む
         // 元のグルーピングドロップダウンを非表示にし、代わりに月セレクターを配置
         function createMonthSelector() {
           const hash = window.location.hash || '';
@@ -1008,14 +1008,9 @@
             return;
           }
 
-          // 見出し数が同じなら更新不要
-          if (selector && selector.dataset.count === String(headings.length)) {
-            selector.style.display = '';
-            return;
-          }
-
           // セレクター要素の作成または更新
           let sel = selector;
+          const previousValue = sel ? sel.value : '';
           if (!sel) {
             sel = document.createElement('select');
             sel.id = 'cms-month-selector';
@@ -1033,22 +1028,40 @@
 
           // オプション生成
           sel.textContent = '';
+          const allOpt = document.createElement('option');
+          allOpt.value = '';
+          allOpt.textContent = 'すべての年月';
+          sel.appendChild(allOpt);
           const arr = Array.from(headings);
           for (const h of arr) {
             const opt = document.createElement('option');
+            opt.value = h.textContent;
             opt.textContent = h.textContent;
             sel.appendChild(opt);
+          }
+          if (previousValue && arr.some(h => h.textContent === previousValue)) {
+            sel.value = previousValue;
           }
           sel.dataset.count = String(headings.length);
           sel.style.display = '';
 
-          // 選択変更時にスクロール
-          sel.onchange = function() {
-            const idx = sel.selectedIndex;
-            if (idx >= 0 && idx < arr.length) {
-              arr[idx].scrollIntoView({ behavior: 'smooth', block: 'start' });
+          function applyMonthFilter() {
+            const selected = sel.value;
+            for (const h of arr) {
+              const container = h.parentElement;
+              if (!container) continue;
+              const headingText = h.textContent || '';
+              const visible = !selected || headingText === selected;
+              container.style.display = visible ? '' : 'none';
             }
+            sel.dataset.activeFilter = selected;
+          }
+
+          // 選択変更時に該当年月だけ表示
+          sel.onchange = function() {
+            applyMonthFilter();
           };
+          applyMonthFilter();
         }
 
         // iPhoneからのHEICファイルを制限（JPEG/PNG/WebP/GIFのみ受付）

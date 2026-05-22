@@ -35,6 +35,7 @@
 | 1.27 | 2026-02-24 | CMS-17（記事デフォルトソート日付降順）・CMS-18（記事月別グルーピング）対応。Vitestテスト3件追加（#48〜#50: sortable_fields, view_groups検証）。E2E E-36追加（3テスト×3デバイス=9テスト: ソート順検証、view_groupsボタン表示、レイアウト崩れ検証、スクリーンショットエビデンス取得）。E2Eスクリーンショットエビデンスルール追加（4.1.6章: 認証後スクリーンショット必須、context.route()による3ステップOAuthハンドシェイク方式を文書化）。全522+384=906テスト |
 | 1.28 | 2026-02-25 | CMS-19（グルーピング降順表示）対応。admin-htmlテスト1件追加（reverseViewGroups関数検証） |
 | 1.29 | 2026-02-26 | CMS-19拡張（年月グルーピングUI改善）。config.yml view_groups簡略化（年削除→年月のみ）。admin-htmlテスト3件追加（activateDefaultGrouping, formatGroupHeadings, createMonthSelector）。cms-configテスト view_groups検証を1グループに更新 |
+| 1.30 | 2026-05-22 | Bug #37修正対応: CMS-19の年月選択プルダウンをスクロール動作から選択年月のみ表示するフィルター動作へ変更。admin-htmlテスト #14 を`applyMonthFilter`・`activeFilter`・`scrollIntoView`不使用の検証に更新し、E2Eエビデンス`verify-cms19-month-filter.mjs`を追加 |
 
 ## テスト基盤の変更履歴
 
@@ -792,7 +793,7 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 | :--- | :--- | :--- | :--- | :--- |
 | 48 | postsのソート可能フィールドにdateとtitleが含まれている（CMS-17） | posts | M-03 | `sortable_fields`に`date`と`title`が含まれる |
 | 49 | postsのdateフィールドがデフォルトで降順ソートに設定されている（CMS-17） | posts | M-03 | `{field: date, default_sort: desc}` |
-| 50 | postsのview_groupsに年・年月グルーピングが設定されている（CMS-18） | posts | M-03 | `view_groups`に「年」（`\d{4}`）・「年月」（`\d{4}-\d{2}`）の2グループ |
+| 50 | postsのview_groupsに年月グルーピングのみが設定されている（CMS-18） | posts | M-03 | `view_groups`に「年月」（`\d{4}-\d{2}`）の1グループ |
 
 ---
 
@@ -966,7 +967,7 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 | 11 | グルーピング表示時にグループを降順に並べ替える機能がある（CMS-19） | M-02 | `reverseViewGroups`関数・`getSortKey`ヘルパー・ISO/日本語両形式対応 |
 | 12 | 年月グルーピングがデフォルトで自動有効化される（CMS-19） | M-02 | `activateDefaultGrouping`関数・`cms-group-activated`マーカー・`aria-haspopup`トリガー検索 |
 | 13 | グループ見出しが日本語形式に変換される（CMS-19） | M-02 | `formatGroupHeadings`関数・`jaFormatted`マーカー |
-| 14 | 年月選択プルダウンが作成される（CMS-19） | M-02 | `createMonthSelector`関数・`cms-month-selector`要素・`scrollIntoView`連携 |
+| 14 | 年月選択プルダウンで選択年月のみ表示される（CMS-19, Bug #37） | M-02 | `createMonthSelector`関数・`cms-month-selector`要素・`すべての年月`初期値・`applyMonthFilter`による非選択グループ非表示・`scrollIntoView`不使用 |
 
 ### 2.6.7 iPad対応（4件）
 
@@ -1290,7 +1291,8 @@ OAuthモック＋GitHub APIモックを使い、CMS管理画面を実際に操�
 | E-33 | 画像アップロードUI操作 | 画像ウィジェットボタン表示・クリック可能、accept属性HEIC制限、EXIF処理イベント登録 | モック/動作検証 |
 | E-34 | モバイル固有UI操作 | ドロップダウンがボトムシート表示（≤799px）、codeblockボタン非表示、URLバー退避、タップ領域44px以上 | モック/動作検証（iPhoneのみ） |
 | E-35 | 削除ボタン状態変化 | 削除ボタンラベル変更（選択解除/完全削除）、disabled状態CSS、色の視覚的区別、borderColor判定ロジック | モック/動作検証/CSS検証 |
-| E-36 | 記事デフォルトソート・月別グルーピング | 記事一覧の日付降順ソート検証、view_groups「年」「年月」ボタン表示、レイアウト崩れなし（要素重なり検証）。PC/iPad/iPhone 3デバイスでスクリーンショットエビデンス取得（CMS-17, CMS-18） | モック/動作検証/スクリーンショット |
+| E-36 | 記事デフォルトソート・月別グルーピング | 記事一覧の日付降順ソート検証、view_groups「年月」ボタン表示、レイアウト崩れなし（要素重なり検証）。PC/iPad/iPhone 3デバイスでスクリーンショットエビデンス取得（CMS-17, CMS-18） | モック/動作検証/スクリーンショット |
+| E-37 | CMS年月フィルター | 月セレクターで選択年月のみ表示、他年月グループ非表示、降順・昇順切替後のグループ順を確認。PC/iPad/iPhone 3デバイスでスクリーンショットエビデンス取得（CMS-19, Bug #37） | OAuthモック/動作検証/スクリーンショット |
 
 #### アクセシビリティテスト (`tests/e2e/accessibility.spec.ts`)
 
