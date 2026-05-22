@@ -39,6 +39,7 @@
 | 1.32 | 2026-02-24 | CMS-17追加（記事デフォルトソート日付降順）、CMS-18追加（記事月別グルーピング）。config.yml postsコレクションに`sortable_fields: {field: date, default_sort: desc}`と`view_groups`（年・年月パターン）を設定。E2Eテスト E-36追加（3デバイススクリーンショットエビデンス付き）。Vitestテスト3件追加（#48〜#50） |
 | 1.33 | 2026-02-25 | CMS-19追加（グルーピング降順表示）。admin/index.htmlに`reverseViewGroups()`追加：Decap CMSのview_groupsがデフォルト昇順のため、GroupHeading要素のテキスト比較→DOM並べ替えで降順表示に変更。admin-htmlテスト1件追加 |
 | 1.34 | 2026-02-26 | CMS-19拡張（年月グルーピングUI改善）。config.ymlから「年」グルーピング削除（年月のみに簡略化）。`activateDefaultGrouping()`（デフォルト自動有効化）・`formatGroupHeadings()`（日本語表記変換）・`createMonthSelector()`（年月選択プルダウン）追加。`reverseViewGroups()`を`getSortKey()`で日本語形式対応に修正 |
+| 1.35 | 2026-05-22 | Modern Web Guidance準拠対応（staging先行反映）: Google公式ガイドに基づき、トップページ先頭サムネイルのLCP優先度制御（`fetchpriority="high"` + 非lazy）、記事カードのコンテナクエリ、ナビゲーションの`aria-expanded`同期、CMS独自プレビュースタイルのコントラスト改善を追加。QA履歴、準拠方針、非準拠許容、NFR-07、トレーサビリティを追加 |
 
 ## システム変更履歴
 
@@ -168,6 +169,34 @@ PR履歴に基づく主要なシステム変更の記録である。
 | :--- | :--- | :--- |
 | 閲覧者 | 記事の閲覧 | `https://reiwa.casa` |
 | 管理者 | 記事の作成・編集・公開 | `https://reiwa.casa/admin` |
+
+### 1.1.4 要件確認QA履歴
+
+| No | 質問 | 回答 | 確認結果 |
+| :--- | :--- | :--- | :--- |
+| Q1 | 今回やりたい作業内容は何か | Modern Web Guidance準拠 | 確認済み |
+| Q2 | myblogのローカルリポジトリはどこか | `https://github.com/bickojima/my-blog` | 確認済み |
+| Q3 | E2E確認とスクリーンショット保存は必要か | 実際のスクリーンショットをエビデンス保存する。CMS画面も認証モックで擬似ログインして確認する | 確認済み |
+| Q4 | リスクが高い項目は非準拠として残す方針でよいか | リスクが高い項目は非準拠とする | 確認済み |
+| Q5 | Decap CMS本体UIのModern Web Guidance全面適用は対象外でよいか | Decap CMS本体は引用元レポジトリのままでよい。独自実装を準拠対象とする | 確認済み |
+| Q6 | 準拠対象は独自実装部に限定してよいか | 独自実装部を対象とする | 確認済み |
+| Q7 | 明確な主要画像だけ高優先度化し、判断できない本文画像は遅延読み込みのままでよいか | OK | 確認済み |
+| Q8 | E2Eスクリーンショットの保存対象は、公開サイトをPC/iPad/iPhone相当、CMS独自カスタマイズ画面を認証モックでPC/iPhone相当まで確認する方針でよいか | OK | 確認済み |
+| Q9 | スクリーンショット保存先は`test-results/evidence/modern-web-guidance/`配下でよいか | OK | 確認済み |
+| Q10 | 要件定義を本書にQA表として残し、実装・テスト・エビデンス保存まで進めてよいか | OK。GoogleのModern Web Guidanceスキル準拠を方針として記載する | 確認済み |
+
+### 1.1.5 Modern Web Guidance準拠方針
+
+Google公式Modern Web Guidanceスキル準拠を方針とし、公開サイトおよびCMSの独自実装部に対して、Baseline対応済みのモダンWeb機能をプログレッシブエンハンスメントとして採用する。対象はAstroの`src/layouts`、`src/pages`、`src/components`、独自rehype plugin、および`public/admin/index.html`内の独自カスタマイズに限定する。今回の反映先はstagingのみとする。
+
+Decap CMS本体UIは外部プロダクト由来のコードとして扱い、引用元レポジトリの実装を尊重する。過去にCMS保存・OAuth・プレビュー周りの不具合が発生しているため、本体UIの全面的な上書きはリスクが高い項目として非準拠許容に分類する。
+
+| 対象 | 方針 | 理由 |
+| :--- | :--- | :--- |
+| 公開サイトの独自UI | 準拠対象 | 影響範囲を把握でき、E2Eで確認可能 |
+| CMS独自カスタマイズ | 準拠対象 | 既存の保存・認証互換性を壊さない範囲で改善可能 |
+| Decap CMS本体UI | 対象外 | 外部プロダクト由来であり、深い上書きは保存・OAuth・プレビューの再発リスクが高い |
+| 記事本文画像の一律LCP高優先度化 | 非準拠許容 | Markdown本文では全記事のLCP画像を安全に自動判定できず、誤った高優先度化で通信競合を起こす可能性がある |
 
 ---
 
@@ -369,6 +398,7 @@ staging環境の検知:
 | NFR-04 | 日本語URL対応: 日本語タイトルの記事がそのまま日本語URLで公開される | `config.yml` | Unicode slug（`encoding: "unicode"`） |
 | NFR-05 | レスポンシブデザイン: 公開サイトおよびCMS管理画面がモバイル端末で適切に表示・操作できる | `Base.astro` CSS, `admin/index.html` CSS | viewport設定、メディアクエリ |
 | NFR-06 | アクセシビリティ（WCAG 2.1 AA）: 公開サイトがWCAG 2.1 Level AAのcritical/serious違反なしを維持する | `Base.astro`, 各ページCSS, `ArchiveNav.astro` | 色コントラスト比4.5:1以上、見出し階層スキップなし、画像alt属性必須、axe-core自動検証 |
+| NFR-07 | Modern Web Guidance準拠: Google公式Modern Web Guidanceの推奨に従い、Baseline対応済みのモダンWeb機能を安全なプログレッシブエンハンスメントとして採用する | `Base.astro`, `index.astro` | LCP画像優先度、コンテナクエリ、アクセシブルな開閉状態同期 |
 
 ### 1.4.2 セキュリティ要件一覧 (SEC)
 
@@ -469,6 +499,7 @@ staging環境の検知:
 | NFR-04 | 日本語URL | cms-config | 2.4章 #9,#10 | M-03 | 充足 |
 | NFR-05 | レスポンシブデザイン | admin-html, build, E2E cms-operations | 2.6.3章 #1〜#10, 2.5章 #19, E-34 | M-02, M-11 | 充足 |
 | NFR-06 | アクセシビリティ（WCAG 2.1 AA） | E2E accessibility | E-25〜E-27 | M-11（axe-core） | 充足 |
+| NFR-07 | Modern Web Guidance準拠 | build, admin-html, E2E site, E2E evidence | 2.5章 #54〜#55, 2.6章, E-05, E-21, modern-web-guidance-evidence | M-02, M-11 | 充足 |
 
 ### 1.5.4 セキュリティ要件 (SEC) → テストケース
 
@@ -501,7 +532,7 @@ staging環境の検知:
 | SEC-25 | ビルドスクリプト防御強化 | build | ビルドパイプライン検証 | M-02 | 充足 |
 | SEC-26 | OAuth HTTPメソッド制限 | auth-functions | 2.3章 | M-02 | 充足 |
 
-**充足状況: 全要件（FR-01〜FR-21, CMS-01〜CMS-16, NFR-01〜NFR-06, SEC-01〜SEC-26）がテストで充足されている。未テスト要件なし。**
+**充足状況: 全要件（FR-01〜FR-21, CMS-01〜CMS-16, NFR-01〜NFR-07, SEC-01〜SEC-26）がテストで充足されている。未テスト要件なし。**
 
 ---
 
@@ -1782,6 +1813,7 @@ git履歴に個人情報（氏名・メールアドレス）が含まれてい�
 | `verify-cms-interactive.mjs` | CMS操作性（ボタン押下・メニュー展開・モーダル・画像アップロード） | 16 scenarios × 3 devices |
 | `verify-cms-crud.mjs` | CMS CRUD操作（記事作成/編集/削除・画像アップロード・タグ・固定ページ） | 16 scenarios × 3 devices |
 | `verify-security.mjs` | セキュリティ検証（XSS・CSP・OAuth・CDN・postMessage等） | 10 checks × 1 device |
+| `evidence/2026-05-22/verify-modern-web-guidance.mjs` | Modern Web Guidance準拠検証（公開サイト3デバイス、CMS独自カスタマイズPC/iPhone） | 8 checks |
 
 ### 4.9.4 赤枠アノテーション方針
 
@@ -1888,6 +1920,8 @@ CMS-17/CMS-18実装時（2026-02-24〜25）に、Playwright test runnerでのCMS
 | `dist/admin/config.yml` 物理ファイル書き換え | 成功 | config変更は反映されるがauth完了せず | ファイル書き換え自体は有効だが、ポップアップの問題が残る |
 | `page.route('**/admin/config.yml')` でレスポンス差し替え | — | 効果なし | Decap CMSの自動初期化タイミングとの競合が疑われる |
 | **`window.open` モンキーパッチ（採用方式）** | — | **成功** | ポップアップを開かず、CMS内部で完結する |
+
+Modern Web Guidanceエビデンスでは、過去のスタンドアロン検証スクリプト方式（`context.route()` + 3ステップOAuthハンドシェイク + 赤枠アノテーション + HTMLレポート）を採用する。スクリーンショットとレポートは要件確認QAで合意した `test-results/evidence/modern-web-guidance/` に保存する。
 
 #### 採用方式: `window.open` モンキーパッチ + GitHub APIモック
 

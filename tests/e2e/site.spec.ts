@@ -142,7 +142,11 @@ test.describe('E-05: 画像表示', () => {
     await page.goto('/');
     const thumbnails = page.locator('img.post-thumbnail');
     expect(await thumbnails.count()).toBeGreaterThan(0);
-    await expect(thumbnails.first()).toHaveAttribute('loading', 'lazy');
+    await expect(thumbnails.first()).toHaveAttribute('loading', 'eager');
+    await expect(thumbnails.first()).toHaveAttribute('fetchpriority', 'high');
+    if (await thumbnails.count() > 1) {
+      await expect(thumbnails.nth(1)).toHaveAttribute('loading', 'lazy');
+    }
   });
 });
 
@@ -203,17 +207,21 @@ test.describe('E-21: ヘッダーナビゲーションドロップダウン', ()
   test('▾ボタンクリックでドロップダウンが開閉する', async ({ page }) => {
     await page.goto('/');
     const menu = page.locator('.nav-dropdown-menu');
+    const toggle = page.locator('.nav-dropdown-toggle');
 
     // 初期状態で閉じていることを確認
     await expect(menu).not.toBeVisible();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
 
     // dispatchEventでクリック（mouseenterによるhover副作用なし）
-    await page.locator('.nav-dropdown-toggle').dispatchEvent('click');
+    await toggle.dispatchEvent('click');
     await expect(menu).toBeVisible();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
 
     // 再dispatchEventで閉じる
-    await page.locator('.nav-dropdown-toggle').dispatchEvent('click');
+    await toggle.dispatchEvent('click');
     await expect(menu).not.toBeVisible();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
   });
 
   test('ドロップダウンメニュー内に全固定ページのリンクがある', async ({ page }) => {

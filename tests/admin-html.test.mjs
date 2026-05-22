@@ -50,6 +50,12 @@ describe('管理画面HTML（public/admin/index.html）の検証', () => {
       );
       expect(hasRegisterPreviewStyle).toBe(true);
     });
+
+    it('プレビュースタイルのキャプション色がWCAG AA相当のコントラストを維持している', () => {
+      expect(adminHtml).toContain('figcaption');
+      expect(adminHtml).toContain('color: #595959');
+      expect(adminHtml).not.toContain('color: #888');
+    });
   });
 
   describe('PC端末対応', () => {
@@ -78,6 +84,7 @@ describe('管理画面HTML（public/admin/index.html）の検証', () => {
 
     it('完全削除ボタンの無効状態スタイルが定義されている', () => {
       expect(adminHtml).toContain('.cms-full-delete-btn:disabled');
+      expect(adminHtml).toContain('color: #595959 !important');
     });
   });
 

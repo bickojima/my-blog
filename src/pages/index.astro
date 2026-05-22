@@ -16,11 +16,18 @@ const posts = allPosts
   {posts.length === 0 && <p class="no-posts">まだ記事がありません。</p>}
 
   <div class="post-list">
-    {posts.map(post => (
+    {posts.map((post, index) => (
       <article class="post-card">
         {post.data.thumbnail && (
           <a href={getPostUrl(post)}>
-            <img src={post.data.thumbnail} alt={post.data.title} class="post-thumbnail" loading="lazy" decoding="async" />
+            <img
+              src={post.data.thumbnail}
+              alt={post.data.title}
+              class="post-thumbnail"
+              loading={index === 0 ? 'eager' : 'lazy'}
+              fetchpriority={index === 0 ? 'high' : undefined}
+              decoding="async"
+            />
           </a>
         )}
         <div class="post-body">
@@ -55,6 +62,7 @@ const posts = allPosts
       display: flex;
       flex-direction: column;
       gap: 1.5rem;
+      container-type: inline-size;
     }
     .post-card {
       border-bottom: 1px solid #eee;
@@ -82,6 +90,7 @@ const posts = allPosts
       font-size: 1.15rem;
       font-weight: bold;
       margin-bottom: 0.25rem;
+      text-wrap: pretty;
     }
     .post-title:hover {
       text-decoration: underline;
@@ -107,6 +116,18 @@ const posts = allPosts
     .tag:hover {
       background: #333;
       color: #fff;
+    }
+    @container (min-width: 560px) {
+      .post-card:has(.post-thumbnail) {
+        display: grid;
+        grid-template-columns: 180px 1fr;
+        gap: 1rem;
+        align-items: start;
+      }
+      .post-thumbnail {
+        height: 120px;
+        margin-bottom: 0;
+      }
     }
   </style>
 </Base>
