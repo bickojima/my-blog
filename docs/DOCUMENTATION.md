@@ -40,6 +40,7 @@
 | 1.33 | 2026-02-25 | CMS-19追加（グルーピング降順表示）。admin/index.htmlに`reverseViewGroups()`追加：Decap CMSのview_groupsがデフォルト昇順のため、GroupHeading要素のテキスト比較→DOM並べ替えで降順表示に変更。admin-htmlテスト1件追加 |
 | 1.34 | 2026-02-26 | CMS-19拡張（年月グルーピングUI改善）。config.ymlから「年」グルーピング削除（年月のみに簡略化）。`activateDefaultGrouping()`（デフォルト自動有効化）・`formatGroupHeadings()`（日本語表記変換）・`createMonthSelector()`（年月選択プルダウン）追加。`reverseViewGroups()`を`getSortKey()`で日本語形式対応に修正 |
 | 1.35 | 2026-05-22 | Modern Web Guidance準拠対応（staging先行反映）: Google公式ガイドに基づき、トップページ先頭サムネイルのLCP優先度制御（`fetchpriority="high"` + 非lazy）、記事カードのコンテナクエリ、ナビゲーションの`aria-expanded`同期、CMS独自プレビュースタイルのコントラスト改善を追加。QA履歴、準拠方針、非準拠許容、NFR-07、トレーサビリティを追加 |
+| 1.36 | 2026-05-22 | 基本設計（2.2章）にGoogle Modern Web Guidanceスキル準拠方針を明記。CLAUDE.mdにstaging先行、過去E2Eエビデンス手法、OAuth/GitHub APIモック利用を今後のルールとして追加 |
 
 ## システム変更履歴
 
@@ -639,6 +640,7 @@ my-blog/
 | ホスティング | Cloudflare Pages | - | 静的配信 + Functions |
 | 認証 | GitHub OAuth App | - | CMS管理者認証 |
 | 画像処理 | sharp | v0.34.5 | 画像圧縮・回転・リサイズ |
+| Web実装方針 | Google Modern Web Guidance | 公式ガイド準拠 | 独自実装部のモダンWeb機能・アクセシビリティ・パフォーマンス設計指針 |
 | テスト（単体・統合） | Vitest | v4.0.18 | 単体テスト・統合テスト・セキュリティ検証・基本機能保護（491テスト） |
 | テスト（E2E） | Playwright | v1.58.2 | ブラウザE2Eテスト（PC/iPad/iPhone 240テスト） |
 | コンテンツ | Markdown | - | frontmatter形式 |
@@ -651,6 +653,21 @@ my-blog/
 | Decap CMS | Git-basedでサーバー不要、Markdown対応、日本語対応 |
 | Cloudflare Pages | 無料枠が充実、Functions対応、CDN自動配信 |
 | GitHub OAuth | Decap CMSのgithubバックエンドと整合する認証方式 |
+| Google Modern Web Guidance | Baseline対応済みのモダンWeb機能を、AI支援開発時にも再現可能な形で設計判断へ注入できる。LCP画像優先度、コンテナクエリ、アクセシブルな状態同期などを、独自実装部に限定して安全に適用する |
+
+### 2.2.3 Modern Web Guidance基本設計方針
+
+本システムの独自実装部は、Google公式Modern Web Guidanceスキル準拠を基本設計方針とする。適用対象は公開サイトのAstro実装（`src/layouts`, `src/pages`, `src/components`, 独自rehype plugin）およびCMS管理画面の独自カスタマイズ（`public/admin/index.html`内の追加CSS/JS）に限定する。
+
+Decap CMS本体UIは外部プロダクト由来の実装であり、保存・OAuth・プレビュー互換性を壊すリスクが高いため、Modern Web Guidanceの全面適用対象外とする。記事本文画像のLCP自動判定も、Markdown本文の構造差により誤判定の可能性があるため、明確な主要画像のみ高優先度化し、それ以外は遅延読み込みを維持する。
+
+| 設計観点 | 採用方針 | 実装例 |
+| :--- | :--- | :--- |
+| Performance | 明確なLCP候補だけを高優先度化する | トップページ先頭サムネイルに`fetchpriority="high"`、`loading="eager"` |
+| CSS Layout | 画面幅ではなくコンポーネント幅に応じた段階的拡張を優先する | 記事カードの`container-type: inline-size`と`@container` |
+| Accessibility | 開閉状態などのUI状態をARIA属性へ同期する | ヘッダーナビの`aria-expanded`同期 |
+| CMS独自UI | Decap CMS本体を壊さない範囲で独自CSS/JSのみ改善する | プレビュースタイルと無効ボタン色のコントラスト改善 |
+| 検証 | 過去エビデンス方式を継承し、stagingで先行確認する | `evidence/2026-05-22/verify-modern-web-guidance.mjs` |
 
 ---
 
