@@ -314,11 +314,16 @@ describe('管理画面HTML（public/admin/index.html）の検証', () => {
       expect(adminHtml).toContain('jaFormatted');
     });
 
-    it('年月選択プルダウンが作成される（CMS-19）', () => {
-      // グルーピング見出しから年月リストを生成し、選択でスクロール
+    it('年月選択プルダウンで選択年月のみ表示される（CMS-19）', () => {
+      // グルーピング見出しから年月リストを生成し、選択年月だけに絞り込む
       expect(adminHtml).toContain('createMonthSelector');
       expect(adminHtml).toContain('cms-month-selector');
-      expect(adminHtml).toContain('scrollIntoView');
+      expect(adminHtml).toContain('すべての年月');
+      expect(adminHtml).toContain('applyMonthFilter');
+      expect(adminHtml).toContain('activeFilter');
+      expect(adminHtml).toContain('previousValue');
+      expect(adminHtml).toContain("container.style.display = visible ? '' : 'none'");
+      expect(adminHtml).not.toContain('scrollIntoView');
     });
   });
 

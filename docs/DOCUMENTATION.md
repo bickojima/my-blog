@@ -41,6 +41,7 @@
 | 1.34 | 2026-02-26 | CMS-19拡張（年月グルーピングUI改善）。config.ymlから「年」グルーピング削除（年月のみに簡略化）。`activateDefaultGrouping()`（デフォルト自動有効化）・`formatGroupHeadings()`（日本語表記変換）・`createMonthSelector()`（年月選択プルダウン）追加。`reverseViewGroups()`を`getSortKey()`で日本語形式対応に修正 |
 | 1.35 | 2026-05-22 | Modern Web Guidance準拠対応（staging先行反映）: Google公式ガイドに基づき、トップページ先頭サムネイルのLCP優先度制御（`fetchpriority="high"` + 非lazy）、記事カードのコンテナクエリ、ナビゲーションの`aria-expanded`同期、CMS独自プレビュースタイルのコントラスト改善を追加。QA履歴、準拠方針、非準拠許容、NFR-07、トレーサビリティを追加 |
 | 1.36 | 2026-05-22 | 基本設計（2.2章）にGoogle Modern Web Guidanceスキル準拠方針を明記。CLAUDE.mdにstaging先行、過去E2Eエビデンス手法、OAuth/GitHub APIモック利用を今後のルールとして追加 |
+| 1.37 | 2026-05-22 | Bug #37修正: CMS-19の年月選択プルダウンがフィルターではなくスクロール動作になっていた問題を修正。CMS-19要件を「選択年月のみ表示」に明確化し、`createMonthSelector()`に`applyMonthFilter()`を追加。admin-html再発防止テスト更新 |
 
 ## システム変更履歴
 
@@ -383,7 +384,7 @@ staging環境の検知:
 | CMS-16 | 固定ページデフォルトソート: 固定ページ一覧がデフォルトで表示順（order）の昇順でソートされる | `config.yml` sortable_fields | `{field: order, default_sort: asc}` |
 | CMS-17 | 記事デフォルトソート日付降順: 記事一覧がデフォルトで日付の降順（最新が先頭）でソートされる | `config.yml` sortable_fields | `{field: date, default_sort: desc}` |
 | CMS-18 | 記事月別グルーピング: 記事一覧を年月でグルーピング表示できる | `config.yml` view_groups | `view_groups`で`date`フィールドを`\d{4}-\d{2}`（年月）パターンでグルーピング |
-| CMS-19 | 年月グルーピングUI: 記事一覧でデフォルト年月グルーピング有効、降順表示、日本語見出し（「2026年2月」形式）、年月選択プルダウン | `admin/index.html` JS | `activateDefaultGrouping()`（自動有効化）、`reverseViewGroups()`（降順）、`formatGroupHeadings()`（日本語化）、`createMonthSelector()`（プルダウン） |
+| CMS-19 | 年月グルーピングUI: 記事一覧でデフォルト年月グルーピング有効、降順表示、日本語見出し（「2026年2月」形式）、年月選択プルダウンで選択年月のみ表示 | `admin/index.html` JS | `activateDefaultGrouping()`（自動有効化）、`reverseViewGroups()`（降順）、`formatGroupHeadings()`（日本語化）、`createMonthSelector()`（年月フィルター） |
 
 ---
 
@@ -1201,7 +1202,7 @@ collections:
 - `slug`（pages）: `{{fields.slug}}` でフロントマターのslugフィールド値をファイル名に使用（`{{slug}}` はDecap CMSではタイトルのURL安全版を意味するため不可）
 - `sortable_fields`（pages）: orderフィールドをデフォルトで昇順ソートに設定（`{field: order, default_sort: asc}`形式）。Decap CMS v3.10.0は`field`+`default_sort`のオブジェクト形式に対応（`default`プロパティは非対応）
 - `sortable_fields`（posts）: dateフィールドをデフォルトで降順ソートに設定（`{field: date, default_sort: desc}`形式）。最新記事が一覧の先頭に表示される（CMS-17）
-- `view_groups`（posts）: 記事一覧を年月（`\d{4}-\d{2}`パターン）でグルーピング表示（CMS-18）。`admin/index.html`で以下のUI改善を実施（CMS-19）: `activateDefaultGrouping()`でpostsコレクション表示時に自動有効化、`reverseViewGroups()`で降順並べ替え（`getSortKey()`でISO/日本語両形式対応）、`formatGroupHeadings()`で見出しを「2026年2月」形式に変換、`createMonthSelector()`で年月選択プルダウンを作成（元のグルーピングドロップダウンを非表示にし`<select>`要素で代替）
+- `view_groups`（posts）: 記事一覧を年月（`\d{4}-\d{2}`パターン）でグルーピング表示（CMS-18）。`admin/index.html`で以下のUI改善を実施（CMS-19）: `activateDefaultGrouping()`でpostsコレクション表示時に自動有効化、`reverseViewGroups()`で降順並べ替え（`getSortKey()`でISO/日本語両形式対応）、`formatGroupHeadings()`で見出しを「2026年2月」形式に変換、`createMonthSelector()`で年月フィルターを作成（元のグルーピングドロップダウンを非表示にし`<select>`要素で代替、選択年月以外のグループは非表示）
 - `path`（posts）: ファイルの保存・読み取りパスを定義。CMSがサブディレクトリ`yyyy/mm/`内の既存記事を再帰スキャンする
 - `slug`（posts）: ファイル名部分のみ（タイトルベース）
 
@@ -1622,6 +1623,7 @@ GitHubリポジトリが利用可能な場合、以下の手順でシステム�
 | 34 | 2026-02-23 | Windowsパスセパレータ問題: organize-posts.mjsのurl-map.json生成でpath.relativeがバックスラッシュを使用し、Windows環境でキー形式が不正 | path.relative()がOSのパスセパレータを使用 | `.replace(/\\\\/g, '/')`でurl-map.jsonキーを正規化。テストコードも同様に正規化 | build 2.5章（URLマッピング検証）, content-validation |
 | 35 | 2026-02-23 | git履歴に個人情報（氏名・メールアドレス）が含まれていた: 100件のコミットにauthor/committer情報として個人のフルネーム・Gmailアドレスが記録されていた | gitのグローバル設定に個人メールアドレスが設定されており、リポジトリ固有の設定がなかった | (1) `git filter-branch --env-filter`で全履歴のauthor/committerを匿名化（tbi / noreply@users.noreply.github.com）。(2) ローカルgit設定（`git config user.name/user.email`）を匿名値に設定。(3) pre-commit hookで個人情報パターン検出時にコミット拒否。(4) CLAUDE.mdルール9に個人情報禁止を明文化 | 運用手順（4.8章） |
 | 36 | 2026-02-24 | CMS CRUDエビデンスが全てログイン画面のみ表示: verify-cms-crud.mjsで取得した48枚のスクリーンショットが全てCMSログインボタン画面のみで、認証後の編集画面が撮影されていなかった | (1) Decap CMS OAuth認証は3ステップハンドシェイク（`authorizing:github` → ACK → `authorization:github:success:{token,provider}`）を要するが、エビデンス収集スクリプトはステップ1-2を省略してトークンを直接送信していたためCMSがメッセージを無視。(2) Playwrightの`page.route()`はポップアップウィンドウのナビゲーションをインターセプトできない（`context.route()`が必要）。(3) globパターン`**/auth`はクエリパラメータ付きURLにマッチしない。(4) config.ymlの`base_url`がstaging URLのままだとlocalhost上のpostMessageがクロスオリジン拒否される | (1) 3ステップOAuthハンドシェイクを完全実装（`context.route()`でポップアップをインターセプトし、`authorizing:github`→ACK待機→`authorization:github:success`の3段階を再現）。(2) `page.route()`→`context.route()`に変更。(3) glob→関数マッチャー（`url => url.pathname === '/auth'`）に変更。(4) GitHub API モックのルート登録順序をLIFO対応（catch-all先登録→具体ルート後登録）に修正。(5) エビデンス提出前の社内レビュー義務化（CLAUDE.mdルール11追加） | verify-cms-crud.mjs, CLAUDE.md |
+| 37 | 2026-05-22 | CMS年月選択プルダウンがフィルターとして動作しない: CMS-19の年月セレクターが選択年月のみ表示ではなく、該当見出しへスクロールするだけだった | 要件定義で「年月選択」がフィルターかジャンプか曖昧なまま実装され、admin-htmlテストも`scrollIntoView`の存在確認に留まっていた | CMS-19要件を「年月選択プルダウンで選択年月のみ表示」に明確化。`createMonthSelector()`に`applyMonthFilter()`を追加し、選択年月以外のグループコンテナを`display:none`にする。React再描画後も現在DOMへ再適用するため、選択値を保持しつつ選択肢を再構築する | admin-html 2.6.6章 #14, verify-cms19-month-filter.mjs |
 
 ---
 
@@ -1860,6 +1862,7 @@ git履歴に個人情報（氏名・メールアドレス）が含まれてい�
 | Bug #32 | URLバーとモーダル非重複 | T09, T12 |
 | Bug #33 | タグURLエンコード | S08 |
 | Bug #36 | CMS認証後エディタ表示（ログイン画面のみ問題） | T17〜T32 全48枚 |
+| Bug #37 | CMS年月フィルター（選択年月のみ表示） | E-37 / cms19-month-filter |
 
 ### 4.9.6 CMS CRUD操作検証（T17〜T32）
 
