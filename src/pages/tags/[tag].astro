@@ -48,6 +48,7 @@ const posts = allPosts
     h1 {
       font-size: 1.4rem;
       margin-bottom: 0.5rem;
+      text-wrap: balance;
     }
     .back-link {
       display: inline-block;
@@ -57,6 +58,12 @@ const posts = allPosts
     }
     .back-link:hover {
       color: #333;
+    }
+    .back-link:focus-visible,
+    .post-link:focus-visible {
+      outline: 2px solid #1a73e8;
+      outline-offset: 3px;
+      border-radius: 3px;
     }
     .no-posts {
       color: #767676;
@@ -79,6 +86,7 @@ const posts = allPosts
     }
     .post-title {
       font-size: 1rem;
+      text-wrap: pretty;
     }
     .post-link:hover .post-title {
       text-decoration: underline;

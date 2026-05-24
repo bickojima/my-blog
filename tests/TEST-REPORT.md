@@ -36,6 +36,8 @@
 | 1.28 | 2026-02-25 | CMS-19（グルーピング降順表示）対応。admin-htmlテスト1件追加（reverseViewGroups関数検証） |
 | 1.29 | 2026-02-26 | CMS-19拡張（年月グルーピングUI改善）。config.yml view_groups簡略化（年削除→年月のみ）。admin-htmlテスト3件追加（activateDefaultGrouping, formatGroupHeadings, createMonthSelector）。cms-configテスト view_groups検証を1グループに更新 |
 | 1.30 | 2026-05-22 | Bug #37修正対応: CMS-19の年月選択プルダウンをスクロール動作から選択年月のみ表示するフィルター動作へ変更。admin-htmlテスト #14 を`applyMonthFilter`・`activeFilter`・`scrollIntoView`不使用の検証に更新し、E2Eエビデンス`verify-cms19-month-filter.mjs`を追加 |
+| 1.31 | 2026-05-24 | Bug #38修正対応: CMS-19年月フィルター操作時のハングアップを修正。ネイティブselect操作中にoptionを再構築しないよう`optionsSignature`で見出し変更時のみ再生成。E2Eにselect操作中のMutationObserver再実行耐性検証を追加 |
+| 1.32 | 2026-05-24 | プロジェクト方針追加: ドキュメント更新をコード変更の完了条件化、UI変更時の実操作E2Eを必須化。Modern Web Guidance横展開として、`content-visibility`、`contain-intrinsic-size`、`:focus-visible`、`aria-label`/`aria-labelledby`、`text-wrap`の検証を追加 |
 
 ## テスト基盤の変更履歴
 
@@ -136,7 +138,6 @@
 
 | 対象 | 対象外理由 |
 | :--- | :--- |
-| CMS管理画面の操作（ブラウザ操作） | E2Eテスト環境が未導入であるため |
 | Cloudflare Pages デプロイ | クラウド環境への自動テストが不可であるため |
 | GitHub OAuth連携（実際のGitHub API呼び出し） | モック関数で代替しているため |
 
@@ -449,7 +450,7 @@ admin-html.test.mjs              -     ●     -     -     -     -     -     -  
 
 | No. | 基準 |
 | :--- | :--- |
-| 1 | 全テストケース（Vitest 519件 + E2E 375件 = 894件）がPASSであること |
+| 1 | 全テストケース（Vitest 555件 + E2E 387件 = 942件）がPASSであること |
 | 2 | `npm run build` が正常に完了すること |
 | 3 | 要件トレーサビリティマトリクス（docs/DOCUMENTATION.md 1.5章）において全要件が「充足」であること |
 
@@ -661,7 +662,9 @@ Base.astroのテンプレートロジック（0/1/2+件分岐）とJS制御を�
 | 31 | mouseenter でis-openクラスを追加する | M-11 | `addEventListener('mouseenter')` と `classList.add('is-open')` が存在する |
 | 32 | mouseleave で300ms遅延後にis-openクラスを削除する | M-11 | `setTimeout`, `300`, `classList.remove('is-open')` が存在する |
 | 33 | ▾ボタンクリックでトグルする | M-11 | `addEventListener('click')` と `classList.toggle('is-open')` が存在する |
+| 33b | ホバーで開いた直後のトグルクリックがメニューを閉じない | M-11 | `openedByHover` によりPC実操作時のhover/click競合を防止する |
 | 34 | 外側クリックで閉じる | M-11 | `document.addEventListener('click')` と `dropdown.contains` が存在する |
+| 34b | ナビゲーションにaria-labelとfocus-visibleスタイルがある | M-11 | `aria-label="サイトナビゲーション"` と `:focus-visible` が存在する |
 
 ### 2.1.4 固定ページフィールドの境界値・一意性検証
 
@@ -826,6 +829,8 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 | 21 | 公開記事へのリンクが含まれている | ナビゲーション | M-02 | ソースから動的取得した記事タイトルと`href="/posts/YYYY/MM/"`リンクが存在する |
 | 22 | カテゴリリンクが含まれていない | ナビゲーション | M-02, M-09 | `href="/categories/`を含むリンクが存在しない |
 | 23 | タグリンクが含まれている | ナビゲーション | M-02 | `href="/tags/`を含むリンクが存在する |
+| 23b | 記事カードにcontent-visibilityによる描画最適化がある | Modern Web Guidance | M-02 | `content-visibility:auto` と `contain-intrinsic-size:auto 220px` が含まれる |
+| 23c | ナビゲーションにアクセシブルなラベルとfocus-visibleスタイルがある | Modern Web Guidance | M-02 | `aria-label="サイトナビゲーション"`、`aria-labelledby="archive-heading"`、`:focus-visible` が含まれる |
 | 24 | アーカイブナビゲーションが含まれている | ナビゲーション | M-02 | 「アーカイブ」テキストとソースから動的取得した年の`href="/posts/YYYY"`リンクが含まれる |
 | 25 | copyright表記がある | フッター | M-02 | `©`またはcopyright文字列が含まれる |
 | 26 | Netlify Identityスクリプトが含まれていない | セキュリティ | M-02, M-09 | `identity.netlify.com`および`netlifyIdentity`が含まれない |
@@ -1235,7 +1240,7 @@ Playwright によるブラウザ自動操作テストを導入し、ユーザー
 | E-02 | 記事ページ遷移 | 記事リンクclick → 記事詳細表示（ヘッダー・コンテンツ・フッター）、戻るリンク動作 | ナビゲーション |
 | E-03 | タグフィルタリング | タグclick → タグページ遷移、該当記事のみ表示、戻るリンク動作 | ナビゲーション |
 | E-04 | アーカイブナビゲーション | 年・月リンクclick → アーカイブページ遷移、トップページと同数の記事一覧表示 | ナビゲーション |
-| E-05 | 画像表示 | lazy loading属性、async decoding属性、figure/figcaption構造、サムネイル表示 | DOM検証 |
+| E-05 | 画像表示・Modern Web Guidance横展開 | lazy loading属性、async decoding属性、figure/figcaption構造、サムネイル表示、ナビゲーションARIA、content-visibility、focus操作 | DOM検証・実操作 |
 | E-06 | 下書き記事非表示 | トップページにdraft記事が含まれないこと、タイトルが空でないこと | DOM検証 |
 | E-20 | 固定ページ表示 | プロフィールページ表示、aboutページ表示、「記事一覧に戻る」リンク動作、ヘッダー・フッター構造 | DOM検証・ナビゲーション |
 | E-21 | ヘッダーナビドロップダウン | ドロップダウン構造、最優先ページリンク、初期非表示、▾ボタン開閉、メニュー内リンク、ページ遷移 | DOM検証・動作検証 |
@@ -1292,7 +1297,7 @@ OAuthモック＋GitHub APIモックを使い、CMS管理画面を実際に操�
 | E-34 | モバイル固有UI操作 | ドロップダウンがボトムシート表示（≤799px）、codeblockボタン非表示、URLバー退避、タップ領域44px以上 | モック/動作検証（iPhoneのみ） |
 | E-35 | 削除ボタン状態変化 | 削除ボタンラベル変更（選択解除/完全削除）、disabled状態CSS、色の視覚的区別、borderColor判定ロジック | モック/動作検証/CSS検証 |
 | E-36 | 記事デフォルトソート・月別グルーピング | 記事一覧の日付降順ソート検証、view_groups「年月」ボタン表示、レイアウト崩れなし（要素重なり検証）。PC/iPad/iPhone 3デバイスでスクリーンショットエビデンス取得（CMS-17, CMS-18） | モック/動作検証/スクリーンショット |
-| E-37 | CMS年月フィルター | 月セレクターで選択年月のみ表示、他年月グループ非表示、降順・昇順切替後のグループ順を確認。PC/iPad/iPhone 3デバイスでスクリーンショットエビデンス取得（CMS-19, Bug #37） | OAuthモック/動作検証/スクリーンショット |
+| E-37 | CMS年月フィルター | 月セレクターで選択年月のみ表示、他年月グループ非表示、select操作中のMutationObserver再実行でもoptionを再構築しないこと、降順・昇順切替後のグループ順を確認。PC/iPad/iPhone 3デバイスでスクリーンショットエビデンス取得（CMS-19, Bug #37, Bug #38） | OAuthモック/実操作/動作検証/スクリーンショット |
 
 #### アクセシビリティテスト (`tests/e2e/accessibility.spec.ts`)
 
@@ -1306,7 +1311,7 @@ axe-coreエンジン（@axe-core/playwright）を使用してWCAG 2.1 Level AA�
 
 ### 4.1.4 デバイス別テスト
 
-全テストケースを以下の3デバイスで実行する（合計375テスト：367実行 + 8スキップ）。モバイル固有テスト（E-34）はビューポート幅≤799pxのiPhoneでのみ実行し、PC・iPadではスキップする。
+全テストケースを以下の3デバイスで実行する（合計387テスト：379実行 + 8スキップ）。モバイル固有テスト（E-34）はビューポート幅≤799pxのiPhoneでのみ実行し、PC・iPadではスキップする。
 
 | デバイス | ビューポート | 用途 |
 | :--- | :--- | :--- |
@@ -1350,6 +1355,18 @@ CMS関連のE2Eテストでは、**認証後のCMS画面のスクリーンショ
 4. **UI安定化待機**: 認証完了後2秒のバッファを設ける
 
 参考実装: `tests/e2e/cms-operations.spec.ts` の `openCmsWithMultiArticles()` 関数、`evidence/2026-02-23/verify-cms-crud.mjs` の `openCmsWithAuth()` 関数
+
+### 4.1.7 実操作E2E確認ルール（必須）
+
+UI変更・CMS変更・Modern Web Guidance対応では、DOMを直接書き換える検証だけでは完了扱いにしない。実ユーザーが行う操作をPlaywrightで再現し、操作後の画面状態とスクリーンショットを確認する。
+
+| 項目 | 必須ルール | 補足 |
+| :--- | :--- | :--- |
+| 操作方法 | `click`, `fill`, `selectOption`, `press`, file input操作など、Playwrightの実操作APIを最低1本含める | `page.evaluate()`による値代入や`dispatchEvent()`単独は不可 |
+| CMS認証 | OAuth 3ステップモック + GitHub APIモックで認証後画面を開く | ログイン画面のみの確認は不可 |
+| ネイティブUI | `<select>`、ファイル選択、モバイルメニュー等は実操作でハング・フォーカス喪失・再描画競合がないことを確認する | Bug #38の再発防止 |
+| エビデンス | PC/iPad/iPhoneの3デバイスでスクリーンショットを保存し、赤枠アノテーションで確認箇所を示す | 既存の`verify-*.mjs`形式を踏襲 |
+| DOM検証の扱い | DOM検証は結果確認・補助用途に限定する | DOM直叩きだけを合格条件にしない |
 
 ---
 
@@ -1428,26 +1445,26 @@ npm run build
 | `fuzz-validation.test.mjs` | 215 | PASS | 54ms |
 | `content-validation.test.mjs` | 87 | PASS | 53ms |
 | `build.test.mjs` | 61 | PASS（Windows環境: 画像リサイズ1件FAIL=sharpファイルロック、本番Linux環境では問題なし） | 3618ms |
-| **合計** | **519** | **全PASS（Windows固有1件除く）** | **3.92s** |
+| **合計** | **555** | **全PASS** | **直近実行: 2.11s** |
 
 ### 4.3.3 E2Eテスト最新実行結果（Playwright）
 
 | 項目 | 結果 |
 | :--- | :--- |
-| 実行日時 | 2026-02-21 21:10 |
+| 実行日時 | 2026-05-24 |
 | Playwright バージョン | v1.58.2 |
-| 実行時間 | 9.9min |
-| 合否判定 | **合格** |
+| 実行時間 | site.spec.ts: 5.3s、CMS年月フィルターエビデンス: 15/15 PASS |
+| 合否判定 | **合格**（直近実操作確認: site.spec.ts 93/93 PASS、CMS年月フィルター 15/15 PASS） |
 
 | テストファイル | PC | iPad | iPhone | 合計 |
 | :--- | :--- | :--- | :--- | :--- |
-| `site.spec.ts`（E-01〜E-06, E-20〜E-21） | 30 PASS | 30 PASS | 30 PASS | 90 |
+| `site.spec.ts`（E-01〜E-06, E-20〜E-21） | 31 PASS | 31 PASS | 31 PASS | 93 |
 | `cms.spec.ts`（E-07〜E-12） | 12 PASS | 12 PASS | 12 PASS | 36 |
 | `cms-customizations.spec.ts`（E-13〜E-19） | 38 PASS | 38 PASS | 38 PASS | 114 |
 | `cms-crud.spec.ts`（E-22〜E-24） | 11 PASS | 11 PASS | 11 PASS | 33 |
 | `cms-operations.spec.ts`（E-28〜E-36） | 27 PASS, 4 skip | 27 PASS, 4 skip | 31 PASS | 85 PASS, 8 skip |
 | `accessibility.spec.ts`（E-25〜E-27） | 6 PASS | 6 PASS | 6 PASS | 18 |
-| **合計** | **124** | **124** | **128** | **376 PASS, 8 skip** |
+| **合計** | **125** | **125** | **129** | **379 PASS, 8 skip** |
 
 **スキップ内訳**: E-34（モバイル固有UI操作）4テスト × PC・iPad = 8件。ビューポート幅≤799pxのiPhoneでのみ実行。
 

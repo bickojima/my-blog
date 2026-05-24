@@ -320,6 +320,17 @@ describe('ビルド検証', () => {
       expect(indexHtml).toContain('@container');
     });
 
+    it('2件目以降の記事カードはcontent-visibilityで描画負荷を抑える', () => {
+      expect(indexHtml).toContain('content-visibility:auto');
+      expect(indexHtml).toContain('contain-intrinsic-size:auto 220px');
+    });
+
+    it('ナビゲーションにアクセシブルなラベルとfocus-visibleスタイルがある', () => {
+      expect(indexHtml).toContain('aria-label="サイトナビゲーション"');
+      expect(indexHtml).toContain('aria-labelledby="archive-heading"');
+      expect(indexHtml).toContain(':focus-visible');
+    });
+
     it('アーカイブナビゲーションが含まれている', () => {
       expect(firstPost).toBeDefined();
       expect(indexHtml).toContain('アーカイブ');

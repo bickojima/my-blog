@@ -148,6 +148,21 @@ test.describe('E-05: 画像表示', () => {
       await expect(thumbnails.nth(1)).toHaveAttribute('loading', 'lazy');
     }
   });
+
+  test('Modern Web Guidance: ナビゲーションと一覧の低リスク改善が適用されている', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('header nav')).toHaveAttribute('aria-label', 'サイトナビゲーション');
+    await expect(page.locator('nav.archive-nav')).toHaveAttribute('aria-labelledby', 'archive-heading');
+
+    const secondCard = page.locator('article.post-card').nth(1);
+    if (await secondCard.count() > 0) {
+      await expect(secondCard).toHaveCSS('content-visibility', 'auto');
+    }
+
+    const toggle = page.locator('.nav-dropdown-toggle');
+    await toggle.focus();
+    await expect(toggle).toBeFocused();
+  });
 });
 
 test.describe('E-20: 固定ページ表示', () => {
@@ -213,23 +228,20 @@ test.describe('E-21: ヘッダーナビゲーションドロップダウン', ()
     await expect(menu).not.toBeVisible();
     await expect(toggle).toHaveAttribute('aria-expanded', 'false');
 
-    // dispatchEventでクリック（mouseenterによるhover副作用なし）
-    await toggle.dispatchEvent('click');
+    // 実ユーザー操作と同じクリックで開く
+    await toggle.click();
     await expect(menu).toBeVisible();
     await expect(toggle).toHaveAttribute('aria-expanded', 'true');
 
-    // 再dispatchEventで閉じる
-    await toggle.dispatchEvent('click');
+    // 再クリックで閉じる
+    await toggle.click();
     await expect(menu).not.toBeVisible();
     await expect(toggle).toHaveAttribute('aria-expanded', 'false');
   });
 
   test('ドロップダウンメニュー内に全固定ページのリンクがある', async ({ page }) => {
     await page.goto('/');
-    // JSでドロップダウンを開く
-    await page.evaluate(() => {
-      document.querySelector('.nav-dropdown')?.classList.add('is-open');
-    });
+    await page.locator('.nav-dropdown-toggle').click();
     const menuLinks = page.locator('.nav-dropdown-menu a');
     const count = await menuLinks.count();
     expect(count).toBeGreaterThanOrEqual(2);
@@ -242,10 +254,7 @@ test.describe('E-21: ヘッダーナビゲーションドロップダウン', ()
 
   test('ドロップダウンメニューのリンクから固定ページに遷移できる', async ({ page }) => {
     await page.goto('/');
-    // JSでドロップダウンを開く
-    await page.evaluate(() => {
-      document.querySelector('.nav-dropdown')?.classList.add('is-open');
-    });
+    await page.locator('.nav-dropdown-toggle').click();
 
     // aboutリンクをクリック
     const aboutLink = page.locator('.nav-dropdown-menu a[href="/about"]');

@@ -6,8 +6,9 @@
  *   2. グルーピングボタン非表示 + 月セレクター表示
  *   3. グループ見出し日本語表記（"2026年2月"形式）
  *   4. 月セレクター選択時に選択年月のグループだけ表示する（Bug #37）
- *   5. ソート昇順切替時にグループも昇順になる
- *   6. ソート降順復帰時にグループも降順に戻る
+ *   5. 月セレクター操作中のMutationObserver再実行でoptionを再構築しない（Bug #38）
+ *   6. ソート昇順切替時にグループも昇順になる
+ *   7. ソート降順復帰時にグループも降順に戻る
  *
  * デバイス: PC (1280x800) / iPad Pro 11 (834x1194) / iPhone 14 (390x844)
  * 認証方式: context.route() + 3ステップOAuthハンドシェイク
@@ -258,14 +259,11 @@ async function runScenarios(page, deviceName) {
     const id = 'cms19-month-filter';
     console.log(`  [${id}] 年月フィルター確認...`);
 
-    await page.evaluate(() => {
-      const sel = document.getElementById('cms-month-selector');
-      if (!sel) return;
-      const firstMonthOption = Array.from(sel.options).find(opt => opt.value);
-      if (!firstMonthOption) return;
-      sel.value = firstMonthOption.value;
-      sel.dispatchEvent(new Event('change', { bubbles: true }));
-    });
+    const select = page.locator('#cms-month-selector');
+    const selectedMonth = await select.evaluate(sel => Array.from(sel.options).find(opt => opt.value)?.value || '');
+    if (selectedMonth) {
+      await select.selectOption(selectedMonth);
+    }
     await page.waitForTimeout(500);
 
     const state = await page.evaluate(() => {
@@ -320,7 +318,64 @@ async function runScenarios(page, deviceName) {
     results.push({ device: deviceName, id, name: '年月フィルター（選択年月のみ表示）', ...state, pass, screenshot: `screenshots/cms19-${id}-${deviceName}.png` });
   }
 
-  // S3: ソート昇順切替
+  // S3: 月セレクター操作中の再描画耐性
+  {
+    const id = 'cms19-select-stability';
+    console.log(`  [${id}] select操作中の再描画耐性確認...`);
+
+    const state = await page.evaluate(async () => {
+      const sel = document.getElementById('cms-month-selector');
+      if (!sel) return { hasSelector: false };
+
+      sel.value = '';
+      sel.dispatchEvent(new Event('change', { bubbles: true }));
+      sel.focus();
+
+      const beforeOptions = Array.from(sel.options);
+      const beforeTexts = beforeOptions.map(opt => opt.textContent);
+      const beforeSignature = sel.dataset.optionsSignature || '';
+
+      for (let i = 0; i < 40; i++) {
+        document.body.classList.toggle('cms19-stability-probe', i % 2 === 0);
+        await new Promise(resolve => requestAnimationFrame(resolve));
+      }
+
+      const afterOptions = Array.from(sel.options);
+      const afterTexts = afterOptions.map(opt => opt.textContent);
+      const sameOptionNodes = beforeOptions.length === afterOptions.length
+        && beforeOptions.every((opt, index) => opt === afterOptions[index]);
+      return {
+        hasSelector: true,
+        beforeTexts,
+        afterTexts,
+        beforeSignature,
+        afterSignature: sel.dataset.optionsSignature || '',
+        optionCount: afterOptions.length,
+        sameOptionNodes,
+        activeElementId: document.activeElement ? document.activeElement.id : '',
+      };
+    });
+
+    const pass = state.hasSelector
+      && state.sameOptionNodes
+      && state.optionCount >= 2
+      && state.beforeSignature === state.afterSignature
+      && state.activeElementId === 'cms-month-selector';
+
+    await addRedBorder(page, '#cms-month-selector', '再描画中も安定');
+
+    const ssPath = join(SCREENSHOT_DIR, `cms19-${id}-${deviceName}.png`);
+    await page.screenshot({ path: ssPath, fullPage: false });
+    await clearOverlays(page);
+
+    console.log(`    SameOptionNodes: ${state.sameOptionNodes}`);
+    console.log(`    OptionCount: ${state.optionCount}`);
+    console.log(`    Focus: ${state.activeElementId}`);
+    console.log(`    Result: ${pass ? 'PASS' : 'FAIL'}`);
+    results.push({ device: deviceName, id, name: 'select操作中の再描画耐性（option再構築なし）', ...state, pass, screenshot: `screenshots/cms19-${id}-${deviceName}.png` });
+  }
+
+  // S4: ソート昇順切替
   {
     const id = 'cms19-sort-asc';
     console.log(`  [${id}] ソート昇順切替...`);
@@ -374,7 +429,7 @@ async function runScenarios(page, deviceName) {
     results.push({ device: deviceName, id, name: 'ソート昇順切替→グループ昇順', ...state, isAscGroups, pass, screenshot: `screenshots/cms19-${id}-${deviceName}.png` });
   }
 
-  // S4: ソート降順復帰
+  // S5: ソート降順復帰
   {
     const id = 'cms19-sort-desc-restore';
     console.log(`  [${id}] ソート降順復帰...`);
@@ -431,6 +486,7 @@ function generateReport() {
         if (r.monthSelectorVisible !== undefined) detail += `月セレクター: ${r.monthSelectorVisible ? '✓' : '✗'}<br>`;
         if (r.isJapaneseFormat !== undefined) detail += `日本語表記: ${r.isJapaneseFormat ? '✓' : '✗'}<br>`;
         if (r.selected !== undefined) detail += `選択年月: ${r.selected}<br>表示中: ${r.visibleGroups.join(' → ')}<br>非表示: ${r.hiddenGroups.join(' → ')}<br>`;
+        if (r.sameOptionNodes !== undefined) detail += `option再構築なし: ${r.sameOptionNodes ? '✓' : '✗'}<br>フォーカス維持: ${r.activeElementId === 'cms-month-selector' ? '✓' : '✗'}<br>`;
         cells += `<td class="${statusClass}"><img src="${r.screenshot}" width="300"><br><strong>${statusText}</strong><br><small>${detail}</small></td>`;
       } else {
         cells += '<td>-</td>';
@@ -465,6 +521,7 @@ small { display: block; text-align: left; max-width: 300px; font-size: 0.8em; co
 <ul>
   <li><strong>デフォルト表示</strong>: 年月グルーピング自動有効、降順（最新月が先頭）、グルーピングボタン非表示、月セレクター表示、見出し日本語表記</li>
   <li><strong>年月フィルター</strong>: 月セレクター選択時に選択年月のグループだけ表示し、他年月グループを非表示にする</li>
+  <li><strong>select操作中の安定性</strong>: Decap CMSのMutationObserver再実行中も月セレクターのoptionを再構築せず、ブラウザのネイティブselect操作を阻害しない</li>
   <li><strong>ソート昇順切替</strong>: 日付昇順ソート時にグループ見出しも昇順（古い月が先頭）になる</li>
   <li><strong>ソート降順復帰</strong>: 日付降順に戻すとグループ見出しも降順に復帰する</li>
 </ul>

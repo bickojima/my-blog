@@ -14,8 +14,8 @@ nonDraftPosts.forEach(post => {
 const years = Array.from(archiveMap.keys()).sort((a, b) => b.localeCompare(a));
 ---
 
-<nav class="archive-nav">
-  <h2>アーカイブ</h2>
+<nav class="archive-nav" aria-labelledby="archive-heading">
+  <h2 id="archive-heading">アーカイブ</h2>
   {years.map(year => (
     <div class="archive-year">
       <a href={`/posts/${year}`}>{year}年</a>
@@ -59,5 +59,11 @@ const years = Array.from(archiveMap.keys()).sort((a, b) => b.localeCompare(a));
   }
   .archive-months a:hover {
     color: #333;
+  }
+  .archive-year > a:focus-visible,
+  .archive-months a:focus-visible {
+    outline: 2px solid #1a73e8;
+    outline-offset: 3px;
+    border-radius: 3px;
   }
 </style>
