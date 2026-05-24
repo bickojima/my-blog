@@ -322,6 +322,8 @@ describe('管理画面HTML（public/admin/index.html）の検証', () => {
       expect(adminHtml).toContain('applyMonthFilter');
       expect(adminHtml).toContain('activeFilter');
       expect(adminHtml).toContain('previousValue');
+      expect(adminHtml).toContain('optionsSignature');
+      expect(adminHtml).toContain("sel.dataset.optionsSignature !== optionsSignature");
       expect(adminHtml).toContain("container.style.display = visible ? '' : 'none'");
       expect(adminHtml).not.toContain('scrollIntoView');
     });

@@ -74,6 +74,13 @@ const navPages = (await getCollection('pages'))
     .nav-links > a:hover {
       color: #333;
     }
+    .nav-links a:focus-visible,
+    .nav-dropdown-toggle:focus-visible,
+    .admin-link:focus-visible {
+      outline: 2px solid #1a73e8;
+      outline-offset: 3px;
+      border-radius: 3px;
+    }
     .nav-dropdown {
       position: relative;
     }
@@ -126,6 +133,10 @@ const navPages = (await getCollection('pages'))
       background: #f5f5f5;
       color: #333;
     }
+    .nav-dropdown-menu a:focus-visible {
+      background: #f5f5f5;
+      color: #333;
+    }
     main {
       max-width: 700px;
       margin: 2rem auto;
@@ -151,7 +162,7 @@ const navPages = (await getCollection('pages'))
 </head>
 <body>
   <header>
-    <nav>
+    <nav aria-label="サイトナビゲーション">
       <a href="/" class="site-title">{siteTitle}</a>
       <div class="nav-links">
         {navPages.length === 1 ? (
@@ -186,6 +197,7 @@ const navPages = (await getCollection('pages'))
         toggle?.setAttribute('aria-expanded', String(open));
       };
       let closeTimer: ReturnType<typeof setTimeout> | null = null;
+      let openedByHover = false;
       // PC（ホバー可能デバイス）のみ: mouseenter/mouseleaveで開閉
       // モバイル（タッチデバイス）ではhoverイベントがclickより先に発火し、
       // ドロップダウンが一瞬開いてすぐ閉じるバグを防止するため除外
@@ -193,17 +205,25 @@ const navPages = (await getCollection('pages'))
       if (canHover) {
         dropdown.addEventListener('mouseenter', () => {
           if (closeTimer) { clearTimeout(closeTimer); closeTimer = null; }
+          openedByHover = true;
           setOpen(true);
         });
         dropdown.addEventListener('mouseleave', () => {
           closeTimer = setTimeout(() => {
             setOpen(false);
+            openedByHover = false;
             closeTimer = null;
           }, 300);
         });
       }
       // ▾ボタン: クリック/タップでトグル
       toggle?.addEventListener('click', () => {
+        if (dropdown.classList.contains('is-open') && openedByHover) {
+          openedByHover = false;
+          setOpen(true);
+          return;
+        }
+        openedByHover = false;
         setOpen(!dropdown.classList.contains('is-open'));
       });
       // 外側クリックで閉じる

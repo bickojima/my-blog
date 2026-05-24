@@ -23,9 +23,9 @@
 npm run dev          # 開発サーバー起動（前処理含む）
 npm run build        # テスト必須ビルド（vitest run → normalize-images → organize-posts → astro build → image-optimize）
 npm run build:raw    # テストなしビルド（build.test.mjs内部で使用、Cloudflare Pages用）
-npm test             # Vitest 全テスト実行（519テスト、記事数により変動）
+npm test             # Vitest 全テスト実行（555テスト、記事数により変動）
 npm run test:watch   # Vitest ウォッチモード
-npm run test:e2e     # Playwright E2Eテスト（要: npm run build 済み、375テスト：367実行+8スキップ）
+npm run test:e2e     # Playwright E2Eテスト（要: npm run build 済み、387テスト：379実行+8スキップ）
 ```
 
 ## ディレクトリ構成
@@ -99,16 +99,19 @@ tests/
 - Decap CMS本体UIは引用元レポジトリの実装を尊重し、保存・OAuth・プレビュー互換性を壊す変更は非準拠許容とする
 - 明確なLCP候補のみ `fetchpriority="high"` と非lazyを適用する。Markdown本文画像の一律高優先度化は禁止
 - コンテナクエリ、ARIA状態同期、コントラスト改善など、Baseline対応済みでリスクの低い改善を優先する
+- `content-visibility`, `contain-intrinsic-size`, `text-wrap`, `:focus-visible`, `aria-label`/`aria-labelledby` など、非対応ブラウザで自然にフォールバックするWeb標準機能を優先して横展開する
+- UI変更の検証は、実際のクリック・入力・select選択などのE2E操作を必須とし、DOM直叩きだけで完了扱いにしない
 
 ## テスト
 
-- **Vitest**: 設定検証、コンテンツ検証、単体テスト、ビルド統合テスト、セキュリティ検証、ファズテスト、基本機能保護テスト（532テスト、記事数により変動）
-- **Playwright**: PC/iPad/iPhone 3デバイス × 128テスト = 384テスト（376実行+8スキップ、ローカルのみ、CIでは未実行）
+- **Vitest**: 設定検証、コンテンツ検証、単体テスト、ビルド統合テスト、セキュリティ検証、ファズテスト、基本機能保護テスト（555テスト、記事数により変動）
+- **Playwright**: PC/iPad/iPhone 3デバイスで387テスト（379実行+8スキップ、ローカルのみ、CIでは未実行）
 - コンテンツ検証テストは記事数・ページ数に応じて動的展開される
 - テスト実行後、失敗がある場合は原因を調査し修正する（テストを削除・スキップしない）
 - **テストにコンテンツをハードコードしない**: 記事名・固定ページ名・URL等はソースから動的取得する（コンテンツ変更でテストが壊れない設計）
-- **CMS E2Eテストの必須方式**: OAuthモック（postMessageシミュレーション）＋ GitHub APIモック（`page.route()`全面インターセプト）を統一使用する。今後のCMSテスト追加時もこの方式に従うこと。**Playwright test runnerでは `window.open` モンキーパッチ方式を使用**（`context.route()`方式はtest runnerで動作しない。詳細: DOCUMENTATION.md 4.9.9章）
+- **CMS E2Eテストの必須方式**: OAuthモック（postMessageシミュレーション）＋ GitHub APIモック（`page.route()`全面インターセプト）を統一使用する。今後のCMSテスト追加時もこの方式に従うこと。**Playwright test runnerでは `window.open` モンキーパッチ方式を使用**（`context.route()`方式はtest runnerで動作しない。詳細: DOCUMENTATION.md 4.9.10章）
 - **E2Eスクリーンショットエビデンス必須**: CMS関連のE2Eテストでは認証後のCMS画面スクリーンショットを必ず取得する。ログイン画面のみのスクリーンショットは不可。3デバイス（PC/iPad/iPhone）で `evidence/YYYY-MM-DD/screenshots/` に保存する
+- **実操作E2E必須**: UI変更・CMS変更・Modern Web Guidance対応では、DOMを直接書き換える `page.evaluate()` やイベント発火だけを合格条件にしてはならない。クリック、入力、select選択、キーボード操作、メニュー展開など、ユーザーが実際に行うPlaywright操作（`click`, `fill`, `selectOption`, `press`, ファイル選択等）で最低1本は再現・確認すること。DOM直叩きは状態確認や補助に限定する
 - **認証後スクリーンショットの取得方法**: OAuthポップアップのインターセプトには `context.route()` を使用する（`page.route()` ではポップアップウィンドウのnavigationをインターセプトできない）。3ステップOAuthハンドシェイク: (1) `authorizing:github` 送信 → (2) 親ACK待ち → (3) `authorization:github:success:{token}` 送信。参考実装: `tests/e2e/cms-operations.spec.ts` の `openCmsWithMultiArticles()`、`evidence/2026-02-23/verify-cms-crud.mjs` の `openCmsWithAuth()`
 
 ## ドキュメント体系
@@ -130,7 +133,7 @@ DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を�
 ## 変更時のルール
 
 ### コード変更時
-1. コード修正時は関連ドキュメント（README.md, docs/DOCUMENTATION.md, tests/TEST-REPORT.md, CLAUDE.md）も必ず更新する
+1. **ドキュメント更新は完了条件**: コード修正時は関連ドキュメント（README.md, docs/DOCUMENTATION.md, tests/TEST-REPORT.md, CLAUDE.md）も必ず更新する。要件・設計・テスト・運用ルール・バグ一覧・QA履歴のどれに影響するかを確認し、該当箇所を更新しないままコミットしてはならない
 2. テストが失敗した場合はテストを修正し、TEST-REPORT.md のテストケース説明を更新する
 3. admin/index.html を変更した場合は `admin-html.test.mjs` との整合性を確認する
 4. config.yml を変更した場合は `cms-config.test.mjs` との整合性を確認する
@@ -143,6 +146,7 @@ DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を�
 11. **エビデンス提出前に社内レビューを実施する**: エビデンス（スクリーンショット・レポート）は提出前に必ず内容を確認し、期待通りのスクリーンショットが取得できているか（ログイン画面のみ等になっていないか）をレビューする
 12. **staging先行を徹底する**: ユーザーが明示的にmain反映を指示しない限り、コード・ドキュメント変更はstagingブランチへ先行反映する。mainへの直接pushは禁止
 13. **Modern Web Guidance対応時のE2Eエビデンス**: 過去エビデンススクリプト（`evidence/YYYY-MM-DD/verify-*.mjs`）の方式を優先して使う。CMS画面はOAuthモックとGitHub APIモックを使い、認証後画面のスクリーンショットを保存する
+14. **実操作確認なしで完了扱いにしない**: 変更対象がユーザー操作を伴う場合、静的テスト・DOM検証・`page.evaluate()`だけでは完了不可。必ず実際のブラウザ操作をE2Eで行い、操作後の画面状態とスクリーンショットを確認してから完了報告する
 
 ### エビデンス取得方針
 - **取得タイミング**: staging検証時、mainマージ前
@@ -154,6 +158,7 @@ DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を�
 - **CMS OAuthモック必須**: CMSエビデンスは実GitHub認証に依存させず、OAuth 3ステップハンドシェイクとGitHub APIモックで擬似ログインする。認証後のCMS独自カスタマイズ画面を撮影すること
 - **赤枠アノテーション**: 全スクリーンショットの注目箇所に赤枠とラベルを必ず付与する（ボタン・メニュー・重なり検出箇所・バグ再発防止確認箇所）
 - **ボタン操作テスト**: ボタンを実際に押下してメニュー展開・モーダル表示をエビデンス取得。複数メニュー同時展開時の操作性も確認
+- **フォーム/セレクト実操作テスト**: input/select/textarea/file picker等は、値をDOMへ直接代入するだけでなく、Playwrightの実操作APIで操作する。特にネイティブselect、モバイルメニュー、CMSのReact管理下DOMは、実操作でハング・フォーカス喪失・再描画競合がないことを確認する
 - **CMS重点検証**: 記事編集画面・画像アップロード画面・メディアライブラリはバグが多いため重点的にエビデンスを取得
 - **過去バグ検証マトリクス**: Bug #1,#4,#5,#6,#7,#8,#9,#11,#13,#14,#15,#29,#30,#31,#32,#33の再発確認をエビデンスに含める
 - **テストデバイス**: PC (1280x800) / iPad Pro 11 (834x1194) / iPhone 14 (390x844)

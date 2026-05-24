@@ -42,6 +42,8 @@
 | 1.35 | 2026-05-22 | Modern Web Guidance準拠対応（staging先行反映）: Google公式ガイドに基づき、トップページ先頭サムネイルのLCP優先度制御（`fetchpriority="high"` + 非lazy）、記事カードのコンテナクエリ、ナビゲーションの`aria-expanded`同期、CMS独自プレビュースタイルのコントラスト改善を追加。QA履歴、準拠方針、非準拠許容、NFR-07、トレーサビリティを追加 |
 | 1.36 | 2026-05-22 | 基本設計（2.2章）にGoogle Modern Web Guidanceスキル準拠方針を明記。CLAUDE.mdにstaging先行、過去E2Eエビデンス手法、OAuth/GitHub APIモック利用を今後のルールとして追加 |
 | 1.37 | 2026-05-22 | Bug #37修正: CMS-19の年月選択プルダウンがフィルターではなくスクロール動作になっていた問題を修正。CMS-19要件を「選択年月のみ表示」に明確化し、`createMonthSelector()`に`applyMonthFilter()`を追加。admin-html再発防止テスト更新 |
+| 1.38 | 2026-05-24 | Bug #38修正: CMS-19年月フィルター操作時に管理画面がハングアップする問題を修正。`createMonthSelector()`でネイティブselect操作中にoptionを再構築しないよう、`optionsSignature`で見出し変更時のみ再生成する方式に変更。E2Eにselect操作中のMutationObserver再実行耐性検証を追加 |
+| 1.39 | 2026-05-24 | プロジェクト方針追加: ドキュメント更新をコード変更の完了条件化、ユーザー実操作E2E確認をUI変更時の必須条件化。Modern Web Guidance横展開として、ナビゲーション/アーカイブのARIAラベル、focus-visible、記事一覧の`content-visibility`、記事・アーカイブの`text-wrap`を追加 |
 
 ## システム変更履歴
 
@@ -186,6 +188,9 @@ PR履歴に基づく主要なシステム変更の記録である。
 | Q8 | E2Eスクリーンショットの保存対象は、公開サイトをPC/iPad/iPhone相当、CMS独自カスタマイズ画面を認証モックでPC/iPhone相当まで確認する方針でよいか | OK | 確認済み |
 | Q9 | スクリーンショット保存先は`test-results/evidence/modern-web-guidance/`配下でよいか | OK | 確認済み |
 | Q10 | 要件定義を本書にQA表として残し、実装・テスト・エビデンス保存まで進めてよいか | OK。GoogleのModern Web Guidanceスキル準拠を方針として記載する | 確認済み |
+| Q11 | UI変更では実際の操作をしてのE2E動作確認を必須とする方針でよいか | 工数がかかってよいので、実際の操作してのE2E動作確認は必須というプロジェクト方針にする | 確認済み |
+| Q12 | 変更時のドキュメント更新を必須プロジェクト方針にしてよいか | ドキュメント修正は必ずする方針で、プロジェクト方針とする | 確認済み |
+| Q13 | Modern Web Guidanceに準拠できる箇所を横展開してよいか | 工数がかかってよいので横展開する | 確認済み |
 
 ### 1.1.5 Modern Web Guidance準拠方針
 
@@ -501,7 +506,7 @@ staging環境の検知:
 | NFR-04 | 日本語URL | cms-config | 2.4章 #9,#10 | M-03 | 充足 |
 | NFR-05 | レスポンシブデザイン | admin-html, build, E2E cms-operations | 2.6.3章 #1〜#10, 2.5章 #19, E-34 | M-02, M-11 | 充足 |
 | NFR-06 | アクセシビリティ（WCAG 2.1 AA） | E2E accessibility | E-25〜E-27 | M-11（axe-core） | 充足 |
-| NFR-07 | Modern Web Guidance準拠 | build, admin-html, E2E site, E2E evidence | 2.5章 #54〜#55, 2.6章, E-05, E-21, modern-web-guidance-evidence | M-02, M-11 | 充足 |
+| NFR-07 | Modern Web Guidance準拠 | build, content-validation, admin-html, E2E site, E2E evidence | 2.5章 #54〜#57, 2.6章, E-05, E-21, modern-web-guidance-evidence, cms19-month-filter | M-02, M-11 | 充足 |
 
 ### 1.5.4 セキュリティ要件 (SEC) → テストケース
 
@@ -642,8 +647,8 @@ my-blog/
 | 認証 | GitHub OAuth App | - | CMS管理者認証 |
 | 画像処理 | sharp | v0.34.5 | 画像圧縮・回転・リサイズ |
 | Web実装方針 | Google Modern Web Guidance | 公式ガイド準拠 | 独自実装部のモダンWeb機能・アクセシビリティ・パフォーマンス設計指針 |
-| テスト（単体・統合） | Vitest | v4.0.18 | 単体テスト・統合テスト・セキュリティ検証・基本機能保護（491テスト） |
-| テスト（E2E） | Playwright | v1.58.2 | ブラウザE2Eテスト（PC/iPad/iPhone 240テスト） |
+| テスト（単体・統合） | Vitest | v4.0.18 | 単体テスト・統合テスト・セキュリティ検証・基本機能保護（555テスト、記事数により変動） |
+| テスト（E2E） | Playwright | v1.58.2 | ブラウザE2Eテスト（PC/iPad/iPhone 387テスト、うち8件はモバイル固有条件でスキップ） |
 | コンテンツ | Markdown | - | frontmatter形式 |
 
 ### 2.2.2 選定理由
@@ -665,10 +670,12 @@ Decap CMS本体UIは外部プロダクト由来の実装であり、保存・OAu
 | 設計観点 | 採用方針 | 実装例 |
 | :--- | :--- | :--- |
 | Performance | 明確なLCP候補だけを高優先度化する | トップページ先頭サムネイルに`fetchpriority="high"`、`loading="eager"` |
+| Performance | ブラウザ標準の描画最適化を使い、初期表示に不要な下部コンテンツの描画負荷を抑える | 2件目以降の記事カードに`content-visibility: auto`と`contain-intrinsic-size` |
 | CSS Layout | 画面幅ではなくコンポーネント幅に応じた段階的拡張を優先する | 記事カードの`container-type: inline-size`と`@container` |
-| Accessibility | 開閉状態などのUI状態をARIA属性へ同期する | ヘッダーナビの`aria-expanded`同期 |
+| Typography | 対応ブラウザでは読みやすい改行を優先し、非対応時は通常表示にフォールバックする | 見出しに`text-wrap: balance`、本文/タイトルに`text-wrap: pretty` |
+| Accessibility | 開閉状態などのUI状態をARIA属性へ同期し、キーボードフォーカスを明示する | ヘッダーナビの`aria-expanded`同期、`aria-label`/`aria-labelledby`、`:focus-visible` |
 | CMS独自UI | Decap CMS本体を壊さない範囲で独自CSS/JSのみ改善する | プレビュースタイルと無効ボタン色のコントラスト改善 |
-| 検証 | 過去エビデンス方式を継承し、stagingで先行確認する | `evidence/2026-05-22/verify-modern-web-guidance.mjs` |
+| 検証 | 過去エビデンス方式を継承し、stagingで先行確認する。UI変更は実操作E2Eを必須とする | `evidence/2026-05-22/verify-modern-web-guidance.mjs`、`verify-cms19-month-filter.mjs` |
 
 ---
 
@@ -1623,7 +1630,8 @@ GitHubリポジトリが利用可能な場合、以下の手順でシステム�
 | 34 | 2026-02-23 | Windowsパスセパレータ問題: organize-posts.mjsのurl-map.json生成でpath.relativeがバックスラッシュを使用し、Windows環境でキー形式が不正 | path.relative()がOSのパスセパレータを使用 | `.replace(/\\\\/g, '/')`でurl-map.jsonキーを正規化。テストコードも同様に正規化 | build 2.5章（URLマッピング検証）, content-validation |
 | 35 | 2026-02-23 | git履歴に個人情報（氏名・メールアドレス）が含まれていた: 100件のコミットにauthor/committer情報として個人のフルネーム・Gmailアドレスが記録されていた | gitのグローバル設定に個人メールアドレスが設定されており、リポジトリ固有の設定がなかった | (1) `git filter-branch --env-filter`で全履歴のauthor/committerを匿名化（tbi / noreply@users.noreply.github.com）。(2) ローカルgit設定（`git config user.name/user.email`）を匿名値に設定。(3) pre-commit hookで個人情報パターン検出時にコミット拒否。(4) CLAUDE.mdルール9に個人情報禁止を明文化 | 運用手順（4.8章） |
 | 36 | 2026-02-24 | CMS CRUDエビデンスが全てログイン画面のみ表示: verify-cms-crud.mjsで取得した48枚のスクリーンショットが全てCMSログインボタン画面のみで、認証後の編集画面が撮影されていなかった | (1) Decap CMS OAuth認証は3ステップハンドシェイク（`authorizing:github` → ACK → `authorization:github:success:{token,provider}`）を要するが、エビデンス収集スクリプトはステップ1-2を省略してトークンを直接送信していたためCMSがメッセージを無視。(2) Playwrightの`page.route()`はポップアップウィンドウのナビゲーションをインターセプトできない（`context.route()`が必要）。(3) globパターン`**/auth`はクエリパラメータ付きURLにマッチしない。(4) config.ymlの`base_url`がstaging URLのままだとlocalhost上のpostMessageがクロスオリジン拒否される | (1) 3ステップOAuthハンドシェイクを完全実装（`context.route()`でポップアップをインターセプトし、`authorizing:github`→ACK待機→`authorization:github:success`の3段階を再現）。(2) `page.route()`→`context.route()`に変更。(3) glob→関数マッチャー（`url => url.pathname === '/auth'`）に変更。(4) GitHub API モックのルート登録順序をLIFO対応（catch-all先登録→具体ルート後登録）に修正。(5) エビデンス提出前の社内レビュー義務化（CLAUDE.mdルール11追加） | verify-cms-crud.mjs, CLAUDE.md |
-| 37 | 2026-05-22 | CMS年月選択プルダウンがフィルターとして動作しない: CMS-19の年月セレクターが選択年月のみ表示ではなく、該当見出しへスクロールするだけだった | 要件定義で「年月選択」がフィルターかジャンプか曖昧なまま実装され、admin-htmlテストも`scrollIntoView`の存在確認に留まっていた | CMS-19要件を「年月選択プルダウンで選択年月のみ表示」に明確化。`createMonthSelector()`に`applyMonthFilter()`を追加し、選択年月以外のグループコンテナを`display:none`にする。React再描画後も現在DOMへ再適用するため、選択値を保持しつつ選択肢を再構築する | admin-html 2.6.6章 #14, verify-cms19-month-filter.mjs |
+| 37 | 2026-05-22 | CMS年月選択プルダウンがフィルターとして動作しない: CMS-19の年月セレクターが選択年月のみ表示ではなく、該当見出しへスクロールするだけだった | 要件定義で「年月選択」がフィルターかジャンプか曖昧なまま実装され、admin-htmlテストも`scrollIntoView`の存在確認に留まっていた | CMS-19要件を「年月選択プルダウンで選択年月のみ表示」に明確化。`createMonthSelector()`に`applyMonthFilter()`を追加し、選択年月以外のグループコンテナを`display:none`にする | admin-html 2.6.6章 #14, verify-cms19-month-filter.mjs |
+| 38 | 2026-05-24 | CMS年月フィルター操作時に管理画面がハングアップする: 月セレクターを開いて年月を選ぼうとするとChromeが固まる | `MutationObserver`の再実行ごとに`createMonthSelector()`が`sel.textContent = ''`でoptionを全再構築していた。ネイティブselectを開いている最中にoption DOMを差し替えるため、ブラウザのselect UIとDecap CMSの再描画が競合した | `optionsSignature`でグループ見出し構成を記録し、見出しが変わった時だけoptionを再構築する。フィルター適用は毎回現在DOMを再取得して実行し、React再描画後の追従とselect操作安定性を両立する | admin-html 2.6.6章 #14, verify-cms19-month-filter.mjs |
 
 ---
 
@@ -1725,6 +1733,7 @@ git push origin staging
 | D-02 | 章番号の相互参照が正しいこと | 章番号を変更する場合は全ドキュメントの参照を検索・更新する |
 | D-03 | テスト対象外テーブルの内容が実態と矛盾しないこと | テスト実装済みの機能が「テスト対象外」に記載されたまま放置しない |
 | D-04 | 擬似コード・シーケンス図がコードの実装と一致すること | セキュリティ修正等でコードを変更した場合はドキュメントの擬似コードも更新する |
+| D-05 | ドキュメント更新はコード変更の完了条件であること | 要件、設計、テスト計画、運用ルール、QA履歴、バグ一覧の該当箇所を確認し、影響がある場合は必ず同一変更内で更新する |
 
 ### 4.7.2 基本機能保護（再発防止策）
 
@@ -1833,8 +1842,20 @@ git履歴に個人情報（氏名・メールアドレス）が含まれてい�
 | `verify-cms-crud.mjs` | CMS CRUD操作（記事作成/編集/削除・画像アップロード・タグ・固定ページ） | 16 scenarios × 3 devices |
 | `verify-security.mjs` | セキュリティ検証（XSS・CSP・OAuth・CDN・postMessage等） | 10 checks × 1 device |
 | `evidence/2026-05-22/verify-modern-web-guidance.mjs` | Modern Web Guidance準拠検証（公開サイト3デバイス、CMS独自カスタマイズPC/iPhone） | 8 checks |
+| `evidence/2026-05-22/verify-cms19-month-filter.mjs` | CMS年月フィルター検証（OAuthモック、月選択フィルター、select安定性、ソート切替） | 5 scenarios × 3 devices |
 
-### 4.9.4 赤枠アノテーション方針
+### 4.9.4 実操作E2E確認ルール（必須）
+
+UI変更・CMS変更・Modern Web Guidance対応では、DOMを直接書き換える検証だけでは完了扱いにしない。実ユーザーが行う操作をPlaywrightで再現し、操作後の画面状態とスクリーンショットを確認する。
+
+| 対象 | 必須確認 | 備考 |
+|:---|:---|:---|
+| UI操作 | `click`, `fill`, `selectOption`, `press`, ファイル選択などのPlaywright実操作を最低1本含める | `page.evaluate()`や`dispatchEvent()`だけの合格は禁止 |
+| CMS認証後画面 | OAuthモックとGitHub APIモックを使い、認証後のCMS画面を確認する | 過去エビデンス方式を踏襲 |
+| セレクト・メニュー | ネイティブUIを開く/選ぶ操作中に再描画やMutationObserverで不安定化しないことを確認する | Bug #38再発防止 |
+| エビデンス | PC/iPad/iPhoneの3デバイスでスクリーンショットを保存し、赤枠アノテーションで確認箇所を示す | 既存の`verify-*.mjs`形式を踏襲 |
+
+### 4.9.5 赤枠アノテーション方針
 
 全スクリーンショットに対し、注目すべき箇所に赤枠（`border: 3px solid red`）とラベルを必ず付与する。対象箇所:
 - ボタン・リンク等のクリック可能要素
@@ -1842,7 +1863,7 @@ git履歴に個人情報（氏名・メールアドレス）が含まれてい�
 - ボタン重なり検出箇所（「重なり!」ラベル付き）
 - バグ再発防止の確認箇所（URLバー・保存ボタン・Code Block非表示等）
 
-### 4.9.5 過去バグ由来の検証
+### 4.9.6 過去バグ由来の検証
 
 以下のバグについてエビデンス内で再発していないことを確認する。
 
@@ -1864,7 +1885,7 @@ git履歴に個人情報（氏名・メールアドレス）が含まれてい�
 | Bug #36 | CMS認証後エディタ表示（ログイン画面のみ問題） | T17〜T32 全48枚 |
 | Bug #37 | CMS年月フィルター（選択年月のみ表示） | E-37 / cms19-month-filter |
 
-### 4.9.6 CMS CRUD操作検証（T17〜T32）
+### 4.9.7 CMS CRUD操作検証（T17〜T32）
 
 ログイン後のCMS各操作を実際に実行してスクリーンショット取得する。
 
@@ -1887,7 +1908,7 @@ git履歴に個人情報（氏名・メールアドレス）が含まれてい�
 | T31 | 固定ページ編集 | 既存ページ読み込み・slug URL表示 | Bug #13 |
 | T32 | エディタツールバー操作 | 書式ボタン・Code Block非表示（モバイル） | Bug #9 |
 
-### 4.9.7 セキュリティ検証エビデンス（SEC01〜SEC10）
+### 4.9.8 セキュリティ検証エビデンス（SEC01〜SEC10）
 
 セキュリティ要件の充足を自動検証し、スクリーンショット付きで記録する。
 
@@ -1904,7 +1925,7 @@ git履歴に個人情報（氏名・メールアドレス）が含まれてい�
 | SEC09 | scriptタグ閉じ | SEC-18 | CDNスクリプト閉じタグ完備・use strict確認 |
 | SEC10 | パストラバーサル | SEC-14 | 不正パス・XSSペイロードへのアクセス確認 |
 
-### 4.9.8 エビデンス収集における認証方式（技術ノート）
+### 4.9.9 エビデンス収集における認証方式（技術ノート）
 
 CMS CRUDエビデンス（verify-cms-crud.mjs）では、Decap CMS OAuth認証をPlaywrightでシミュレートする必要がある。以下の技術的知見に基づいて実装されている。
 
@@ -1926,7 +1947,7 @@ CMS CRUDエビデンス（verify-cms-crud.mjs）では、Decap CMS OAuth認証�
 | Playwrightのルートはデフォルトでマッチ順がLIFO（後登録が先にチェック） | catch-allルートを最初に登録（最後にチェック）、具体ルートを後から登録（先にチェック） |
 | config.ymlの`base_url`がリモートURLだとlocalhost上のpostMessageがクロスオリジン拒否される | エビデンス収集時はconfig.ymlの`base_url`をlocalhostに一時変更（コミット前に復元必須） |
 
-### 4.9.9 E2Eスペックテストにおける認証方式の知見（引き継ぎノート）
+### 4.9.10 E2Eスペックテストにおける認証方式の知見（引き継ぎノート）
 
 CMS-17/CMS-18実装時（2026-02-24〜25）に、Playwright test runnerでのCMS認証に多大な工数を要した。以下の知見を今後のCMS E2Eテスト実装時に活用すること。
 
@@ -2010,7 +2031,7 @@ await loginButton.click();
 2. 再発防止テストを実装（Vitest/Playwright）
 3. TEST-REPORT.md のテストケース一覧に追記
 4. 1.5章トレーサビリティマトリクスを更新
-5. エビデンス検証マトリクス（4.9.5章）にバグIDとエビデンスIDの対応を追加
+5. エビデンス検証マトリクス（4.9.6章）にバグIDとエビデンスIDの対応を追加
 6. 次回エビデンス取得時にバグ再発がないことを自動検証
 
 **方針:**
@@ -2069,7 +2090,7 @@ evidence/YYYY-MM-DD/
 ```
 
 **CMS CRUDエビデンス取得時の特記事項:**
-- verify-cms-crud.mjsはDecap CMS OAuth 3ステップハンドシェイクをシミュレートする（詳細は4.9.8章参照）
+- verify-cms-crud.mjsはDecap CMS OAuth 3ステップハンドシェイクをシミュレートする（詳細は4.9.9章参照）
 - 実行前にconfig.ymlの`base_url`をlocalhost（テストサーバーURL）に一時変更する必要がある
 - 実行後は必ず`base_url`を本来の値（`https://staging.reiwa.casa` or `https://reiwa.casa`）に復元してからコミットする
 
@@ -2077,8 +2098,8 @@ evidence/YYYY-MM-DD/
 
 | 指標 | 目標値 | 現状 |
 |:---|:---|:---|
-| Vitestテスト全PASS | 100% | 518/519 (99.8%, 1件Windows固有) |
-| Playwright E2Eテスト全PASS | 100% | 367/367 (100%) |
+| Vitestテスト全PASS | 100% | 555/555 (100%) |
+| Playwright E2Eテスト全PASS | 100% | 直近実行: site.spec.ts 93/93 (100%)、CMS年月フィルターエビデンス 15/15 (100%) |
 | セキュリティ検証全PASS | 100% | 10/10 (100%) |
 | ボタン重なり検出 | 0件 | 0件 |
 | 未テスト要件 | 0件 | 0件 |

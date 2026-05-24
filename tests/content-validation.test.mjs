@@ -221,6 +221,11 @@ describe('ヘッダーナビゲーション条件分岐の検証（Base.astroソ
       expect(baseAstro).toContain("setAttribute('aria-expanded', String(open))");
     });
 
+    it('ナビゲーションにaria-labelとfocus-visibleスタイルがある', () => {
+      expect(baseAstro).toContain('aria-label="サイトナビゲーション"');
+      expect(baseAstro).toContain(':focus-visible');
+    });
+
     it('mouseenter でメニューを開く', () => {
       expect(baseAstro).toContain("addEventListener('mouseenter'");
       expect(baseAstro).toContain('setOpen(true)');
@@ -236,6 +241,11 @@ describe('ヘッダーナビゲーション条件分岐の検証（Base.astroソ
     it('▾ボタンクリックでトグルする', () => {
       expect(baseAstro).toContain("addEventListener('click'");
       expect(baseAstro).toContain("!dropdown.classList.contains('is-open')");
+    });
+
+    it('ホバーで開いた直後のトグルクリックがメニューを閉じない', () => {
+      expect(baseAstro).toContain('openedByHover');
+      expect(baseAstro).toContain("dropdown.classList.contains('is-open') && openedByHover");
     });
 
     it('外側クリックで閉じる', () => {
