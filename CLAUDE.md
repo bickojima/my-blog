@@ -154,7 +154,7 @@ DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を�
 - **レポート形式**: `report.html`（画像埋め込み、PC/iPad/iPhone 3デバイス横並び表示）
 - **スクリーンショット**: `screenshots/`, `site-interactive/`, `cms-interactive/` サブフォルダに整理
 - **検証スクリプト**: `verify-staging.mjs`（基本動作確認）、`verify-site-interactive.mjs`（サイト操作性、10シナリオ×3デバイス）、`verify-cms-interactive.mjs`（CMS操作性、16シナリオ×3デバイス）、`verify-cms-crud.mjs`（CMS CRUD操作、16シナリオ×3デバイス）、`verify-security.mjs`（セキュリティ検証、10項目）
-- **過去手法の優先**: 新しいE2Eエビデンスを作る場合も、既存の `verify-site-interactive.mjs` / `verify-cms-interactive.mjs` / `verify-cms-crud.mjs` / `verify-cms19-grouping.mjs` の構成（スタンドアロンPlaywright、赤枠アノテーション、HTMLレポート、結果JSON）を踏襲する
+- **過去手法の優先**: 新しいE2Eエビデンスを作る場合も、既存スクリプトの構成（スタンドアロンPlaywright、赤枠アノテーション、HTMLレポート、結果JSON）を踏襲する。**雛形として `evidence/2026-05-24/verify-comprehensive.mjs` を優先使用する**（150シナリオ×3デバイス対応の最新包括版）。旧スクリプト: `verify-site-interactive.mjs` / `verify-cms-interactive.mjs` / `verify-cms-crud.mjs` / `verify-cms19-grouping.mjs`
 - **CMS OAuthモック必須**: CMSエビデンスは実GitHub認証に依存させず、OAuth 3ステップハンドシェイクとGitHub APIモックで擬似ログインする。認証後のCMS独自カスタマイズ画面を撮影すること
 - **赤枠アノテーション**: 全スクリーンショットの注目箇所に赤枠とラベルを必ず付与する（ボタン・メニュー・重なり検出箇所・バグ再発防止確認箇所）
 - **ボタン操作テスト**: ボタンを実際に押下してメニュー展開・モーダル表示をエビデンス取得。複数メニュー同時展開時の操作性も確認
