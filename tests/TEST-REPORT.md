@@ -450,7 +450,7 @@ admin-html.test.mjs              -     ●     -     -     -     -     -     -  
 
 | No. | 基準 |
 | :--- | :--- |
-| 1 | 全テストケース（Vitest 555件 + E2E 387件 = 942件）がPASSであること |
+| 1 | 全テストケース（Vitest 555件 + E2E 423件 = 978件）がPASSであること |
 | 2 | `npm run build` が正常に完了すること |
 | 3 | 要件トレーサビリティマトリクス（docs/DOCUMENTATION.md 1.5章）において全要件が「充足」であること |
 
@@ -1300,6 +1300,19 @@ OAuthモック＋GitHub APIモックを使い、CMS管理画面を実際に操�
 | E-37 | CMS年月フィルター | 月セレクターで選択年月のみ表示、他年月グループ非表示、select操作中のMutationObserver再実行でもoptionを再構築しないこと、降順・昇順切替後のグループ順を確認。PC/iPad/iPhone 3デバイスでスクリーンショットエビデンス取得（CMS-19, Bug #37, Bug #38） | OAuthモック/実操作/動作検証/スクリーンショット |
 | E-38 | モバイルタップ領域44px確保（Bug #39再発防止） | iPad Pro 11（834px）とiPhone 14（390px）でCMS管理画面の全ボタン・[role="button"]要素がheight≥40pxであること。特に「新規作成」ボタン・「ソート」ボタン（[role="button"][aria-haspopup]）・AppHeaderボタンを確認。`@media (max-width: 899px)`のmin-height: 44px適用を検証 | verify-comprehensive.mjs T28 |
 
+#### 探索的テスト (`tests/e2e/cms-exploratory.spec.ts`)
+
+OAuthモック（window.openモンキーパッチ）+ GitHub APIモックによる探索的検証。未テストシナリオ・エラーハンドリング・実操作確認を実施する。
+
+| No. | テストケース | 検証内容 | テスト手法 |
+| :--- | :--- | :--- | :--- |
+| E-37 | 月別セレクタ実操作（CMS-19・Bug #37再発防止） | `#cms-month-selector`が存在し、`selectOption()`でグループ絞り込みが動作する。複数回の選択操作でMutationObserverがCMSをクラッシュさせない（Bug #38再発防止） | OAuthモック/実操作（selectOption）/動作検証 |
+| E-39 | 固定ページ作成画面（Bug #25再発防止） | 固定ページ新規作成フォームにslug・order（min=1）・titleフィールドが表示される。orderフィールドが編集可能な数値inputである | OAuthモック/実操作/フィールド検証 |
+| E-40 | エラーハンドリング（API 404/500） | GitHub API branches/trees が404・500を返した際にCMSがクラッシュせずUIが表示される（body非空、cmsRoot存在） | OAuthモック/APIエラーモック/UIクラッシュ検証 |
+| E-41 | 下書きバッジ表示（formatCollectionEntries） | 下書き記事（draft:true）のエントリーにオレンジ色の「下書き」バッジが表示される。エントリーテキストが「\|」区切り・日付形式で整形されている | OAuthモック/バッジ色検証/DOM検証 |
+| E-42 | コレクション切り替え後グルーピング再適用 | posts→pages→postsと切り替えた後にグルーピングが再適用される。複数回の切り替えでもサイドバー・CMS UIが崩れない | OAuthモック/実操作（コレクション切り替え）/安定性検証 |
+| E-43 | コンソールエラー監視 | 認証後の初期化フェーズでコンソールエラーが5件以下。基本操作（コレクション切り替え）後のエラー増加が3件以下 | OAuthモック/console.errorキャプチャ/エラー閾値検証 |
+
 #### アクセシビリティテスト (`tests/e2e/accessibility.spec.ts`)
 
 axe-coreエンジン（@axe-core/playwright）を使用してWCAG 2.1 Level AA準拠を自動検証する。
@@ -1312,7 +1325,7 @@ axe-coreエンジン（@axe-core/playwright）を使用してWCAG 2.1 Level AA�
 
 ### 4.1.4 デバイス別テスト
 
-全テストケースを以下の3デバイスで実行する（合計387テスト：379実行 + 8スキップ）。モバイル固有テスト（E-34）はビューポート幅≤799pxのiPhoneでのみ実行し、PC・iPadではスキップする。
+全テストケースを以下の3デバイスで実行する（合計423テスト：415実行 + 8スキップ）。モバイル固有テスト（E-34）はビューポート幅≤799pxのiPhoneでのみ実行し、PC・iPadではスキップする。
 
 | デバイス | ビューポート | 用途 |
 | :--- | :--- | :--- |
@@ -1465,7 +1478,8 @@ npm run build
 | `cms-crud.spec.ts`（E-22〜E-24） | 11 PASS | 11 PASS | 11 PASS | 33 |
 | `cms-operations.spec.ts`（E-28〜E-36） | 27 PASS, 4 skip | 27 PASS, 4 skip | 31 PASS | 85 PASS, 8 skip |
 | `accessibility.spec.ts`（E-25〜E-27） | 6 PASS | 6 PASS | 6 PASS | 18 |
-| **合計** | **125** | **125** | **129** | **379 PASS, 8 skip** |
+| `cms-exploratory.spec.ts`（E-37, E-39〜E-43） | 12 PASS | 12 PASS | 12 PASS | 36 |
+| **合計** | **137** | **137** | **141** | **415 PASS, 8 skip** |
 
 **スキップ内訳**: E-34（モバイル固有UI操作）4テスト × PC・iPad = 8件。ビューポート幅≤799pxのiPhoneでのみ実行。
 

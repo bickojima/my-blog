@@ -25,7 +25,7 @@ npm run build        # テスト必須ビルド（vitest run → normalize-image
 npm run build:raw    # テストなしビルド（build.test.mjs内部で使用、Cloudflare Pages用）
 npm test             # Vitest 全テスト実行（555テスト、記事数により変動）
 npm run test:watch   # Vitest ウォッチモード
-npm run test:e2e     # Playwright E2Eテスト（要: npm run build 済み、387テスト：379実行+8スキップ）
+npm run test:e2e     # Playwright E2Eテスト（要: npm run build 済み、423テスト：415実行+8スキップ）
 ```
 
 ## ディレクトリ構成
@@ -105,7 +105,7 @@ tests/
 ## テスト
 
 - **Vitest**: 設定検証、コンテンツ検証、単体テスト、ビルド統合テスト、セキュリティ検証、ファズテスト、基本機能保護テスト（555テスト、記事数により変動）
-- **Playwright**: PC/iPad/iPhone 3デバイスで387テスト（379実行+8スキップ、ローカルのみ、CIでは未実行）
+- **Playwright**: PC/iPad/iPhone 3デバイスで423テスト（415実行+8スキップ、ローカルのみ、CIでは未実行）
 - コンテンツ検証テストは記事数・ページ数に応じて動的展開される
 - テスト実行後、失敗がある場合は原因を調査し修正する（テストを削除・スキップしない）
 - **テストにコンテンツをハードコードしない**: 記事名・固定ページ名・URL等はソースから動的取得する（コンテンツ変更でテストが壊れない設計）
