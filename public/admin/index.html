@@ -315,6 +315,32 @@
         }
       }
 
+      /* --- タップ領域44px確保（WCAG 2.5.5, max-width: 899px）--- */
+      /* iPad Pro 11（834px）を含むタブレット/モバイル範囲で適用 */
+      @media (max-width: 899px) {
+        [class*=CollectionTopNewButton],
+        [class*=CollectionTopNewButton] button,
+        [class*=CollectionTopNewButton] a,
+        [class*=CollectionTopNewButton] [role="button"],
+        [class*=CollectionTop] button,
+        [class*=CollectionTop] [role="button"],
+        [class*=AppHeaderButton],
+        [class*=AppHeaderButton] button,
+        [class*=QuickNewButton],
+        [class*=QuickNewButton] button,
+        [class*=AppHeaderQuickNewButton],
+        [class*=AppHeaderQuickNewButton] button,
+        [class*=ViewControls] button,
+        [class*=ViewControls] [role="button"],
+        /* ソート・グルーピングボタン（[role="button"][aria-haspopup]）*/
+        [role="button"][aria-haspopup="true"],
+        [role="button"][aria-haspopup="listbox"],
+        [role="button"][aria-haspopup="menu"] {
+          min-height: 44px !important;
+          min-width: 44px !important;
+        }
+      }
+
       /* --- iPhone画像のEXIF回転をCMSプレビューで正しく反映 --- */
       /* img要素全体 + Decap CMSのReactコンポーネント内の画像にも適用 */
       img,

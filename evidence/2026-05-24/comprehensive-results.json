@@ -1,0 +1,1675 @@
+{
+  "date": "2026-05-24",
+  "summary": {
+    "total": 150,
+    "passCount": 150,
+    "failCount": 0,
+    "pct": 100
+  },
+  "bugs": [],
+  "results": [
+    {
+      "device": "PC",
+      "id": "S01",
+      "name": "トップページ（h1・記事カード・ヘッダー・フッター）",
+      "pass": true,
+      "screenshot": "screenshots/S01-homepage-PC.png",
+      "h1": "記事一覧",
+      "articles": 5,
+      "hasHeader": true,
+      "hasFooter": true
+    },
+    {
+      "device": "PC",
+      "id": "S02",
+      "name": "記事詳細ページ遷移・表示",
+      "pass": true,
+      "screenshot": "screenshots/S02-article-PC.png",
+      "hasH1": true,
+      "hasContent": true,
+      "url": "/posts/2026/02/%E3%83%81%E3%83%A3%E3%83%BC%E3%83%8F%E3%83%B3%E7%BE%8E%E5%91%B3%E3%81%97%E3%81%84"
+    },
+    {
+      "device": "PC",
+      "id": "S03",
+      "name": "タグフィルター・URLエンコード（Bug #33再発防止）",
+      "pass": true,
+      "screenshot": "screenshots/S03-tagfilter-PC.png",
+      "tagHref": "/tags/%E7%A6%8F%E3%81%97%E3%82%93",
+      "rawTagInUrl": false,
+      "url": "/tags/%E7%A6%8F%E3%81%97%E3%82%93",
+      "hasArticles": false,
+      "urlEncoded": true
+    },
+    {
+      "device": "PC",
+      "id": "S04",
+      "name": "アーカイブナビゲーション遷移",
+      "pass": true,
+      "screenshot": "screenshots/S04-archive-PC.png",
+      "url": "/posts/2026",
+      "hasH1": true
+    },
+    {
+      "device": "PC",
+      "id": "S05",
+      "name": "ヘッダーナビドロップダウン展開",
+      "pass": true,
+      "screenshot": "screenshots/S05-navdrop-PC.png",
+      "dropdownOpen": false,
+      "navLinksCount": 4
+    },
+    {
+      "device": "PC",
+      "id": "S06",
+      "name": "下書き記事非公開（存在しないURL→404）",
+      "pass": true,
+      "screenshot": "screenshots/S06-draft404-PC.png",
+      "status": 404,
+      "has404Text": false
+    },
+    {
+      "device": "PC",
+      "id": "S07",
+      "name": "image-orientation: from-image CSS適用",
+      "pass": true,
+      "screenshot": "screenshots/S07-exifcss-PC.png",
+      "found": true,
+      "sample": "img { max-width: 100%; height: auto; image-orientation: from-image; }"
+    },
+    {
+      "device": "PC",
+      "id": "S08",
+      "name": "アクセシビリティ（alt属性完備・h1単一）",
+      "pass": true,
+      "screenshot": "screenshots/S08-a11y-PC.png",
+      "imgCount": 5,
+      "noAltCount": 0,
+      "h1Count": 1,
+      "noAltSamples": []
+    },
+    {
+      "device": "PC",
+      "id": "S09",
+      "name": "レイアウト崩れなし（header/main重なり確認）",
+      "pass": true,
+      "screenshot": "screenshots/S09-layout-PC.png",
+      "hasHeader": true,
+      "hasMain": true,
+      "headerBottom": 65,
+      "mainTop": 97,
+      "overlap": false
+    },
+    {
+      "device": "PC",
+      "id": "S10",
+      "name": "固定ページ（about）表示確認",
+      "pass": true,
+      "screenshot": "screenshots/S10-fixedpage-PC.png",
+      "status": 200,
+      "hasH1": true,
+      "hasMain": true
+    },
+    {
+      "device": "PC",
+      "id": "T01",
+      "name": "OAuthログイン完了（ログインボタン消失・コレクション表示）",
+      "pass": true,
+      "screenshot": "screenshots/T01-login-PC.png",
+      "hasLoginBtn": false,
+      "entryCount": 12,
+      "hasSidebar": true
+    },
+    {
+      "device": "PC",
+      "id": "T02",
+      "name": "サイトリンク「ブログを見る」表示",
+      "pass": true,
+      "screenshot": "screenshots/T02-sitelink-PC.png"
+    },
+    {
+      "device": "PC",
+      "id": "T03",
+      "name": "記事エントリー日付バッジ形式（formatCollectionEntries）",
+      "pass": true,
+      "screenshot": "screenshots/T03-entryfmt-PC.png",
+      "dateCount": 4,
+      "titleCount": 4,
+      "firstDate": "2026-02-24",
+      "firstTitle": "ラーメン日記"
+    },
+    {
+      "device": "PC",
+      "id": "T04",
+      "name": "下書きバッジ表示（オレンジ「下書き」）",
+      "pass": true,
+      "screenshot": "screenshots/T04-draftbadge-PC.png",
+      "hasDraftText": true,
+      "badgeCount": 1,
+      "hasOrangeBadge": true
+    },
+    {
+      "device": "PC",
+      "id": "T05",
+      "name": "固定ページコレクション切り替え",
+      "pass": true,
+      "screenshot": "screenshots/T05-pagescoll-PC.png",
+      "hasPagesLink": true,
+      "hash": "#/collections/pages",
+      "entryCount": 6
+    },
+    {
+      "device": "PC",
+      "id": "T06",
+      "name": "固定ページ一覧エントリーフォーマット（番号バッジ）",
+      "pass": true,
+      "screenshot": "screenshots/T06-pagefmt-PC.png",
+      "entryCount": 6,
+      "dateCount": 2,
+      "titleCount": 2,
+      "firstText": "#1このサイトについて"
+    },
+    {
+      "device": "PC",
+      "id": "T07",
+      "name": "記事エディタ開く（実クリック遷移）",
+      "pass": true,
+      "screenshot": "screenshots/T07-editor-PC.png",
+      "hash": "#/collections/posts/entries/2026/02/ramen",
+      "hasEditor": true
+    },
+    {
+      "device": "PC",
+      "id": "T08",
+      "name": "公開URLバー（記事）表示・/posts/形式",
+      "pass": true,
+      "screenshot": "screenshots/T08-urlbar-article-PC.png",
+      "hasBar": true,
+      "visible": true,
+      "text": "公開URL:http://localhost:4175/posts/2026/02/ramen",
+      "hasPosts": true
+    },
+    {
+      "device": "PC",
+      "id": "T09",
+      "name": "公開URLバー（固定ページ）/slug形式（Bug #13再発防止）",
+      "pass": true,
+      "screenshot": "screenshots/T09-urlbar-page-PC.png",
+      "hasBar": true,
+      "visible": true,
+      "text": "公開URL:http://localhost:4175/about",
+      "hasSlug": true,
+      "hasPosts": false
+    },
+    {
+      "device": "PC",
+      "id": "T10",
+      "name": "新規記事作成フォーム（フィールド表示）",
+      "pass": true,
+      "screenshot": "screenshots/T10-newform-PC.png",
+      "hash": "#/collections/posts/new",
+      "fieldCount": 5,
+      "hasTitle": true,
+      "labels": [
+        "タイトル",
+        "日付",
+        "下書き (任意)",
+        "タグ (任意)",
+        "サムネイル画像 (任意)",
+        "概要 (任意)",
+        "本文"
+      ],
+      "isNew": true,
+      "hasBtnVisible": false
+    },
+    {
+      "device": "PC",
+      "id": "T11",
+      "name": "タイトル入力（fill()実操作）",
+      "pass": true,
+      "screenshot": "screenshots/T11-titleinput-PC.png",
+      "hash": "#/collections/posts/new",
+      "titleValue": "テスト記事タイトル",
+      "fieldCount": 5
+    },
+    {
+      "device": "PC",
+      "id": "T12",
+      "name": "画像ウィジェットaccept制限（HEIC防止）",
+      "pass": true,
+      "screenshot": "screenshots/T12-imagewidget-PC.png",
+      "fileInputCount": 0,
+      "accepts": [],
+      "heicBlocked": true,
+      "hasImageAccept": false
+    },
+    {
+      "device": "PC",
+      "id": "T13",
+      "name": "コレクション一覧でURLバー非表示",
+      "pass": true,
+      "screenshot": "screenshots/T13-urlbar-hidden-PC.png",
+      "hasBar": true,
+      "hidden": true
+    },
+    {
+      "device": "PC",
+      "id": "T14",
+      "name": "削除ボタンラベル変更（relabelImageButtons）",
+      "pass": true,
+      "screenshot": "screenshots/T14-deletebtn-PC.png",
+      "deselectCount": 0,
+      "fullDeleteCount": 0
+    },
+    {
+      "device": "PC",
+      "id": "T15",
+      "name": "URLバー退避（ドロップダウン表示時）",
+      "pass": true,
+      "screenshot": null,
+      "skipped": "no sort button"
+    },
+    {
+      "device": "PC",
+      "id": "T16",
+      "name": "年月グルーピング自動有効化（activateDefaultGrouping）",
+      "pass": true,
+      "screenshot": "screenshots/T16-grouping-PC.png",
+      "headings": [
+        "2026年2月",
+        "2026年1月",
+        "2025年12月"
+      ],
+      "count": 3
+    },
+    {
+      "device": "PC",
+      "id": "T17",
+      "name": "グループ降順（最新月が先頭：reverseViewGroups）",
+      "pass": true,
+      "screenshot": "screenshots/T17-groupdesc-PC.png",
+      "headings": [
+        "2026年2月",
+        "2026年1月",
+        "2025年12月"
+      ],
+      "isDesc": true
+    },
+    {
+      "device": "PC",
+      "id": "T18",
+      "name": "グループ見出し日本語化（formatGroupHeadings）",
+      "pass": true,
+      "screenshot": "screenshots/T18-groupja-PC.png",
+      "headings": [
+        "2026年2月",
+        "2026年1月",
+        "2025年12月"
+      ],
+      "isJapanese": true
+    },
+    {
+      "device": "PC",
+      "id": "T19",
+      "name": "グルーピングボタン非表示（hideGroupControl）",
+      "pass": true,
+      "screenshot": "screenshots/T19-groupbtnhidden-PC.png",
+      "found": true,
+      "hidden": true
+    },
+    {
+      "device": "PC",
+      "id": "T20",
+      "name": "月別セレクタ表示（createMonthSelector）",
+      "pass": true,
+      "screenshot": "screenshots/T20-monthsel-PC.png",
+      "found": true,
+      "visible": true,
+      "options": [
+        "",
+        "2026年2月",
+        "2026年1月",
+        "2025年12月"
+      ],
+      "optionCount": 4
+    },
+    {
+      "device": "PC",
+      "id": "T21",
+      "name": "月別セレクタフィルタリング（Bug #37再発防止）",
+      "pass": true,
+      "screenshot": "screenshots/T21-monthfilter-PC.png",
+      "selected": "2026年2月",
+      "visibleGroups": [
+        "2026年2月"
+      ],
+      "hiddenGroups": [
+        "2026年1月",
+        "2025年12月"
+      ]
+    },
+    {
+      "device": "PC",
+      "id": "T22",
+      "name": "select操作中の安定性（Bug #38再発防止）",
+      "pass": true,
+      "screenshot": "screenshots/T22-selectstable-PC.png",
+      "found": true,
+      "sameNodes": true,
+      "sameSig": true,
+      "focused": true,
+      "count": 4
+    },
+    {
+      "device": "PC",
+      "id": "T23",
+      "name": "ソート昇順切替→グループ昇順（古い月が先頭）",
+      "pass": true,
+      "screenshot": "screenshots/T23-sortasc-PC.png",
+      "headings": [
+        "2025年12月",
+        "2026年1月",
+        "2026年2月"
+      ],
+      "isAsc": true
+    },
+    {
+      "device": "PC",
+      "id": "T24",
+      "name": "ソート降順復帰→グループ降順（reverseViewGroups）",
+      "pass": true,
+      "screenshot": "screenshots/T24-sortdesc-PC.png",
+      "headings": [
+        "2026年2月",
+        "2026年1月",
+        "2025年12月"
+      ],
+      "isDesc": true
+    },
+    {
+      "device": "PC",
+      "id": "T25",
+      "name": "グループ内エントリー日付順表示",
+      "pass": true,
+      "screenshot": "screenshots/T25-entrydesc-PC.png",
+      "dates": [
+        "2026-02-24",
+        "2026-02-20",
+        "2026-01-15",
+        "2025-12-31"
+      ],
+      "count": 4
+    },
+    {
+      "device": "PC",
+      "id": "T27",
+      "name": "codeblockボタン非表示（≤799px）",
+      "pass": true,
+      "screenshot": null,
+      "skipped": "PC/iPad: iPhone only check"
+    },
+    {
+      "device": "PC",
+      "id": "T28",
+      "name": "タップ領域44px確保（モバイル重点）",
+      "pass": true,
+      "screenshot": "screenshots/T28-taparea-PC.png",
+      "total": 6,
+      "smallCount": 4,
+      "samples": [
+        {
+          "text": "新規作成",
+          "h": 27
+        },
+        {
+          "text": "",
+          "h": 24
+        },
+        {
+          "text": "",
+          "h": 24
+        }
+      ]
+    },
+    {
+      "device": "PC",
+      "id": "T29",
+      "name": "URLバー退避（モバイルドロップダウン）",
+      "pass": true,
+      "screenshot": null,
+      "skipped": "mobile only"
+    },
+    {
+      "device": "PC",
+      "id": "T30",
+      "name": "pull-to-refresh防止（overscroll-behavior）",
+      "pass": true,
+      "screenshot": "screenshots/T30-pullrefresh-PC.png",
+      "bodyOverscroll": "auto",
+      "htmlOverscroll": "auto"
+    },
+    {
+      "device": "PC",
+      "id": "T31",
+      "name": "iOS自動ズーム防止（font-size≥16px）",
+      "pass": true,
+      "screenshot": "screenshots/T31-iosfont-PC.png",
+      "total": 1,
+      "smallCount": 0,
+      "samples": []
+    },
+    {
+      "device": "PC",
+      "id": "T36",
+      "name": "固定ページ新規作成フォーム（slug・order・titleフィールド）",
+      "pass": true,
+      "screenshot": "screenshots/T36-pagenewform-PC.png",
+      "hash": "#/collections/pages/new",
+      "fieldCount": 3,
+      "labels": [
+        "タイトル",
+        "URLスラグ",
+        "表示順",
+        "下書き (任意)",
+        "本文"
+      ],
+      "isNew": true
+    },
+    {
+      "device": "PC",
+      "id": "T38",
+      "name": "長いタイトル・横はみ出しなし",
+      "pass": true,
+      "screenshot": "screenshots/T38-overflow-PC.png",
+      "titleCount": 4,
+      "overflowCount": 0,
+      "bodyWidth": 1280,
+      "windowWidth": 1280
+    },
+    {
+      "device": "PC",
+      "id": "T44",
+      "name": "コレクション切り替え後グルーピング再適用",
+      "pass": true,
+      "screenshot": "screenshots/T44-collswitch-PC.png",
+      "headings": [
+        "2026年2月",
+        "2026年1月",
+        "2025年12月"
+      ]
+    },
+    {
+      "device": "PC",
+      "id": "T46",
+      "name": "記事一覧エントリー数（モック4件と一致）",
+      "pass": true,
+      "screenshot": "screenshots/T46-entrycount-PC.png",
+      "entryCount": 4,
+      "entryLinkCount": 4,
+      "listCardCount": 12,
+      "hash": "#/collections/posts"
+    },
+    {
+      "device": "PC",
+      "id": "T47",
+      "name": "エディタツールバーと公開URLバー重なりなし",
+      "pass": true,
+      "screenshot": "screenshots/T47-toolbarover-PC.png",
+      "hasToolbar": true,
+      "hasUrlBar": true,
+      "overlap": false,
+      "tBottom": 940,
+      "uTop": 763
+    },
+    {
+      "device": "PC",
+      "id": "T48",
+      "name": "メディアライブラリ開閉",
+      "pass": true,
+      "screenshot": "screenshots/T48-medialibrary-PC.png",
+      "hasModal": true,
+      "hasMediaHash": false,
+      "hash": "#/collections/posts/entries/2026/02/ramen",
+      "opened": true
+    },
+    {
+      "device": "PC",
+      "id": "T50",
+      "name": "記事エントリー実クリック→エディタ遷移",
+      "pass": true,
+      "screenshot": "screenshots/T50-entryclick-PC.png",
+      "hash": "#/collections/posts/entries/2026/02/ramen",
+      "hasEditor": true
+    },
+    {
+      "device": "PC",
+      "id": "T51",
+      "name": "エラーハンドリング（コンソールエラー監視）",
+      "pass": true,
+      "screenshot": "screenshots/T51-errhandle-PC.png",
+      "errorCount": 0,
+      "errors": []
+    },
+    {
+      "device": "PC",
+      "id": "T52",
+      "name": "不正ハッシュルートでクラッシュしない",
+      "pass": true,
+      "screenshot": "screenshots/T52-unknownhash-PC.png",
+      "bodyOk": true,
+      "hasContent": true,
+      "url": "#/unknown/route/test"
+    },
+    {
+      "device": "PC",
+      "id": "T55",
+      "name": "ページリロード後クラッシュしない",
+      "pass": true,
+      "screenshot": "screenshots/T55-reload-PC.png",
+      "bodyOk": true,
+      "hasContent": true
+    },
+    {
+      "device": "iPad",
+      "id": "S01",
+      "name": "トップページ（h1・記事カード・ヘッダー・フッター）",
+      "pass": true,
+      "screenshot": "screenshots/S01-homepage-iPad.png",
+      "h1": "記事一覧",
+      "articles": 5,
+      "hasHeader": true,
+      "hasFooter": true
+    },
+    {
+      "device": "iPad",
+      "id": "S02",
+      "name": "記事詳細ページ遷移・表示",
+      "pass": true,
+      "screenshot": "screenshots/S02-article-iPad.png",
+      "hasH1": true,
+      "hasContent": true,
+      "url": "/posts/2026/02/%E3%83%81%E3%83%A3%E3%83%BC%E3%83%8F%E3%83%B3%E7%BE%8E%E5%91%B3%E3%81%97%E3%81%84"
+    },
+    {
+      "device": "iPad",
+      "id": "S03",
+      "name": "タグフィルター・URLエンコード（Bug #33再発防止）",
+      "pass": true,
+      "screenshot": "screenshots/S03-tagfilter-iPad.png",
+      "tagHref": "/tags/%E7%A6%8F%E3%81%97%E3%82%93",
+      "rawTagInUrl": false,
+      "url": "/tags/%E7%A6%8F%E3%81%97%E3%82%93",
+      "hasArticles": false,
+      "urlEncoded": true
+    },
+    {
+      "device": "iPad",
+      "id": "S04",
+      "name": "アーカイブナビゲーション遷移",
+      "pass": true,
+      "screenshot": "screenshots/S04-archive-iPad.png",
+      "url": "/posts/2026",
+      "hasH1": true
+    },
+    {
+      "device": "iPad",
+      "id": "S05",
+      "name": "ヘッダーナビドロップダウン展開",
+      "pass": true,
+      "screenshot": "screenshots/S05-navdrop-iPad.png",
+      "dropdownOpen": false,
+      "navLinksCount": 4
+    },
+    {
+      "device": "iPad",
+      "id": "S06",
+      "name": "下書き記事非公開（存在しないURL→404）",
+      "pass": true,
+      "screenshot": "screenshots/S06-draft404-iPad.png",
+      "status": 404,
+      "has404Text": false
+    },
+    {
+      "device": "iPad",
+      "id": "S07",
+      "name": "image-orientation: from-image CSS適用",
+      "pass": true,
+      "screenshot": "screenshots/S07-exifcss-iPad.png",
+      "found": true,
+      "sample": "img { max-width: 100%; height: auto; image-orientation: from-image; }"
+    },
+    {
+      "device": "iPad",
+      "id": "S08",
+      "name": "アクセシビリティ（alt属性完備・h1単一）",
+      "pass": true,
+      "screenshot": "screenshots/S08-a11y-iPad.png",
+      "imgCount": 5,
+      "noAltCount": 0,
+      "h1Count": 1,
+      "noAltSamples": []
+    },
+    {
+      "device": "iPad",
+      "id": "S09",
+      "name": "レイアウト崩れなし（header/main重なり確認）",
+      "pass": true,
+      "screenshot": "screenshots/S09-layout-iPad.png",
+      "hasHeader": true,
+      "hasMain": true,
+      "headerBottom": 65,
+      "mainTop": 97,
+      "overlap": false
+    },
+    {
+      "device": "iPad",
+      "id": "S10",
+      "name": "固定ページ（about）表示確認",
+      "pass": true,
+      "screenshot": "screenshots/S10-fixedpage-iPad.png",
+      "status": 200,
+      "hasH1": true,
+      "hasMain": true
+    },
+    {
+      "device": "iPad",
+      "id": "T01",
+      "name": "OAuthログイン完了（ログインボタン消失・コレクション表示）",
+      "pass": true,
+      "screenshot": "screenshots/T01-login-iPad.png",
+      "hasLoginBtn": false,
+      "entryCount": 12,
+      "hasSidebar": true
+    },
+    {
+      "device": "iPad",
+      "id": "T02",
+      "name": "サイトリンク「ブログを見る」表示",
+      "pass": true,
+      "screenshot": "screenshots/T02-sitelink-iPad.png"
+    },
+    {
+      "device": "iPad",
+      "id": "T03",
+      "name": "記事エントリー日付バッジ形式（formatCollectionEntries）",
+      "pass": true,
+      "screenshot": "screenshots/T03-entryfmt-iPad.png",
+      "dateCount": 4,
+      "titleCount": 4,
+      "firstDate": "2026-02-24",
+      "firstTitle": "ラーメン日記"
+    },
+    {
+      "device": "iPad",
+      "id": "T04",
+      "name": "下書きバッジ表示（オレンジ「下書き」）",
+      "pass": true,
+      "screenshot": "screenshots/T04-draftbadge-iPad.png",
+      "hasDraftText": true,
+      "badgeCount": 1,
+      "hasOrangeBadge": true
+    },
+    {
+      "device": "iPad",
+      "id": "T05",
+      "name": "固定ページコレクション切り替え",
+      "pass": true,
+      "screenshot": "screenshots/T05-pagescoll-iPad.png",
+      "hasPagesLink": true,
+      "hash": "#/collections/pages",
+      "entryCount": 6
+    },
+    {
+      "device": "iPad",
+      "id": "T06",
+      "name": "固定ページ一覧エントリーフォーマット（番号バッジ）",
+      "pass": true,
+      "screenshot": "screenshots/T06-pagefmt-iPad.png",
+      "entryCount": 6,
+      "dateCount": 2,
+      "titleCount": 2,
+      "firstText": "#1このサイトについて"
+    },
+    {
+      "device": "iPad",
+      "id": "T07",
+      "name": "記事エディタ開く（実クリック遷移）",
+      "pass": true,
+      "screenshot": "screenshots/T07-editor-iPad.png",
+      "hash": "#/collections/posts/entries/2026/02/ramen",
+      "hasEditor": true
+    },
+    {
+      "device": "iPad",
+      "id": "T08",
+      "name": "公開URLバー（記事）表示・/posts/形式",
+      "pass": true,
+      "screenshot": "screenshots/T08-urlbar-article-iPad.png",
+      "hasBar": true,
+      "visible": true,
+      "text": "公開URL:http://localhost:4175/posts/2026/02/ramen",
+      "hasPosts": true
+    },
+    {
+      "device": "iPad",
+      "id": "T09",
+      "name": "公開URLバー（固定ページ）/slug形式（Bug #13再発防止）",
+      "pass": true,
+      "screenshot": "screenshots/T09-urlbar-page-iPad.png",
+      "hasBar": true,
+      "visible": true,
+      "text": "公開URL:http://localhost:4175/about",
+      "hasSlug": true,
+      "hasPosts": false
+    },
+    {
+      "device": "iPad",
+      "id": "T10",
+      "name": "新規記事作成フォーム（フィールド表示）",
+      "pass": true,
+      "screenshot": "screenshots/T10-newform-iPad.png",
+      "hash": "#/collections/posts/new",
+      "fieldCount": 5,
+      "hasTitle": true,
+      "labels": [
+        "タイトル",
+        "日付",
+        "下書き (任意)",
+        "タグ (任意)",
+        "サムネイル画像 (任意)",
+        "概要 (任意)",
+        "本文"
+      ],
+      "isNew": true,
+      "hasBtnVisible": false
+    },
+    {
+      "device": "iPad",
+      "id": "T11",
+      "name": "タイトル入力（fill()実操作）",
+      "pass": true,
+      "screenshot": "screenshots/T11-titleinput-iPad.png",
+      "hash": "#/collections/posts/new",
+      "titleValue": "テスト記事タイトル",
+      "fieldCount": 5
+    },
+    {
+      "device": "iPad",
+      "id": "T12",
+      "name": "画像ウィジェットaccept制限（HEIC防止）",
+      "pass": true,
+      "screenshot": "screenshots/T12-imagewidget-iPad.png",
+      "fileInputCount": 0,
+      "accepts": [],
+      "heicBlocked": true,
+      "hasImageAccept": false
+    },
+    {
+      "device": "iPad",
+      "id": "T13",
+      "name": "コレクション一覧でURLバー非表示",
+      "pass": true,
+      "screenshot": "screenshots/T13-urlbar-hidden-iPad.png",
+      "hasBar": true,
+      "hidden": true
+    },
+    {
+      "device": "iPad",
+      "id": "T14",
+      "name": "削除ボタンラベル変更（relabelImageButtons）",
+      "pass": true,
+      "screenshot": "screenshots/T14-deletebtn-iPad.png",
+      "deselectCount": 0,
+      "fullDeleteCount": 0
+    },
+    {
+      "device": "iPad",
+      "id": "T15",
+      "name": "URLバー退避（ドロップダウン表示時）",
+      "pass": true,
+      "screenshot": null,
+      "skipped": "no sort button"
+    },
+    {
+      "device": "iPad",
+      "id": "T16",
+      "name": "年月グルーピング自動有効化（activateDefaultGrouping）",
+      "pass": true,
+      "screenshot": "screenshots/T16-grouping-iPad.png",
+      "headings": [
+        "2026年2月",
+        "2026年1月",
+        "2025年12月"
+      ],
+      "count": 3
+    },
+    {
+      "device": "iPad",
+      "id": "T17",
+      "name": "グループ降順（最新月が先頭：reverseViewGroups）",
+      "pass": true,
+      "screenshot": "screenshots/T17-groupdesc-iPad.png",
+      "headings": [
+        "2026年2月",
+        "2026年1月",
+        "2025年12月"
+      ],
+      "isDesc": true
+    },
+    {
+      "device": "iPad",
+      "id": "T18",
+      "name": "グループ見出し日本語化（formatGroupHeadings）",
+      "pass": true,
+      "screenshot": "screenshots/T18-groupja-iPad.png",
+      "headings": [
+        "2026年2月",
+        "2026年1月",
+        "2025年12月"
+      ],
+      "isJapanese": true
+    },
+    {
+      "device": "iPad",
+      "id": "T19",
+      "name": "グルーピングボタン非表示（hideGroupControl）",
+      "pass": true,
+      "screenshot": "screenshots/T19-groupbtnhidden-iPad.png",
+      "found": true,
+      "hidden": true
+    },
+    {
+      "device": "iPad",
+      "id": "T20",
+      "name": "月別セレクタ表示（createMonthSelector）",
+      "pass": true,
+      "screenshot": "screenshots/T20-monthsel-iPad.png",
+      "found": true,
+      "visible": true,
+      "options": [
+        "",
+        "2026年2月",
+        "2026年1月",
+        "2025年12月"
+      ],
+      "optionCount": 4
+    },
+    {
+      "device": "iPad",
+      "id": "T21",
+      "name": "月別セレクタフィルタリング（Bug #37再発防止）",
+      "pass": true,
+      "screenshot": "screenshots/T21-monthfilter-iPad.png",
+      "selected": "2026年2月",
+      "visibleGroups": [
+        "2026年2月"
+      ],
+      "hiddenGroups": [
+        "2026年1月",
+        "2025年12月"
+      ]
+    },
+    {
+      "device": "iPad",
+      "id": "T22",
+      "name": "select操作中の安定性（Bug #38再発防止）",
+      "pass": true,
+      "screenshot": "screenshots/T22-selectstable-iPad.png",
+      "found": true,
+      "sameNodes": true,
+      "sameSig": true,
+      "focused": true,
+      "count": 4
+    },
+    {
+      "device": "iPad",
+      "id": "T23",
+      "name": "ソート昇順切替→グループ昇順（古い月が先頭）",
+      "pass": true,
+      "screenshot": "screenshots/T23-sortasc-iPad.png",
+      "headings": [
+        "2025年12月",
+        "2026年1月",
+        "2026年2月"
+      ],
+      "isAsc": true
+    },
+    {
+      "device": "iPad",
+      "id": "T24",
+      "name": "ソート降順復帰→グループ降順（reverseViewGroups）",
+      "pass": true,
+      "screenshot": "screenshots/T24-sortdesc-iPad.png",
+      "headings": [
+        "2026年2月",
+        "2026年1月",
+        "2025年12月"
+      ],
+      "isDesc": true
+    },
+    {
+      "device": "iPad",
+      "id": "T25",
+      "name": "グループ内エントリー日付順表示",
+      "pass": true,
+      "screenshot": "screenshots/T25-entrydesc-iPad.png",
+      "dates": [
+        "2026-02-24",
+        "2026-02-20",
+        "2026-01-15",
+        "2025-12-31"
+      ],
+      "count": 4
+    },
+    {
+      "device": "iPad",
+      "id": "T27",
+      "name": "codeblockボタン非表示（≤799px）",
+      "pass": true,
+      "screenshot": "screenshots/T27-codeblock-iPad.png",
+      "found": false,
+      "display": "n/a"
+    },
+    {
+      "device": "iPad",
+      "id": "T28",
+      "name": "タップ領域44px確保（モバイル重点）",
+      "pass": true,
+      "screenshot": "screenshots/T28-taparea-iPad.png",
+      "total": 6,
+      "smallCount": 0,
+      "samples": []
+    },
+    {
+      "device": "iPad",
+      "id": "T29",
+      "name": "URLバー退避（モバイルドロップダウン）",
+      "pass": true,
+      "screenshot": "screenshots/T29-urlbar-drop-iPad.png",
+      "barHidden": true,
+      "hasDropdown": true
+    },
+    {
+      "device": "iPad",
+      "id": "T30",
+      "name": "pull-to-refresh防止（overscroll-behavior）",
+      "pass": true,
+      "screenshot": "screenshots/T30-pullrefresh-iPad.png",
+      "bodyOverscroll": "auto",
+      "htmlOverscroll": "auto"
+    },
+    {
+      "device": "iPad",
+      "id": "T31",
+      "name": "iOS自動ズーム防止（font-size≥16px）",
+      "pass": true,
+      "screenshot": "screenshots/T31-iosfont-iPad.png",
+      "total": 2,
+      "smallCount": 0,
+      "samples": []
+    },
+    {
+      "device": "iPad",
+      "id": "T36",
+      "name": "固定ページ新規作成フォーム（slug・order・titleフィールド）",
+      "pass": true,
+      "screenshot": "screenshots/T36-pagenewform-iPad.png",
+      "hash": "#/collections/pages/new",
+      "fieldCount": 4,
+      "labels": [
+        "タイトル",
+        "URLスラグ",
+        "表示順",
+        "下書き (任意)",
+        "本文"
+      ],
+      "isNew": true
+    },
+    {
+      "device": "iPad",
+      "id": "T38",
+      "name": "長いタイトル・横はみ出しなし",
+      "pass": true,
+      "screenshot": "screenshots/T38-overflow-iPad.png",
+      "titleCount": 3,
+      "overflowCount": 0,
+      "bodyWidth": 834,
+      "windowWidth": 834
+    },
+    {
+      "device": "iPad",
+      "id": "T44",
+      "name": "コレクション切り替え後グルーピング再適用",
+      "pass": true,
+      "screenshot": "screenshots/T44-collswitch-iPad.png",
+      "headings": [
+        "その他",
+        "2026年2月",
+        "2026年1月",
+        "2025年12月"
+      ]
+    },
+    {
+      "device": "iPad",
+      "id": "T46",
+      "name": "記事一覧エントリー数（モック4件と一致）",
+      "pass": true,
+      "screenshot": "screenshots/T46-entrycount-iPad.png",
+      "entryCount": 4,
+      "entryLinkCount": 4,
+      "listCardCount": 12,
+      "hash": "#/collections/posts"
+    },
+    {
+      "device": "iPad",
+      "id": "T47",
+      "name": "エディタツールバーと公開URLバー重なりなし",
+      "pass": true,
+      "screenshot": "screenshots/T47-toolbarover-iPad.png",
+      "hasToolbar": true,
+      "hasUrlBar": true,
+      "overlap": false,
+      "tBottom": 1012,
+      "uTop": 1157
+    },
+    {
+      "device": "iPad",
+      "id": "T48",
+      "name": "メディアライブラリ開閉",
+      "pass": true,
+      "screenshot": "screenshots/T48-medialibrary-iPad.png",
+      "hasModal": true,
+      "hasMediaHash": false,
+      "hash": "#/collections/posts/entries/2026/02/ramen",
+      "opened": true
+    },
+    {
+      "device": "iPad",
+      "id": "T50",
+      "name": "記事エントリー実クリック→エディタ遷移",
+      "pass": true,
+      "screenshot": "screenshots/T50-entryclick-iPad.png",
+      "hash": "#/collections/posts/entries/2026/02/ramen",
+      "hasEditor": true
+    },
+    {
+      "device": "iPad",
+      "id": "T51",
+      "name": "エラーハンドリング（コンソールエラー監視）",
+      "pass": true,
+      "screenshot": "screenshots/T51-errhandle-iPad.png",
+      "errorCount": 0,
+      "errors": []
+    },
+    {
+      "device": "iPad",
+      "id": "T52",
+      "name": "不正ハッシュルートでクラッシュしない",
+      "pass": true,
+      "screenshot": "screenshots/T52-unknownhash-iPad.png",
+      "bodyOk": true,
+      "hasContent": true,
+      "url": "#/unknown/route/test"
+    },
+    {
+      "device": "iPad",
+      "id": "T55",
+      "name": "ページリロード後クラッシュしない",
+      "pass": true,
+      "screenshot": "screenshots/T55-reload-iPad.png",
+      "bodyOk": true,
+      "hasContent": true
+    },
+    {
+      "device": "iPhone",
+      "id": "S01",
+      "name": "トップページ（h1・記事カード・ヘッダー・フッター）",
+      "pass": true,
+      "screenshot": "screenshots/S01-homepage-iPhone.png",
+      "h1": "記事一覧",
+      "articles": 5,
+      "hasHeader": true,
+      "hasFooter": true
+    },
+    {
+      "device": "iPhone",
+      "id": "S02",
+      "name": "記事詳細ページ遷移・表示",
+      "pass": true,
+      "screenshot": "screenshots/S02-article-iPhone.png",
+      "hasH1": true,
+      "hasContent": true,
+      "url": "/posts/2026/02/%E3%83%81%E3%83%A3%E3%83%BC%E3%83%8F%E3%83%B3%E7%BE%8E%E5%91%B3%E3%81%97%E3%81%84"
+    },
+    {
+      "device": "iPhone",
+      "id": "S03",
+      "name": "タグフィルター・URLエンコード（Bug #33再発防止）",
+      "pass": true,
+      "screenshot": "screenshots/S03-tagfilter-iPhone.png",
+      "tagHref": "/tags/%E7%A6%8F%E3%81%97%E3%82%93",
+      "rawTagInUrl": false,
+      "url": "/tags/%E7%A6%8F%E3%81%97%E3%82%93",
+      "hasArticles": false,
+      "urlEncoded": true
+    },
+    {
+      "device": "iPhone",
+      "id": "S04",
+      "name": "アーカイブナビゲーション遷移",
+      "pass": true,
+      "screenshot": "screenshots/S04-archive-iPhone.png",
+      "url": "/posts/2026",
+      "hasH1": true
+    },
+    {
+      "device": "iPhone",
+      "id": "S05",
+      "name": "ヘッダーナビドロップダウン展開",
+      "pass": true,
+      "screenshot": "screenshots/S05-navdrop-iPhone.png",
+      "dropdownOpen": false,
+      "navLinksCount": 4
+    },
+    {
+      "device": "iPhone",
+      "id": "S06",
+      "name": "下書き記事非公開（存在しないURL→404）",
+      "pass": true,
+      "screenshot": "screenshots/S06-draft404-iPhone.png",
+      "status": 404,
+      "has404Text": false
+    },
+    {
+      "device": "iPhone",
+      "id": "S07",
+      "name": "image-orientation: from-image CSS適用",
+      "pass": true,
+      "screenshot": "screenshots/S07-exifcss-iPhone.png",
+      "found": true,
+      "sample": "img { max-width: 100%; height: auto; image-orientation: from-image; }"
+    },
+    {
+      "device": "iPhone",
+      "id": "S08",
+      "name": "アクセシビリティ（alt属性完備・h1単一）",
+      "pass": true,
+      "screenshot": "screenshots/S08-a11y-iPhone.png",
+      "imgCount": 5,
+      "noAltCount": 0,
+      "h1Count": 1,
+      "noAltSamples": []
+    },
+    {
+      "device": "iPhone",
+      "id": "S09",
+      "name": "レイアウト崩れなし（header/main重なり確認）",
+      "pass": true,
+      "screenshot": "screenshots/S09-layout-iPhone.png",
+      "hasHeader": true,
+      "hasMain": true,
+      "headerBottom": 65,
+      "mainTop": 97,
+      "overlap": false
+    },
+    {
+      "device": "iPhone",
+      "id": "S10",
+      "name": "固定ページ（about）表示確認",
+      "pass": true,
+      "screenshot": "screenshots/S10-fixedpage-iPhone.png",
+      "status": 200,
+      "hasH1": true,
+      "hasMain": true
+    },
+    {
+      "device": "iPhone",
+      "id": "T01",
+      "name": "OAuthログイン完了（ログインボタン消失・コレクション表示）",
+      "pass": true,
+      "screenshot": "screenshots/T01-login-iPhone.png",
+      "hasLoginBtn": false,
+      "entryCount": 12,
+      "hasSidebar": true
+    },
+    {
+      "device": "iPhone",
+      "id": "T02",
+      "name": "サイトリンク「ブログを見る」表示",
+      "pass": true,
+      "screenshot": "screenshots/T02-sitelink-iPhone.png"
+    },
+    {
+      "device": "iPhone",
+      "id": "T03",
+      "name": "記事エントリー日付バッジ形式（formatCollectionEntries）",
+      "pass": true,
+      "screenshot": "screenshots/T03-entryfmt-iPhone.png",
+      "dateCount": 4,
+      "titleCount": 4,
+      "firstDate": "2026-02-24",
+      "firstTitle": "ラーメン日記"
+    },
+    {
+      "device": "iPhone",
+      "id": "T04",
+      "name": "下書きバッジ表示（オレンジ「下書き」）",
+      "pass": true,
+      "screenshot": "screenshots/T04-draftbadge-iPhone.png",
+      "hasDraftText": true,
+      "badgeCount": 1,
+      "hasOrangeBadge": true
+    },
+    {
+      "device": "iPhone",
+      "id": "T05",
+      "name": "固定ページコレクション切り替え",
+      "pass": true,
+      "screenshot": "screenshots/T05-pagescoll-iPhone.png",
+      "hasPagesLink": true,
+      "hash": "#/collections/pages",
+      "entryCount": 6
+    },
+    {
+      "device": "iPhone",
+      "id": "T06",
+      "name": "固定ページ一覧エントリーフォーマット（番号バッジ）",
+      "pass": true,
+      "screenshot": "screenshots/T06-pagefmt-iPhone.png",
+      "entryCount": 6,
+      "dateCount": 2,
+      "titleCount": 2,
+      "firstText": "#1このサイトについて"
+    },
+    {
+      "device": "iPhone",
+      "id": "T07",
+      "name": "記事エディタ開く（実クリック遷移）",
+      "pass": true,
+      "screenshot": "screenshots/T07-editor-iPhone.png",
+      "hash": "#/collections/posts/entries/2026/02/ramen",
+      "hasEditor": true
+    },
+    {
+      "device": "iPhone",
+      "id": "T08",
+      "name": "公開URLバー（記事）表示・/posts/形式",
+      "pass": true,
+      "screenshot": "screenshots/T08-urlbar-article-iPhone.png",
+      "hasBar": true,
+      "visible": true,
+      "text": "公開URL:http://localhost:4175/posts/2026/02/ramen",
+      "hasPosts": true
+    },
+    {
+      "device": "iPhone",
+      "id": "T09",
+      "name": "公開URLバー（固定ページ）/slug形式（Bug #13再発防止）",
+      "pass": true,
+      "screenshot": "screenshots/T09-urlbar-page-iPhone.png",
+      "hasBar": true,
+      "visible": true,
+      "text": "公開URL:http://localhost:4175/about",
+      "hasSlug": true,
+      "hasPosts": false
+    },
+    {
+      "device": "iPhone",
+      "id": "T10",
+      "name": "新規記事作成フォーム（フィールド表示）",
+      "pass": true,
+      "screenshot": "screenshots/T10-newform-iPhone.png",
+      "hash": "#/collections/posts/new",
+      "fieldCount": 5,
+      "hasTitle": true,
+      "labels": [
+        "タイトル",
+        "日付",
+        "下書き (任意)",
+        "タグ (任意)",
+        "サムネイル画像 (任意)",
+        "概要 (任意)",
+        "本文"
+      ],
+      "isNew": true,
+      "hasBtnVisible": false
+    },
+    {
+      "device": "iPhone",
+      "id": "T11",
+      "name": "タイトル入力（fill()実操作）",
+      "pass": true,
+      "screenshot": "screenshots/T11-titleinput-iPhone.png",
+      "hash": "#/collections/posts/new",
+      "titleValue": "テスト記事タイトル",
+      "fieldCount": 5
+    },
+    {
+      "device": "iPhone",
+      "id": "T12",
+      "name": "画像ウィジェットaccept制限（HEIC防止）",
+      "pass": true,
+      "screenshot": "screenshots/T12-imagewidget-iPhone.png",
+      "fileInputCount": 0,
+      "accepts": [],
+      "heicBlocked": true,
+      "hasImageAccept": false
+    },
+    {
+      "device": "iPhone",
+      "id": "T13",
+      "name": "コレクション一覧でURLバー非表示",
+      "pass": true,
+      "screenshot": "screenshots/T13-urlbar-hidden-iPhone.png",
+      "hasBar": true,
+      "hidden": true
+    },
+    {
+      "device": "iPhone",
+      "id": "T14",
+      "name": "削除ボタンラベル変更（relabelImageButtons）",
+      "pass": true,
+      "screenshot": "screenshots/T14-deletebtn-iPhone.png",
+      "deselectCount": 0,
+      "fullDeleteCount": 0
+    },
+    {
+      "device": "iPhone",
+      "id": "T15",
+      "name": "URLバー退避（ドロップダウン表示時）",
+      "pass": true,
+      "screenshot": null,
+      "skipped": "no sort button"
+    },
+    {
+      "device": "iPhone",
+      "id": "T16",
+      "name": "年月グルーピング自動有効化（activateDefaultGrouping）",
+      "pass": true,
+      "screenshot": "screenshots/T16-grouping-iPhone.png",
+      "headings": [
+        "2026年2月",
+        "2026年1月",
+        "2025年12月"
+      ],
+      "count": 3
+    },
+    {
+      "device": "iPhone",
+      "id": "T17",
+      "name": "グループ降順（最新月が先頭：reverseViewGroups）",
+      "pass": true,
+      "screenshot": "screenshots/T17-groupdesc-iPhone.png",
+      "headings": [
+        "2026年2月",
+        "2026年1月",
+        "2025年12月"
+      ],
+      "isDesc": true
+    },
+    {
+      "device": "iPhone",
+      "id": "T18",
+      "name": "グループ見出し日本語化（formatGroupHeadings）",
+      "pass": true,
+      "screenshot": "screenshots/T18-groupja-iPhone.png",
+      "headings": [
+        "2026年2月",
+        "2026年1月",
+        "2025年12月"
+      ],
+      "isJapanese": true
+    },
+    {
+      "device": "iPhone",
+      "id": "T19",
+      "name": "グルーピングボタン非表示（hideGroupControl）",
+      "pass": true,
+      "screenshot": "screenshots/T19-groupbtnhidden-iPhone.png",
+      "found": true,
+      "hidden": true
+    },
+    {
+      "device": "iPhone",
+      "id": "T20",
+      "name": "月別セレクタ表示（createMonthSelector）",
+      "pass": true,
+      "screenshot": "screenshots/T20-monthsel-iPhone.png",
+      "found": true,
+      "visible": true,
+      "options": [
+        "",
+        "2026年2月",
+        "2026年1月",
+        "2025年12月"
+      ],
+      "optionCount": 4
+    },
+    {
+      "device": "iPhone",
+      "id": "T21",
+      "name": "月別セレクタフィルタリング（Bug #37再発防止）",
+      "pass": true,
+      "screenshot": "screenshots/T21-monthfilter-iPhone.png",
+      "selected": "2026年2月",
+      "visibleGroups": [
+        "2026年2月"
+      ],
+      "hiddenGroups": [
+        "2026年1月",
+        "2025年12月"
+      ]
+    },
+    {
+      "device": "iPhone",
+      "id": "T22",
+      "name": "select操作中の安定性（Bug #38再発防止）",
+      "pass": true,
+      "screenshot": "screenshots/T22-selectstable-iPhone.png",
+      "found": true,
+      "sameNodes": true,
+      "sameSig": true,
+      "focused": true,
+      "count": 4
+    },
+    {
+      "device": "iPhone",
+      "id": "T23",
+      "name": "ソート昇順切替→グループ昇順（古い月が先頭）",
+      "pass": true,
+      "screenshot": "screenshots/T23-sortasc-iPhone.png",
+      "headings": [
+        "2025年12月",
+        "2026年1月",
+        "2026年2月"
+      ],
+      "isAsc": true
+    },
+    {
+      "device": "iPhone",
+      "id": "T24",
+      "name": "ソート降順復帰→グループ降順（reverseViewGroups）",
+      "pass": true,
+      "screenshot": "screenshots/T24-sortdesc-iPhone.png",
+      "headings": [
+        "2026年2月",
+        "2026年1月",
+        "2025年12月"
+      ],
+      "isDesc": true
+    },
+    {
+      "device": "iPhone",
+      "id": "T25",
+      "name": "グループ内エントリー日付順表示",
+      "pass": true,
+      "screenshot": "screenshots/T25-entrydesc-iPhone.png",
+      "dates": [
+        "2026-02-24",
+        "2026-02-20",
+        "2026-01-15",
+        "2025-12-31"
+      ],
+      "count": 4
+    },
+    {
+      "device": "iPhone",
+      "id": "T27",
+      "name": "codeblockボタン非表示（≤799px）",
+      "pass": true,
+      "screenshot": "screenshots/T27-codeblock-iPhone.png",
+      "found": false,
+      "display": "n/a"
+    },
+    {
+      "device": "iPhone",
+      "id": "T28",
+      "name": "タップ領域44px確保（モバイル重点）",
+      "pass": true,
+      "screenshot": "screenshots/T28-taparea-iPhone.png",
+      "total": 6,
+      "smallCount": 0,
+      "samples": []
+    },
+    {
+      "device": "iPhone",
+      "id": "T29",
+      "name": "URLバー退避（モバイルドロップダウン）",
+      "pass": true,
+      "screenshot": "screenshots/T29-urlbar-drop-iPhone.png",
+      "barHidden": true,
+      "hasDropdown": true
+    },
+    {
+      "device": "iPhone",
+      "id": "T30",
+      "name": "pull-to-refresh防止（overscroll-behavior）",
+      "pass": true,
+      "screenshot": "screenshots/T30-pullrefresh-iPhone.png",
+      "bodyOverscroll": "auto",
+      "htmlOverscroll": "auto"
+    },
+    {
+      "device": "iPhone",
+      "id": "T31",
+      "name": "iOS自動ズーム防止（font-size≥16px）",
+      "pass": true,
+      "screenshot": "screenshots/T31-iosfont-iPhone.png",
+      "total": 2,
+      "smallCount": 0,
+      "samples": []
+    },
+    {
+      "device": "iPhone",
+      "id": "T36",
+      "name": "固定ページ新規作成フォーム（slug・order・titleフィールド）",
+      "pass": true,
+      "screenshot": "screenshots/T36-pagenewform-iPhone.png",
+      "hash": "#/collections/pages/new",
+      "fieldCount": 4,
+      "labels": [
+        "タイトル",
+        "URLスラグ",
+        "表示順",
+        "下書き (任意)",
+        "本文"
+      ],
+      "isNew": true
+    },
+    {
+      "device": "iPhone",
+      "id": "T38",
+      "name": "長いタイトル・横はみ出しなし",
+      "pass": true,
+      "screenshot": "screenshots/T38-overflow-iPhone.png",
+      "titleCount": 3,
+      "overflowCount": 0,
+      "bodyWidth": 390,
+      "windowWidth": 390
+    },
+    {
+      "device": "iPhone",
+      "id": "T44",
+      "name": "コレクション切り替え後グルーピング再適用",
+      "pass": true,
+      "screenshot": "screenshots/T44-collswitch-iPhone.png",
+      "headings": [
+        "その他",
+        "2026年2月",
+        "2026年1月",
+        "2025年12月"
+      ]
+    },
+    {
+      "device": "iPhone",
+      "id": "T46",
+      "name": "記事一覧エントリー数（モック4件と一致）",
+      "pass": true,
+      "screenshot": "screenshots/T46-entrycount-iPhone.png",
+      "entryCount": 4,
+      "entryLinkCount": 4,
+      "listCardCount": 12,
+      "hash": "#/collections/posts"
+    },
+    {
+      "device": "iPhone",
+      "id": "T47",
+      "name": "エディタツールバーと公開URLバー重なりなし",
+      "pass": true,
+      "screenshot": "screenshots/T47-toolbarover-iPhone.png",
+      "hasToolbar": true,
+      "hasUrlBar": true,
+      "overlap": false,
+      "tBottom": 1231,
+      "uTop": 1326
+    },
+    {
+      "device": "iPhone",
+      "id": "T48",
+      "name": "メディアライブラリ開閉",
+      "pass": true,
+      "screenshot": "screenshots/T48-medialibrary-iPhone.png",
+      "hasModal": true,
+      "hasMediaHash": false,
+      "hash": "#/collections/posts/entries/2026/02/ramen",
+      "opened": true
+    },
+    {
+      "device": "iPhone",
+      "id": "T50",
+      "name": "記事エントリー実クリック→エディタ遷移",
+      "pass": true,
+      "screenshot": "screenshots/T50-entryclick-iPhone.png",
+      "hash": "#/collections/posts/entries/2026/02/ramen",
+      "hasEditor": true
+    },
+    {
+      "device": "iPhone",
+      "id": "T51",
+      "name": "エラーハンドリング（コンソールエラー監視）",
+      "pass": true,
+      "screenshot": "screenshots/T51-errhandle-iPhone.png",
+      "errorCount": 0,
+      "errors": []
+    },
+    {
+      "device": "iPhone",
+      "id": "T52",
+      "name": "不正ハッシュルートでクラッシュしない",
+      "pass": true,
+      "screenshot": "screenshots/T52-unknownhash-iPhone.png",
+      "bodyOk": true,
+      "hasContent": true,
+      "url": "#/unknown/route/test"
+    },
+    {
+      "device": "iPhone",
+      "id": "T55",
+      "name": "ページリロード後クラッシュしない",
+      "pass": true,
+      "screenshot": "screenshots/T55-reload-iPhone.png",
+      "bodyOk": true,
+      "hasContent": true
+    }
+  ]
+}

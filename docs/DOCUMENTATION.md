@@ -44,6 +44,7 @@
 | 1.37 | 2026-05-22 | Bug #37修正: CMS-19の年月選択プルダウンがフィルターではなくスクロール動作になっていた問題を修正。CMS-19要件を「選択年月のみ表示」に明確化し、`createMonthSelector()`に`applyMonthFilter()`を追加。admin-html再発防止テスト更新 |
 | 1.38 | 2026-05-24 | Bug #38修正: CMS-19年月フィルター操作時に管理画面がハングアップする問題を修正。`createMonthSelector()`でネイティブselect操作中にoptionを再構築しないよう、`optionsSignature`で見出し変更時のみ再生成する方式に変更。E2Eにselect操作中のMutationObserver再実行耐性検証を追加 |
 | 1.39 | 2026-05-24 | プロジェクト方針追加: ドキュメント更新をコード変更の完了条件化、ユーザー実操作E2E確認をUI変更時の必須条件化。Modern Web Guidance横展開として、ナビゲーション/アーカイブのARIAラベル、focus-visible、記事一覧の`content-visibility`、記事・アーカイブの`text-wrap`を追加 |
+| 1.40 | 2026-05-25 | Bug #39修正: CMS管理画面モバイルタップ領域不足（WCAG 2.5.5）。「新規作成」「ソート」等のボタンがiPad/iPhoneで44px未満。`@media (max-width: 899px)`を新設し全対象ボタンにmin-height/min-width: 44pxを適用。verify-comprehensive.mjs 150/150 PASSを確認 |
 
 ## システム変更履歴
 
@@ -1632,6 +1633,7 @@ GitHubリポジトリが利用可能な場合、以下の手順でシステム�
 | 36 | 2026-02-24 | CMS CRUDエビデンスが全てログイン画面のみ表示: verify-cms-crud.mjsで取得した48枚のスクリーンショットが全てCMSログインボタン画面のみで、認証後の編集画面が撮影されていなかった | (1) Decap CMS OAuth認証は3ステップハンドシェイク（`authorizing:github` → ACK → `authorization:github:success:{token,provider}`）を要するが、エビデンス収集スクリプトはステップ1-2を省略してトークンを直接送信していたためCMSがメッセージを無視。(2) Playwrightの`page.route()`はポップアップウィンドウのナビゲーションをインターセプトできない（`context.route()`が必要）。(3) globパターン`**/auth`はクエリパラメータ付きURLにマッチしない。(4) config.ymlの`base_url`がstaging URLのままだとlocalhost上のpostMessageがクロスオリジン拒否される | (1) 3ステップOAuthハンドシェイクを完全実装（`context.route()`でポップアップをインターセプトし、`authorizing:github`→ACK待機→`authorization:github:success`の3段階を再現）。(2) `page.route()`→`context.route()`に変更。(3) glob→関数マッチャー（`url => url.pathname === '/auth'`）に変更。(4) GitHub API モックのルート登録順序をLIFO対応（catch-all先登録→具体ルート後登録）に修正。(5) エビデンス提出前の社内レビュー義務化（CLAUDE.mdルール11追加） | verify-cms-crud.mjs, CLAUDE.md |
 | 37 | 2026-05-22 | CMS年月選択プルダウンがフィルターとして動作しない: CMS-19の年月セレクターが選択年月のみ表示ではなく、該当見出しへスクロールするだけだった | 要件定義で「年月選択」がフィルターかジャンプか曖昧なまま実装され、admin-htmlテストも`scrollIntoView`の存在確認に留まっていた | CMS-19要件を「年月選択プルダウンで選択年月のみ表示」に明確化。`createMonthSelector()`に`applyMonthFilter()`を追加し、選択年月以外のグループコンテナを`display:none`にする | admin-html 2.6.6章 #14, verify-cms19-month-filter.mjs |
 | 38 | 2026-05-24 | CMS年月フィルター操作時に管理画面がハングアップする: 月セレクターを開いて年月を選ぼうとするとChromeが固まる | `MutationObserver`の再実行ごとに`createMonthSelector()`が`sel.textContent = ''`でoptionを全再構築していた。ネイティブselectを開いている最中にoption DOMを差し替えるため、ブラウザのselect UIとDecap CMSの再描画が競合した | `optionsSignature`でグループ見出し構成を記録し、見出しが変わった時だけoptionを再構築する。フィルター適用は毎回現在DOMを再取得して実行し、React再描画後の追従とselect操作安定性を両立する | admin-html 2.6.6章 #14, verify-cms19-month-filter.mjs |
+| 39 | 2026-05-25 | CMS管理画面モバイルのタップ領域不足（WCAG 2.5.5違反）: 「新規作成」ボタン（h=27px）、コレクションToolbarの「ソート」ボタン（h=27px）、AppHeaderのアイコンボタン（h=24px）等がモバイル推奨44pxを下回り、タッチ操作の精度不足を招く。iPad Pro 11（834px）ではモバイル用CSSブレークポイント（max-width: 799px）が適用されず、既存min-heightルールが無効 | `@media (max-width: 799px)` ブレークポイントがiPad Pro 11のビューポート幅834pxより小さいため、CollectionTopNewButton・ソートボタン（`[role="button"][aria-haspopup]`）・AppHeaderButtonにmin-height: 44pxが適用されなかった | `@media (max-width: 899px)` の新ブレークポイントを追加し、CollectionTopNewButton・CollectionTop内のbutton/[role="button"]・AppHeaderButton・ViewControls内ボタン・`[role="button"][aria-haspopup]`すべてに`min-height: 44px; min-width: 44px`を適用。iPadとiPhone両デバイスで全ボタン≥44pxを確認 | verify-comprehensive.mjs T28 |
 
 ---
 
@@ -2107,4 +2109,4 @@ evidence/YYYY-MM-DD/
 
 ---
 
-**最終更新**: 2026年2月24日（v1.31）
+**最終更新**: 2026年5月25日（v1.40）

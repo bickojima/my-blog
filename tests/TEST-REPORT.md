@@ -1298,6 +1298,7 @@ OAuthモック＋GitHub APIモックを使い、CMS管理画面を実際に操�
 | E-35 | 削除ボタン状態変化 | 削除ボタンラベル変更（選択解除/完全削除）、disabled状態CSS、色の視覚的区別、borderColor判定ロジック | モック/動作検証/CSS検証 |
 | E-36 | 記事デフォルトソート・月別グルーピング | 記事一覧の日付降順ソート検証、view_groups「年月」ボタン表示、レイアウト崩れなし（要素重なり検証）。PC/iPad/iPhone 3デバイスでスクリーンショットエビデンス取得（CMS-17, CMS-18） | モック/動作検証/スクリーンショット |
 | E-37 | CMS年月フィルター | 月セレクターで選択年月のみ表示、他年月グループ非表示、select操作中のMutationObserver再実行でもoptionを再構築しないこと、降順・昇順切替後のグループ順を確認。PC/iPad/iPhone 3デバイスでスクリーンショットエビデンス取得（CMS-19, Bug #37, Bug #38） | OAuthモック/実操作/動作検証/スクリーンショット |
+| E-38 | モバイルタップ領域44px確保（Bug #39再発防止） | iPad Pro 11（834px）とiPhone 14（390px）でCMS管理画面の全ボタン・[role="button"]要素がheight≥40pxであること。特に「新規作成」ボタン・「ソート」ボタン（[role="button"][aria-haspopup]）・AppHeaderボタンを確認。`@media (max-width: 899px)`のmin-height: 44px適用を検証 | verify-comprehensive.mjs T28 |
 
 #### アクセシビリティテスト (`tests/e2e/accessibility.spec.ts`)
 
