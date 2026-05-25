@@ -45,6 +45,7 @@
 | 1.38 | 2026-05-24 | Bug #38修正: CMS-19年月フィルター操作時に管理画面がハングアップする問題を修正。`createMonthSelector()`でネイティブselect操作中にoptionを再構築しないよう、`optionsSignature`で見出し変更時のみ再生成する方式に変更。E2Eにselect操作中のMutationObserver再実行耐性検証を追加 |
 | 1.39 | 2026-05-24 | プロジェクト方針追加: ドキュメント更新をコード変更の完了条件化、ユーザー実操作E2E確認をUI変更時の必須条件化。Modern Web Guidance横展開として、ナビゲーション/アーカイブのARIAラベル、focus-visible、記事一覧の`content-visibility`、記事・アーカイブの`text-wrap`を追加 |
 | 1.40 | 2026-05-25 | Bug #39修正: CMS管理画面モバイルタップ領域不足（WCAG 2.5.5）。「新規作成」「ソート」等のボタンがiPad/iPhoneで44px未満。`@media (max-width: 899px)`を新設し全対象ボタンにmin-height/min-width: 44pxを適用。verify-comprehensive.mjs 150/150 PASSを確認 |
+| 1.41 | 2026-05-25 | 探索的E2Eテスト追加: `tests/e2e/cms-exploratory.spec.ts`新規作成（E-37, E-39〜E-43: 月別セレクタ実操作・固定ページ作成画面・エラーハンドリング・下書きバッジ・グルーピング再適用・コンソールエラー監視）。36テスト（12×3デバイス）全PASS確認。E2Eテスト総数423件（415実行+8スキップ）に更新 |
 
 ## システム変更履歴
 
@@ -2109,4 +2110,4 @@ evidence/YYYY-MM-DD/
 
 ---
 
-**最終更新**: 2026年5月25日（v1.40）
+**最終更新**: 2026年5月25日（v1.41）
