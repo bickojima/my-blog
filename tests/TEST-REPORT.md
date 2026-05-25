@@ -1325,13 +1325,24 @@ axe-coreエンジン（@axe-core/playwright）を使用してWCAG 2.1 Level AA�
 
 ### 4.1.4 デバイス別テスト
 
-全テストケースを以下の3デバイスで実行する（合計423テスト：415実行 + 8スキップ）。モバイル固有テスト（E-34）はビューポート幅≤799pxのiPhoneでのみ実行し、PC・iPadではスキップする。
+全テストケースを以下の3デバイスで実行する（合計423テスト：416実行 + 7スキップ）。
 
 | デバイス | ビューポート | 用途 |
 | :--- | :--- | :--- |
 | PC | 1280 x 720 | デスクトップ表示の検証 |
 | iPad (gen 7) | 810 x 1080 | タブレット表示の検証 |
 | iPhone 14 | 390 x 844 | モバイル表示の検証 |
+
+#### スキップ仕様（E-34: モバイル固有UI操作）
+
+| テスト | skip条件 | 理由 | PC(1280) | iPad(810) | iPhone(390) |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| ドロップダウンがボトムシート表示 | viewportWidth > 799 | `@media (max-width: 799px)` のみ適用 | skip | skip | **実行** |
+| codeblockボタン非表示 | viewportWidth > 799 | `@media (max-width: 799px)` のみ適用 | skip | skip | **実行** |
+| URLバー退避（ドロップダウン時） | viewportWidth > 799 | `@media (max-width: 799px)` のみ適用 | skip | skip | **実行** |
+| タップ領域44px確保 | viewportWidth > **899** | Bug #39: `@media (max-width: 899px)` に拡張（iPad gen7も対象） | skip | **実行** | **実行** |
+
+スキップ合計: PC 4件 + iPad 3件 = **7件**（以前は8件。Bug #39対応でタップ領域テストをiPadでも実行）
 
 ### 4.1.5 CMS操作テストの方式（必須）
 
@@ -1382,6 +1393,117 @@ UI変更・CMS変更・Modern Web Guidance対応では、DOMを直接書き換�
 | エビデンス | PC/iPad/iPhoneの3デバイスでスクリーンショットを保存し、赤枠アノテーションで確認箇所を示す | 既存の`verify-*.mjs`形式を踏襲 |
 | DOM検証の扱い | DOM検証は結果確認・補助用途に限定する | DOM直叩きだけを合格条件にしない |
 
+### 4.1.8 包括的エビデンス検証スクリプト（verify-comprehensive.mjs）の方式
+
+#### 目的と位置付け
+
+`npm run test:e2e`（Playwright spec ファイル群）が「要件トレーサビリティ」を担うのに対し、
+`verify-comprehensive.mjs` は「スクリーンショット付き包括的エビデンス」を担う。
+2つは役割が異なり、両方を維持する。
+
+| 項目 | Playwright spec（`tests/e2e/*.spec.ts`） | verify-comprehensive.mjs |
+| :--- | :--- | :--- |
+| 実行方法 | `npm run test:e2e` | `node evidence/YYYY-MM-DD/verify-comprehensive.mjs` |
+| 認証方式 | `page.addInitScript()` window.open モンキーパッチ | `context.route()` + 3ステップOAuthハンドシェイク |
+| 出力 | Playwright HTML レポート（`playwright-report/`） | `evidence/YYYY-MM-DD/report.html`（赤枠アノテーション付きスクリーンショット） |
+| 目的 | CI/CD 品質ゲート・要件カバレッジ | staging 検証エビデンス・バグ再発防止スクリーンショット |
+| デバイス | PC/iPad/iPhone 3プロジェクト | PC(1280×800)/iPad Pro 11(834×1194)/iPhone 14(390×844) |
+
+#### 雛形ファイルと実行手順
+
+```bash
+# 1. 前提: ビルド済みの dist/ が必要（httpサーバーは内蔵）
+npm run build
+
+# 2. 日付フォルダを作成し雛形をコピー
+cp evidence/2026-05-24/verify-comprehensive.mjs evidence/YYYY-MM-DD/verify-comprehensive.mjs
+
+# 3. 実行（組み込みHTTPサーバーが PORT=4174 で起動）
+node evidence/YYYY-MM-DD/verify-comprehensive.mjs
+
+# 4. 出力確認
+# - evidence/YYYY-MM-DD/screenshots/  スクリーンショット（S/T番号-デバイス.png）
+# - evidence/YYYY-MM-DD/report.html   PC/iPad/iPhone 横並びHTMLレポート
+# - evidence/YYYY-MM-DD/comprehensive-results.json  JSON結果（PASS/FAIL/SKIP）
+```
+
+#### 認証方式（スタンドアロンPlaywright = context.route()方式）
+
+verify-comprehensive.mjs は Playwright test runner **外** で動くため、`context.route()` でOAuthポップアップをインターセプトする（test runner内では `page.addInitScript()` 方式を使う）。
+
+```javascript
+// context.route() + 3ステップOAuthハンドシェイク
+await context.route('**/auth', async (route) => {
+  await route.fulfill({
+    status: 200, contentType: 'text/html',
+    body: `<html><script>
+      // Step1: 'authorizing:github' を親へ送信
+      window.opener.postMessage('authorizing:github', origin);
+      // Step2: CMSからのACKを受信
+      window.addEventListener('message', (e) => {
+        if (e.data === 'authorizing:github') {
+          // Step3: success トークンを親へ送信
+          window.opener.postMessage(
+            'authorization:github:success:{"token":"mock-token","provider":"github"}', origin);
+          window.close();
+        }
+      });
+    </script></html>`
+  });
+});
+// 参考実装: evidence/2026-05-24/verify-comprehensive.mjs の openCmsWithAuth()
+```
+
+#### テストシナリオ番号体系
+
+| プレフィックス | 対象 | 例 |
+| :--- | :--- | :--- |
+| `S01〜S10` | 公開サイト（トップ・記事・タグ・アーカイブ・ナビ・下書き・EXIF・A11y・レスポンシブ・固定ページ） | S03: タグフィルター |
+| `T01〜T15` | CMS基本操作（認証・サイトリンク・エントリー表示・エディタ・URLバー・削除ボタン） | T04: 下書きバッジ |
+| `T16〜T25` | CMS年月グルーピングUI（グルーピング有効化・降順・日本語化・月別セレクタ・ソート） | T21: 月別フィルター |
+| `T26〜T35` | モバイル固有操作（ボトムシート・codeblock・タップ領域・pull-to-refresh・iOS自動ズーム） | T28: タップ領域44px |
+| `T36〜T55` | 探索的テスト（固定ページ新規作成・バリデーション・エラーハンドリング・コンソール監視） | T40: APIエラーハンドリング |
+
+#### 赤枠アノテーション方式
+
+```javascript
+// 注目要素に赤枠を追加する
+async function addRedBorder(page, selector, label = '') {
+  await page.evaluate(({ selector, label }) => {
+    const el = document.querySelector(selector);
+    if (!el) return;
+    el.style.outline = '3px solid red';
+    el.style.outlineOffset = '2px';
+    if (label) {
+      const badge = document.createElement('div');
+      badge.textContent = label;
+      badge.style.cssText = 'position:absolute;background:red;color:white;font-size:11px;padding:2px 6px;z-index:9999;top:-20px;left:0';
+      el.style.position = 'relative';
+      el.appendChild(badge);
+    }
+  }, { selector, label });
+}
+// 枠をクリア
+async function clearOverlays(page) {
+  await page.evaluate(() => {
+    document.querySelectorAll('[style*="outline"]').forEach(el => el.style.outline = '');
+  });
+}
+// 参考実装: evidence/2026-05-24/verify-comprehensive.mjs の addRedBorder()/clearOverlays()
+```
+
+#### HTMLレポート形式
+
+PC/iPad/iPhone の3デバイスのスクリーンショットを横並びに配置し、各シナリオのPASS/FAIL/SKIPと詳細メッセージを記録する。`report.html` を開くだけで全エビデンスを一覧できる。
+
+#### 新シナリオ追加手順
+
+1. `evidence/2026-05-24/verify-comprehensive.mjs` の最新版を雛形としてコピー
+2. `SCENARIOS` 配列に新シナリオを追加（`id: 'T56'`、`label`、`run: async (page, device) => { ... }` を定義）
+3. `record({ id, label, pass, detail })` で結果を記録
+4. 実行して PASS を確認 → `comprehensive-results.json` の結果も確認
+5. `evidence/YYYY-MM-DD/report.html` で赤枠アノテーション付きスクリーンショットを目視確認
+
 ---
 
 ## 4.2. 実行手順
@@ -1401,7 +1523,7 @@ npx vitest run tests/auth-functions.test.mjs
 npm run test:watch
 ```
 
-### 4.2.2 E2Eテスト実行（Playwright）
+### 4.2.2 E2Eテスト実行（Playwright spec）
 
 ```bash
 # 前提: ビルド済みのdist/が必要
@@ -1416,13 +1538,37 @@ npx playwright test tests/e2e/site.spec.ts
 # CMSテストのみ
 npx playwright test tests/e2e/cms.spec.ts
 
+# 特定スペックのみ
+npx playwright test tests/e2e/cms-exploratory.spec.ts
+
 # 特定デバイスのみ
 npx playwright test --project=iPhone
+
+# 特定テストのみ（-g でフィルタ）
+npx playwright test -g "タップ領域"
 ```
 
 **注意**: E2Eテストはローカル開発環境でのみ実行可能である。Chromiumブラウザのバイナリが必要なため、初回は `npx playwright install chromium` でインストールすること。
 
-### 4.2.3 ビルド検証
+### 4.2.3 包括的エビデンス検証（verify-comprehensive.mjs）
+
+```bash
+# 前提: ビルド済みのdist/が必要
+npm run build
+
+# 最新の雛形を日付フォルダにコピー
+cp evidence/2026-05-24/verify-comprehensive.mjs evidence/$(date +%Y-%m-%d)/verify-comprehensive.mjs
+
+# 実行（内蔵HTTPサーバーがPORT=4174で起動）
+node evidence/YYYY-MM-DD/verify-comprehensive.mjs
+
+# 結果確認
+# - evidence/YYYY-MM-DD/report.html           HTMLレポート（ブラウザで開く）
+# - evidence/YYYY-MM-DD/screenshots/          スクリーンショット150枚
+# - evidence/YYYY-MM-DD/comprehensive-results.json  JSON結果
+```
+
+### 4.2.4 ビルド検証
 
 ```bash
 # ビルドパイプライン全体の実行
@@ -1465,10 +1611,10 @@ npm run build
 
 | 項目 | 結果 |
 | :--- | :--- |
-| 実行日時 | 2026-05-24 |
+| 実行日時 | 2026-05-25 |
 | Playwright バージョン | v1.58.2 |
-| 実行時間 | site.spec.ts: 5.3s、CMS年月フィルターエビデンス: 15/15 PASS |
-| 合否判定 | **合格**（直近実操作確認: site.spec.ts 93/93 PASS、CMS年月フィルター 15/15 PASS） |
+| 実行時間 | cms-exploratory.spec.ts: 7.0m（3デバイス並列）|
+| 合否判定 | **合格**（416 PASS, 7 skip / 423テスト）|
 
 | テストファイル | PC | iPad | iPhone | 合計 |
 | :--- | :--- | :--- | :--- | :--- |
@@ -1476,12 +1622,12 @@ npm run build
 | `cms.spec.ts`（E-07〜E-12） | 12 PASS | 12 PASS | 12 PASS | 36 |
 | `cms-customizations.spec.ts`（E-13〜E-19） | 38 PASS | 38 PASS | 38 PASS | 114 |
 | `cms-crud.spec.ts`（E-22〜E-24） | 11 PASS | 11 PASS | 11 PASS | 33 |
-| `cms-operations.spec.ts`（E-28〜E-36） | 27 PASS, 4 skip | 27 PASS, 4 skip | 31 PASS | 85 PASS, 8 skip |
+| `cms-operations.spec.ts`（E-28〜E-36） | 27 PASS, 4 skip | 28 PASS, 3 skip | 31 PASS | 86 PASS, 7 skip |
 | `accessibility.spec.ts`（E-25〜E-27） | 6 PASS | 6 PASS | 6 PASS | 18 |
 | `cms-exploratory.spec.ts`（E-37, E-39〜E-43） | 12 PASS | 12 PASS | 12 PASS | 36 |
-| **合計** | **137** | **137** | **141** | **415 PASS, 8 skip** |
+| **合計** | **137** | **138** | **141** | **416 PASS, 7 skip** |
 
-**スキップ内訳**: E-34（モバイル固有UI操作）4テスト × PC・iPad = 8件。ビューポート幅≤799pxのiPhoneでのみ実行。
+**スキップ内訳**: E-34（モバイル固有UI操作）のうち、ボトムシート・codeblock・URLバーの3テストは `@media (max-width: 799px)` 固有動作のためPC・iPad でskip（4×2=8件）。タップ領域テストはBug #39修正で `@media (max-width: 899px)` に拡張されたためiPad gen7（810px）でも実行（PC のみskip: 1件）。合計7件skip。
 
 ### 4.3.4 ビルド実行結果
 
@@ -1495,4 +1641,4 @@ npm run build
 
 ---
 
-**最終更新**: 2026年2月23日
+**最終更新**: 2026年5月25日

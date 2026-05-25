@@ -923,7 +923,9 @@ test.describe('E-34: モバイル固有UI操作', () => {
 
   test('モバイルのボタン・タップ領域が44px以上確保されている', async ({ page }) => {
     const viewportWidth = page.viewportSize()?.width || 1280;
-    if (viewportWidth > 799) {
+    // Bug #39: @media (max-width: 899px) で44px確保（iPad Pro 11の834px含む）
+    // Playwrightの iPad (810px) も 899px 以下なので実行対象に含める
+    if (viewportWidth > 899) {
       test.skip();
       return;
     }
