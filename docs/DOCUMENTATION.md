@@ -47,6 +47,7 @@
 | 1.40 | 2026-05-25 | Bug #39修正: CMS管理画面モバイルタップ領域不足（WCAG 2.5.5）。「新規作成」「ソート」等のボタンがiPad/iPhoneで44px未満。`@media (max-width: 899px)`を新設し全対象ボタンにmin-height/min-width: 44pxを適用。verify-comprehensive.mjs 150/150 PASSを確認 |
 | 1.41 | 2026-05-25 | 探索的E2Eテスト追加: `tests/e2e/cms-exploratory.spec.ts`新規作成（E-37, E-39〜E-43: 月別セレクタ実操作・固定ページ作成画面・エラーハンドリング・下書きバッジ・グルーピング再適用・コンソールエラー監視）。36テスト（12×3デバイス）全PASS確認。E2Eテスト総数423件（415実行+8スキップ）に更新 |
 | 1.42 | 2026-05-25 | テスト知見の文書化: TEST-REPORT.md 4.1.8章「包括的エビデンス検証スクリプト（verify-comprehensive.mjs）の方式」追加（雛形ファイル・認証方式・シナリオ番号体系・赤枠アノテーション・HTMLレポート・新シナリオ追加手順を記載）。E-34タップ領域skip条件を799px→899pxに修正（Bug #39対応）、ToolbarButtonを899px CSSブロックに追加。E2Eテスト423件（416実行+7スキップ）に更新 |
+| 1.43 | 2026-05-30 | 基本設計（2.2.3章）にGoogle Modern Web Guidanceの導入手順として`npx modern-web-guidance@latest install`を明記 |
 
 ## システム変更履歴
 
@@ -194,6 +195,7 @@ PR履歴に基づく主要なシステム変更の記録である。
 | Q11 | UI変更では実際の操作をしてのE2E動作確認を必須とする方針でよいか | 工数がかかってよいので、実際の操作してのE2E動作確認は必須というプロジェクト方針にする | 確認済み |
 | Q12 | 変更時のドキュメント更新を必須プロジェクト方針にしてよいか | ドキュメント修正は必ずする方針で、プロジェクト方針とする | 確認済み |
 | Q13 | Modern Web Guidanceに準拠できる箇所を横展開してよいか | 工数がかかってよいので横展開する | 確認済み |
+| Q14 | 基本設計書にModern Web Guidanceの導入コマンドを明記してよいか | `npx modern-web-guidance@latest install`で導入することを追記する | 確認済み |
 
 ### 1.1.5 Modern Web Guidance準拠方針
 
@@ -667,6 +669,8 @@ my-blog/
 ### 2.2.3 Modern Web Guidance基本設計方針
 
 本システムの独自実装部は、Google公式Modern Web Guidanceスキル準拠を基本設計方針とする。適用対象は公開サイトのAstro実装（`src/layouts`, `src/pages`, `src/components`, 独自rehype plugin）およびCMS管理画面の独自カスタマイズ（`public/admin/index.html`内の追加CSS/JS）に限定する。
+
+Modern Web Guidanceは、AIエージェントへGoogle公式のモダンWeb機能知識を注入するため、プロジェクト初期化時または方針更新時に `npx modern-web-guidance@latest install` で導入する。
 
 Decap CMS本体UIは外部プロダクト由来の実装であり、保存・OAuth・プレビュー互換性を壊すリスクが高いため、Modern Web Guidanceの全面適用対象外とする。記事本文画像のLCP自動判定も、Markdown本文の構造差により誤判定の可能性があるため、明確な主要画像のみ高優先度化し、それ以外は遅延読み込みを維持する。
 
