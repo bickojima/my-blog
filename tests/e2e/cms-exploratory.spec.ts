@@ -256,6 +256,11 @@ test.describe('E-37: 月別セレクタ実操作', () => {
     }
 
     // セレクタが存在する場合は実際に選択操作を行う
+    await expect(selectorHandle).toHaveAttribute('aria-label', '年月で絞り込み');
+    const selectorBox = await selectorHandle.boundingBox();
+    if ((page.viewportSize()?.width || 1280) <= 899 && selectorBox) {
+      expect(selectorBox.height).toBeGreaterThanOrEqual(44);
+    }
     const options = await selectorHandle.locator('option').allTextContents().catch(() => [] as string[]);
     expect(options.length).toBeGreaterThanOrEqual(1); // 最低1つのオプションがある
 

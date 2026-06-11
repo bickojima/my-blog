@@ -151,12 +151,19 @@ test.describe('E-05: 画像表示', () => {
 
   test('Modern Web Guidance: ナビゲーションと一覧の低リスク改善が適用されている', async ({ page }) => {
     await page.goto('/');
-    await expect(page.locator('header nav')).toHaveAttribute('aria-label', 'サイトナビゲーション');
+    await expect(page.locator('header nav')).toHaveAttribute('aria-label', 'メイン');
     await expect(page.locator('nav.archive-nav')).toHaveAttribute('aria-labelledby', 'archive-heading');
 
-    const secondCard = page.locator('article.post-card').nth(1);
-    if (await secondCard.count() > 0) {
-      await expect(secondCard).toHaveCSS('content-visibility', 'auto');
+    const cards = page.locator('article.post-card');
+    const cardCount = await cards.count();
+    for (let i = 0; i < Math.min(cardCount, 3); i++) {
+      await expect(cards.nth(i)).toHaveCSS('content-visibility', 'visible');
+    }
+    for (let i = 3; i < Math.min(cardCount, 6); i++) {
+      await expect(cards.nth(i)).toHaveCSS('content-visibility', 'visible');
+    }
+    if (cardCount > 6) {
+      await expect(cards.nth(6)).toHaveCSS('content-visibility', 'auto');
     }
 
     const toggle = page.locator('.nav-dropdown-toggle');
@@ -267,6 +274,52 @@ test.describe('E-21: ヘッダーナビゲーションドロップダウン', ()
     const link = page.locator('.nav-dropdown-link');
     await link.click();
     await expect(page.locator('h1')).toHaveText('プロフィール');
+  });
+
+  test('Escapeキーでドロップダウンが閉じaria-expandedが同期する', async ({ page }) => {
+    await page.goto('/');
+    const menu = page.locator('.nav-dropdown-menu');
+    const toggle = page.locator('.nav-dropdown-toggle');
+    await toggle.click();
+    await expect(menu).toBeVisible();
+
+    await page.keyboard.press('Escape');
+    await expect(menu).not.toBeVisible();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  test('Tabでフォーカスがメニュー外へ出るとドロップダウンが閉じる', async ({ page }) => {
+    await page.goto('/');
+    const menu = page.locator('.nav-dropdown-menu');
+    const toggle = page.locator('.nav-dropdown-toggle');
+    await toggle.click();
+    await expect(menu).toBeVisible();
+
+    const menuLinkCount = await menu.locator('a').count();
+    for (let i = 0; i <= menuLinkCount; i++) {
+      await page.keyboard.press('Tab');
+    }
+    await expect(menu).not.toBeVisible();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  test('タッチ端末でナビと管理リンクのタップ領域が44px以上ある', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name === 'PC', 'タッチ端末向けCSSの検証');
+    await page.goto('/');
+
+    const toggle = page.locator('.nav-dropdown-toggle');
+    const directLink = page.locator('.nav-dropdown-link');
+    const adminLink = page.locator('.admin-link');
+    await toggle.click();
+    const menuLink = page.locator('.nav-dropdown-menu a').first();
+
+    for (const target of [toggle, directLink, menuLink, adminLink]) {
+      const box = await target.boundingBox();
+      expect(box).not.toBeNull();
+      expect(box.height).toBeGreaterThanOrEqual(44);
+    }
+    expect((await toggle.boundingBox())?.width).toBeGreaterThanOrEqual(44);
+    expect((await adminLink.boundingBox())?.width).toBeGreaterThanOrEqual(44);
   });
 });
 
