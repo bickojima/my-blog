@@ -158,11 +158,35 @@ const navPages = (await getCollection('pages'))
     .admin-link:hover {
       color: #333;
     }
+    @media (max-width: 899px), (hover: none), (pointer: coarse) {
+      .nav-links > a,
+      .nav-dropdown-link,
+      .nav-dropdown-toggle,
+      .nav-dropdown-menu a,
+      .admin-link {
+        min-height: 44px;
+      }
+      .nav-links > a,
+      .nav-dropdown-link,
+      .nav-dropdown-menu a,
+      .admin-link {
+        display: inline-flex;
+        align-items: center;
+      }
+      .nav-dropdown-toggle,
+      .admin-link {
+        min-width: 44px;
+        justify-content: center;
+      }
+      .nav-dropdown-menu a {
+        display: flex;
+      }
+    }
   </style>
 </head>
 <body>
   <header>
-    <nav aria-label="サイトナビゲーション">
+    <nav aria-label="メイン">
       <a href="/" class="site-title">{siteTitle}</a>
       <div class="nav-links">
         {navPages.length === 1 ? (
@@ -231,6 +255,18 @@ const navPages = (await getCollection('pages'))
         if (!(e.target instanceof Node) || !dropdown.contains(e.target)) {
           setOpen(false);
         }
+      });
+      // Escapeで閉じ、キーボードフォーカスがメニュー外へ移動した場合も閉じる
+      document.addEventListener('keydown', (e) => {
+        if (e.key !== 'Escape' || !dropdown.classList.contains('is-open')) return;
+        setOpen(false);
+        openedByHover = false;
+        if (dropdown.contains(document.activeElement)) toggle?.focus();
+      });
+      dropdown.addEventListener('focusout', (e) => {
+        if (e.relatedTarget instanceof Node && dropdown.contains(e.relatedTarget)) return;
+        setOpen(false);
+        openedByHover = false;
       });
     }
   </script>

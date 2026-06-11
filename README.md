@@ -15,6 +15,7 @@ Astro + Decap CMS によるブログサイト。Cloudflare Pages でホスティ
 | 1.6 | 2026-02-21 | マージ手順リファレンス追加、テスト件数更新（243テスト） |
 | 1.7 | 2026-02-21 | 固定ページ下書きバッジ・デフォルトソート追加（CMS-16）、config.ymlスキーマ検証テスト追加、テスト件数更新（245 Vitest + 240 E2E） |
 | 1.8 | 2026-05-22 | Modern Web Guidance準拠対応をstaging先行反映（先頭サムネイルLCP優先度、コンテナクエリ、ナビARIA状態同期、CMS独自プレビュースタイルのコントラスト改善） |
+| 1.9 | 2026-06-11 | Modern Web GuidanceレビューF-1〜F-10対応（描画最適化範囲、キーボード操作、タップ領域、CMS/本文/コードブロックa11y、画像属性） |
 
 詳細なシステム変更履歴は [DOCUMENTATION.md](docs/DOCUMENTATION.md) を参照。
 
@@ -245,7 +246,7 @@ main (本番)  ←── merge ── staging (テスト) ←── merge ──
 
 ## 11. Modern Web Guidance準拠方針
 
-Google公式Modern Web Guidanceスキル準拠を方針とし、公開サイトとCMS独自カスタマイズに限って適用する。Decap CMS本体UIは引用元レポジトリの実装を尊重し、保存・OAuth・プレビュー互換性の再発リスクが高い変更は非準拠許容として扱う。今回の反映先はstagingのみとする。
+Google公式Modern Web Guidanceスキル準拠を方針とし、公開サイトとCMS独自カスタマイズに限って適用する。初期ビューポート内への`content-visibility`適用を避け、キーボード操作、44pxタップ領域、識別可能な本文リンク、スクロール可能コードブロックへの到達性を維持する。Decap CMS本体UIは引用元レポジトリの実装を尊重し、保存・OAuth・プレビュー互換性の再発リスクが高い変更は非準拠許容として扱う。今回の反映先はstagingのみとする。
 
 - [Astro ドキュメント](https://docs.astro.build)
 - [Decap CMS ドキュメント](https://decapcms.org/docs/)

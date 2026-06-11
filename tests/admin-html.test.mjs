@@ -26,6 +26,10 @@ describe('管理画面HTML（public/admin/index.html）の検証', () => {
       expect(adminHtml).toContain('width=device-width');
     });
 
+    it('管理画面の文書言語が日本語に設定されている', () => {
+      expect(adminHtml).toContain('<html lang="ja">');
+    });
+
     it('Decap CMSのスクリプトが読み込まれている', () => {
       expect(adminHtml).toContain('decap-cms');
       expect(adminHtml).toContain('</script>');
@@ -326,6 +330,11 @@ describe('管理画面HTML（public/admin/index.html）の検証', () => {
       expect(adminHtml).toContain("sel.dataset.optionsSignature !== optionsSignature");
       expect(adminHtml).toContain("container.style.display = visible ? '' : 'none'");
       expect(adminHtml).not.toContain('scrollIntoView');
+    });
+
+    it('年月選択プルダウンにアクセシブルネームと44pxタップ領域がある', () => {
+      expect(adminHtml).toContain("sel.setAttribute('aria-label', '年月で絞り込み')");
+      expect(adminHtml).toMatch(/@media \(max-width: 899px\)[\s\S]*#cms-month-selector[\s\S]*min-height: 44px/);
     });
   });
 

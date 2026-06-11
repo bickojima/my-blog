@@ -63,6 +63,16 @@ const { Content } = await page.render();
     .page-content :global(p) {
       margin-bottom: 1rem;
     }
+    .page-content :global(a) {
+      color: #1a73e8;
+      text-decoration: underline;
+      text-underline-offset: 0.15em;
+    }
+    .page-content :global(a:focus-visible) {
+      outline: 2px solid #1a73e8;
+      outline-offset: 3px;
+      border-radius: 3px;
+    }
     .page-content :global(figure) {
       margin: 1.5rem 0;
     }
@@ -91,6 +101,10 @@ const { Content } = await page.render();
       border-radius: 4px;
       overflow-x: auto;
       margin: 1rem 0;
+    }
+    .page-content :global(pre:focus-visible) {
+      outline: 2px solid #1a73e8;
+      outline-offset: 3px;
     }
     .page-footer {
       margin-top: 3rem;

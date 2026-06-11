@@ -23,9 +23,9 @@
 npm run dev          # 開発サーバー起動（前処理含む）
 npm run build        # テスト必須ビルド（vitest run → normalize-images → organize-posts → astro build → image-optimize）
 npm run build:raw    # テストなしビルド（build.test.mjs内部で使用、Cloudflare Pages用）
-npm test             # Vitest 全テスト実行（555テスト、記事数により変動）
+npm test             # Vitest 全テスト実行（562テスト、記事数により変動）
 npm run test:watch   # Vitest ウォッチモード
-npm run test:e2e     # Playwright E2Eテスト（要: npm run build 済み、423テスト：416実行+7スキップ）
+npm run test:e2e     # Playwright E2Eテスト（要: npm run build 済み、432テスト：424実行+8スキップ）
 ```
 
 ## ディレクトリ構成
@@ -36,7 +36,9 @@ src/
 ├── content/pages/           # 固定ページMarkdown（frontmatter: title, slug, order, draft）
 ├── pages/                   # Astroルーティング（/posts/[year]/[month]/[slug], /[slug]）
 ├── layouts/Base.astro       # 共通レイアウト（CSS image-orientation: from-image、ヘッダーナビ動的生成）
-├── plugins/rehype-image-caption.mjs  # img → figure/figcaption 変換プラグイン
+├── plugins/
+│   ├── rehype-image-caption.mjs  # img → figure/figcaption 変換
+│   └── rehype-focusable-code-blocks.mjs  # preへtabindex付与
 ├── integrations/image-optimize.mjs   # ビルド後画像リサイズ（sharp, MAX_WIDTH: 1200）
 ├── lib/posts.ts             # URL生成ユーティリティ
 └── content.config.ts        # Zodスキーマ定義
@@ -104,8 +106,8 @@ tests/
 
 ## テスト
 
-- **Vitest**: 設定検証、コンテンツ検証、単体テスト、ビルド統合テスト、セキュリティ検証、ファズテスト、基本機能保護テスト（555テスト、記事数により変動）
-- **Playwright**: PC/iPad/iPhone 3デバイスで423テスト（416実行+7スキップ、ローカルのみ、CIでは未実行）
+- **Vitest**: 設定検証、コンテンツ検証、単体テスト、ビルド統合テスト、セキュリティ検証、ファズテスト、基本機能保護テスト（562テスト、記事数により変動）
+- **Playwright**: PC/iPad/iPhone 3デバイスで432テスト（424実行+8スキップ、ローカルのみ、CIでは未実行）
 - コンテンツ検証テストは記事数・ページ数に応じて動的展開される
 - テスト実行後、失敗がある場合は原因を調査し修正する（テストを削除・スキップしない）
 - **テストにコンテンツをハードコードしない**: 記事名・固定ページ名・URL等はソースから動的取得する（コンテンツ変更でテストが壊れない設計）

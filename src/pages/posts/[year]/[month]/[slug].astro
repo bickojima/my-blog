@@ -75,6 +75,16 @@ const { Content } = await post.render();
       margin-bottom: 1rem;
       text-wrap: pretty;
     }
+    .post-content :global(a) {
+      color: #1a73e8;
+      text-decoration: underline;
+      text-underline-offset: 0.15em;
+    }
+    .post-content :global(a:focus-visible) {
+      outline: 2px solid #1a73e8;
+      outline-offset: 3px;
+      border-radius: 3px;
+    }
     .post-content :global(figure) {
       margin: 1.5rem 0;
     }
@@ -103,6 +113,10 @@ const { Content } = await post.render();
       border-radius: 4px;
       overflow-x: auto;
       margin: 1rem 0;
+    }
+    .post-content :global(pre:focus-visible) {
+      outline: 2px solid #1a73e8;
+      outline-offset: 3px;
     }
     .post-tags {
       display: flex;

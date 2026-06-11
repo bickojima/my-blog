@@ -222,7 +222,7 @@ describe('ヘッダーナビゲーション条件分岐の検証（Base.astroソ
     });
 
     it('ナビゲーションにaria-labelとfocus-visibleスタイルがある', () => {
-      expect(baseAstro).toContain('aria-label="サイトナビゲーション"');
+      expect(baseAstro).toContain('aria-label="メイン"');
       expect(baseAstro).toContain(':focus-visible');
     });
 
@@ -251,6 +251,13 @@ describe('ヘッダーナビゲーション条件分岐の検証（Base.astroソ
     it('外側クリックで閉じる', () => {
       expect(baseAstro).toContain("document.addEventListener('click'");
       expect(baseAstro).toContain('dropdown.contains');
+    });
+
+    it('Escapeキーとフォーカス離脱で閉じる', () => {
+      expect(baseAstro).toContain("document.addEventListener('keydown'");
+      expect(baseAstro).toContain("e.key !== 'Escape'");
+      expect(baseAstro).toContain("dropdown.addEventListener('focusout'");
+      expect(baseAstro).toContain('e.relatedTarget');
     });
   });
 });

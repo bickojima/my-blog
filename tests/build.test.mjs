@@ -310,6 +310,8 @@ describe('ビルド検証', () => {
     it('先頭サムネイルはLCP候補として高優先度で読み込む', () => {
       const firstThumbnailMatch = indexHtml.match(/<img[^>]*class="post-thumbnail"[^>]*>/);
       expect(firstThumbnailMatch).not.toBeNull();
+      expect(firstThumbnailMatch[0]).toContain('width="1200"');
+      expect(firstThumbnailMatch[0]).toContain('height="800"');
       expect(firstThumbnailMatch[0]).toContain('loading="eager"');
       expect(firstThumbnailMatch[0]).toContain('fetchpriority="high"');
       expect(firstThumbnailMatch[0]).toContain('decoding="async"');
@@ -320,13 +322,15 @@ describe('ビルド検証', () => {
       expect(indexHtml).toContain('@container');
     });
 
-    it('2件目以降の記事カードはcontent-visibilityで描画負荷を抑える', () => {
+    it('7件目以降の記事カードはcontent-visibilityで描画負荷を抑える', () => {
       expect(indexHtml).toContain('content-visibility:auto');
       expect(indexHtml).toContain('contain-intrinsic-size:auto 220px');
+      const indexSource = readFileSync(join(process.cwd(), 'src/pages/index.astro'), 'utf-8');
+      expect(indexSource).toContain('.post-card:nth-child(n+7)');
     });
 
     it('ナビゲーションにアクセシブルなラベルとfocus-visibleスタイルがある', () => {
-      expect(indexHtml).toContain('aria-label="サイトナビゲーション"');
+      expect(indexHtml).toContain('aria-label="メイン"');
       expect(indexHtml).toContain('aria-labelledby="archive-heading"');
       expect(indexHtml).toContain(':focus-visible');
     });
@@ -470,6 +474,31 @@ describe('ビルド検証', () => {
       }
       searchForFigure(postsDir);
       expect(foundFigure, 'figure/figcaptionを含む記事が1件もない').toBe(true);
+    });
+  });
+
+  describe('Modern Web Guidanceアクセシビリティ検証', () => {
+    it('本文リンクに下線・識別色・focus-visibleが定義されている', () => {
+      const postPage = readFileSync(
+        join(process.cwd(), 'src/pages/posts/[year]/[month]/[slug].astro'),
+        'utf-8'
+      );
+      const fixedPage = readFileSync(
+        join(process.cwd(), 'src/pages/[slug].astro'),
+        'utf-8'
+      );
+      for (const source of [postPage, fixedPage]) {
+        expect(source).toContain(':global(a)');
+        expect(source).toContain('color: #1a73e8');
+        expect(source).toContain('text-decoration: underline');
+        expect(source).toContain(':global(a:focus-visible)');
+      }
+    });
+
+    it('コードブロック用rehypeプラグインが登録されている', () => {
+      const astroConfig = readFileSync(join(process.cwd(), 'astro.config.mjs'), 'utf-8');
+      expect(astroConfig).toContain('rehypeFocusableCodeBlocks');
+      expect(astroConfig).toContain('rehypePlugins: [rehypeImageCaption, rehypeFocusableCodeBlocks]');
     });
   });
 

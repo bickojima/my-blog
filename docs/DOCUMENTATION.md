@@ -48,6 +48,7 @@
 | 1.41 | 2026-05-25 | 探索的E2Eテスト追加: `tests/e2e/cms-exploratory.spec.ts`新規作成（E-37, E-39〜E-43: 月別セレクタ実操作・固定ページ作成画面・エラーハンドリング・下書きバッジ・グルーピング再適用・コンソールエラー監視）。36テスト（12×3デバイス）全PASS確認。E2Eテスト総数423件（415実行+8スキップ）に更新 |
 | 1.42 | 2026-05-25 | テスト知見の文書化: TEST-REPORT.md 4.1.8章「包括的エビデンス検証スクリプト（verify-comprehensive.mjs）の方式」追加（雛形ファイル・認証方式・シナリオ番号体系・赤枠アノテーション・HTMLレポート・新シナリオ追加手順を記載）。E-34タップ領域skip条件を799px→899pxに修正（Bug #39対応）、ToolbarButtonを899px CSSブロックに追加。E2Eテスト423件（416実行+7スキップ）に更新 |
 | 1.43 | 2026-05-30 | 基本設計（2.2.3章）にGoogle Modern Web Guidanceの導入手順として`npx modern-web-guidance@latest install`を明記 |
+| 1.44 | 2026-06-11 | Modern Web Guidance遵守レビューF-1〜F-10対応（Bug #40）: 実測に基づき`content-visibility`を7枚目以降へ限定、ナビEscape/フォーカス離脱対応、公開サイト/CMSタップ領域44px化、CMSセレクターa11y、本文リンク識別、コードブロックtabindex、サムネイル寸法属性、lang/ARIA修正。Vitest 562件、E2E 432件へ更新 |
 
 ## システム変更履歴
 
@@ -196,6 +197,13 @@ PR履歴に基づく主要なシステム変更の記録である。
 | Q12 | 変更時のドキュメント更新を必須プロジェクト方針にしてよいか | ドキュメント修正は必ずする方針で、プロジェクト方針とする | 確認済み |
 | Q13 | Modern Web Guidanceに準拠できる箇所を横展開してよいか | 工数がかかってよいので横展開する | 確認済み |
 | Q14 | 基本設計書にModern Web Guidanceの導入コマンドを明記してよいか | `npx modern-web-guidance@latest install`で導入することを追記する | 確認済み |
+| Q15 | staging同期時にローカル未コミット変更がある場合の扱いはどうするか | 既存変更を保持したまま作業し、競合して進められない場合のみ報告する | 確認済み |
+| Q16 | 2026-06-11レビュー修正の対象範囲はF-1〜F-10のみとし、F-11・F-12およびDecap CMS本体のaxe違反を対象外としてよいか | 指定範囲のみ実装する | 確認済み |
+| Q17 | F-2は既存挙動を優先し、Popover APIと両立困難な場合は現行実装へEscape・focusoutを追加してよいか | 現行実装へのキーボード対応追加を許容する | 確認済み |
+| Q18 | F-1の`content-visibility`は全デバイスで余裕を持たせて4枚目以降へ適用してよいか | 4枚目以降を初期案とし、実機相当検証で初期表示内ならさらに後ろへ調整する | 確認済み |
+| Q19 | F-3の44pxタップ領域はタッチ入力環境を基本にし、必要に応じて幅条件を併用してよいか | `hover: none`または`pointer: coarse`を基本に44pxを確保する | 確認済み |
+| Q20 | 要件IDは既存IDを優先し、不足時のみ既存採番規則で追加してよいか | 既存IDを再利用し、必要な場合だけ新規追加する | 確認済み |
+| Q21 | 全テスト・実操作E2E・3デバイスと認証後CMSのエビデンスが成功した場合、指定authorでコミットしstagingへプッシュしてよいか | `tbi <noreply@users.noreply.github.com>`でコミットしstagingへプッシュする | 確認済み |
 
 ### 1.1.5 Modern Web Guidance準拠方針
 
@@ -324,6 +332,8 @@ Decap CMSはSlate-basedのマークダウンエディタを提供し、以下の
 - インライン書式: 太字、斜体、見出し（H1〜H6）、リスト（箇条書き・番号付き）、引用
 - メディア挿入: 画像（メディアライブラリ連携）、リンク
 - コードブロック: インラインコード、コードブロック（モバイルではクラッシュ防止のため非表示: CMS-12）
+- 公開記事・固定ページのコードブロックはrehype pluginで`tabindex="0"`を付与し、横スクロール時もキーボードで到達可能にする
+- 公開記事・固定ページの本文リンクは下線とコントラスト4.5:1以上の識別色を持ち、`:focus-visible`を表示する
 - `config.yml`の`body`フィールドが`widget: "markdown"`であることが条件
 
 #### FR-18 ライブプレビュー
@@ -394,7 +404,7 @@ staging環境の検知:
 | CMS-16 | 固定ページデフォルトソート: 固定ページ一覧がデフォルトで表示順（order）の昇順でソートされる | `config.yml` sortable_fields | `{field: order, default_sort: asc}` |
 | CMS-17 | 記事デフォルトソート日付降順: 記事一覧がデフォルトで日付の降順（最新が先頭）でソートされる | `config.yml` sortable_fields | `{field: date, default_sort: desc}` |
 | CMS-18 | 記事月別グルーピング: 記事一覧を年月でグルーピング表示できる | `config.yml` view_groups | `view_groups`で`date`フィールドを`\d{4}-\d{2}`（年月）パターンでグルーピング |
-| CMS-19 | 年月グルーピングUI: 記事一覧でデフォルト年月グルーピング有効、降順表示、日本語見出し（「2026年2月」形式）、年月選択プルダウンで選択年月のみ表示 | `admin/index.html` JS | `activateDefaultGrouping()`（自動有効化）、`reverseViewGroups()`（降順）、`formatGroupHeadings()`（日本語化）、`createMonthSelector()`（年月フィルター） |
+| CMS-19 | 年月グルーピングUI: 記事一覧でデフォルト年月グルーピング有効、降順表示、日本語見出し（「2026年2月」形式）、アクセシブルな年月選択プルダウンで選択年月のみ表示 | `admin/index.html` CSS/JS | `createMonthSelector()`の`aria-label`、モバイル`min-height: 44px`を含む |
 
 ---
 
@@ -409,8 +419,8 @@ staging環境の検知:
 | NFR-03 | 管理画面SEO除外: 管理画面が検索エンジンにインデックスされない | `_headers`, `admin/index.html` | `robots: noindex`, `X-Robots-Tag` |
 | NFR-04 | 日本語URL対応: 日本語タイトルの記事がそのまま日本語URLで公開される | `config.yml` | Unicode slug（`encoding: "unicode"`） |
 | NFR-05 | レスポンシブデザイン: 公開サイトおよびCMS管理画面がモバイル端末で適切に表示・操作できる | `Base.astro` CSS, `admin/index.html` CSS | viewport設定、メディアクエリ |
-| NFR-06 | アクセシビリティ（WCAG 2.1 AA）: 公開サイトがWCAG 2.1 Level AAのcritical/serious違反なしを維持する | `Base.astro`, 各ページCSS, `ArchiveNav.astro` | 色コントラスト比4.5:1以上、見出し階層スキップなし、画像alt属性必須、axe-core自動検証 |
-| NFR-07 | Modern Web Guidance準拠: Google公式Modern Web Guidanceの推奨に従い、Baseline対応済みのモダンWeb機能を安全なプログレッシブエンハンスメントとして採用する | `Base.astro`, `index.astro` | LCP画像優先度、コンテナクエリ、アクセシブルな開閉状態同期 |
+| NFR-06 | アクセシビリティ（WCAG 2.2 AA）: 公開サイトがWCAG 2.2 Level AAのcritical/serious違反なしを維持し、独自UIのタップ対象を最低24px、目標44pxとする | `Base.astro`, 各ページCSS, `ArchiveNav.astro`, `admin/index.html` | 色コントラスト、本文リンク識別、キーボード操作、タップ領域、文書言語、axe-core自動検証 |
+| NFR-07 | Modern Web Guidance準拠: Google公式Modern Web Guidanceの推奨に従い、Baseline対応済みのモダンWeb機能を安全なプログレッシブエンハンスメントとして採用する | `Base.astro`, `index.astro`, 各本文ページ, 独自rehype plugin | 初期ビューポート外描画最適化、LCP画像優先度、コンテナクエリ、アクセシブルな開閉・スクロール操作 |
 
 ### 1.4.2 セキュリティ要件一覧 (SEC)
 
@@ -471,7 +481,7 @@ staging環境の検知:
 | FR-14 | 固定ページ管理 | cms-config, content-validation, build, E2E site | 2.4章 #28〜#39, 2.1.2章 #16〜#23, 2.1.3章 #24〜#34, 2.1.4章 #35〜#40, 2.5章 #32〜#44, E-20, E-21 | M-03, M-04, M-01, M-02, M-11, DOM検証 | 充足 |
 | FR-15 | コンテンツ保存・公開 | cms-config, auth-functions, admin-html, fuzz-validation, E2E cms-operations | 2.4章 #1〜#5, #45, 2.3章 #1〜#10, 2.6.1章 #6,#7, 2.7.12章 #1〜#5, E-28, E-29 | M-03, M-06, M-07, M-02, M-11 | 充足 |
 | FR-16 | コンテンツ削除 | cms-config, E2E cms-operations | 2.4章 #13, #46, E-35 | M-03, M-11 | 充足 |
-| FR-17 | リッチテキスト編集 | cms-config | 2.4章 #26b, #33b | M-03 | 充足 |
+| FR-17 | リッチテキスト編集 | cms-config, rehype-focusable-code-blocks, build | 2.4章 #26b, #33b, 2.2.1章 #1〜#2, 2.5章 Modern Web Guidanceアクセシビリティ検証 | M-03, M-05, M-02 | 充足 |
 | FR-18 | ライブプレビュー | admin-html | 2.6.11章 #1〜#5, 2.6.1章 #7 | M-02 | 充足 |
 | FR-19 | メディアライブラリ | cms-config, admin-html | 2.4章 #6,#7, #47, 2.6.3章 #8,#10 | M-03, M-02 | 充足 |
 | FR-20 | ビルドパイプライン | build | 2.5章 #1〜#8, #51 | M-01, M-02, M-12 | 充足 |
@@ -499,7 +509,7 @@ staging環境の検知:
 | CMS-16 | 固定ページデフォルトソート | cms-config | 2.4章 #40, #41 | M-03 | 充足 |
 | CMS-17 | 記事デフォルトソート日付降順 | cms-config, E2E cms-operations | 2.4章 #48, #49, E-36 | M-03, M-11 | 充足 |
 | CMS-18 | 記事月別グルーピング | cms-config, E2E cms-operations | 2.4章 #50, E-36 | M-03, M-11 | 充足 |
-| CMS-19 | 年月グルーピングUI | admin-html | 2.6章 #11〜#14 | M-02 | 充足 |
+| CMS-19 | 年月グルーピングUI | admin-html, E2E cms-exploratory | 2.6章 #11〜#15, E-37 | M-02, 実操作 | 充足 |
 
 ### 1.5.3 非機能要件 (NFR) → テストケース
 
@@ -509,9 +519,9 @@ staging環境の検知:
 | NFR-02 | Cloudflare Pagesホスティング | build | 2.5章 #6,#7,#8 | M-01 | 充足 |
 | NFR-03 | 管理画面SEO除外 | admin-html | 2.6.1章 #3 | M-02 | 充足 |
 | NFR-04 | 日本語URL | cms-config | 2.4章 #9,#10 | M-03 | 充足 |
-| NFR-05 | レスポンシブデザイン | admin-html, build, E2E cms-operations | 2.6.3章 #1〜#10, 2.5章 #19, E-34 | M-02, M-11 | 充足 |
-| NFR-06 | アクセシビリティ（WCAG 2.1 AA） | E2E accessibility | E-25〜E-27 | M-11（axe-core） | 充足 |
-| NFR-07 | Modern Web Guidance準拠 | build, content-validation, admin-html, E2E site, E2E evidence | 2.5章 #54〜#57, 2.6章, E-05, E-21, modern-web-guidance-evidence, cms19-month-filter | M-02, M-11 | 充足 |
+| NFR-05 | レスポンシブデザイン | admin-html, build, E2E site, E2E cms-operations | 2.6.3章 #1〜#10, 2.5章 #19, E-21, E-34 | M-02, M-11, 実操作 | 充足 |
+| NFR-06 | アクセシビリティ（WCAG 2.2 AA） | admin-html, build, E2E site, E2E accessibility, E2E cms-exploratory | 2.5章 #23b/#23c, 2.6章 #15, E-21, E-25〜E-27, E-37 | M-02, M-11（axe-core）, 実操作 | 充足 |
+| NFR-07 | Modern Web Guidance準拠 | build, content-validation, admin-html, rehype-focusable-code-blocks, E2E site, E2E evidence | 2.5章 Modern Web Guidance検証, 2.6章, 2.2.1章, E-05, E-21, 2026-06-11 evidence | M-02, M-05, M-11, 実操作 | 充足 |
 
 ### 1.5.4 セキュリティ要件 (SEC) → テストケース
 
@@ -544,7 +554,7 @@ staging環境の検知:
 | SEC-25 | ビルドスクリプト防御強化 | build | ビルドパイプライン検証 | M-02 | 充足 |
 | SEC-26 | OAuth HTTPメソッド制限 | auth-functions | 2.3章 | M-02 | 充足 |
 
-**充足状況: 全要件（FR-01〜FR-21, CMS-01〜CMS-16, NFR-01〜NFR-07, SEC-01〜SEC-26）がテストで充足されている。未テスト要件なし。**
+**充足状況: 全要件（FR-01〜FR-21, CMS-01〜CMS-19, NFR-01〜NFR-07, SEC-01〜SEC-26）がテストで充足されている。未テスト要件なし。**
 
 ---
 
@@ -580,6 +590,7 @@ my-blog/
 │   ├── components/ArchiveNav.astro     # アーカイブナビゲーション
 │   ├── integrations/image-optimize.mjs # ビルド後画像最適化
 │   ├── plugins/rehype-image-caption.mjs# 画像キャプション変換
+│   ├── plugins/rehype-focusable-code-blocks.mjs # preのキーボード到達性
 │   ├── layouts/Base.astro              # 共通レイアウト
 │   ├── lib/posts.ts                    # 記事URL生成ロジック
 │   ├── pages/                          # ページルーティング
@@ -652,8 +663,8 @@ my-blog/
 | 認証 | GitHub OAuth App | - | CMS管理者認証 |
 | 画像処理 | sharp | v0.34.5 | 画像圧縮・回転・リサイズ |
 | Web実装方針 | Google Modern Web Guidance | 公式ガイド準拠 | 独自実装部のモダンWeb機能・アクセシビリティ・パフォーマンス設計指針 |
-| テスト（単体・統合） | Vitest | v4.0.18 | 単体テスト・統合テスト・セキュリティ検証・基本機能保護（555テスト、記事数により変動） |
-| テスト（E2E） | Playwright | v1.58.2 | ブラウザE2Eテスト（PC/iPad/iPhone 387テスト、うち8件はモバイル固有条件でスキップ） |
+| テスト（単体・統合） | Vitest | v4.0.18 | 単体テスト・統合テスト・セキュリティ検証・基本機能保護（562テスト、記事数により変動） |
+| テスト（E2E） | Playwright | v1.58.2 | ブラウザE2Eテスト（PC/iPad/iPhone 432テスト、うち8件はデバイス固有条件でスキップ） |
 | コンテンツ | Markdown | - | frontmatter形式 |
 
 ### 2.2.2 選定理由
@@ -677,11 +688,12 @@ Decap CMS本体UIは外部プロダクト由来の実装であり、保存・OAu
 | 設計観点 | 採用方針 | 実装例 |
 | :--- | :--- | :--- |
 | Performance | 明確なLCP候補だけを高優先度化する | トップページ先頭サムネイルに`fetchpriority="high"`、`loading="eager"` |
-| Performance | ブラウザ標準の描画最適化を使い、初期表示に不要な下部コンテンツの描画負荷を抑える | 2件目以降の記事カードに`content-visibility: auto`と`contain-intrinsic-size` |
+| Performance | ブラウザ標準の描画最適化を使い、初期表示に不要な下部コンテンツの描画負荷を抑える | 7件目以降の記事カードに`content-visibility: auto`と`contain-intrinsic-size: auto 220px`。修正後実測でPCは4枚目、iPad Pro 11縦向きは5枚目まで初期表示内だったため、全対象デバイスで確実に外側となる7枚目から適用する |
 | CSS Layout | 画面幅ではなくコンポーネント幅に応じた段階的拡張を優先する | 記事カードの`container-type: inline-size`と`@container` |
 | Typography | 対応ブラウザでは読みやすい改行を優先し、非対応時は通常表示にフォールバックする | 見出しに`text-wrap: balance`、本文/タイトルに`text-wrap: pretty` |
-| Accessibility | 開閉状態などのUI状態をARIA属性へ同期し、キーボードフォーカスを明示する | ヘッダーナビの`aria-expanded`同期、`aria-label`/`aria-labelledby`、`:focus-visible` |
-| CMS独自UI | Decap CMS本体を壊さない範囲で独自CSS/JSのみ改善する | プレビュースタイルと無効ボタン色のコントラスト改善 |
+| Accessibility | 開閉状態などのUI状態をARIA属性へ同期し、キーボードフォーカスを明示する | ヘッダーナビの`aria-expanded`同期、Escape/フォーカス離脱クローズ、`aria-label`/`aria-labelledby`、`:focus-visible` |
+| Accessibility | タッチ対象、本文リンク、スクロール可能領域を入力方式に依存せず操作可能にする | タッチ端末44px領域、本文リンクの下線と識別色、rehypeで`pre tabindex="0"`付与 |
+| CMS独自UI | Decap CMS本体を壊さない範囲で独自CSS/JSのみ改善する | 月セレクターの`aria-label`と44px高さ、管理画面`lang="ja"` |
 | 検証 | 過去エビデンス方式を継承し、stagingで先行確認する。UI変更は実操作E2Eを必須とする | `evidence/2026-05-22/verify-modern-web-guidance.mjs`、`verify-cms19-month-filter.mjs` |
 
 ---
@@ -1216,7 +1228,7 @@ collections:
 - `slug`（pages）: `{{fields.slug}}` でフロントマターのslugフィールド値をファイル名に使用（`{{slug}}` はDecap CMSではタイトルのURL安全版を意味するため不可）
 - `sortable_fields`（pages）: orderフィールドをデフォルトで昇順ソートに設定（`{field: order, default_sort: asc}`形式）。Decap CMS v3.10.0は`field`+`default_sort`のオブジェクト形式に対応（`default`プロパティは非対応）
 - `sortable_fields`（posts）: dateフィールドをデフォルトで降順ソートに設定（`{field: date, default_sort: desc}`形式）。最新記事が一覧の先頭に表示される（CMS-17）
-- `view_groups`（posts）: 記事一覧を年月（`\d{4}-\d{2}`パターン）でグルーピング表示（CMS-18）。`admin/index.html`で以下のUI改善を実施（CMS-19）: `activateDefaultGrouping()`でpostsコレクション表示時に自動有効化、`reverseViewGroups()`で降順並べ替え（`getSortKey()`でISO/日本語両形式対応）、`formatGroupHeadings()`で見出しを「2026年2月」形式に変換、`createMonthSelector()`で年月フィルターを作成（元のグルーピングドロップダウンを非表示にし`<select>`要素で代替、選択年月以外のグループは非表示）
+- `view_groups`（posts）: 記事一覧を年月（`\d{4}-\d{2}`パターン）でグルーピング表示（CMS-18）。`admin/index.html`で以下のUI改善を実施（CMS-19）: `activateDefaultGrouping()`でpostsコレクション表示時に自動有効化、`reverseViewGroups()`で降順並べ替え（`getSortKey()`でISO/日本語両形式対応）、`formatGroupHeadings()`で見出しを「2026年2月」形式に変換、`createMonthSelector()`で年月フィルターを作成（`aria-label="年月で絞り込み"`、899px以下で`min-height: 44px`、選択年月以外のグループは非表示）
 - `path`（posts）: ファイルの保存・読み取りパスを定義。CMSがサブディレクトリ`yyyy/mm/`内の既存記事を再帰スキャンする
 - `slug`（posts）: ファイル名部分のみ（タイトルベース）
 
@@ -1551,7 +1563,8 @@ GitHubリポジトリが利用可能な場合、以下の手順でシステム�
 | `scripts/normalize-images.mjs` | 相対パスのみ使用 |
 | `scripts/organize-posts.mjs` | 相対パスのみ使用 |
 | `src/integrations/image-optimize.mjs` | 相対パスのみ使用 |
-| `src/plugins/rehype-image-caption.mjs` | 汎用プラグイン |
+| `src/plugins/rehype-image-caption.mjs` | 画像キャプション・遅延読込プラグイン |
+| `src/plugins/rehype-focusable-code-blocks.mjs` | コードブロックのキーボード到達性プラグイン |
 | `src/lib/posts.ts` | 汎用ロジック |
 | `functions/auth/index.js` | 環境変数から取得 |
 | `functions/auth/callback.js` | 環境変数から取得 |
@@ -1640,6 +1653,7 @@ GitHubリポジトリが利用可能な場合、以下の手順でシステム�
 | 37 | 2026-05-22 | CMS年月選択プルダウンがフィルターとして動作しない: CMS-19の年月セレクターが選択年月のみ表示ではなく、該当見出しへスクロールするだけだった | 要件定義で「年月選択」がフィルターかジャンプか曖昧なまま実装され、admin-htmlテストも`scrollIntoView`の存在確認に留まっていた | CMS-19要件を「年月選択プルダウンで選択年月のみ表示」に明確化。`createMonthSelector()`に`applyMonthFilter()`を追加し、選択年月以外のグループコンテナを`display:none`にする | admin-html 2.6.6章 #14, verify-cms19-month-filter.mjs |
 | 38 | 2026-05-24 | CMS年月フィルター操作時に管理画面がハングアップする: 月セレクターを開いて年月を選ぼうとするとChromeが固まる | `MutationObserver`の再実行ごとに`createMonthSelector()`が`sel.textContent = ''`でoptionを全再構築していた。ネイティブselectを開いている最中にoption DOMを差し替えるため、ブラウザのselect UIとDecap CMSの再描画が競合した | `optionsSignature`でグループ見出し構成を記録し、見出しが変わった時だけoptionを再構築する。フィルター適用は毎回現在DOMを再取得して実行し、React再描画後の追従とselect操作安定性を両立する | admin-html 2.6.6章 #14, verify-cms19-month-filter.mjs |
 | 39 | 2026-05-25 | CMS管理画面モバイルのタップ領域不足（WCAG 2.5.5違反）: 「新規作成」ボタン（h=27px）、コレクションToolbarの「ソート」ボタン（h=27px）、AppHeaderのアイコンボタン（h=24px）等がモバイル推奨44pxを下回り、タッチ操作の精度不足を招く。iPad Pro 11（834px）ではモバイル用CSSブレークポイント（max-width: 799px）が適用されず、既存min-heightルールが無効 | `@media (max-width: 799px)` ブレークポイントがiPad Pro 11のビューポート幅834pxより小さいため、CollectionTopNewButton・ソートボタン（`[role="button"][aria-haspopup]`）・AppHeaderButtonにmin-height: 44pxが適用されなかった | `@media (max-width: 899px)` の新ブレークポイントを追加し、CollectionTopNewButton・CollectionTop内のbutton/[role="button"]・AppHeaderButton・ViewControls内ボタン・`[role="button"][aria-haspopup]`すべてに`min-height: 44px; min-width: 44px`を適用。iPadとiPhone両デバイスで全ボタン≥44pxを確認 | verify-comprehensive.mjs T28 |
+| 40 | 2026-06-11 | Modern Web Guidance遵守レビューF-1〜F-10: 初期表示内`content-visibility`、ナビEscape/フォーカス離脱未対応、公開サイト/CMS月セレクターの小さいタップ領域、CMSセレクター名・管理画面lang・navラベル、本文リンク識別、コードブロック到達性、サムネイル属性に不備 | 初回対応が属性存在の静的確認中心で、デバイス別初期表示範囲・キーボード離脱・独自UI追加後のa11y横断確認が不足 | 実測に基づき7枚目以降へ描画最適化を限定、現行ドロップダウンへEscape/focusout追加、899px幅またはタッチ入力で44px化、CMS/本文/rehype/画像属性を修正 | build/content-validation/admin-html/rehype-focusable-code-blocks, E-05/E-21/E-37, evidence/2026-06-11 |
 
 ---
 
@@ -1970,7 +1984,7 @@ CMS-17/CMS-18実装時（2026-02-24〜25）に、Playwright test runnerでのCMS
 | `page.route('**/admin/config.yml')` でレスポンス差し替え | — | 効果なし | Decap CMSの自動初期化タイミングとの競合が疑われる |
 | **`window.open` モンキーパッチ（採用方式）** | — | **成功** | ポップアップを開かず、CMS内部で完結する |
 
-Modern Web Guidanceエビデンスでは、過去のスタンドアロン検証スクリプト方式（`context.route()` + 3ステップOAuthハンドシェイク + 赤枠アノテーション + HTMLレポート）を採用する。スクリーンショットとレポートは要件確認QAで合意した `test-results/evidence/modern-web-guidance/` に保存する。
+Modern Web Guidanceエビデンスでは、過去のスタンドアロン検証スクリプト方式（`context.route()` + 3ステップOAuthハンドシェイク + 赤枠アノテーション + HTMLレポート）を採用する。スクリーンショットとレポートは `evidence/YYYY-MM-DD/` に保存する。
 
 #### 採用方式: `window.open` モンキーパッチ + GitHub APIモック
 
@@ -2106,7 +2120,7 @@ evidence/YYYY-MM-DD/
 
 | 指標 | 目標値 | 現状 |
 |:---|:---|:---|
-| Vitestテスト全PASS | 100% | 555/555 (100%) |
+| Vitestテスト全PASS | 100% | 562/562 (100%) |
 | Playwright E2Eテスト全PASS | 100% | 直近実行: site.spec.ts 93/93 (100%)、CMS年月フィルターエビデンス 15/15 (100%) |
 | セキュリティ検証全PASS | 100% | 10/10 (100%) |
 | ボタン重なり検出 | 0件 | 0件 |

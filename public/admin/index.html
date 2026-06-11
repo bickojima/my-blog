@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html lang="ja">
   <head>
     <meta charset="utf-8" />
     <meta name="robots" content="noindex" />
@@ -332,6 +332,7 @@
         [class*=AppHeaderQuickNewButton] button,
         [class*=ViewControls] button,
         [class*=ViewControls] [role="button"],
+        #cms-month-selector,
         /* エディタツールバーボタン（EditorControlBar内 ToolbarButton） */
         [class*=ToolbarButton],
         [class*=PublishedToolbarButton],
@@ -1060,6 +1061,7 @@
           if (!sel) {
             sel = document.createElement('select');
             sel.id = 'cms-month-selector';
+            sel.setAttribute('aria-label', '年月で絞り込み');
             sel.style.cssText = 'padding:8px 12px;border:1px solid #ddd;border-radius:6px;font-size:14px;background:#fff;cursor:pointer;margin-left:6px;';
 
             // CollectionControls付近に配置
