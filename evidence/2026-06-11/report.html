@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Modern Web Guidance 遵守確認・操作性レビュー（2026-06-11）</title>
+<style>
+  body { font-family: -apple-system, "Hiragino Kaku Gothic ProN", Meiryo, sans-serif; margin: 2rem; color: #333; line-height: 1.7; }
+  h1 { font-size: 1.4rem; border-bottom: 2px solid #1a73e8; padding-bottom: .5rem; }
+  h2 { font-size: 1.15rem; margin-top: 2.5rem; border-left: 4px solid #1a73e8; padding-left: .6rem; }
+  table { border-collapse: collapse; width: 100%; font-size: .85rem; margin: 1rem 0; }
+  th, td { border: 1px solid #ddd; padding: .4rem .6rem; text-align: left; vertical-align: top; }
+  th { background: #f5f7fa; }
+  .pass { color: #188038; font-weight: bold; }
+  .fail { color: #d93025; font-weight: bold; }
+  .info { color: #666; font-weight: bold; }
+  .grid { display: flex; gap: 1rem; flex-wrap: wrap; margin: .5rem 0 1.5rem; }
+  .shot { flex: 1 1 280px; max-width: 420px; }
+  .shot img { width: 100%; border: 1px solid #ccc; border-radius: 4px; }
+  .shot figcaption { font-size: .8rem; color: #595959; text-align: center; margin-top: .3rem; }
+  .note { background: #fef7e0; border: 1px solid #f9ab00; border-radius: 4px; padding: .6rem 1rem; font-size: .85rem; }
+</style>
+</head>
+<body>
+<h1>Modern Web Guidance 遵守確認・操作性レビュー（2026-06-11）</h1>
+<p>対象: staging（bad8698）の公開サイト＋CMS独自カスタマイズ ／ 方法: ガイド本文突合＋Playwright実操作（PC/iPad/iPhone）＋axe-core ／ 詳細は <code>review-report.md</code> を参照。<strong>レビューのみ・修正は別セッション。</strong></p>
+
+<h2>結果サマリ（45チェック）</h2>
+<table>
+<tr><th>区分</th><th>結果</th></tr>
+<tr><td>適合確認（LCP優先度・コンテナクエリ・text-wrap・aria同期・focus-visible・CMS 44px・キーボード到達性・axe 0件・CMS-19動作）</td><td class="pass">PASS（実測確認）</td></tr>
+<tr><td>F-1: content-visibility:auto がファーストビュー内カードに適用（PC/iPad: 2〜4枚目、iPhone: 2枚目）→ ガイドMANDATORY違反</td><td class="fail">要修正（中）</td></tr>
+<tr><td>F-2: ナビドロップダウンが Esc で閉じない／フォーカス離脱後も開いたまま（3デバイス）</td><td class="fail">要修正（中）</td></tr>
+<tr><td>F-3: サイト側モバイルタップターゲット不足（▾ 18×21px、ナビリンク 83×15px、管理 21×19px）</td><td class="fail">要修正（中）</td></tr>
+<tr><td>F-4: CMS月セレクターにアクセシブルネームなし</td><td class="fail">要修正（中）</td></tr>
+<tr><td>F-5: CMS月セレクター 144×37px（44px未達・iPhone）</td><td class="fail">要修正（小）</td></tr>
+<tr><td>F-6: admin/index.html の html に lang なし（axe serious）</td><td class="fail">要修正（小）</td></tr>
+<tr><td>F-7〜F-12: ラベルのロール名／本文リンク潜在／pre tabindex／width-height属性／srcset／ダークモード</td><td class="info">推奨・潜在・任意（report.md参照）</td></tr>
+</table>
+
+<h2>S01: トップページ（LCP画像・コンテナクエリレイアウト）</h2>
+<div class="grid">
+  <figure class="shot"><img src="screenshots/S01-top-PC.png" alt="トップページ PC"><figcaption>PC: コンテナクエリで横並びカード</figcaption></figure>
+  <figure class="shot"><img src="screenshots/S01-top-iPad.png" alt="トップページ iPad"><figcaption>iPad: 横並びカード</figcaption></figure>
+  <figure class="shot"><img src="screenshots/S01-top-iPhone.png" alt="トップページ iPhone"><figcaption>iPhone: 縦積み</figcaption></figure>
+</div>
+
+<h2>S03: ナビドロップダウン展開（aria-expanded同期 ✅ / Esc・フォーカス課題 F-2）</h2>
+<div class="grid">
+  <figure class="shot"><img src="screenshots/S03-dropdown-open-PC.png" alt="ドロップダウン PC"><figcaption>PC</figcaption></figure>
+  <figure class="shot"><img src="screenshots/S03-dropdown-open-iPad.png" alt="ドロップダウン iPad"><figcaption>iPad</figcaption></figure>
+  <figure class="shot"><img src="screenshots/S03-dropdown-open-iPhone.png" alt="ドロップダウン iPhone"><figcaption>iPhone</figcaption></figure>
+</div>
+
+<h2>S04: 記事詳細（text-wrap: balance/pretty・本文リンクは現状なし）</h2>
+<div class="grid">
+  <figure class="shot"><img src="screenshots/S04-post-PC.png" alt="記事詳細 PC"><figcaption>PC</figcaption></figure>
+  <figure class="shot"><img src="screenshots/S04-post-iPad.png" alt="記事詳細 iPad"><figcaption>iPad</figcaption></figure>
+  <figure class="shot"><img src="screenshots/S04-post-iPhone.png" alt="記事詳細 iPhone"><figcaption>iPhone</figcaption></figure>
+</div>
+
+<h2>C01: CMS記事一覧（年月グルーピング自動有効化・日本語見出し・月セレクター ✅）</h2>
+<div class="grid">
+  <figure class="shot"><img src="screenshots/C01-list-PC.png" alt="CMS一覧 PC"><figcaption>PC: 2026年2月/1月/2025年12月 降順</figcaption></figure>
+  <figure class="shot"><img src="screenshots/C01-list-iPhone.png" alt="CMS一覧 iPhone"><figcaption>iPhone: 44pxタップ領域確保（月セレクターのみ37px=F-5）</figcaption></figure>
+</div>
+
+<h2>C02: 月セレクター絞り込み操作（実select操作で2026年2月のみ表示 ✅）</h2>
+<div class="grid">
+  <figure class="shot"><img src="screenshots/C02-filtered-PC.png" alt="絞り込み PC"><figcaption>PC</figcaption></figure>
+  <figure class="shot"><img src="screenshots/C02-filtered-iPhone.png" alt="絞り込み iPhone"><figcaption>iPhone</figcaption></figure>
+</div>
+
+<h2>C04: エディタ画面（公開URLバー ✅・ツールバー44px ✅）</h2>
+<div class="grid">
+  <figure class="shot"><img src="screenshots/C04-editor-PC.png" alt="エディタ PC"><figcaption>PC: 下部に公開URLバー</figcaption></figure>
+  <figure class="shot"><img src="screenshots/C04-editor-iPhone.png" alt="エディタ iPhone"><figcaption>iPhone: ツールバー44px確保</figcaption></figure>
+</div>
+
+<p class="note">注: CMS はサンドボックスのネットワーク制約により、Decap CMS 3.10.0 の同一バイトローカルバンドルを context.route() で供給して検証（SRI一致）。エディタのフィールド値が空なのはモック制約であり画面遷移・計測は有効。レビュー専用のためソースコードは未変更。</p>
+</body>
+</html>
