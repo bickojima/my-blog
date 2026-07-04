@@ -257,3 +257,10 @@ Google公式Modern Web Guidanceスキル準拠を方針とし、公開サイト�
 - [Astro ドキュメント](https://docs.astro.build)
 - [Decap CMS ドキュメント](https://decapcms.org/docs/)
 - [Cloudflare Pages ドキュメント](https://developers.cloudflare.com/pages/)
+
+## 12. エビデンス管理方針（#90）
+
+`evidence/` ディレクトリはE2Eテストや機能検証のエビデンス保存用に使用します。
+- 一時的な検証動画（`.mp4`, `.webm`）や試行ログ (`evidence/tmp/`) は `.gitignore` によりコミットから除外されます。
+- リポジトリサイズ抑制のため、コミット対象のエビデンスは必要最小限の静止画像・ログに限定します。
+

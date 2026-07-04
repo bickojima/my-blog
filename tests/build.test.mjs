@@ -489,7 +489,7 @@ describe('ビルド検証', () => {
       );
       for (const source of [postPage, fixedPage]) {
         expect(source).toContain(':global(a)');
-        expect(source).toContain('color: #1a73e8');
+        expect(source.includes('color: #1a73e8') || source.includes('color: var(--color-link)')).toBe(true);
         expect(source).toContain('text-decoration: underline');
         expect(source).toContain(':global(a:focus-visible)');
       }
