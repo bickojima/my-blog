@@ -39,6 +39,7 @@
 | 1.31 | 2026-05-24 | Bug #38修正対応: CMS-19年月フィルター操作時のハングアップを修正。ネイティブselect操作中にoptionを再構築しないよう`optionsSignature`で見出し変更時のみ再生成。E2Eにselect操作中のMutationObserver再実行耐性検証を追加 |
 | 1.32 | 2026-05-24 | プロジェクト方針追加: ドキュメント更新をコード変更の完了条件化、UI変更時の実操作E2Eを必須化。Modern Web Guidance横展開として、`content-visibility`、`contain-intrinsic-size`、`:focus-visible`、`aria-label`/`aria-labelledby`、`text-wrap`の検証を追加 |
 | 1.33 | 2026-06-11 | Modern Web GuidanceレビューF-1〜F-10の再発防止テスト追加。ナビEscape/Tab離脱、タッチ領域、CMSセレクターa11y、本文リンク、コードブロックtabindex、画像寸法属性を検証。Vitest 562件、E2E 432件（424実行+8スキップ）へ更新 |
+| 1.34 | 2026-07-04 | ドキュメント整理: 2.7章ファズテスト件数の表記を実測に合わせ214件→215件に修正（テスト実体の変更なし） |
 
 ## テスト基盤の変更履歴
 
@@ -1066,7 +1067,7 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 | :--- | :--- | :--- | :--- |
 | 8 | staging環境検知ロジックが存在する（FR-21: hostname判定） | M-02 | `hostname`文字列と`STAGING`/`staging`関連ロジックが存在する |
 
-### 2.7 ファズテスト・不整合値テスト（fuzz-validation.test.mjs: 214件）
+### 2.7 ファズテスト・不整合値テスト（fuzz-validation.test.mjs: 215件）
 
 SEC-14〜SEC-20に対応するファズテスト。ビルド時に必ず実行される必須テスト。XSS/SQLi/パストラバーサル/コマンドインジェクション/プロトタイプ汚染の攻撃ペイロードに対する耐性を検証する。
 

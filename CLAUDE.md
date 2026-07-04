@@ -58,9 +58,9 @@ docs/
 functions/auth/              # Cloudflare Functions: GitHub OAuth proxy
 
 tests/
-├── *.test.mjs               # Vitest単体・統合テスト（7ファイル）
+├── *.test.mjs               # Vitest単体・統合テスト（8ファイル）
 ├── fuzz-validation.test.mjs # ファズテスト（XSS/SQLi/パストラバーサル/プロトタイプ汚染等、215テスト）
-├── e2e/                     # Playwright E2E（site, cms, cms-customizations, cms-crud, cms-operations, accessibility）
+├── e2e/                     # Playwright E2E（site, cms, cms-customizations, cms-crud, cms-operations, cms-exploratory, accessibility）
 └── TEST-REPORT.md           # テスト計画書・テストケース一覧・実行結果
 ```
 
