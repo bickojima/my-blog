@@ -29,3 +29,6 @@ pnpm-debug.log*
 # Playwright
 test-results/
 playwright-report/
+
+# Claude Code（個人環境の許可設定。settings.json はプロジェクト共通のためコミット対象）
+.claude/settings.local.json
