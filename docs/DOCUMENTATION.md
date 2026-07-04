@@ -49,6 +49,7 @@
 | 1.42 | 2026-05-25 | テスト知見の文書化: TEST-REPORT.md 4.1.8章「包括的エビデンス検証スクリプト（verify-comprehensive.mjs）の方式」追加（雛形ファイル・認証方式・シナリオ番号体系・赤枠アノテーション・HTMLレポート・新シナリオ追加手順を記載）。E-34タップ領域skip条件を799px→899pxに修正（Bug #39対応）、ToolbarButtonを899px CSSブロックに追加。E2Eテスト423件（416実行+7スキップ）に更新 |
 | 1.43 | 2026-05-30 | 基本設計（2.2.3章）にGoogle Modern Web Guidanceの導入手順として`npx modern-web-guidance@latest install`を明記 |
 | 1.44 | 2026-06-11 | Modern Web Guidance遵守レビューF-1〜F-10対応（Bug #40）: 実測に基づき`content-visibility`を7枚目以降へ限定、ナビEscape/フォーカス離脱対応、公開サイト/CMSタップ領域44px化、CMSセレクターa11y、本文リンク識別、コードブロックtabindex、サムネイル寸法属性、lang/ARIA修正。Vitest 562件、E2E 432件へ更新 |
+| 1.45 | 2026-07-04 | ドキュメント整理: 2.1.1章ディレクトリ構成を最新化（E2E 7ファイル、content/pages・docs/・evidence/・README.md追記）。コード変更なし |
 
 ## システム変更履歴
 
@@ -587,6 +588,7 @@ my-blog/
 │   └── organize-posts.mjs             # 記事ファイル配置整理
 ├── src/                                # ソースコード
 │   ├── content/posts/{yyyy}/{mm}/      # 記事Markdownファイル
+│   ├── content/pages/                  # 固定ページMarkdownファイル
 │   ├── components/ArchiveNav.astro     # アーカイブナビゲーション
 │   ├── integrations/image-optimize.mjs # ビルド後画像最適化
 │   ├── plugins/rehype-image-caption.mjs# 画像キャプション変換
@@ -596,8 +598,13 @@ my-blog/
 │   ├── pages/                          # ページルーティング
 │   └── content.config.ts              # コンテンツスキーマ定義
 ├── tests/                              # 自動テスト
-│   ├── *.test.mjs                      # 単体・統合テスト（Vitest）
-│   └── e2e/                            # E2Eテスト（Playwright 3ファイル）
+│   ├── *.test.mjs                      # 単体・統合テスト（Vitest 8ファイル）
+│   ├── e2e/                            # E2Eテスト（Playwright 7ファイル）
+│   └── TEST-REPORT.md                  # テスト計画書・テストケース一覧・実行結果
+├── docs/
+│   └── DOCUMENTATION.md                # システム設計書（本書）
+├── evidence/                           # 動作確認エビデンス（日付フォルダごと）
+├── README.md                           # プロジェクト概要（人間向け）
 ├── CLAUDE.md                           # Claude Code向けプロジェクトガイド
 ├── astro.config.mjs                    # Astro設定
 ├── playwright.config.ts                # Playwright E2E設定
