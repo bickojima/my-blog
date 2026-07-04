@@ -1,0 +1,90 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+
+const allPosts = await getCollection('posts');
+const tagCounts = new Map<string, number>();
+
+allPosts
+  .filter(post => !post.data.draft)
+  .forEach(post => {
+    post.data.tags?.forEach((tag: string) => {
+      tagCounts.set(tag, (tagCounts.get(tag) ?? 0) + 1);
+    });
+  });
+
+const tags = Array.from(tagCounts.entries())
+  .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'ja'));
+---
+
+<Base title="タグ一覧 - tbiのブログ" description="記事のタグ一覧">
+  <h1>タグ一覧</h1>
+  <a href="/" class="back-link">&larr; 記事一覧に戻る</a>
+
+  {tags.length === 0 && <p class="no-tags">タグはまだありません。</p>}
+
+  <ul class="tag-list">
+    {tags.map(([tag, count]) => (
+      <li>
+        <a href={`/tags/${encodeURIComponent(tag)}`} class="tag-link">
+          <span class="tag-name">{tag}</span>
+          <span class="tag-count">{count}</span>
+        </a>
+      </li>
+    ))}
+  </ul>
+
+  <style>
+    h1 {
+      font-size: 1.4rem;
+      margin-bottom: 0.5rem;
+      text-wrap: balance;
+    }
+    .back-link {
+      display: inline-block;
+      font-size: 0.85rem;
+      color: var(--color-text-secondary);
+      margin-bottom: 1.5rem;
+    }
+    .back-link:hover {
+      color: var(--color-text);
+    }
+    .back-link:focus-visible,
+    .tag-link:focus-visible {
+      outline: 2px solid var(--color-focus);
+      outline-offset: 3px;
+      border-radius: 3px;
+    }
+    .no-tags {
+      color: var(--color-text-muted);
+    }
+    .tag-list {
+      list-style: none;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+    }
+    .tag-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.9rem;
+      background: var(--color-tag-bg);
+      color: var(--color-tag-text);
+      padding: 0.3rem 0.75rem;
+      border-radius: 999px;
+      min-height: 44px;
+    }
+    .tag-link:hover {
+      background: var(--color-invert-bg);
+      color: var(--color-invert-text);
+    }
+    .tag-count {
+      font-size: 0.75rem;
+      color: var(--color-text-muted);
+    }
+    .tag-link:hover .tag-count {
+      color: var(--color-invert-muted);
+    }
+  </style>
+</Base>
