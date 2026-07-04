@@ -40,6 +40,7 @@
 | 1.32 | 2026-05-24 | プロジェクト方針追加: ドキュメント更新をコード変更の完了条件化、UI変更時の実操作E2Eを必須化。Modern Web Guidance横展開として、`content-visibility`、`contain-intrinsic-size`、`:focus-visible`、`aria-label`/`aria-labelledby`、`text-wrap`の検証を追加 |
 | 1.33 | 2026-06-11 | Modern Web GuidanceレビューF-1〜F-10の再発防止テスト追加。ナビEscape/Tab離脱、タッチ領域、CMSセレクターa11y、本文リンク、コードブロックtabindex、画像寸法属性を検証。Vitest 562件、E2E 432件（424実行+8スキップ）へ更新 |
 | 1.34 | 2026-07-04 | ドキュメント整理: 2.7章ファズテスト件数の表記を実測に合わせ214件→215件に修正（テスト実体の変更なし） |
+| 1.35 | 2026-07-04 | 個人ブログ化ロードマップ（FR-22〜FR-28, NFR-08）のテストケースを追加: robots.txt、RSS下書き除外、タグ件数、ページネーションの検証と実操作E2E 4件を追加。build.test.mjs 67→90件、Vitest合計 562→585件、E2E 444件へ更新 |
 
 ## テスト基盤の変更履歴
 
@@ -454,7 +455,7 @@ admin-html.test.mjs              -     ●     -     -     -     -     -     -  
 
 | No. | 基準 |
 | :--- | :--- |
-| 1 | 全テストケース（Vitest 562件 + E2E 432件 = 994件）がPASSまたは仕様上の条件スキップであること |
+| 1 | 全テストケース（Vitest 585件 + E2E 444件 = 1029件）がPASSまたは仕様上の条件スキップであること |
 | 2 | `npm run build` が正常に完了すること |
 | 3 | 要件トレーサビリティマトリクス（docs/DOCUMENTATION.md 1.5章）において全要件が「充足」であること |
 
@@ -877,6 +878,46 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 | :--- | :--- | :--- | :--- |
 | 1 | 記事・固定ページ本文リンクに識別可能なスタイルがある | M-02 | 下線、`#1a73e8`、`:focus-visible`が両テンプレートに定義される |
 | 2 | コードブロック到達性rehype pluginがAstroへ登録される | M-02 | `rehypeFocusableCodeBlocks`が`rehypePlugins`に登録される |
+
+### 2.5.5 robots.txt環境別ポリシー検証（Bug #41再発防止、2件）
+
+| No. | テストケース | テスト手法 | 期待結果 |
+| :--- | :--- | :--- | :--- |
+| 1 | staging環境のrobots.txtはDisallow: /でインデックスを防止する | M-01 | `dist/robots.txt`が`Disallow: /`を含み、`Allow: /`を含まない |
+| 2 | robots.txtのSitemap行はreiwa.casaドメインを指す | M-01 | Sitemap行が存在する場合、`https://(staging.)?reiwa.casa/`にマッチする |
+
+### 2.5.6 個人ブログ化ロードマップ機能検証（FR-22〜FR-28, NFR-08、記事数により動的スキップ、15件）
+
+記事数・summary/thumbnail有無に応じて動的に一部スキップされる（3件未満の記事構成では該当ケースをスキップ）。
+
+| No. | テストケース | 要件 | テスト手法 | 期待結果 |
+| :--- | :--- | :--- | :--- | :--- |
+| 1 | トップページに自身を指すcanonicalが出力される | FR-22 | M-01 | `<link rel="canonical" href="https://.../">`が存在する |
+| 2 | 記事詳細ページにcanonicalが出力される | FR-22 | M-01 | 記事URLを指すcanonicalが存在する |
+| 3 | thumbnail付き記事はog:imageが絶対URLで出力される | FR-23 | M-01 | `og:image`が絶対URL、`twitter:card`が`summary_large_image` |
+| 4 | summary付き記事はog:description・meta descriptionにsummaryが反映される | FR-23 | M-01 | summary文字列を含むmeta要素が存在する |
+| 5 | rss.xmlが生成される | FR-24 | M-01 | `dist/rss.xml`が存在する |
+| 6 | 公開記事のタイトルが全て含まれる | FR-24 | M-01 | ソースから動的取得した全公開記事タイトルが`<title>`として含まれる |
+| 7 | トップページにRSS autodiscoveryリンクがある | FR-24 | M-01 | `type="application/rss+xml"`が存在する |
+| 8 | sitemap-index.xmlが生成される | FR-25 | M-01 | `dist/sitemap-index.xml`が存在する |
+| 9 | sitemapに/admin/配下のURLが含まれない | FR-25 | M-01 | 全`sitemap-*.xml`に`/admin/`を含まない |
+| 10 | タグ一覧ページに公開記事の全タグが含まれる | FR-26 | M-01 | ソースから動的取得した全タグ文字列が含まれる |
+| 11 | 最新記事には「次の記事」が表示されない | FR-27 | M-01 | date降順で最新の記事HTMLに「次の記事」を含まない |
+| 12 | 最古記事には「前の記事」が表示されない | FR-27 | M-01 | date降順で最古の記事HTMLに「前の記事」を含まない |
+| 13 | 中間の記事には前後両方のリンクが表示される（記事3件以上） | FR-27 | M-01 | 「前の記事」「次の記事」両方を含む |
+| 14 | meta color-schemeでダーク対応を宣言する | NFR-08 | M-01 | `color-scheme" content="light dark"`が存在する |
+| 15 | prefers-color-schemeによる配色切り替えがCSSに定義される | NFR-08 | M-01 | ビルド後の`_astro/*.css`いずれかに`prefers-color-scheme: dark`を含む |
+
+### 2.5.7 記事一覧のページネーション検証（FR-28, Bug #42再発防止、4件）
+
+Bug #42: `/page/[page].astro`が`paginate()`の結果をフィルタせず生成していたため、1ページ目が`/`と`/page/1/`の2つのURLに重複生成され、`/page/1/`側もsitemapに登録される重複コンテンツ状態になっていた（引き継ぎ後のマージで混入）。`getStaticPaths`で`params.page !== '1'`のフィルタを追加し、1ページ目は`/`のみが担うよう修正した。
+
+| No. | テストケース | テスト手法 | 期待結果 |
+| :--- | :--- | :--- | :--- |
+| 1 | /page/1/ は生成されない（1ページ目は / が担う。重複コンテンツ防止） | M-01 | `dist/page/1/index.html`が存在しない |
+| 2 | / の canonical は自身（/）を指す | M-01 | `<link rel="canonical" href=".../">`が存在する |
+| 3 | 公開記事数がPAGE_SIZE超の場合のみ /page/2/ が生成される | M-01 | 記事数から動的算出した`totalPages`と生成有無が一致する |
+| 4 | sitemapに /page/1/ の重複URLが含まれない | M-01 | `sitemap-0.xml`が`/page/1/`を含まない |
 
 ### 2.5.1 セキュリティヘッダー検証（8件）
 
@@ -1345,7 +1386,7 @@ axe-coreエンジン（@axe-core/playwright）を使用してWCAG 2.1 Level AA�
 
 ### 4.1.4 デバイス別テスト
 
-全テストケースを以下の3デバイスで実行する（合計432テスト：424実行 + 8スキップ）。
+全テストケースを以下の3デバイスで実行する（合計444テスト：436実行 + 8スキップ）。
 
 | デバイス | ビューポート | 用途 |
 | :--- | :--- | :--- |
@@ -1610,9 +1651,9 @@ npm run build
 
 | 項目 | 結果 |
 | :--- | :--- |
-| 実行日時 | 2026-06-11 |
+| 実行日時 | 2026-07-04 |
 | Vitest バージョン | v4.0.18 |
-| 実行時間 | 2.06s |
+| 実行時間 | 2.37s |
 | 合否判定 | **合格** |
 
 ### 4.3.2 テストファイル別結果
@@ -1626,28 +1667,28 @@ npm run build
 | `auth-functions.test.mjs` | 17 | PASS | 29ms |
 | `fuzz-validation.test.mjs` | 215 | PASS | 40ms |
 | `content-validation.test.mjs` | 111 | PASS | 49ms |
-| `build.test.mjs` | 67 | PASS | 1865ms |
-| **合計** | **562** | **全PASS** | **2.06s** |
+| `build.test.mjs` | 90 | PASS | 2157ms |
+| **合計** | **585** | **全PASS** | **2.37s** |
 
 ### 4.3.3 E2Eテスト最新実行結果（Playwright）
 
 | 項目 | 結果 |
 | :--- | :--- |
-| 実行日時 | 2026-06-11 |
+| 実行日時 | 2026-07-05 |
 | Playwright バージョン | v1.58.2 |
-| 実行時間 | 15.3m |
-| 合否判定 | **合格**（424 PASS, 8 skip / 432テスト）|
+| 実行時間 | 15.4m |
+| 合否判定 | **合格**（436 PASS, 8 skip / 444テスト）|
 
 | テストファイル | PC | iPad | iPhone | 合計 |
 | :--- | :--- | :--- | :--- | :--- |
-| `site.spec.ts`（E-01〜E-06, E-20〜E-21） | 33 PASS, 1 skip | 34 PASS | 34 PASS | 101 PASS, 1 skip |
+| `site.spec.ts`（E-01〜E-06, E-20〜E-21, E-30） | 37 PASS, 1 skip | 38 PASS | 38 PASS | 113 PASS, 1 skip |
 | `cms.spec.ts`（E-07〜E-12） | 12 PASS | 12 PASS | 12 PASS | 36 |
 | `cms-customizations.spec.ts`（E-13〜E-19） | 38 PASS | 38 PASS | 38 PASS | 114 |
 | `cms-crud.spec.ts`（E-22〜E-24） | 11 PASS | 11 PASS | 11 PASS | 33 |
 | `cms-operations.spec.ts`（E-28〜E-36） | 27 PASS, 4 skip | 28 PASS, 3 skip | 31 PASS | 86 PASS, 7 skip |
 | `accessibility.spec.ts`（E-25〜E-27） | 6 PASS | 6 PASS | 6 PASS | 18 |
 | `cms-exploratory.spec.ts`（E-37, E-39〜E-43） | 12 PASS | 12 PASS | 12 PASS | 36 |
-| **合計** | **139 PASS, 5 skip** | **141 PASS, 3 skip** | **144 PASS** | **424 PASS, 8 skip** |
+| **合計** | **143 PASS, 5 skip** | **145 PASS, 3 skip** | **148 PASS** | **436 PASS, 8 skip** |
 
 **スキップ内訳**: E-34のボトムシート・codeblock・URLバーはPC/iPadでskip、CMSタップ領域はPCのみskip。E-21公開サイトタッチ領域はPCのみskip。合計8件skip。
 
@@ -1656,7 +1697,7 @@ npm run build
 | 項目 | 結果 |
 | :--- | :--- |
 | ビルドコマンド | `npm run build` |
-| 生成ページ数 | 17ページ |
+| 生成ページ数 | 18ページ |
 | 画像最適化 | 5ファイル（最大-97%削減） |
 | ビルド時間 | ~1.2s |
 | 合否判定 | **合格** |

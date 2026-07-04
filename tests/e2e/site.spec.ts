@@ -172,6 +172,46 @@ test.describe('E-05: 画像表示', () => {
   });
 });
 
+test.describe('E-30: 個人ブログ化ロードマップの実操作確認', () => {
+  test('前の記事リンクをクリックすると対象記事へ遷移する', async ({ page }) => {
+    await page.goto('/');
+    await page.locator('a.post-title').nth(1).click();
+    const previous = page.locator('a.adjacent-prev');
+    await expect(previous).toBeVisible();
+    const targetTitle = (await previous.locator('.adjacent-title').textContent())?.trim();
+    await previous.click();
+    await expect(page.locator('.post-header h1')).toHaveText(targetTitle!);
+  });
+
+  test('タグ一覧からタグページへ実クリックで遷移する', async ({ page }) => {
+    await page.goto('/tags/');
+    const firstTag = page.locator('a.tag-link').first();
+    const tagName = (await firstTag.locator('.tag-name').textContent())?.trim();
+    await firstTag.click();
+    await expect(page.locator('h1')).toHaveText(`タグ: ${tagName}`);
+  });
+
+  test('OSダークモード設定でダーク配色が適用される', async ({ page }) => {
+    await page.emulateMedia({ colorScheme: 'dark' });
+    await page.goto('/');
+    const prefersDark = await page.evaluate(() => matchMedia('(prefers-color-scheme: dark)').matches);
+    expect(prefersDark).toBe(true);
+    const { background, color } = await page.locator('body').evaluate((el) => {
+      const style = getComputedStyle(el);
+      return { background: style.backgroundColor, color: style.color };
+    });
+    expect(background).not.toBe('rgb(255, 255, 255)');
+    expect(color).not.toBe('rgb(51, 51, 51)');
+  });
+
+  test('記事数が閾値未満ではページネーションを表示せず重複URLも生成しない', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('nav.pagination')).toHaveCount(0);
+    const response = await page.goto('/page/1/');
+    expect(response?.status()).toBe(404);
+  });
+});
+
 test.describe('E-20: 固定ページ表示', () => {
   test('プロフィールページが表示される', async ({ page }) => {
     await page.goto('/profile');

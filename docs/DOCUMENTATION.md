@@ -50,6 +50,7 @@
 | 1.43 | 2026-05-30 | 基本設計（2.2.3章）にGoogle Modern Web Guidanceの導入手順として`npx modern-web-guidance@latest install`を明記 |
 | 1.44 | 2026-06-11 | Modern Web Guidance遵守レビューF-1〜F-10対応（Bug #40）: 実測に基づき`content-visibility`を7枚目以降へ限定、ナビEscape/フォーカス離脱対応、公開サイト/CMSタップ領域44px化、CMSセレクターa11y、本文リンク識別、コードブロックtabindex、サムネイル寸法属性、lang/ARIA修正。Vitest 562件、E2E 432件へ更新 |
 | 1.45 | 2026-07-04 | ドキュメント整理: 2.1.1章ディレクトリ構成を最新化（E2E 7ファイル、content/pages・docs/・evidence/・README.md追記）。コード変更なし |
+| 1.46 | 2026-07-04 | 個人ブログ化ロードマップ（issue #81〜#89）の要件ID追加: FR-22〜FR-28（site/canonical, OGP, RSS, サイトマップ, タグ一覧, 前後記事ナビ, ページネーション）、NFR-08（ダークモード対応）を1.2章・1.4章に追加し、1.5章トレーサビリティマトリクスを更新。Bug #41（staging robots.txtの`Allow: /`＋誤ドメイン混入）・Bug #42（ページネーション`/page/1/`重複コンテンツ）を4.5章に追記。RSS下書き除外・タグ件数・実操作E2Eを含むVitest 585件、E2E 444件へ更新 |
 
 ## システム変更履歴
 
@@ -248,6 +249,13 @@ Decap CMS本体UIは外部プロダクト由来のコードとして扱い、引
 | FR-19 | メディアライブラリ: アップロード済み画像の一覧表示・選択挿入・削除ができる | `config.yml` media_folder, `admin/index.html` CSS | Decap CMS media library |
 | FR-20 | ビルドパイプライン: 4段階の自動ビルド（EXIF正規化→記事整理→Astroビルド→画像最適化）が正常実行される | `package.json`, `scripts/`, `integrations/` | prebuild + build + postbuild |
 | FR-21 | 環境分離: staging/production環境が独立した設定で動作し、テスト環境で[STAGING]ラベルが表示される | `config.yml`, `Base.astro`, `admin/index.html` | ブランチごとの設定管理 |
+| FR-22 | サイト設定・canonical URL: 全ページに正規URL（canonical）が出力される | `astro.config.mjs`, `Base.astro` | `site`設定 + `Astro.url`ベースの絶対URL生成 |
+| FR-23 | OGP・meta description: SNS共有時にタイトル・説明・画像がプレビュー表示される | `Base.astro`, 各ページテンプレート | og:title/description/type/url/image, twitter:card |
+| FR-24 | RSSフィード配信: 公開記事の更新をRSSリーダーで購読できる | `src/pages/rss.xml.js`, `Base.astro` | `@astrojs/rss`、draft記事は除外、autodiscoveryリンク付き |
+| FR-25 | XMLサイトマップ生成: 検索エンジンにページ一覧を通知する | `astro.config.mjs` | `@astrojs/sitemap`、`/admin/`配下を除外 |
+| FR-26 | タグ一覧ページ: 全タグを件数付きで一覧できる | `src/pages/tags/index.astro` | 件数降順、draft記事のみのタグは非表示 |
+| FR-27 | 記事の前後ナビゲーション: 記事詳細から時系列で前後の記事に遷移できる | `src/pages/posts/[year]/[month]/[slug].astro` | date降順配列から前後記事を算出、draft記事は対象外 |
+| FR-28 | 記事一覧のページネーション: 記事数が1ページの表示件数を超えた場合にページ分割される | `src/pages/page/[page].astro`, `src/components/Pagination.astro` | 1ページ目は`/`が担い、`/page/2`以降で分割（重複コンテンツ防止のため`/page/1`は生成しない） |
 
 ### 1.2.2 各要件の詳細
 
@@ -379,6 +387,22 @@ staging環境の検知:
 - `Base.astro`: 環境変数`CF_PAGES_BRANCH`が`main`以外の場合に[STAGING]表示
 - `admin/index.html`: `hostname`が`reiwa.casa`以外の場合に[STAGING]表示
 
+#### FR-22〜FR-28 個人ブログ化ロードマップ（2026-07-04）
+
+技術テストサイトから個人ブログへの段階的移行を目的として、GitHub issue #81〜#89（[公開準備]系・機能系）で追加した要件群。
+
+| 要件 | 環境別の値・挙動 |
+|:---|:---|
+| FR-22 site/canonical | `astro.config.mjs`の`site`はconfig.ymlの`base_url`/`branch`と同じくブランチ別手動管理（staging: `https://staging.reiwa.casa`、main: `https://reiwa.casa`）。マージ時の確認観点は4.6.2章参照 |
+| FR-23 OGP | 記事ページは`summary`→description、`thumbnail`→og:image（絶対URL化）。画像がない場合は`twitter:card`を`summary`にフォールバックする（プレースホルダ画像は生成しない） |
+| FR-24 RSS | `/rss.xml`、draft記事除外、date降順。`<link rel="alternate" type="application/rss+xml">`で自動検出対応 |
+| FR-25 サイトマップ | `/sitemap-index.xml` + `/sitemap-0.xml`、`filter`で`/admin/`配下を除外 |
+| FR-26 タグ一覧 | `/tags/`、`ArchiveNav.astro`から導線 |
+| FR-27 前後記事ナビ | 記事詳細フッターに前/次記事リンク（タイトル付き）。最古・最新記事では片側のみ表示 |
+| FR-28 ページネーション | `pageSize: 10`。1ページに収まる記事数の間は`/page/`配下のルートは生成されない |
+
+staging環境のrobots.txtは`Disallow: /`を維持し、mainマージ時のみ`Allow: /` + `Sitemap:`行に切り替える（2.5.4章、4.6.2章参照。Bug #41再発防止）。
+
 ---
 
 ## 1.3. CMS管理画面要件
@@ -422,6 +446,7 @@ staging環境の検知:
 | NFR-05 | レスポンシブデザイン: 公開サイトおよびCMS管理画面がモバイル端末で適切に表示・操作できる | `Base.astro` CSS, `admin/index.html` CSS | viewport設定、メディアクエリ |
 | NFR-06 | アクセシビリティ（WCAG 2.2 AA）: 公開サイトがWCAG 2.2 Level AAのcritical/serious違反なしを維持し、独自UIのタップ対象を最低24px、目標44pxとする | `Base.astro`, 各ページCSS, `ArchiveNav.astro`, `admin/index.html` | 色コントラスト、本文リンク識別、キーボード操作、タップ領域、文書言語、axe-core自動検証 |
 | NFR-07 | Modern Web Guidance準拠: Google公式Modern Web Guidanceの推奨に従い、Baseline対応済みのモダンWeb機能を安全なプログレッシブエンハンスメントとして採用する | `Base.astro`, `index.astro`, 各本文ページ, 独自rehype plugin | 初期ビューポート外描画最適化、LCP画像優先度、コンテナクエリ、アクセシブルな開閉・スクロール操作 |
+| NFR-08 | ダークモード対応: OS設定（`prefers-color-scheme`）に追従し、ライト/ダーク両配色でWCAG AA以上のコントラストを維持する | `Base.astro`, 各ページCSS, `ArchiveNav.astro` | CSSカスタムプロパティで配色を集約、`<meta name="color-scheme" content="light dark">`。Decap CMS本体UIは対象外 |
 
 ### 1.4.2 セキュリティ要件一覧 (SEC)
 
@@ -487,6 +512,13 @@ staging環境の検知:
 | FR-19 | メディアライブラリ | cms-config, admin-html | 2.4章 #6,#7, #47, 2.6.3章 #8,#10 | M-03, M-02 | 充足 |
 | FR-20 | ビルドパイプライン | build | 2.5章 #1〜#8, #51 | M-01, M-02, M-12 | 充足 |
 | FR-21 | 環境分離 | cms-config, admin-html | 2.4章 #3,#5, 2.6.1章 #8 | M-03, M-02 | 充足 |
+| FR-22 | サイト設定・canonical URL | build | 2.5.6章 #1,#2 | M-01 | 充足 |
+| FR-23 | OGP・meta description | build | 2.5.6章 #3,#4 | M-01 | 充足 |
+| FR-24 | RSSフィード配信 | build | 2.5.6章 #5〜#7 | M-01 | 充足 |
+| FR-25 | XMLサイトマップ生成 | build | 2.5.6章 #8,#9 | M-01 | 充足 |
+| FR-26 | タグ一覧ページ | build | 2.5.6章 #10 | M-01 | 充足 |
+| FR-27 | 記事の前後ナビゲーション | build | 2.5.6章 #11〜#13 | M-01 | 充足 |
+| FR-28 | 記事一覧のページネーション | build | 2.5.7章 #1〜#4 | M-01 | 充足 |
 
 ### 1.5.2 CMS管理画面要件 (CMS) → テストケース
 
@@ -523,6 +555,7 @@ staging環境の検知:
 | NFR-05 | レスポンシブデザイン | admin-html, build, E2E site, E2E cms-operations | 2.6.3章 #1〜#10, 2.5章 #19, E-21, E-34 | M-02, M-11, 実操作 | 充足 |
 | NFR-06 | アクセシビリティ（WCAG 2.2 AA） | admin-html, build, E2E site, E2E accessibility, E2E cms-exploratory | 2.5章 #23b/#23c, 2.6章 #15, E-21, E-25〜E-27, E-37 | M-02, M-11（axe-core）, 実操作 | 充足 |
 | NFR-07 | Modern Web Guidance準拠 | build, content-validation, admin-html, rehype-focusable-code-blocks, E2E site, E2E evidence | 2.5章 Modern Web Guidance検証, 2.6章, 2.2.1章, E-05, E-21, 2026-06-11 evidence | M-02, M-05, M-11, 実操作 | 充足 |
+| NFR-08 | ダークモード対応 | build | 2.5.6章 #14,#15 | M-01 | 充足 |
 
 ### 1.5.4 セキュリティ要件 (SEC) → テストケース
 
@@ -555,7 +588,7 @@ staging環境の検知:
 | SEC-25 | ビルドスクリプト防御強化 | build | ビルドパイプライン検証 | M-02 | 充足 |
 | SEC-26 | OAuth HTTPメソッド制限 | auth-functions | 2.3章 | M-02 | 充足 |
 
-**充足状況: 全要件（FR-01〜FR-21, CMS-01〜CMS-19, NFR-01〜NFR-07, SEC-01〜SEC-26）がテストで充足されている。未テスト要件なし。**
+**充足状況: 全要件（FR-01〜FR-28, CMS-01〜CMS-19, NFR-01〜NFR-08, SEC-01〜SEC-26）がテストで充足されている。未テスト要件なし。**
 
 ---
 
@@ -590,12 +623,16 @@ my-blog/
 │   ├── content/posts/{yyyy}/{mm}/      # 記事Markdownファイル
 │   ├── content/pages/                  # 固定ページMarkdownファイル
 │   ├── components/ArchiveNav.astro     # アーカイブナビゲーション
+│   ├── components/Pagination.astro     # ページネーションナビ（FR-28）
 │   ├── integrations/image-optimize.mjs # ビルド後画像最適化
 │   ├── plugins/rehype-image-caption.mjs# 画像キャプション変換
 │   ├── plugins/rehype-focusable-code-blocks.mjs # preのキーボード到達性
-│   ├── layouts/Base.astro              # 共通レイアウト
+│   ├── layouts/Base.astro              # 共通レイアウト（canonical/OGP/RSS autodiscovery含む）
 │   ├── lib/posts.ts                    # 記事URL生成ロジック
 │   ├── pages/                          # ページルーティング
+│   │   ├── rss.xml.js                  # RSSフィード（FR-24）
+│   │   ├── tags/index.astro            # タグ一覧ページ（FR-26）
+│   │   └── page/[page].astro           # 記事一覧ページネーション（FR-28）
 │   └── content.config.ts              # コンテンツスキーマ定義
 ├── tests/                              # 自動テスト
 │   ├── *.test.mjs                      # 単体・統合テスト（Vitest 8ファイル）
@@ -670,8 +707,8 @@ my-blog/
 | 認証 | GitHub OAuth App | - | CMS管理者認証 |
 | 画像処理 | sharp | v0.34.5 | 画像圧縮・回転・リサイズ |
 | Web実装方針 | Google Modern Web Guidance | 公式ガイド準拠 | 独自実装部のモダンWeb機能・アクセシビリティ・パフォーマンス設計指針 |
-| テスト（単体・統合） | Vitest | v4.0.18 | 単体テスト・統合テスト・セキュリティ検証・基本機能保護（562テスト、記事数により変動） |
-| テスト（E2E） | Playwright | v1.58.2 | ブラウザE2Eテスト（PC/iPad/iPhone 432テスト、うち8件はデバイス固有条件でスキップ） |
+| テスト（単体・統合） | Vitest | v4.0.18 | 単体テスト・統合テスト・セキュリティ検証・基本機能保護（585テスト、記事数により変動） |
+| テスト（E2E） | Playwright | v1.58.2 | ブラウザE2Eテスト（PC/iPad/iPhone 444テスト、うち8件はデバイス固有条件でスキップ） |
 | コンテンツ | Markdown | - | frontmatter形式 |
 
 ### 2.2.2 選定理由
@@ -1661,6 +1698,8 @@ GitHubリポジトリが利用可能な場合、以下の手順でシステム�
 | 38 | 2026-05-24 | CMS年月フィルター操作時に管理画面がハングアップする: 月セレクターを開いて年月を選ぼうとするとChromeが固まる | `MutationObserver`の再実行ごとに`createMonthSelector()`が`sel.textContent = ''`でoptionを全再構築していた。ネイティブselectを開いている最中にoption DOMを差し替えるため、ブラウザのselect UIとDecap CMSの再描画が競合した | `optionsSignature`でグループ見出し構成を記録し、見出しが変わった時だけoptionを再構築する。フィルター適用は毎回現在DOMを再取得して実行し、React再描画後の追従とselect操作安定性を両立する | admin-html 2.6.6章 #14, verify-cms19-month-filter.mjs |
 | 39 | 2026-05-25 | CMS管理画面モバイルのタップ領域不足（WCAG 2.5.5違反）: 「新規作成」ボタン（h=27px）、コレクションToolbarの「ソート」ボタン（h=27px）、AppHeaderのアイコンボタン（h=24px）等がモバイル推奨44pxを下回り、タッチ操作の精度不足を招く。iPad Pro 11（834px）ではモバイル用CSSブレークポイント（max-width: 799px）が適用されず、既存min-heightルールが無効 | `@media (max-width: 799px)` ブレークポイントがiPad Pro 11のビューポート幅834pxより小さいため、CollectionTopNewButton・ソートボタン（`[role="button"][aria-haspopup]`）・AppHeaderButtonにmin-height: 44pxが適用されなかった | `@media (max-width: 899px)` の新ブレークポイントを追加し、CollectionTopNewButton・CollectionTop内のbutton/[role="button"]・AppHeaderButton・ViewControls内ボタン・`[role="button"][aria-haspopup]`すべてに`min-height: 44px; min-width: 44px`を適用。iPadとiPhone両デバイスで全ボタン≥44pxを確認 | verify-comprehensive.mjs T28 |
 | 40 | 2026-06-11 | Modern Web Guidance遵守レビューF-1〜F-10: 初期表示内`content-visibility`、ナビEscape/フォーカス離脱未対応、公開サイト/CMS月セレクターの小さいタップ領域、CMSセレクター名・管理画面lang・navラベル、本文リンク識別、コードブロック到達性、サムネイル属性に不備 | 初回対応が属性存在の静的確認中心で、デバイス別初期表示範囲・キーボード離脱・独自UI追加後のa11y横断確認が不足 | 実測に基づき7枚目以降へ描画最適化を限定、現行ドロップダウンへEscape/focusout追加、899px幅またはタッチ入力で44px化、CMS/本文/rehype/画像属性を修正 | build/content-validation/admin-html/rehype-focusable-code-blocks, E-05/E-21/E-37, evidence/2026-06-11 |
+| 41 | 2026-07-04 | staging環境のrobots.txtが`Allow: /`＋誤ドメイン（`bickojima.com`）のSitemapになっていた: #81対応（site/canonical設定）の実装中に別エージェントへ引き継ぎが発生し、引き継ぎ後のマージで2.5.4章の環境別方針（staging=`Disallow: /`）に反していた | 引き継ぎ時にstaging/main環境別のrobots.txt方針（本節参照）がレビューされず、既存のドメイン誤り（bickojima.com、包括的リファクタリング#80で修正済みだったはずの内容）が再混入した。robots.txtの内容（Allow/Disallow）を検証するテストが存在せず、存在確認（`robots.txtが存在する`）のみだったため回帰を検知できなかった | staging用`public/robots.txt`を`Disallow: /`のみに修正（Sitemap行はmainマージ時に`https://reiwa.casa/sitemap-index.xml`で追加する運用に統一）。build.test.mjsに内容検証テストを2件追加（Disallow必須・Allow禁止、Sitemapドメイン検証） | build.test.mjs（robots.txt内容検証2件） |
+| 42 | 2026-07-04 | 記事一覧ページネーション（#89対応）で1ページ目が`/`と`/page/1/`の2URLに重複生成され、`/page/1/`側もsitemapに登録される重複コンテンツ状態になっていた | `src/pages/page/[page].astro`の`getStaticPaths`が`paginate()`の結果をフィルタせずそのまま返しており、`params.page === '1'`のページ（1ページ目）も生成対象に含まれていた。ページネーション機能に対するテストが存在せず検知できなかった | `getStaticPaths`に`.filter((p) => p.params.page !== '1')`を追加し、1ページ目は`/`のみが担うよう修正。build.test.mjsに重複防止検証テストを4件追加（2.5.7章） | build.test.mjs（2.5.7章、4件） |
 
 ---
 
@@ -1707,7 +1746,8 @@ git push origin main
 | 3 | Vitest 全テスト PASS | `npm test` | テスト件数が staging と一致すること |
 | 4 | ビルド成功 | `npm run build` | エラーなく完了すること |
 | 5 | E2E テスト PASS（可能な場合） | `npm run test:e2e` | ローカル環境のみ |
-| 6 | robots.txt が main 用 | ファイル確認 | staging の `Disallow: /` が混入していないこと |
+| 6 | robots.txt が main 用 | ファイル確認 | staging の `Disallow: /` が混入していないこと（Bug #41再発防止） |
+| 7 | astro.config.mjs の `SITE_URL` が `https://reiwa.casa` | ファイル確認 | staging URL（`https://staging.reiwa.casa`）が残っていないこと。canonical/OGP/RSS/sitemapの絶対URLに影響する |
 
 ### 4.6.3 main → staging コンテンツ同期
 
@@ -1724,14 +1764,16 @@ git commit
 git push origin staging
 ```
 
-### 4.6.4 config.yml の環境別値
+### 4.6.4 config.yml / astro.config.mjs / robots.txt の環境別値
 
 | 項目 | main（本番） | staging（テスト） |
 |:---|:---|:---|
-| `backend.branch` | `main` | `staging` |
-| `backend.base_url` | `https://reiwa.casa` | `https://staging.reiwa.casa` |
+| `backend.branch`（config.yml） | `main` | `staging` |
+| `backend.base_url`（config.yml） | `https://reiwa.casa` | `https://staging.reiwa.casa` |
+| `SITE_URL`（astro.config.mjs） | `https://reiwa.casa` | `https://staging.reiwa.casa` |
+| `robots.txt` | `Allow: /` + `Sitemap: https://reiwa.casa/sitemap-index.xml` | `Disallow: /`（インデックス防止。Sitemap行なし） |
 
-**注意**: これらの値はブランチ固有であり、マージ時に必ず対象ブランチの値に修正すること。マージツールの自動解決に任せず、手動で確認する。
+**注意**: これらの値はブランチ固有であり、マージ時に必ず対象ブランチの値に修正すること。マージツールの自動解決に任せず、手動で確認する（Bug #41再発防止）。
 
 ---
 
@@ -2127,7 +2169,7 @@ evidence/YYYY-MM-DD/
 
 | 指標 | 目標値 | 現状 |
 |:---|:---|:---|
-| Vitestテスト全PASS | 100% | 562/562 (100%) |
+| Vitestテスト全PASS | 100% | 585/585 (100%) |
 | Playwright E2Eテスト全PASS | 100% | 直近実行: site.spec.ts 93/93 (100%)、CMS年月フィルターエビデンス 15/15 (100%) |
 | セキュリティ検証全PASS | 100% | 10/10 (100%) |
 | ボタン重なり検出 | 0件 | 0件 |

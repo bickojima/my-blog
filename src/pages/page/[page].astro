@@ -10,7 +10,8 @@ export async function getStaticPaths({ paginate }: { paginate: any }) {
     .filter(post => !post.data.draft)
     .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime());
 
-  return paginate(posts, { pageSize: 10 });
+  // 1ページ目は「/」が担うため、重複コンテンツ防止のため /page/1 は生成しない
+  return paginate(posts, { pageSize: 10 }).filter((p: any) => p.params.page !== '1');
 }
 
 const { page } = Astro.props;
