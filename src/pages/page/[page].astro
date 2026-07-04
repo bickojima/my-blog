@@ -1,26 +1,26 @@
 ---
 import { getCollection } from 'astro:content';
-import Base from '../layouts/Base.astro';
-import Pagination from '../components/Pagination.astro';
-import { getPostUrl } from '../lib/posts';
+import Base from '../../layouts/Base.astro';
+import Pagination from '../../components/Pagination.astro';
+import { getPostUrl } from '../../lib/posts';
 
-const PAGE_SIZE = 10;
-const allPosts = await getCollection('posts');
-const posts = allPosts
-  .filter(post => !post.data.draft)
-  .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime());
+export async function getStaticPaths({ paginate }: { paginate: any }) {
+  const allPosts = await getCollection('posts');
+  const posts = allPosts
+    .filter(post => !post.data.draft)
+    .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime());
 
-const totalPages = Math.ceil(posts.length / PAGE_SIZE);
-const displayPosts = posts.slice(0, PAGE_SIZE);
+  return paginate(posts, { pageSize: 10 });
+}
+
+const { page } = Astro.props;
 ---
 
-<Base title="tbiのブログ">
-  <h1>記事一覧</h1>
-
-  {posts.length === 0 && <p class="no-posts">まだ記事がありません。</p>}
+<Base title={`記事一覧 - ${page.currentPage}ページ目 - tbiのブログ`}>
+  <h1>記事一覧 ({page.currentPage} / {page.lastPage} ページ)</h1>
 
   <div class="post-list">
-    {displayPosts.map((post, index) => (
+    {page.data.map((post: any, index: number) => (
       <article class="post-card">
         {post.data.thumbnail && (
           <a href={getPostUrl(post)}>
@@ -57,18 +57,16 @@ const displayPosts = posts.slice(0, PAGE_SIZE);
   </div>
 
   <Pagination
-    currentPage={1}
-    lastPage={totalPages}
-    nextUrl={totalPages > 1 ? '/page/2' : undefined}
+    currentPage={page.currentPage}
+    lastPage={page.lastPage}
+    prevUrl={page.url.prev}
+    nextUrl={page.url.next}
   />
 
   <style>
     h1 {
       font-size: 1.4rem;
       margin-bottom: 1.5rem;
-    }
-    .no-posts {
-      color: var(--color-text-muted);
     }
     .post-list {
       display: flex;
