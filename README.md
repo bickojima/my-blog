@@ -17,6 +17,7 @@ Astro + Decap CMS によるブログサイト。Cloudflare Pages でホスティ
 | 1.8 | 2026-05-22 | Modern Web Guidance準拠対応をstaging先行反映（先頭サムネイルLCP優先度、コンテナクエリ、ナビARIA状態同期、CMS独自プレビュースタイルのコントラスト改善） |
 | 1.9 | 2026-06-11 | Modern Web GuidanceレビューF-1〜F-10対応（描画最適化範囲、キーボード操作、タップ領域、CMS/本文/コードブロックa11y、画像属性） |
 | 1.10 | 2026-07-04 | ドキュメント整理: テスト件数を実測に更新（562 Vitest + 432 E2E）、プロジェクト構成を最新化（E2E 7ファイル・rehypeプラグイン・evidence/）、参考リンクの章配置を修正 |
+| 1.11 | 2026-07-04 | 個人ブログ化ロードマップ（site/canonical, OGP, RSS, サイトマップ, タグ一覧, 前後記事ナビ, ダークモード, ページネーション）実装。robots.txtのstaging誤設定（Bug #41）とページネーション重複コンテンツ（Bug #42）を修正。テスト件数585 Vitest + 444 E2Eへ更新 |
 
 詳細なシステム変更履歴は [DOCUMENTATION.md](docs/DOCUMENTATION.md) を参照。
 
@@ -125,9 +126,9 @@ my-blog/
 | `npm run dev` | 開発サーバー起動（localhost:4321） |
 | `npm run build` | 本番ビルド（`./dist/` に出力） |
 | `npm run preview` | ビルド結果のローカルプレビュー |
-| `npm test` | 単体・統合テスト実行（Vitest / 562テスト、記事数により変動） |
+| `npm test` | 単体・統合テスト実行（Vitest / 585テスト、記事数により変動） |
 | `npm run test:watch` | ウォッチモードでテスト実行 |
-| `npm run test:e2e` | E2Eテスト実行（Playwright / PC・iPad・iPhone 432テスト: 424実行+8スキップ） |
+| `npm run test:e2e` | E2Eテスト実行（Playwright / PC・iPad・iPhone 444テスト: 436実行+8スキップ） |
 
 ## 5. 管理画面のUIカスタマイズ
 
@@ -263,4 +264,3 @@ Google公式Modern Web Guidanceスキル準拠を方針とし、公開サイト�
 `evidence/` ディレクトリはE2Eテストや機能検証のエビデンス保存用に使用します。
 - 一時的な検証動画（`.mp4`, `.webm`）や試行ログ (`evidence/tmp/`) は `.gitignore` によりコミットから除外されます。
 - リポジトリサイズ抑制のため、コミット対象のエビデンスは必要最小限の静止画像・ログに限定します。
-

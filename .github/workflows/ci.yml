@@ -27,4 +27,4 @@ jobs:
         run: npm test
 
       - name: Run Astro Build
-        run: npm run build
+        run: npm run build:raw
