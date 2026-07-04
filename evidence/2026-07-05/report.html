@@ -1,0 +1,50 @@
+<!doctype html><html lang="ja"><meta charset="utf-8"><title>Blog Roadmap Evidence</title><style>body{font-family:sans-serif;margin:24px;color:#172033}table{border-collapse:collapse;width:100%}th,td{border:1px solid #bbb;padding:10px;vertical-align:top}th{background:#eef2ff}img{max-width:100%;height:auto;border:1px solid #888}pre{white-space:pre-wrap;font-size:11px}</style><h1>個人ブログ化ロードマップ staging evidence</h1><p>2026-07-05 / 16/16 PASS / PC・iPad・iPhone</p><table><tr><th>シナリオ</th><th>PC</th><th>iPad</th><th>iPhone</th></tr><tr><th>S01<br>トップページ・canonical・RSS</th><td><strong>PASS</strong><br><img src="screenshots/S01-home-light-PC.png" alt="トップページ・canonical・RSS PC"><pre>{
+  "canonical": "https://staging.reiwa.casa/",
+  "rss": true,
+  "paginationHidden": true
+}</pre></td><td><strong>PASS</strong><br><img src="screenshots/S01-home-light-iPad.png" alt="トップページ・canonical・RSS iPad"><pre>{
+  "canonical": "https://staging.reiwa.casa/",
+  "rss": true,
+  "paginationHidden": true
+}</pre></td><td><strong>PASS</strong><br><img src="screenshots/S01-home-light-iPhone.png" alt="トップページ・canonical・RSS iPhone"><pre>{
+  "canonical": "https://staging.reiwa.casa/",
+  "rss": true,
+  "paginationHidden": true
+}</pre></td></tr><tr><th>S02<br>タグ一覧と件数</th><td><strong>PASS</strong><br><img src="screenshots/S02-PC.png" alt="タグ一覧と件数 PC"><pre>{
+  "hasTags": true
+}</pre></td><td><strong>PASS</strong><br><img src="screenshots/S02-iPad.png" alt="タグ一覧と件数 iPad"><pre>{
+  "hasTags": true
+}</pre></td><td><strong>PASS</strong><br><img src="screenshots/S02-iPhone.png" alt="タグ一覧と件数 iPhone"><pre>{
+  "hasTags": true
+}</pre></td></tr><tr><th>S03<br>前後記事ナビ実遷移</th><td><strong>PASS</strong><br><img src="screenshots/S03-adjacent-nav-PC.png" alt="前後記事ナビ実遷移 PC"><pre>{
+  "adjacentLinks": 2
+}</pre></td><td><strong>PASS</strong><br><img src="screenshots/S03-adjacent-nav-iPad.png" alt="前後記事ナビ実遷移 iPad"><pre>{
+  "adjacentLinks": 2
+}</pre></td><td><strong>PASS</strong><br><img src="screenshots/S03-adjacent-nav-iPhone.png" alt="前後記事ナビ実遷移 iPhone"><pre>{
+  "adjacentLinks": 2
+}</pre></td></tr><tr><th>S04<br>OSダークモード</th><td><strong>PASS</strong><br><img src="screenshots/S04-dark-mode-PC.png" alt="OSダークモード PC"><pre>{
+  "media": true,
+  "background": "rgb(11, 15, 25)"
+}</pre></td><td><strong>PASS</strong><br><img src="screenshots/S04-dark-mode-iPad.png" alt="OSダークモード iPad"><pre>{
+  "media": true,
+  "background": "rgb(11, 15, 25)"
+}</pre></td><td><strong>PASS</strong><br><img src="screenshots/S04-dark-mode-iPhone.png" alt="OSダークモード iPhone"><pre>{
+  "media": true,
+  "background": "rgb(11, 15, 25)"
+}</pre></td></tr><tr><th>S05<br>/page/1重複防止</th><td><strong>PASS</strong><br><img src="screenshots/S05-page1-404-PC.png" alt="/page/1重複防止 PC"><pre>{
+  "status": 404
+}</pre></td><td><strong>PASS</strong><br><img src="screenshots/S05-page1-404-iPad.png" alt="/page/1重複防止 iPad"><pre>{
+  "status": 404
+}</pre></td><td><strong>PASS</strong><br><img src="screenshots/S05-page1-404-iPhone.png" alt="/page/1重複防止 iPhone"><pre>{
+  "status": 404
+}</pre></td></tr></table><h2>S06 robots/RSS</h2><pre>{
+  "device": "HTTP",
+  "id": "S06",
+  "name": "robots/RSS静的検証",
+  "pass": true,
+  "screenshot": null,
+  "checks": {
+    "robots": "User-agent: *\nDisallow: /",
+    "rss": true
+  }
+}</pre></html>
