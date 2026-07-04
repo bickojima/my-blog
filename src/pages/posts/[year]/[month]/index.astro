@@ -27,7 +27,7 @@ const posts = allPosts
   .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime());
 ---
 
-<Base title={`${year}年${parseInt(month!)}月の記事 - tbiのブログ`}>
+<Base title={`${year}年${parseInt(month!)}月の記事 - tbiのブログ`} description={`${year}年${parseInt(month!)}月の記事一覧`}>
   <h1>{year}年{parseInt(month!)}月の記事</h1>
   <a href={`/posts/${year}`} class="back-link">&larr; {year}年の記事に戻る</a>
 
@@ -53,20 +53,20 @@ const posts = allPosts
     .back-link {
       display: inline-block;
       font-size: 0.85rem;
-      color: #595959;
+      color: var(--color-text-secondary);
       margin-bottom: 1.5rem;
     }
     .back-link:hover {
-      color: #333;
+      color: var(--color-text);
     }
     .back-link:focus-visible,
     .post-link:focus-visible {
-      outline: 2px solid #1a73e8;
+      outline: 2px solid var(--color-focus);
       outline-offset: 3px;
       border-radius: 3px;
     }
     .no-posts {
-      color: #767676;
+      color: var(--color-text-muted);
     }
     .post-list {
       list-style: none;
@@ -81,7 +81,7 @@ const posts = allPosts
     }
     .post-link time {
       font-size: 0.85rem;
-      color: #767676;
+      color: var(--color-text-muted);
       flex-shrink: 0;
     }
     .post-title {
