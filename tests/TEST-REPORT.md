@@ -41,6 +41,7 @@
 | 1.33 | 2026-06-11 | Modern Web GuidanceレビューF-1〜F-10の再発防止テスト追加。ナビEscape/Tab離脱、タッチ領域、CMSセレクターa11y、本文リンク、コードブロックtabindex、画像寸法属性を検証。Vitest 562件、E2E 432件（424実行+8スキップ）へ更新 |
 | 1.34 | 2026-07-04 | ドキュメント整理: 2.7章ファズテスト件数の表記を実測に合わせ214件→215件に修正（テスト実体の変更なし） |
 | 1.35 | 2026-07-04 | 個人ブログ化ロードマップ（FR-22〜FR-28, NFR-08）のテストケースを追加: robots.txt、RSS下書き除外、タグ件数、ページネーションの検証と実操作E2E 4件を追加。build.test.mjs 67→90件、Vitest合計 562→585件、E2E 444件へ更新 |
+| 1.36 | 2026-07-05 | 2.5.4章にBug #43再発防止テスト追加: 本文リンク色（--color-link）のライト/ダーク双方のコントラスト比を実値から計算し4.5:1以上を検証（3件目として追加）。build.test.mjs 90→91件、Vitest合計 586件へ更新 |
 
 ## テスト基盤の変更履歴
 
@@ -455,7 +456,7 @@ admin-html.test.mjs              -     ●     -     -     -     -     -     -  
 
 | No. | 基準 |
 | :--- | :--- |
-| 1 | 全テストケース（Vitest 585件 + E2E 444件 = 1029件）がPASSまたは仕様上の条件スキップであること |
+| 1 | 全テストケース（Vitest 586件 + E2E 444件 = 1029件）がPASSまたは仕様上の条件スキップであること |
 | 2 | `npm run build` が正常に完了すること |
 | 3 | 要件トレーサビリティマトリクス（docs/DOCUMENTATION.md 1.5章）において全要件が「充足」であること |
 
@@ -872,12 +873,13 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 | 49 | url-map.jsonの値が/posts/YYYY/MM/スラグ形式のURLパスである | URLマッピング | M-03, M-02 | 全値が`/^\/posts\/\d{4}\/\d{2}\/.+$/`にマッチ |
 | 50 | url-map.jsonのキーと値のスラグ部分が一致している | URLマッピング | M-03, M-02 | `value === "/posts/" + key` |
 
-### 2.5.4 Modern Web Guidanceアクセシビリティ検証（2件）
+### 2.5.4 Modern Web Guidanceアクセシビリティ検証（Bug #43再発防止1件を含む、3件）
 
 | No. | テストケース | テスト手法 | 期待結果 |
 | :--- | :--- | :--- | :--- |
 | 1 | 記事・固定ページ本文リンクに識別可能なスタイルがある | M-02 | 下線、`#1a73e8`、`:focus-visible`が両テンプレートに定義される |
 | 2 | コードブロック到達性rehype pluginがAstroへ登録される | M-02 | `rehypeFocusableCodeBlocks`が`rehypePlugins`に登録される |
+| 3 | 本文リンク色（--color-link）はライト/ダーク両配色で背景とのコントラスト比4.5:1以上を満たす（Bug #43再発防止） | M-01 | `Base.astro`の`--color-bg`/`--color-link`実値からWCAG相対輝度・コントラスト比を計算し、ライト・ダーク双方で4.5以上 |
 
 ### 2.5.5 robots.txt環境別ポリシー検証（Bug #41再発防止、2件）
 
@@ -1667,8 +1669,8 @@ npm run build
 | `auth-functions.test.mjs` | 17 | PASS | 29ms |
 | `fuzz-validation.test.mjs` | 215 | PASS | 40ms |
 | `content-validation.test.mjs` | 111 | PASS | 49ms |
-| `build.test.mjs` | 90 | PASS | 2157ms |
-| **合計** | **585** | **全PASS** | **2.37s** |
+| `build.test.mjs` | 91 | PASS | 2181ms |
+| **合計** | **586** | **全PASS** | **2.40s** |
 
 ### 4.3.3 E2Eテスト最新実行結果（Playwright）
 

@@ -23,7 +23,7 @@
 npm run dev          # 開発サーバー起動（前処理含む）
 npm run build        # テスト必須ビルド（vitest run → normalize-images → organize-posts → astro build → image-optimize）
 npm run build:raw    # テストなしビルド（build.test.mjs内部で使用、Cloudflare Pages用）
-npm test             # Vitest 全テスト実行（585テスト、記事数により変動）
+npm test             # Vitest 全テスト実行（586テスト、記事数により変動）
 npm run test:watch   # Vitest ウォッチモード
 npm run test:e2e     # Playwright E2Eテスト（要: npm run build 済み、444テスト：436実行+8スキップ）
 ```
@@ -106,7 +106,7 @@ tests/
 
 ## テスト
 
-- **Vitest**: 設定検証、コンテンツ検証、単体テスト、ビルド統合テスト、セキュリティ検証、ファズテスト、基本機能保護テスト（585テスト、記事数により変動）。`.github/workflows/ci.yml` によりmain/staging/feature/*へのpush・PRで自動実行される
+- **Vitest**: 設定検証、コンテンツ検証、単体テスト、ビルド統合テスト、セキュリティ検証、ファズテスト、基本機能保護テスト（586テスト、記事数により変動）。`.github/workflows/ci.yml` によりmain/staging/feature/*へのpush・PRで自動実行される
 - **Playwright**: PC/iPad/iPhone 3デバイスで444テスト（436実行+8スキップ、ローカルのみ、CIでは未実行。3デバイスフル実行は実行時間の都合でローカル運用を継続）
 - コンテンツ検証テストは記事数・ページ数に応じて動的展開される
 - テスト実行後、失敗がある場合は原因を調査し修正する（テストを削除・スキップしない）

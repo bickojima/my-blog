@@ -51,6 +51,7 @@
 | 1.44 | 2026-06-11 | Modern Web Guidance遵守レビューF-1〜F-10対応（Bug #40）: 実測に基づき`content-visibility`を7枚目以降へ限定、ナビEscape/フォーカス離脱対応、公開サイト/CMSタップ領域44px化、CMSセレクターa11y、本文リンク識別、コードブロックtabindex、サムネイル寸法属性、lang/ARIA修正。Vitest 562件、E2E 432件へ更新 |
 | 1.45 | 2026-07-04 | ドキュメント整理: 2.1.1章ディレクトリ構成を最新化（E2E 7ファイル、content/pages・docs/・evidence/・README.md追記）。コード変更なし |
 | 1.46 | 2026-07-04 | 個人ブログ化ロードマップ（issue #81〜#89）の要件ID追加: FR-22〜FR-28（site/canonical, OGP, RSS, サイトマップ, タグ一覧, 前後記事ナビ, ページネーション）、NFR-08（ダークモード対応）を1.2章・1.4章に追加し、1.5章トレーサビリティマトリクスを更新。Bug #41（staging robots.txtの`Allow: /`＋誤ドメイン混入）・Bug #42（ページネーション`/page/1/`重複コンテンツ）を4.5章に追記。RSS下書き除外・タグ件数・実操作E2Eを含むVitest 585件、E2E 444件へ更新 |
+| 1.47 | 2026-07-05 | Bug #43（ダークモード配色刷新によるライトモード本文リンクのコントラスト比不足、WCAG AA未達）を4.5章に追記。`--color-link`/`--color-focus`のライトモード値を修正し、CSSカスタムプロパティの実値からコントラスト比を計算する回帰テストを追加（パターンマッチのみだった既存テストの検知漏れを解消）。Vitest 586件へ更新 |
 
 ## システム変更履歴
 
@@ -555,7 +556,7 @@ staging環境のrobots.txtは`Disallow: /`を維持し、mainマージ時のみ`
 | NFR-05 | レスポンシブデザイン | admin-html, build, E2E site, E2E cms-operations | 2.6.3章 #1〜#10, 2.5章 #19, E-21, E-34 | M-02, M-11, 実操作 | 充足 |
 | NFR-06 | アクセシビリティ（WCAG 2.2 AA） | admin-html, build, E2E site, E2E accessibility, E2E cms-exploratory | 2.5章 #23b/#23c, 2.6章 #15, E-21, E-25〜E-27, E-37 | M-02, M-11（axe-core）, 実操作 | 充足 |
 | NFR-07 | Modern Web Guidance準拠 | build, content-validation, admin-html, rehype-focusable-code-blocks, E2E site, E2E evidence | 2.5章 Modern Web Guidance検証, 2.6章, 2.2.1章, E-05, E-21, 2026-06-11 evidence | M-02, M-05, M-11, 実操作 | 充足 |
-| NFR-08 | ダークモード対応 | build | 2.5.6章 #14,#15 | M-01 | 充足 |
+| NFR-08 | ダークモード対応 | build | 2.5.6章 #14,#15, 2.5.4章 #3 | M-01 | 充足 |
 
 ### 1.5.4 セキュリティ要件 (SEC) → テストケース
 
@@ -707,7 +708,7 @@ my-blog/
 | 認証 | GitHub OAuth App | - | CMS管理者認証 |
 | 画像処理 | sharp | v0.34.5 | 画像圧縮・回転・リサイズ |
 | Web実装方針 | Google Modern Web Guidance | 公式ガイド準拠 | 独自実装部のモダンWeb機能・アクセシビリティ・パフォーマンス設計指針 |
-| テスト（単体・統合） | Vitest | v4.0.18 | 単体テスト・統合テスト・セキュリティ検証・基本機能保護（585テスト、記事数により変動） |
+| テスト（単体・統合） | Vitest | v4.0.18 | 単体テスト・統合テスト・セキュリティ検証・基本機能保護（586テスト、記事数により変動） |
 | テスト（E2E） | Playwright | v1.58.2 | ブラウザE2Eテスト（PC/iPad/iPhone 444テスト、うち8件はデバイス固有条件でスキップ） |
 | コンテンツ | Markdown | - | frontmatter形式 |
 
@@ -1700,6 +1701,7 @@ GitHubリポジトリが利用可能な場合、以下の手順でシステム�
 | 40 | 2026-06-11 | Modern Web Guidance遵守レビューF-1〜F-10: 初期表示内`content-visibility`、ナビEscape/フォーカス離脱未対応、公開サイト/CMS月セレクターの小さいタップ領域、CMSセレクター名・管理画面lang・navラベル、本文リンク識別、コードブロック到達性、サムネイル属性に不備 | 初回対応が属性存在の静的確認中心で、デバイス別初期表示範囲・キーボード離脱・独自UI追加後のa11y横断確認が不足 | 実測に基づき7枚目以降へ描画最適化を限定、現行ドロップダウンへEscape/focusout追加、899px幅またはタッチ入力で44px化、CMS/本文/rehype/画像属性を修正 | build/content-validation/admin-html/rehype-focusable-code-blocks, E-05/E-21/E-37, evidence/2026-06-11 |
 | 41 | 2026-07-04 | staging環境のrobots.txtが`Allow: /`＋誤ドメイン（`bickojima.com`）のSitemapになっていた: #81対応（site/canonical設定）の実装中に別エージェントへ引き継ぎが発生し、引き継ぎ後のマージで2.5.4章の環境別方針（staging=`Disallow: /`）に反していた | 引き継ぎ時にstaging/main環境別のrobots.txt方針（本節参照）がレビューされず、既存のドメイン誤り（bickojima.com、包括的リファクタリング#80で修正済みだったはずの内容）が再混入した。robots.txtの内容（Allow/Disallow）を検証するテストが存在せず、存在確認（`robots.txtが存在する`）のみだったため回帰を検知できなかった | staging用`public/robots.txt`を`Disallow: /`のみに修正（Sitemap行はmainマージ時に`https://reiwa.casa/sitemap-index.xml`で追加する運用に統一）。build.test.mjsに内容検証テストを2件追加（Disallow必須・Allow禁止、Sitemapドメイン検証） | build.test.mjs（robots.txt内容検証2件） |
 | 42 | 2026-07-04 | 記事一覧ページネーション（#89対応）で1ページ目が`/`と`/page/1/`の2URLに重複生成され、`/page/1/`側もsitemapに登録される重複コンテンツ状態になっていた | `src/pages/page/[page].astro`の`getStaticPaths`が`paginate()`の結果をフィルタせずそのまま返しており、`params.page === '1'`のページ（1ページ目）も生成対象に含まれていた。ページネーション機能に対するテストが存在せず検知できなかった | `getStaticPaths`に`.filter((p) => p.params.page !== '1')`を追加し、1ページ目は`/`のみが担うよう修正。build.test.mjsに重複防止検証テストを4件追加（2.5.7章） | build.test.mjs（2.5.7章、4件） |
+| 43 | 2026-07-05 | ダークモード対応（#88）のSleek Slate Blue配色刷新で、ライトモードの本文リンク色`--color-link: #0284c7`が背景`#f8fafc`に対してコントラスト比3.91:1となり、WCAG AA基準（通常文字4.5:1）を下回っていた（FR-17/NFR-08違反）。現在の公開記事・固定ページは本文中に画像リンクのみでテキストリンクが存在しないため、レンダリング上は顕在化していなかった | FR-17の再発防止テスト（`本文リンクに下線・識別色・focus-visibleが定義されている`）が配色トークン導入時に`color: var(--color-link)`という記法の存在確認へ緩和され、トークンの実際の色値が変わってもテストを検知できなくなっていた。実コンテンツにテキストリンクがなくaxe-coreのcolor-contrastルールも発火しなかった | `--color-link`/`--color-focus`をライトモードのみ`#0284c7`→`#0369a1`（コントラスト比5.67:1）に変更。build.test.mjsにCSSカスタムプロパティの実値からWCAG相対輝度・コントラスト比を計算し4.5:1以上を検証する回帰テストを追加（パターンマッチではなく計算による検証） | build.test.mjs（本文リンク色コントラスト比検証、ライト/ダーク各1件） |
 
 ---
 
@@ -2169,7 +2171,7 @@ evidence/YYYY-MM-DD/
 
 | 指標 | 目標値 | 現状 |
 |:---|:---|:---|
-| Vitestテスト全PASS | 100% | 585/585 (100%) |
+| Vitestテスト全PASS | 100% | 586/586 (100%) |
 | Playwright E2Eテスト全PASS | 100% | 直近実行: site.spec.ts 93/93 (100%)、CMS年月フィルターエビデンス 15/15 (100%) |
 | セキュリティ検証全PASS | 100% | 10/10 (100%) |
 | ボタン重なり検出 | 0件 | 0件 |

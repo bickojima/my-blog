@@ -721,6 +721,32 @@ describe('ビルド検証', () => {
       }
     });
 
+    it('本文リンク色（--color-link）はライト/ダーク両配色で背景とのコントラスト比4.5:1以上を満たす（Bug #43再発防止）', () => {
+      // パターンマッチ（var(--color-link)の存在確認）だけでは配色トークンの実値変更による
+      // コントラスト劣化を検知できないため、実際のWCAG相対輝度計算で検証する。
+      function relativeLuminance(hex) {
+        const c = hex.replace('#', '');
+        const [r, g, b] = [0, 2, 4].map((i) => parseInt(c.slice(i, i + 2), 16) / 255);
+        const f = (v) => (v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
+        return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+      }
+      function contrastRatio(hexA, hexB) {
+        const [l1, l2] = [relativeLuminance(hexA), relativeLuminance(hexB)].sort((a, b) => b - a);
+        return (l1 + 0.05) / (l2 + 0.05);
+      }
+      const baseAstro = readFileSync(join(process.cwd(), 'src/layouts/Base.astro'), 'utf-8');
+      const hex = /#[0-9a-fA-F]{6}/;
+      const rootBlock = baseAstro.split(':root {')[1].split('\n    }')[0];
+      const darkBlock = baseAstro.split('prefers-color-scheme: dark)')[1].split('\n      }')[0];
+      const lightBg = rootBlock.match(new RegExp(`--color-bg:\\s*(${hex.source})`))[1];
+      const lightLink = rootBlock.match(new RegExp(`--color-link:\\s*(${hex.source})`))[1];
+      const darkBg = darkBlock.match(new RegExp(`--color-bg:\\s*(${hex.source})`))[1];
+      const darkLink = darkBlock.match(new RegExp(`--color-link:\\s*(${hex.source})`))[1];
+
+      expect(contrastRatio(lightBg, lightLink), `light: ${lightLink} on ${lightBg}`).toBeGreaterThanOrEqual(4.5);
+      expect(contrastRatio(darkBg, darkLink), `dark: ${darkLink} on ${darkBg}`).toBeGreaterThanOrEqual(4.5);
+    });
+
     it('コードブロック用rehypeプラグインが登録されている', () => {
       const astroConfig = readFileSync(join(process.cwd(), 'astro.config.mjs'), 'utf-8');
       expect(astroConfig).toContain('rehypeFocusableCodeBlocks');
