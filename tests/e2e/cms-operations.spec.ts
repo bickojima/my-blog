@@ -1235,10 +1235,10 @@ test.describe('E-36: 記事デフォルトソート・月別グルーピング',
       }
     }
 
-    // スクリーンショットエビデンス: デフォルトソート状態
+    // 視覚確認用スクリーンショット（テスト実行時の一時キャプチャ、test-resultsはgitignore対象）
     const deviceName = testInfo.project.name;
     await page.screenshot({
-      path: `evidence/2026-02-24/screenshots/e36-default-sort-${deviceName}.png`,
+      path: `test-results/e36-default-sort-${deviceName}.png`,
       fullPage: false,
     });
   });
@@ -1269,10 +1269,10 @@ test.describe('E-36: 記事デフォルトソート・月別グルーピング',
       await expect(monthButton.first()).toBeVisible();
     }
 
-    // スクリーンショットエビデンス: グルーピングボタン表示状態
+    // 視覚確認用スクリーンショット（テスト実行時の一時キャプチャ、test-resultsはgitignore対象）
     const deviceName = testInfo.project.name;
     await page.screenshot({
-      path: `evidence/2026-02-24/screenshots/e36-view-groups-${deviceName}.png`,
+      path: `test-results/e36-view-groups-${deviceName}.png`,
       fullPage: false,
     });
   });
@@ -1300,10 +1300,10 @@ test.describe('E-36: 記事デフォルトソート・月別グルーピング',
     }
     // 認証状態に関わらずテストはPASS（レイアウト検証はスクリーンショットで視覚確認）
 
-    // スクリーンショットエビデンス: レイアウト全体
+    // 視覚確認用スクリーンショット（テスト実行時の一時キャプチャ、test-resultsはgitignore対象）
     const deviceName = testInfo.project.name;
     await page.screenshot({
-      path: `evidence/2026-02-24/screenshots/e36-layout-${deviceName}.png`,
+      path: `test-results/e36-layout-${deviceName}.png`,
       fullPage: true,
     });
   });
