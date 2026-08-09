@@ -7,7 +7,7 @@ import imageOptimize from './src/integrations/image-optimize.mjs';
 
 // site/sitemapのfilterはbranchごとに手動管理する（config.ymlのbase_url/branchと同じ方針）。
 // staging: https://staging.reiwa.casa / main: https://reiwa.casa（マージ時に手動修正。DOCUMENTATION.md 4.6.4章参照）
-const SITE_URL = 'https://staging.reiwa.casa';
+const SITE_URL = 'https://reiwa.casa';
 
 // https://astro.build/config
 export default defineConfig({
