@@ -223,6 +223,31 @@ describe('CMS設定（config.yml）の検証', () => {
         expect(collection.summary).toContain('{{title}}');
       });
 
+      it('ソート可能フィールドにdateとtitleが含まれている', () => {
+        const fields = collection.sortable_fields;
+        const fieldNames = fields.map(f => typeof f === 'object' ? f.field : f);
+        expect(fieldNames).toContain('date');
+        expect(fieldNames).toContain('title');
+      });
+
+      it('dateフィールドがデフォルトで降順ソートに設定されている', () => {
+        const dateField = collection.sortable_fields.find(
+          f => typeof f === 'object' && f.field === 'date'
+        );
+        expect(dateField).toBeDefined();
+        expect(dateField.default_sort).toBe('desc');
+      });
+
+      it('view_groupsに年月グルーピングが設定されている', () => {
+        expect(collection.view_groups).toBeDefined();
+        expect(collection.view_groups).toHaveLength(1);
+
+        const monthGroup = collection.view_groups[0];
+        expect(monthGroup.label).toBe('年月');
+        expect(monthGroup.field).toBe('date');
+        expect(monthGroup.pattern).toMatch(/\\d\{4\}-\\d\{2\}/);
+      });
+
       describe('フィールド定義', () => {
         const fields = collection.fields;
         const fieldNames = fields.map((f) => f.name);

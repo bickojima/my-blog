@@ -14,8 +14,8 @@ nonDraftPosts.forEach(post => {
 const years = Array.from(archiveMap.keys()).sort((a, b) => b.localeCompare(a));
 ---
 
-<nav class="archive-nav">
-  <h2>アーカイブ</h2>
+<nav class="archive-nav" aria-labelledby="archive-heading">
+  <h2 id="archive-heading">アーカイブ</h2>
   {years.map(year => (
     <div class="archive-year">
       <a href={`/posts/${year}`}>{year}年</a>
@@ -26,13 +26,14 @@ const years = Array.from(archiveMap.keys()).sort((a, b) => b.localeCompare(a));
       </span>
     </div>
   ))}
+  <a href="/tags/" class="tags-link">タグ一覧</a>
 </nav>
 
 <style>
   .archive-nav {
     margin-top: 2rem;
     padding-top: 1.5rem;
-    border-top: 1px solid #eee;
+    border-top: 1px solid var(--color-border);
   }
   .archive-nav h2 {
     font-size: 1rem;
@@ -55,9 +56,29 @@ const years = Array.from(archiveMap.keys()).sort((a, b) => b.localeCompare(a));
   }
   .archive-months a {
     font-size: 0.85rem;
-    color: #595959;
+    color: var(--color-text-secondary);
   }
   .archive-months a:hover {
-    color: #333;
+    color: var(--color-text);
+  }
+  .archive-year > a:focus-visible,
+  .archive-months a:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 3px;
+    border-radius: 3px;
+  }
+  .tags-link {
+    display: inline-block;
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+  }
+  .tags-link:hover {
+    color: var(--color-text);
+  }
+  .tags-link:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 3px;
+    border-radius: 3px;
   }
 </style>

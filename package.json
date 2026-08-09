@@ -13,6 +13,8 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
+    "@astrojs/rss": "^4.0.19",
+    "@astrojs/sitemap": "^3.7.3",
     "astro": "^5.17.1",
     "decap-cms-app": "^3.10.0",
     "hastscript": "^9.0.1",

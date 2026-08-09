@@ -142,7 +142,73 @@ test.describe('E-05: 画像表示', () => {
     await page.goto('/');
     const thumbnails = page.locator('img.post-thumbnail');
     expect(await thumbnails.count()).toBeGreaterThan(0);
-    await expect(thumbnails.first()).toHaveAttribute('loading', 'lazy');
+    await expect(thumbnails.first()).toHaveAttribute('loading', 'eager');
+    await expect(thumbnails.first()).toHaveAttribute('fetchpriority', 'high');
+    if (await thumbnails.count() > 1) {
+      await expect(thumbnails.nth(1)).toHaveAttribute('loading', 'lazy');
+    }
+  });
+
+  test('Modern Web Guidance: ナビゲーションと一覧の低リスク改善が適用されている', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('header nav')).toHaveAttribute('aria-label', 'メイン');
+    await expect(page.locator('nav.archive-nav')).toHaveAttribute('aria-labelledby', 'archive-heading');
+
+    const cards = page.locator('article.post-card');
+    const cardCount = await cards.count();
+    for (let i = 0; i < Math.min(cardCount, 3); i++) {
+      await expect(cards.nth(i)).toHaveCSS('content-visibility', 'visible');
+    }
+    for (let i = 3; i < Math.min(cardCount, 6); i++) {
+      await expect(cards.nth(i)).toHaveCSS('content-visibility', 'visible');
+    }
+    if (cardCount > 6) {
+      await expect(cards.nth(6)).toHaveCSS('content-visibility', 'auto');
+    }
+
+    const toggle = page.locator('.nav-dropdown-toggle');
+    await toggle.focus();
+    await expect(toggle).toBeFocused();
+  });
+});
+
+test.describe('E-30: 個人ブログ化ロードマップの実操作確認', () => {
+  test('前の記事リンクをクリックすると対象記事へ遷移する', async ({ page }) => {
+    await page.goto('/');
+    await page.locator('a.post-title').nth(1).click();
+    const previous = page.locator('a.adjacent-prev');
+    await expect(previous).toBeVisible();
+    const targetTitle = (await previous.locator('.adjacent-title').textContent())?.trim();
+    await previous.click();
+    await expect(page.locator('.post-header h1')).toHaveText(targetTitle!);
+  });
+
+  test('タグ一覧からタグページへ実クリックで遷移する', async ({ page }) => {
+    await page.goto('/tags/');
+    const firstTag = page.locator('a.tag-link').first();
+    const tagName = (await firstTag.locator('.tag-name').textContent())?.trim();
+    await firstTag.click();
+    await expect(page.locator('h1')).toHaveText(`タグ: ${tagName}`);
+  });
+
+  test('OSダークモード設定でダーク配色が適用される', async ({ page }) => {
+    await page.emulateMedia({ colorScheme: 'dark' });
+    await page.goto('/');
+    const prefersDark = await page.evaluate(() => matchMedia('(prefers-color-scheme: dark)').matches);
+    expect(prefersDark).toBe(true);
+    const { background, color } = await page.locator('body').evaluate((el) => {
+      const style = getComputedStyle(el);
+      return { background: style.backgroundColor, color: style.color };
+    });
+    expect(background).not.toBe('rgb(255, 255, 255)');
+    expect(color).not.toBe('rgb(51, 51, 51)');
+  });
+
+  test('記事数が閾値未満ではページネーションを表示せず重複URLも生成しない', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('nav.pagination')).toHaveCount(0);
+    const response = await page.goto('/page/1/');
+    expect(response?.status()).toBe(404);
   });
 });
 
@@ -203,25 +269,26 @@ test.describe('E-21: ヘッダーナビゲーションドロップダウン', ()
   test('▾ボタンクリックでドロップダウンが開閉する', async ({ page }) => {
     await page.goto('/');
     const menu = page.locator('.nav-dropdown-menu');
+    const toggle = page.locator('.nav-dropdown-toggle');
 
     // 初期状態で閉じていることを確認
     await expect(menu).not.toBeVisible();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
 
-    // dispatchEventでクリック（mouseenterによるhover副作用なし）
-    await page.locator('.nav-dropdown-toggle').dispatchEvent('click');
+    // 実ユーザー操作と同じクリックで開く
+    await toggle.click();
     await expect(menu).toBeVisible();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
 
-    // 再dispatchEventで閉じる
-    await page.locator('.nav-dropdown-toggle').dispatchEvent('click');
+    // 再クリックで閉じる
+    await toggle.click();
     await expect(menu).not.toBeVisible();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
   });
 
   test('ドロップダウンメニュー内に全固定ページのリンクがある', async ({ page }) => {
     await page.goto('/');
-    // JSでドロップダウンを開く
-    await page.evaluate(() => {
-      document.querySelector('.nav-dropdown')?.classList.add('is-open');
-    });
+    await page.locator('.nav-dropdown-toggle').click();
     const menuLinks = page.locator('.nav-dropdown-menu a');
     const count = await menuLinks.count();
     expect(count).toBeGreaterThanOrEqual(2);
@@ -234,10 +301,7 @@ test.describe('E-21: ヘッダーナビゲーションドロップダウン', ()
 
   test('ドロップダウンメニューのリンクから固定ページに遷移できる', async ({ page }) => {
     await page.goto('/');
-    // JSでドロップダウンを開く
-    await page.evaluate(() => {
-      document.querySelector('.nav-dropdown')?.classList.add('is-open');
-    });
+    await page.locator('.nav-dropdown-toggle').click();
 
     // aboutリンクをクリック
     const aboutLink = page.locator('.nav-dropdown-menu a[href="/about"]');
@@ -250,6 +314,52 @@ test.describe('E-21: ヘッダーナビゲーションドロップダウン', ()
     const link = page.locator('.nav-dropdown-link');
     await link.click();
     await expect(page.locator('h1')).toHaveText('プロフィール');
+  });
+
+  test('Escapeキーでドロップダウンが閉じaria-expandedが同期する', async ({ page }) => {
+    await page.goto('/');
+    const menu = page.locator('.nav-dropdown-menu');
+    const toggle = page.locator('.nav-dropdown-toggle');
+    await toggle.click();
+    await expect(menu).toBeVisible();
+
+    await page.keyboard.press('Escape');
+    await expect(menu).not.toBeVisible();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  test('Tabでフォーカスがメニュー外へ出るとドロップダウンが閉じる', async ({ page }) => {
+    await page.goto('/');
+    const menu = page.locator('.nav-dropdown-menu');
+    const toggle = page.locator('.nav-dropdown-toggle');
+    await toggle.click();
+    await expect(menu).toBeVisible();
+
+    const menuLinkCount = await menu.locator('a').count();
+    for (let i = 0; i <= menuLinkCount; i++) {
+      await page.keyboard.press('Tab');
+    }
+    await expect(menu).not.toBeVisible();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  test('タッチ端末でナビと管理リンクのタップ領域が44px以上ある', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name === 'PC', 'タッチ端末向けCSSの検証');
+    await page.goto('/');
+
+    const toggle = page.locator('.nav-dropdown-toggle');
+    const directLink = page.locator('.nav-dropdown-link');
+    const adminLink = page.locator('.admin-link');
+    await toggle.click();
+    const menuLink = page.locator('.nav-dropdown-menu a').first();
+
+    for (const target of [toggle, directLink, menuLink, adminLink]) {
+      const box = await target.boundingBox();
+      expect(box).not.toBeNull();
+      expect(box.height).toBeGreaterThanOrEqual(44);
+    }
+    expect((await toggle.boundingBox())?.width).toBeGreaterThanOrEqual(44);
+    expect((await adminLink.boundingBox())?.width).toBeGreaterThanOrEqual(44);
   });
 });
 

@@ -28,9 +28,21 @@
 | 1.21 | 2026-02-21 | バグ#29（CSP connect-src blob:不足による画像付き記事保存失敗）修正対応: build.test.mjs CSP connect-src blob:検証1件追加（2.5.1章 #8）、fuzz-validation CSP connect-src blob:検証1件追加（2.7.12章）。終了基準テスト件数更新（498+240=738） |
 | 1.22 | 2026-02-21 | E2E CRUDテスト追加（E-22〜E-24: cms-crud.spec.ts 11テスト×3デバイス=33テスト）、アクセシビリティテスト追加（E-25〜E-27: accessibility.spec.ts 6テスト×3デバイス=18テスト）。色コントラスト比修正、見出し階層修正。NFR-06要件追加。終了基準テスト件数更新（498+291=789） |
 | 1.23 | 2026-02-23 | 第三者セキュリティ・品質レビュー対応: SEC-21〜SEC-26要件追加。Bug #30〜#34修正（下書き記事公開、モバイルhover/tapバグ、モーダル重複、タグURL未エンコード、Windowsパス問題）。Zodスキーマ厳格化（date正規表現、title/tags長さ制限）。ビルドスクリプト防御強化（シンボリックリンク・ピクセルフラッド・ファイルサイズ上限）。OAuth HTTPメソッド制限。_headers COOP/CORP/X-Frame-Options公開ページ追加。テストWindows互換性修正（パスセパレータ・CRLF正規化）。hiddenByDropdown→hiddenByOverlayリネーム。終了基準テスト件数更新（519+375=894） |
+| 1.24 | 2026-05-22 | Modern Web Guidance準拠検証追加（staging先行）: トップページ先頭サムネイルのLCP優先度、コンテナクエリ、ナビゲーション`aria-expanded`同期、CMS独自プレビュースタイルのコントラスト、スクリーンショットエビデンス保存を検証。NFR-07対応 |
 | 1.24 | 2026-02-23 | 個人情報保護対応: git履歴から個人情報を完全削除（Bug #35）。pre-commit hookによる個人情報混入防止を運用手順（DOCUMENTATION.md 4.8章）に記載。テスト件数に変更なし |
 | 1.25 | 2026-02-23 | エビデンス取得方針を大幅拡充: CMS操作性検証（T01〜T16, 16シナリオ×3デバイス=48テスト）、サイト操作性検証（S01〜S10, 10シナリオ×3デバイス=30テスト）を追加。全スクリーンショットに赤枠アノテーション必須化。過去バグ由来の検証マトリクス（Bug #1,#4,#5,#6,#7,#8,#9,#11,#13,#14,#15,#29,#30,#31,#32,#33の16件）を追加。記事編集画面・画像アップロード画面・メディアライブラリのエビデンスを重点取得 |
 | 1.26 | 2026-02-23 | CMS CRUD操作エビデンス追加（verify-cms-crud.mjs: T17〜T32, 16シナリオ×3デバイス=48テスト）、セキュリティ検証エビデンス追加（verify-security.mjs: SEC01〜SEC10, 10項目）。検証スクリプト一覧にverify-cms-crud.mjs・verify-security.mjsを追加。継続的品質・セキュリティ改善フレームワークをDOCUMENTATION.md 4.10章に新設 |
+| 1.27 | 2026-02-24 | CMS-17（記事デフォルトソート日付降順）・CMS-18（記事月別グルーピング）対応。Vitestテスト3件追加（#48〜#50: sortable_fields, view_groups検証）。E2E E-36追加（3テスト×3デバイス=9テスト: ソート順検証、view_groupsボタン表示、レイアウト崩れ検証、スクリーンショットエビデンス取得）。E2Eスクリーンショットエビデンスルール追加（4.1.6章: 認証後スクリーンショット必須、context.route()による3ステップOAuthハンドシェイク方式を文書化）。全522+384=906テスト |
+| 1.28 | 2026-02-25 | CMS-19（グルーピング降順表示）対応。admin-htmlテスト1件追加（reverseViewGroups関数検証） |
+| 1.29 | 2026-02-26 | CMS-19拡張（年月グルーピングUI改善）。config.yml view_groups簡略化（年削除→年月のみ）。admin-htmlテスト3件追加（activateDefaultGrouping, formatGroupHeadings, createMonthSelector）。cms-configテスト view_groups検証を1グループに更新 |
+| 1.30 | 2026-05-22 | Bug #37修正対応: CMS-19の年月選択プルダウンをスクロール動作から選択年月のみ表示するフィルター動作へ変更。admin-htmlテスト #14 を`applyMonthFilter`・`activeFilter`・`scrollIntoView`不使用の検証に更新し、E2Eエビデンス`verify-cms19-month-filter.mjs`を追加 |
+| 1.31 | 2026-05-24 | Bug #38修正対応: CMS-19年月フィルター操作時のハングアップを修正。ネイティブselect操作中にoptionを再構築しないよう`optionsSignature`で見出し変更時のみ再生成。E2Eにselect操作中のMutationObserver再実行耐性検証を追加 |
+| 1.32 | 2026-05-24 | プロジェクト方針追加: ドキュメント更新をコード変更の完了条件化、UI変更時の実操作E2Eを必須化。Modern Web Guidance横展開として、`content-visibility`、`contain-intrinsic-size`、`:focus-visible`、`aria-label`/`aria-labelledby`、`text-wrap`の検証を追加 |
+| 1.33 | 2026-06-11 | Modern Web GuidanceレビューF-1〜F-10の再発防止テスト追加。ナビEscape/Tab離脱、タッチ領域、CMSセレクターa11y、本文リンク、コードブロックtabindex、画像寸法属性を検証。Vitest 562件、E2E 432件（424実行+8スキップ）へ更新 |
+| 1.34 | 2026-07-04 | ドキュメント整理: 2.7章ファズテスト件数の表記を実測に合わせ214件→215件に修正（テスト実体の変更なし） |
+| 1.35 | 2026-07-04 | 個人ブログ化ロードマップ（FR-22〜FR-28, NFR-08）のテストケースを追加: robots.txt、RSS下書き除外、タグ件数、ページネーションの検証と実操作E2E 4件を追加。build.test.mjs 67→90件、Vitest合計 562→585件、E2E 444件へ更新 |
+| 1.36 | 2026-07-05 | 2.5.4章にBug #43再発防止テスト追加: 本文リンク色（--color-link）のライト/ダーク双方のコントラスト比を実値から計算し4.5:1以上を検証（3件目として追加）。build.test.mjs 90→91件、Vitest合計 586件へ更新 |
+| 1.37 | 2026-07-05 | Bug #44対応: E-36（`cms-operations.spec.ts`）のスクリーンショット出力先を過去日付固定の`evidence/2026-02-24/`から`test-results/`（gitignore対象）へ変更。2.2章のE-36説明を更新。テスト件数増減なし |
 
 ## テスト基盤の変更履歴
 
@@ -121,6 +133,7 @@
 | CMS設定 | `public/admin/config.yml` | 設定検証 |
 | 管理画面HTML | `public/admin/index.html` | 設定検証 |
 | 画像キャプションプラグイン | `src/plugins/rehype-image-caption.mjs` | 単体テスト |
+| コードブロック到達性プラグイン | `src/plugins/rehype-focusable-code-blocks.mjs` | 単体テスト |
 | OAuth認証関数 | `functions/auth/index.js`, `callback.js` | 単体テスト |
 | ビルド成果物 | `dist/` | 統合テスト |
 | 画像処理スクリプト | `src/integrations/image-optimize.mjs` | コード検証 |
@@ -131,7 +144,6 @@
 
 | 対象 | 対象外理由 |
 | :--- | :--- |
-| CMS管理画面の操作（ブラウザ操作） | E2Eテスト環境が未導入であるため |
 | Cloudflare Pages デプロイ | クラウド環境への自動テストが不可であるため |
 | GitHub OAuth連携（実際のGitHub API呼び出し） | モック関数で代替しているため |
 
@@ -154,6 +166,7 @@
 tests/
 ├── content-validation.test.mjs   # コンテンツ検証（動的展開: 記事数×項目数）
 ├── rehype-image-caption.test.mjs # プラグイン単体テスト
+├── rehype-focusable-code-blocks.test.mjs # コードブロック到達性テスト
 ├── auth-functions.test.mjs       # 認証関数単体テスト
 ├── cms-config.test.mjs           # CMS設定検証
 ├── build.test.mjs                # 統合テスト（ビルド実行後）
@@ -174,7 +187,7 @@ tests/
 | M-02 | 文字列パターンマッチング | ファイル内容に対して正規表現または部分文字列の含有・非含有を検証する | HTML品質、CSS/JS存在確認 |
 | M-03 | YAML/Frontmatterパース検証 | YAML形式のファイルをパースし、キー・値・型の正当性を検証する | CMS設定、記事frontmatter |
 | M-04 | スキーマ検証 | フィールドの型（string, boolean, array等）、必須/任意、デフォルト値を検証する | frontmatter、CMS設定フィールド |
-| M-05 | AST（抽象構文木）変換テスト | rehype/remarkプラグインにHTML ASTを入力し、変換結果のノード構造を検証する | rehype-image-caption |
+| M-05 | AST（抽象構文木）変換テスト | rehype/remarkプラグインにHTML ASTを入力し、変換結果のノード構造を検証する | rehype-image-caption, rehype-focusable-code-blocks |
 | M-06 | HTTPレスポンス検証 | 関数にリクエストオブジェクトを入力し、ステータスコード・ヘッダー・ボディを検証する | OAuth認証関数 |
 | M-07 | モック置換テスト | 外部API呼び出し（fetch等）をモック関数に置換し、内部ロジックの正当性を検証する | OAuth callback（GitHub API） |
 | M-08 | ネガティブテスト | 異常系入力（パラメータ欠損、認証情報未設定等）に対するエラーハンドリングを検証する | OAuth認証関数 |
@@ -444,7 +457,7 @@ admin-html.test.mjs              -     ●     -     -     -     -     -     -  
 
 | No. | 基準 |
 | :--- | :--- |
-| 1 | 全テストケース（Vitest 519件 + E2E 375件 = 894件）がPASSであること |
+| 1 | 全テストケース（Vitest 586件 + E2E 444件 = 1029件）がPASSまたは仕様上の条件スキップであること |
 | 2 | `npm run build` が正常に完了すること |
 | 3 | 要件トレーサビリティマトリクス（docs/DOCUMENTATION.md 1.5章）において全要件が「充足」であること |
 
@@ -467,7 +480,7 @@ staging検証時およびmainマージ前に、Playwright自動検証でスク�
 | レポート形式 | `report.html`（画像埋め込み、PC/iPad/iPhone 3デバイス横並び表示） |
 | スクリーンショット | `screenshots/`, `site-interactive/`, `cms-interactive/` サブフォルダ |
 | テストデバイス | PC (1280x800) / iPad Pro 11 (834x1194) / iPhone 14 (390x844) |
-| 検証スクリプト | `verify-staging.mjs`（基本動作）、`verify-site-interactive.mjs`（サイト操作性）、`verify-cms-interactive.mjs`（CMS操作性）、`verify-cms-crud.mjs`（CMS CRUD操作）、`verify-security.mjs`（セキュリティ検証） |
+| 検証スクリプト | `verify-staging.mjs`（基本動作）、`verify-site-interactive.mjs`（サイト操作性）、`verify-cms-interactive.mjs`（CMS操作性）、`verify-cms-crud.mjs`（CMS CRUD操作）、`verify-security.mjs`（セキュリティ検証）、`evidence/2026-05-22/verify-modern-web-guidance.mjs`（Modern Web Guidance準拠） |
 
 #### 赤枠アノテーション方針
 
@@ -656,7 +669,10 @@ Base.astroのテンプレートロジック（0/1/2+件分岐）とJS制御を�
 | 31 | mouseenter でis-openクラスを追加する | M-11 | `addEventListener('mouseenter')` と `classList.add('is-open')` が存在する |
 | 32 | mouseleave で300ms遅延後にis-openクラスを削除する | M-11 | `setTimeout`, `300`, `classList.remove('is-open')` が存在する |
 | 33 | ▾ボタンクリックでトグルする | M-11 | `addEventListener('click')` と `classList.toggle('is-open')` が存在する |
+| 33b | ホバーで開いた直後のトグルクリックがメニューを閉じない | M-11 | `openedByHover` によりPC実操作時のhover/click競合を防止する |
 | 34 | 外側クリックで閉じる | M-11 | `document.addEventListener('click')` と `dropdown.contains` が存在する |
+| 34b | ナビゲーションにaria-labelとfocus-visibleスタイルがある | M-11 | `aria-label="メイン"` と `:focus-visible` が存在する |
+| 34c | Escapeキーとフォーカス離脱でドロップダウンを閉じる | M-11 | `keydown`のEscape処理と`focusout`の外部移動判定が存在する |
 
 ### 2.1.4 固定ページフィールドの境界値・一意性検証
 
@@ -687,6 +703,13 @@ Base.astroのテンプレートロジック（0/1/2+件分岐）とJS制御を�
 | 6 | 既にfigure内にあるimgは二重変換されない | M-05 | 親がfigureのimgは変換をスキップする |
 | 7 | 日本語のtitleが正しくキャプションになる | M-05 | `title="日本語テスト"`がfigcaptionの内容として正しく出力される |
 | 8 | 複数のimg要素がそれぞれ正しく処理される | M-05 | 文書内の全img要素が個別に正しく変換される |
+
+### 2.2.1 rehype-focusable-code-blocks プラグイン (`rehype-focusable-code-blocks.test.mjs`) — 2件
+
+| No. | テストケース | テスト手法 | 期待結果 |
+| :--- | :--- | :--- | :--- |
+| 1 | pre要素にtabindex="0"を付与する | M-05 | 変換後ASTのpre要素に`tabIndex: 0`が設定される |
+| 2 | pre以外の要素を変更しない | M-05 | p要素等にはtabindexが追加されない |
 
 ---
 
@@ -721,7 +744,7 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 
 ---
 
-## 2.4. CMS設定検証 (`cms-config.test.mjs`) — 49件
+## 2.4. CMS設定検証 (`cms-config.test.mjs`) — 52件
 
 `public/admin/config.yml`をパースし、設定値の正当性を検証する。
 
@@ -782,9 +805,17 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 | 33b | pagesのbodyフィールドがmarkdownウィジェットである（FR-17） | 基本機能 | M-03 | `widget === "markdown"` |
 | 47 | 全コレクションにmedia_folderが設定されている（FR-19） | 基本機能 | M-03 | 各コレクションに`media_folder`が定義されている |
 
+### 2.4.2 記事ソート・グルーピングテスト（3件）
+
+| No. | テストケース | カテゴリ | テスト手法 | 期待結果 |
+| :--- | :--- | :--- | :--- | :--- |
+| 48 | postsのソート可能フィールドにdateとtitleが含まれている（CMS-17） | posts | M-03 | `sortable_fields`に`date`と`title`が含まれる |
+| 49 | postsのdateフィールドがデフォルトで降順ソートに設定されている（CMS-17） | posts | M-03 | `{field: date, default_sort: desc}` |
+| 50 | postsのview_groupsに年月グルーピングのみが設定されている（CMS-18） | posts | M-03 | `view_groups`に「年月」（`\d{4}-\d{2}`）の1グループ |
+
 ---
 
-## 2.5. ビルド検証 (`build.test.mjs`) — 60件
+## 2.5. ビルド検証 (`build.test.mjs`) — 67件
 
 `npm run build`を実行し、パイプライン全体（normalize-images → organize-posts → astro build → image-optimize）の出力を検証する。全テストケースはビルド完了後に実行される。
 
@@ -813,6 +844,8 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 | 21 | 公開記事へのリンクが含まれている | ナビゲーション | M-02 | ソースから動的取得した記事タイトルと`href="/posts/YYYY/MM/"`リンクが存在する |
 | 22 | カテゴリリンクが含まれていない | ナビゲーション | M-02, M-09 | `href="/categories/`を含むリンクが存在しない |
 | 23 | タグリンクが含まれている | ナビゲーション | M-02 | `href="/tags/`を含むリンクが存在する |
+| 23b | 7件目以降の記事カードにcontent-visibilityによる描画最適化がある | Modern Web Guidance | M-02 | `content-visibility:auto` と `contain-intrinsic-size:auto 220px` が含まれ、E-05で先頭6件は`visible`、7件目以降は`auto` |
+| 23c | ナビゲーションにアクセシブルなラベルとfocus-visibleスタイルがある | Modern Web Guidance | M-02 | `aria-label="メイン"`、`aria-labelledby="archive-heading"`、`:focus-visible` が含まれる |
 | 24 | アーカイブナビゲーションが含まれている | ナビゲーション | M-02 | 「アーカイブ」テキストとソースから動的取得した年の`href="/posts/YYYY"`リンクが含まれる |
 | 25 | copyright表記がある | フッター | M-02 | `©`またはcopyright文字列が含まれる |
 | 26 | Netlify Identityスクリプトが含まれていない | セキュリティ | M-02, M-09 | `identity.netlify.com`および`netlifyIdentity`が含まれない |
@@ -840,6 +873,54 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 | 48 | url-map.jsonのキーがYYYY/MM/スラグ形式である | URLマッピング | M-03, M-02 | 全キーが`/^\d{4}\/\d{2}\/.+$/`にマッチ |
 | 49 | url-map.jsonの値が/posts/YYYY/MM/スラグ形式のURLパスである | URLマッピング | M-03, M-02 | 全値が`/^\/posts\/\d{4}\/\d{2}\/.+$/`にマッチ |
 | 50 | url-map.jsonのキーと値のスラグ部分が一致している | URLマッピング | M-03, M-02 | `value === "/posts/" + key` |
+
+### 2.5.4 Modern Web Guidanceアクセシビリティ検証（Bug #43再発防止1件を含む、3件）
+
+| No. | テストケース | テスト手法 | 期待結果 |
+| :--- | :--- | :--- | :--- |
+| 1 | 記事・固定ページ本文リンクに識別可能なスタイルがある | M-02 | 下線、`#1a73e8`、`:focus-visible`が両テンプレートに定義される |
+| 2 | コードブロック到達性rehype pluginがAstroへ登録される | M-02 | `rehypeFocusableCodeBlocks`が`rehypePlugins`に登録される |
+| 3 | 本文リンク色（--color-link）はライト/ダーク両配色で背景とのコントラスト比4.5:1以上を満たす（Bug #43再発防止） | M-01 | `Base.astro`の`--color-bg`/`--color-link`実値からWCAG相対輝度・コントラスト比を計算し、ライト・ダーク双方で4.5以上 |
+
+### 2.5.5 robots.txt環境別ポリシー検証（Bug #41再発防止、2件）
+
+| No. | テストケース | テスト手法 | 期待結果 |
+| :--- | :--- | :--- | :--- |
+| 1 | staging環境のrobots.txtはDisallow: /でインデックスを防止する | M-01 | `dist/robots.txt`が`Disallow: /`を含み、`Allow: /`を含まない |
+| 2 | robots.txtのSitemap行はreiwa.casaドメインを指す | M-01 | Sitemap行が存在する場合、`https://(staging.)?reiwa.casa/`にマッチする |
+
+### 2.5.6 個人ブログ化ロードマップ機能検証（FR-22〜FR-28, NFR-08、記事数により動的スキップ、15件）
+
+記事数・summary/thumbnail有無に応じて動的に一部スキップされる（3件未満の記事構成では該当ケースをスキップ）。
+
+| No. | テストケース | 要件 | テスト手法 | 期待結果 |
+| :--- | :--- | :--- | :--- | :--- |
+| 1 | トップページに自身を指すcanonicalが出力される | FR-22 | M-01 | `<link rel="canonical" href="https://.../">`が存在する |
+| 2 | 記事詳細ページにcanonicalが出力される | FR-22 | M-01 | 記事URLを指すcanonicalが存在する |
+| 3 | thumbnail付き記事はog:imageが絶対URLで出力される | FR-23 | M-01 | `og:image`が絶対URL、`twitter:card`が`summary_large_image` |
+| 4 | summary付き記事はog:description・meta descriptionにsummaryが反映される | FR-23 | M-01 | summary文字列を含むmeta要素が存在する |
+| 5 | rss.xmlが生成される | FR-24 | M-01 | `dist/rss.xml`が存在する |
+| 6 | 公開記事のタイトルが全て含まれる | FR-24 | M-01 | ソースから動的取得した全公開記事タイトルが`<title>`として含まれる |
+| 7 | トップページにRSS autodiscoveryリンクがある | FR-24 | M-01 | `type="application/rss+xml"`が存在する |
+| 8 | sitemap-index.xmlが生成される | FR-25 | M-01 | `dist/sitemap-index.xml`が存在する |
+| 9 | sitemapに/admin/配下のURLが含まれない | FR-25 | M-01 | 全`sitemap-*.xml`に`/admin/`を含まない |
+| 10 | タグ一覧ページに公開記事の全タグが含まれる | FR-26 | M-01 | ソースから動的取得した全タグ文字列が含まれる |
+| 11 | 最新記事には「次の記事」が表示されない | FR-27 | M-01 | date降順で最新の記事HTMLに「次の記事」を含まない |
+| 12 | 最古記事には「前の記事」が表示されない | FR-27 | M-01 | date降順で最古の記事HTMLに「前の記事」を含まない |
+| 13 | 中間の記事には前後両方のリンクが表示される（記事3件以上） | FR-27 | M-01 | 「前の記事」「次の記事」両方を含む |
+| 14 | meta color-schemeでダーク対応を宣言する | NFR-08 | M-01 | `color-scheme" content="light dark"`が存在する |
+| 15 | prefers-color-schemeによる配色切り替えがCSSに定義される | NFR-08 | M-01 | ビルド後の`_astro/*.css`いずれかに`prefers-color-scheme: dark`を含む |
+
+### 2.5.7 記事一覧のページネーション検証（FR-28, Bug #42再発防止、4件）
+
+Bug #42: `/page/[page].astro`が`paginate()`の結果をフィルタせず生成していたため、1ページ目が`/`と`/page/1/`の2つのURLに重複生成され、`/page/1/`側もsitemapに登録される重複コンテンツ状態になっていた（引き継ぎ後のマージで混入）。`getStaticPaths`で`params.page !== '1'`のフィルタを追加し、1ページ目は`/`のみが担うよう修正した。
+
+| No. | テストケース | テスト手法 | 期待結果 |
+| :--- | :--- | :--- | :--- |
+| 1 | /page/1/ は生成されない（1ページ目は / が担う。重複コンテンツ防止） | M-01 | `dist/page/1/index.html`が存在しない |
+| 2 | / の canonical は自身（/）を指す | M-01 | `<link rel="canonical" href=".../">`が存在する |
+| 3 | 公開記事数がPAGE_SIZE超の場合のみ /page/2/ が生成される | M-01 | 記事数から動的算出した`totalPages`と生成有無が一致する |
+| 4 | sitemapに /page/1/ の重複URLが含まれない | M-01 | `sitemap-0.xml`が`/page/1/`を含まない |
 
 ### 2.5.1 セキュリティヘッダー検証（8件）
 
@@ -951,6 +1032,11 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 | 8 | 固定ページの公開URLがslugフィールドから生成される | M-02 | `/collections/pages/`判定とslugInputによるURL構築処理が含まれる |
 | 9 | 選択状態の判定がborderColorで行われている | M-02 | `borderColor`による選択判定ロジックが含まれる |
 | 10 | 固定ページ一覧の番号・下書きフォーマット処理がある | M-02 | `pagesMatch`正規表現（`番号 \| draft \| タイトル`形式）と番号バッジ・下書きバッジ表示処理が含まれる |
+| 11 | グルーピング表示時にグループを降順に並べ替える機能がある（CMS-19） | M-02 | `reverseViewGroups`関数・`getSortKey`ヘルパー・ISO/日本語両形式対応 |
+| 12 | 年月グルーピングがデフォルトで自動有効化される（CMS-19） | M-02 | `activateDefaultGrouping`関数・`cms-group-activated`マーカー・`aria-haspopup`トリガー検索 |
+| 13 | グループ見出しが日本語形式に変換される（CMS-19） | M-02 | `formatGroupHeadings`関数・`jaFormatted`マーカー |
+| 14 | 年月選択プルダウンで選択年月のみ表示される（CMS-19, Bug #37） | M-02 | `createMonthSelector`関数・`cms-month-selector`要素・`すべての年月`初期値・`applyMonthFilter`による非選択グループ非表示・`scrollIntoView`不使用 |
+| 15 | 年月選択プルダウンにアクセシブルネームと44pxタップ領域がある | M-02 | `aria-label="年月で絞り込み"`と899px以下の`min-height: 44px`が定義される |
 
 ### 2.6.7 iPad対応（4件）
 
@@ -1025,7 +1111,7 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 | :--- | :--- | :--- | :--- |
 | 8 | staging環境検知ロジックが存在する（FR-21: hostname判定） | M-02 | `hostname`文字列と`STAGING`/`staging`関連ロジックが存在する |
 
-### 2.7 ファズテスト・不整合値テスト（fuzz-validation.test.mjs: 214件）
+### 2.7 ファズテスト・不整合値テスト（fuzz-validation.test.mjs: 215件）
 
 SEC-14〜SEC-20に対応するファズテスト。ビルド時に必ず実行される必須テスト。XSS/SQLi/パストラバーサル/コマンドインジェクション/プロトタイプ汚染の攻撃ペイロードに対する耐性を検証する。
 
@@ -1168,7 +1254,7 @@ SEC-14〜SEC-20に対応するファズテスト。ビルド時に必ず実行�
 
 要件トレーサビリティマトリクスは **docs/DOCUMENTATION.md 1.5章** に移動した。要件定義と同一ファイルで管理することで、要件追加時のトレース漏れを防止する。
 
-現在の充足状況: **全要件（FR-01〜FR-21, CMS-01〜CMS-16, NFR-01〜NFR-05, SEC-01〜SEC-20）がテストで充足されている。未テスト要件なし。**
+現在の充足状況: **全要件（FR-01〜FR-21, CMS-01〜CMS-19, NFR-01〜NFR-07, SEC-01〜SEC-26）がテストで充足されている。未テスト要件なし。** Modern Web Guidanceエビデンスは `evidence/2026-06-11/` に保存する。
 
 ---
 
@@ -1218,10 +1304,10 @@ Playwright によるブラウザ自動操作テストを導入し、ユーザー
 | E-02 | 記事ページ遷移 | 記事リンクclick → 記事詳細表示（ヘッダー・コンテンツ・フッター）、戻るリンク動作 | ナビゲーション |
 | E-03 | タグフィルタリング | タグclick → タグページ遷移、該当記事のみ表示、戻るリンク動作 | ナビゲーション |
 | E-04 | アーカイブナビゲーション | 年・月リンクclick → アーカイブページ遷移、トップページと同数の記事一覧表示 | ナビゲーション |
-| E-05 | 画像表示 | lazy loading属性、async decoding属性、figure/figcaption構造、サムネイル表示 | DOM検証 |
+| E-05 | 画像表示・Modern Web Guidance横展開 | lazy loading属性、async decoding属性、figure/figcaption構造、サムネイル表示、ナビゲーションARIA、content-visibility、focus操作 | DOM検証・実操作 |
 | E-06 | 下書き記事非表示 | トップページにdraft記事が含まれないこと、タイトルが空でないこと | DOM検証 |
 | E-20 | 固定ページ表示 | プロフィールページ表示、aboutページ表示、「記事一覧に戻る」リンク動作、ヘッダー・フッター構造 | DOM検証・ナビゲーション |
-| E-21 | ヘッダーナビドロップダウン | ドロップダウン構造、最優先ページリンク、初期非表示、▾ボタン開閉、メニュー内リンク、ページ遷移 | DOM検証・動作検証 |
+| E-21 | ヘッダーナビドロップダウン | ▾ボタン開閉、300msホバー互換、Escape、Tabフォーカス離脱、aria-expanded同期、タッチ端末44px領域、ページ遷移 | DOM検証・実操作 |
 
 #### CMS管理画面テスト (`tests/e2e/cms.spec.ts`)
 
@@ -1274,6 +1360,22 @@ OAuthモック＋GitHub APIモックを使い、CMS管理画面を実際に操�
 | E-33 | 画像アップロードUI操作 | 画像ウィジェットボタン表示・クリック可能、accept属性HEIC制限、EXIF処理イベント登録 | モック/動作検証 |
 | E-34 | モバイル固有UI操作 | ドロップダウンがボトムシート表示（≤799px）、codeblockボタン非表示、URLバー退避、タップ領域44px以上 | モック/動作検証（iPhoneのみ） |
 | E-35 | 削除ボタン状態変化 | 削除ボタンラベル変更（選択解除/完全削除）、disabled状態CSS、色の視覚的区別、borderColor判定ロジック | モック/動作検証/CSS検証 |
+| E-36 | 記事デフォルトソート・月別グルーピング | 記事一覧の日付降順ソート検証、view_groups「年月」ボタン表示、レイアウト崩れなし（要素重なり検証）。PC/iPad/iPhone 3デバイスで視覚確認用スクリーンショットを`test-results/`（gitignore対象）に出力（CMS-17, CMS-18） | モック/動作検証/スクリーンショット |
+| E-37 | CMS年月フィルター | 月セレクターで選択年月のみ表示、他年月グループ非表示、select操作中のMutationObserver再実行でもoptionを再構築しないこと、降順・昇順切替後のグループ順を確認。PC/iPad/iPhone 3デバイスでスクリーンショットエビデンス取得（CMS-19, Bug #37, Bug #38） | OAuthモック/実操作/動作検証/スクリーンショット |
+| E-38 | モバイルタップ領域44px確保（Bug #39再発防止） | iPad Pro 11（834px）とiPhone 14（390px）でCMS管理画面の全ボタン・[role="button"]要素がheight≥40pxであること。特に「新規作成」ボタン・「ソート」ボタン（[role="button"][aria-haspopup]）・AppHeaderボタンを確認。`@media (max-width: 899px)`のmin-height: 44px適用を検証 | verify-comprehensive.mjs T28 |
+
+#### 探索的テスト (`tests/e2e/cms-exploratory.spec.ts`)
+
+OAuthモック（window.openモンキーパッチ）+ GitHub APIモックによる探索的検証。未テストシナリオ・エラーハンドリング・実操作確認を実施する。
+
+| No. | テストケース | 検証内容 | テスト手法 |
+| :--- | :--- | :--- | :--- |
+| E-37 | 月別セレクタ実操作（CMS-19・Bug #37再発防止） | `#cms-month-selector`に`aria-label`があり、899px以下で高さ44px以上。`selectOption()`でグループ絞り込みが動作し、複数回の選択でもクラッシュしない | OAuthモック/実操作（selectOption）/動作検証 |
+| E-39 | 固定ページ作成画面（Bug #25再発防止） | 固定ページ新規作成フォームにslug・order（min=1）・titleフィールドが表示される。orderフィールドが編集可能な数値inputである | OAuthモック/実操作/フィールド検証 |
+| E-40 | エラーハンドリング（API 404/500） | GitHub API branches/trees が404・500を返した際にCMSがクラッシュせずUIが表示される（body非空、cmsRoot存在） | OAuthモック/APIエラーモック/UIクラッシュ検証 |
+| E-41 | 下書きバッジ表示（formatCollectionEntries） | 下書き記事（draft:true）のエントリーにオレンジ色の「下書き」バッジが表示される。エントリーテキストが「\|」区切り・日付形式で整形されている | OAuthモック/バッジ色検証/DOM検証 |
+| E-42 | コレクション切り替え後グルーピング再適用 | posts→pages→postsと切り替えた後にグルーピングが再適用される。複数回の切り替えでもサイドバー・CMS UIが崩れない | OAuthモック/実操作（コレクション切り替え）/安定性検証 |
+| E-43 | コンソールエラー監視 | 認証後の初期化フェーズでコンソールエラーが5件以下。基本操作（コレクション切り替え）後のエラー増加が3件以下 | OAuthモック/console.errorキャプチャ/エラー閾値検証 |
 
 #### アクセシビリティテスト (`tests/e2e/accessibility.spec.ts`)
 
@@ -1287,13 +1389,25 @@ axe-coreエンジン（@axe-core/playwright）を使用してWCAG 2.1 Level AA�
 
 ### 4.1.4 デバイス別テスト
 
-全テストケースを以下の3デバイスで実行する（合計375テスト：367実行 + 8スキップ）。モバイル固有テスト（E-34）はビューポート幅≤799pxのiPhoneでのみ実行し、PC・iPadではスキップする。
+全テストケースを以下の3デバイスで実行する（合計444テスト：436実行 + 8スキップ）。
 
 | デバイス | ビューポート | 用途 |
 | :--- | :--- | :--- |
 | PC | 1280 x 720 | デスクトップ表示の検証 |
 | iPad (gen 7) | 810 x 1080 | タブレット表示の検証 |
 | iPhone 14 | 390 x 844 | モバイル表示の検証 |
+
+#### スキップ仕様（E-34: モバイル固有UI操作）
+
+| テスト | skip条件 | 理由 | PC(1280) | iPad(810) | iPhone(390) |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| ドロップダウンがボトムシート表示 | viewportWidth > 799 | `@media (max-width: 799px)` のみ適用 | skip | skip | **実行** |
+| codeblockボタン非表示 | viewportWidth > 799 | `@media (max-width: 799px)` のみ適用 | skip | skip | **実行** |
+| URLバー退避（ドロップダウン時） | viewportWidth > 799 | `@media (max-width: 799px)` のみ適用 | skip | skip | **実行** |
+| タップ領域44px確保 | viewportWidth > **899** | Bug #39: `@media (max-width: 899px)` に拡張（iPad gen7も対象） | skip | **実行** | **実行** |
+| 公開サイトのタッチ対象44px確保 | project.name === PC | タッチ入力向けメディアクエリのため | skip | **実行** | **実行** |
+
+スキップ合計: PC 5件 + iPad 3件 = **8件**。
 
 ### 4.1.5 CMS操作テストの方式（必須）
 
@@ -1302,9 +1416,158 @@ CMS E2Eテストでは以下のモック方式を**必須インフラ**として
 | 項目 | 方式 | 説明 |
 | :--- | :--- | :--- |
 | OAuth認証 | postMessageシミュレーション | `page.route('**/auth')` でOAuthポップアップをモックし、`window.opener.postMessage()` でトークンを送信。実GitHub環境不要 |
+| OAuth認証（認証後スクリーンショット取得時） | `context.route()` + 3ステップOAuthハンドシェイク | `context.route(url => url.pathname === '/auth')` でポップアップnavigationをインターセプト。3ステップ: (1) `authorizing:github` → (2) 親ウィンドウACK待ち → (3) `authorization:github:success:{token}` 送信。`page.route()` ではポップアップウィンドウのnavigationをインターセプトできないため、認証後のCMS画面スクリーンショットが必要な場合は `context.route()` を必ず使用する（Bug #36対応） |
 | GitHub API | Playwright `page.route()` 全面モック | ユーザー情報、リポジトリ、ブランチ、Git Data API（trees/blobs/refs/commits）、Contents APIを全てインターセプト。APIコールを記録して検証可能 |
 | CRUD操作 | モックAPI経由で実UI操作 | フォーム入力→保存ボタンクリック→モックAPIへのPOST発行を検証。実リポジトリへの変更は一切発生しない |
 | 制約 | CMS内部React状態の不完全再現 | postMessageでトークンを注入してもCMS内部のReact状態管理が完全には再現されない場合がある。エディタUIの表示・操作可能性で検証を補完する |
+
+### 4.1.6 E2Eスクリーンショットエビデンス取得ルール（必須）
+
+CMS関連のE2Eテストでは、**認証後のCMS画面のスクリーンショットエビデンス取得を必須**とする。ログイン画面のみのスクリーンショットは不可。
+
+#### 必須要件
+
+1. **認証後のスクリーンショット**: CMS操作に関連するE2Eテストでは、OAuthモック認証後のCMS画面（コレクション一覧・エディタ画面等）のスクリーンショットを取得すること
+2. **3デバイス対応**: PC/iPad/iPhone の3デバイスでスクリーンショットを取得すること
+3. **エビデンス格納先**: `evidence/YYYY-MM-DD/screenshots/` フォルダにファイル名規則 `e{テストID}-{検証項目}-{デバイス名}.png` で保存すること
+4. **レビュー**: スクリーンショットがログイン画面のみになっていないことを社内レビューで確認すること
+
+#### 認証後スクリーンショットの取得方法
+
+認証が必要なCMS画面のスクリーンショットを取得する場合、以下の手順に従う:
+
+1. **`context.route()`** を使用してOAuthポップアップのnavigationをインターセプトする（`page.route()` ではポップアップウィンドウをインターセプトできないため不可）
+2. **3ステップOAuthハンドシェイク**を実装する:
+   - Step 1: ポップアップから親ウィンドウに `authorizing:github` を送信
+   - Step 2: 親ウィンドウのACK（messageイベント）を待機
+   - Step 3: `authorization:github:success:{token,provider}` を送信
+3. **認証完了待機**: ログインボタンと「ログインしています...」テキストが消えるまでポーリング（最大15秒）
+4. **UI安定化待機**: 認証完了後2秒のバッファを設ける
+
+参考実装: `tests/e2e/cms-operations.spec.ts` の `openCmsWithMultiArticles()` 関数、`evidence/2026-02-23/verify-cms-crud.mjs` の `openCmsWithAuth()` 関数
+
+### 4.1.7 実操作E2E確認ルール（必須）
+
+UI変更・CMS変更・Modern Web Guidance対応では、DOMを直接書き換える検証だけでは完了扱いにしない。実ユーザーが行う操作をPlaywrightで再現し、操作後の画面状態とスクリーンショットを確認する。
+
+| 項目 | 必須ルール | 補足 |
+| :--- | :--- | :--- |
+| 操作方法 | `click`, `fill`, `selectOption`, `press`, file input操作など、Playwrightの実操作APIを最低1本含める | `page.evaluate()`による値代入や`dispatchEvent()`単独は不可 |
+| CMS認証 | OAuth 3ステップモック + GitHub APIモックで認証後画面を開く | ログイン画面のみの確認は不可 |
+| ネイティブUI | `<select>`、ファイル選択、モバイルメニュー等は実操作でハング・フォーカス喪失・再描画競合がないことを確認する | Bug #38の再発防止 |
+| エビデンス | PC/iPad/iPhoneの3デバイスでスクリーンショットを保存し、赤枠アノテーションで確認箇所を示す | 既存の`verify-*.mjs`形式を踏襲 |
+| DOM検証の扱い | DOM検証は結果確認・補助用途に限定する | DOM直叩きだけを合格条件にしない |
+
+### 4.1.8 包括的エビデンス検証スクリプト（verify-comprehensive.mjs）の方式
+
+#### 目的と位置付け
+
+`npm run test:e2e`（Playwright spec ファイル群）が「要件トレーサビリティ」を担うのに対し、
+`verify-comprehensive.mjs` は「スクリーンショット付き包括的エビデンス」を担う。
+2つは役割が異なり、両方を維持する。
+
+| 項目 | Playwright spec（`tests/e2e/*.spec.ts`） | verify-comprehensive.mjs |
+| :--- | :--- | :--- |
+| 実行方法 | `npm run test:e2e` | `node evidence/YYYY-MM-DD/verify-comprehensive.mjs` |
+| 認証方式 | `page.addInitScript()` window.open モンキーパッチ | `context.route()` + 3ステップOAuthハンドシェイク |
+| 出力 | Playwright HTML レポート（`playwright-report/`） | `evidence/YYYY-MM-DD/report.html`（赤枠アノテーション付きスクリーンショット） |
+| 目的 | CI/CD 品質ゲート・要件カバレッジ | staging 検証エビデンス・バグ再発防止スクリーンショット |
+| デバイス | PC/iPad/iPhone 3プロジェクト | PC(1280×800)/iPad Pro 11(834×1194)/iPhone 14(390×844) |
+
+#### 雛形ファイルと実行手順
+
+```bash
+# 1. 前提: ビルド済みの dist/ が必要（httpサーバーは内蔵）
+npm run build
+
+# 2. 日付フォルダを作成し雛形をコピー
+cp evidence/2026-05-24/verify-comprehensive.mjs evidence/YYYY-MM-DD/verify-comprehensive.mjs
+
+# 3. 実行（組み込みHTTPサーバーが PORT=4174 で起動）
+node evidence/YYYY-MM-DD/verify-comprehensive.mjs
+
+# 4. 出力確認
+# - evidence/YYYY-MM-DD/screenshots/  スクリーンショット（S/T番号-デバイス.png）
+# - evidence/YYYY-MM-DD/report.html   PC/iPad/iPhone 横並びHTMLレポート
+# - evidence/YYYY-MM-DD/comprehensive-results.json  JSON結果（PASS/FAIL/SKIP）
+```
+
+#### 認証方式（スタンドアロンPlaywright = context.route()方式）
+
+verify-comprehensive.mjs は Playwright test runner **外** で動くため、`context.route()` でOAuthポップアップをインターセプトする（test runner内では `page.addInitScript()` 方式を使う）。
+
+```javascript
+// context.route() + 3ステップOAuthハンドシェイク
+await context.route('**/auth', async (route) => {
+  await route.fulfill({
+    status: 200, contentType: 'text/html',
+    body: `<html><script>
+      // Step1: 'authorizing:github' を親へ送信
+      window.opener.postMessage('authorizing:github', origin);
+      // Step2: CMSからのACKを受信
+      window.addEventListener('message', (e) => {
+        if (e.data === 'authorizing:github') {
+          // Step3: success トークンを親へ送信
+          window.opener.postMessage(
+            'authorization:github:success:{"token":"mock-token","provider":"github"}', origin);
+          window.close();
+        }
+      });
+    </script></html>`
+  });
+});
+// 参考実装: evidence/2026-05-24/verify-comprehensive.mjs の openCmsWithAuth()
+```
+
+#### テストシナリオ番号体系
+
+| プレフィックス | 対象 | 例 |
+| :--- | :--- | :--- |
+| `S01〜S10` | 公開サイト（トップ・記事・タグ・アーカイブ・ナビ・下書き・EXIF・A11y・レスポンシブ・固定ページ） | S03: タグフィルター |
+| `T01〜T15` | CMS基本操作（認証・サイトリンク・エントリー表示・エディタ・URLバー・削除ボタン） | T04: 下書きバッジ |
+| `T16〜T25` | CMS年月グルーピングUI（グルーピング有効化・降順・日本語化・月別セレクタ・ソート） | T21: 月別フィルター |
+| `T26〜T35` | モバイル固有操作（ボトムシート・codeblock・タップ領域・pull-to-refresh・iOS自動ズーム） | T28: タップ領域44px |
+| `T36〜T55` | 探索的テスト（固定ページ新規作成・バリデーション・エラーハンドリング・コンソール監視） | T40: APIエラーハンドリング |
+
+#### 赤枠アノテーション方式
+
+```javascript
+// 注目要素に赤枠を追加する
+async function addRedBorder(page, selector, label = '') {
+  await page.evaluate(({ selector, label }) => {
+    const el = document.querySelector(selector);
+    if (!el) return;
+    el.style.outline = '3px solid red';
+    el.style.outlineOffset = '2px';
+    if (label) {
+      const badge = document.createElement('div');
+      badge.textContent = label;
+      badge.style.cssText = 'position:absolute;background:red;color:white;font-size:11px;padding:2px 6px;z-index:9999;top:-20px;left:0';
+      el.style.position = 'relative';
+      el.appendChild(badge);
+    }
+  }, { selector, label });
+}
+// 枠をクリア
+async function clearOverlays(page) {
+  await page.evaluate(() => {
+    document.querySelectorAll('[style*="outline"]').forEach(el => el.style.outline = '');
+  });
+}
+// 参考実装: evidence/2026-05-24/verify-comprehensive.mjs の addRedBorder()/clearOverlays()
+```
+
+#### HTMLレポート形式
+
+PC/iPad/iPhone の3デバイスのスクリーンショットを横並びに配置し、各シナリオのPASS/FAIL/SKIPと詳細メッセージを記録する。`report.html` を開くだけで全エビデンスを一覧できる。
+
+#### 新シナリオ追加手順
+
+1. `evidence/2026-05-24/verify-comprehensive.mjs` の最新版を雛形としてコピー
+2. `SCENARIOS` 配列に新シナリオを追加（`id: 'T56'`、`label`、`run: async (page, device) => { ... }` を定義）
+3. `record({ id, label, pass, detail })` で結果を記録
+4. 実行して PASS を確認 → `comprehensive-results.json` の結果も確認
+5. `evidence/YYYY-MM-DD/report.html` で赤枠アノテーション付きスクリーンショットを目視確認
 
 ---
 
@@ -1325,7 +1588,7 @@ npx vitest run tests/auth-functions.test.mjs
 npm run test:watch
 ```
 
-### 4.2.2 E2Eテスト実行（Playwright）
+### 4.2.2 E2Eテスト実行（Playwright spec）
 
 ```bash
 # 前提: ビルド済みのdist/が必要
@@ -1340,13 +1603,37 @@ npx playwright test tests/e2e/site.spec.ts
 # CMSテストのみ
 npx playwright test tests/e2e/cms.spec.ts
 
+# 特定スペックのみ
+npx playwright test tests/e2e/cms-exploratory.spec.ts
+
 # 特定デバイスのみ
 npx playwright test --project=iPhone
+
+# 特定テストのみ（-g でフィルタ）
+npx playwright test -g "タップ領域"
 ```
 
 **注意**: E2Eテストはローカル開発環境でのみ実行可能である。Chromiumブラウザのバイナリが必要なため、初回は `npx playwright install chromium` でインストールすること。
 
-### 4.2.3 ビルド検証
+### 4.2.3 包括的エビデンス検証（verify-comprehensive.mjs）
+
+```bash
+# 前提: ビルド済みのdist/が必要
+npm run build
+
+# 最新の雛形を日付フォルダにコピー
+cp evidence/2026-05-24/verify-comprehensive.mjs evidence/$(date +%Y-%m-%d)/verify-comprehensive.mjs
+
+# 実行（内蔵HTTPサーバーがPORT=4174で起動）
+node evidence/YYYY-MM-DD/verify-comprehensive.mjs
+
+# 結果確認
+# - evidence/YYYY-MM-DD/report.html           HTMLレポート（ブラウザで開く）
+# - evidence/YYYY-MM-DD/screenshots/          スクリーンショット150枚
+# - evidence/YYYY-MM-DD/comprehensive-results.json  JSON結果
+```
+
+### 4.2.4 ビルド検証
 
 ```bash
 # ビルドパイプライン全体の実行
@@ -1367,55 +1654,57 @@ npm run build
 
 | 項目 | 結果 |
 | :--- | :--- |
-| 実行日時 | 2026-02-21 12:57 |
+| 実行日時 | 2026-07-04 |
 | Vitest バージョン | v4.0.18 |
-| 実行時間 | 1.71s |
+| 実行時間 | 2.37s |
 | 合否判定 | **合格** |
 
 ### 4.3.2 テストファイル別結果
 
 | テストファイル | テスト数 | 結果 | 実行時間 |
 | :--- | :--- | :--- | :--- |
-| `cms-config.test.mjs` | 49 | PASS | 4ms |
-| `admin-html.test.mjs` | 82 | PASS | 12ms |
-| `rehype-image-caption.test.mjs` | 8 | PASS | 3ms |
-| `auth-functions.test.mjs` | 17 | PASS | 28ms |
-| `fuzz-validation.test.mjs` | 215 | PASS | 54ms |
-| `content-validation.test.mjs` | 87 | PASS | 53ms |
-| `build.test.mjs` | 61 | PASS（Windows環境: 画像リサイズ1件FAIL=sharpファイルロック、本番Linux環境では問題なし） | 3618ms |
-| **合計** | **519** | **全PASS（Windows固有1件除く）** | **3.92s** |
+| `cms-config.test.mjs` | 52 | PASS | 6ms |
+| `admin-html.test.mjs` | 90 | PASS | 8ms |
+| `rehype-image-caption.test.mjs` | 8 | PASS | 2ms |
+| `rehype-focusable-code-blocks.test.mjs` | 2 | PASS | 2ms |
+| `auth-functions.test.mjs` | 17 | PASS | 29ms |
+| `fuzz-validation.test.mjs` | 215 | PASS | 40ms |
+| `content-validation.test.mjs` | 111 | PASS | 49ms |
+| `build.test.mjs` | 91 | PASS | 2181ms |
+| **合計** | **586** | **全PASS** | **2.40s** |
 
 ### 4.3.3 E2Eテスト最新実行結果（Playwright）
 
 | 項目 | 結果 |
 | :--- | :--- |
-| 実行日時 | 2026-02-21 21:10 |
+| 実行日時 | 2026-07-05 |
 | Playwright バージョン | v1.58.2 |
-| 実行時間 | 9.9min |
-| 合否判定 | **合格** |
+| 実行時間 | 15.4m |
+| 合否判定 | **合格**（436 PASS, 8 skip / 444テスト）|
 
 | テストファイル | PC | iPad | iPhone | 合計 |
 | :--- | :--- | :--- | :--- | :--- |
-| `site.spec.ts`（E-01〜E-06, E-20〜E-21） | 30 PASS | 30 PASS | 30 PASS | 90 |
+| `site.spec.ts`（E-01〜E-06, E-20〜E-21, E-30） | 37 PASS, 1 skip | 38 PASS | 38 PASS | 113 PASS, 1 skip |
 | `cms.spec.ts`（E-07〜E-12） | 12 PASS | 12 PASS | 12 PASS | 36 |
 | `cms-customizations.spec.ts`（E-13〜E-19） | 38 PASS | 38 PASS | 38 PASS | 114 |
 | `cms-crud.spec.ts`（E-22〜E-24） | 11 PASS | 11 PASS | 11 PASS | 33 |
-| `cms-operations.spec.ts`（E-28〜E-35） | 24 PASS, 4 skip | 24 PASS, 4 skip | 28 PASS | 76 PASS, 8 skip |
+| `cms-operations.spec.ts`（E-28〜E-36） | 27 PASS, 4 skip | 28 PASS, 3 skip | 31 PASS | 86 PASS, 7 skip |
 | `accessibility.spec.ts`（E-25〜E-27） | 6 PASS | 6 PASS | 6 PASS | 18 |
-| **合計** | **121** | **121** | **125** | **367 PASS, 8 skip** |
+| `cms-exploratory.spec.ts`（E-37, E-39〜E-43） | 12 PASS | 12 PASS | 12 PASS | 36 |
+| **合計** | **143 PASS, 5 skip** | **145 PASS, 3 skip** | **148 PASS** | **436 PASS, 8 skip** |
 
-**スキップ内訳**: E-34（モバイル固有UI操作）4テスト × PC・iPad = 8件。ビューポート幅≤799pxのiPhoneでのみ実行。
+**スキップ内訳**: E-34のボトムシート・codeblock・URLバーはPC/iPadでskip、CMSタップ領域はPCのみskip。E-21公開サイトタッチ領域はPCのみskip。合計8件skip。
 
 ### 4.3.4 ビルド実行結果
 
 | 項目 | 結果 |
 | :--- | :--- |
 | ビルドコマンド | `npm run build` |
-| 生成ページ数 | 16ページ |
-| 画像最適化 | 1ファイル（img_4642.jpg: 6.0MB → 0.2MB, -96%） |
-| ビルド時間 | 689ms |
+| 生成ページ数 | 18ページ |
+| 画像最適化 | 5ファイル（最大-97%削減） |
+| ビルド時間 | ~1.2s |
 | 合否判定 | **合格** |
 
 ---
 
-**最終更新**: 2026年2月23日
+**最終更新**: 2026年5月25日

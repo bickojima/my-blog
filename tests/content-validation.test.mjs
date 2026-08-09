@@ -215,26 +215,49 @@ describe('ヘッダーナビゲーション条件分岐の検証（Base.astroソ
       expect(baseAstro).toContain("if (dropdown)");
     });
 
-    it('mouseenter でis-openクラスを追加する', () => {
-      expect(baseAstro).toContain("addEventListener('mouseenter'");
-      expect(baseAstro).toContain("classList.add('is-open')");
+    it('setOpenでis-openクラスとaria-expandedを同期する', () => {
+      expect(baseAstro).toContain('const setOpen = (open: boolean)');
+      expect(baseAstro).toContain("classList.toggle('is-open', open)");
+      expect(baseAstro).toContain("setAttribute('aria-expanded', String(open))");
     });
 
-    it('mouseleave で300ms遅延後にis-openクラスを削除する', () => {
+    it('ナビゲーションにaria-labelとfocus-visibleスタイルがある', () => {
+      expect(baseAstro).toContain('aria-label="メイン"');
+      expect(baseAstro).toContain(':focus-visible');
+    });
+
+    it('mouseenter でメニューを開く', () => {
+      expect(baseAstro).toContain("addEventListener('mouseenter'");
+      expect(baseAstro).toContain('setOpen(true)');
+    });
+
+    it('mouseleave で300ms遅延後にメニューを閉じる', () => {
       expect(baseAstro).toContain("addEventListener('mouseleave'");
       expect(baseAstro).toContain('setTimeout');
       expect(baseAstro).toContain('300');
-      expect(baseAstro).toContain("classList.remove('is-open')");
+      expect(baseAstro).toContain('setOpen(false)');
     });
 
     it('▾ボタンクリックでトグルする', () => {
       expect(baseAstro).toContain("addEventListener('click'");
-      expect(baseAstro).toContain("classList.toggle('is-open')");
+      expect(baseAstro).toContain("!dropdown.classList.contains('is-open')");
+    });
+
+    it('ホバーで開いた直後のトグルクリックがメニューを閉じない', () => {
+      expect(baseAstro).toContain('openedByHover');
+      expect(baseAstro).toContain("dropdown.classList.contains('is-open') && openedByHover");
     });
 
     it('外側クリックで閉じる', () => {
       expect(baseAstro).toContain("document.addEventListener('click'");
       expect(baseAstro).toContain('dropdown.contains');
+    });
+
+    it('Escapeキーとフォーカス離脱で閉じる', () => {
+      expect(baseAstro).toContain("document.addEventListener('keydown'");
+      expect(baseAstro).toContain("e.key !== 'Escape'");
+      expect(baseAstro).toContain("dropdown.addEventListener('focusout'");
+      expect(baseAstro).toContain('e.relatedTarget');
     });
   });
 });

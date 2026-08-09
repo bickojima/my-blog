@@ -26,6 +26,10 @@ describe('管理画面HTML（public/admin/index.html）の検証', () => {
       expect(adminHtml).toContain('width=device-width');
     });
 
+    it('管理画面の文書言語が日本語に設定されている', () => {
+      expect(adminHtml).toContain('<html lang="ja">');
+    });
+
     it('Decap CMSのスクリプトが読み込まれている', () => {
       expect(adminHtml).toContain('decap-cms');
       expect(adminHtml).toContain('</script>');
@@ -49,6 +53,12 @@ describe('管理画面HTML（public/admin/index.html）の検証', () => {
         block.includes('CMS.registerPreviewStyle')
       );
       expect(hasRegisterPreviewStyle).toBe(true);
+    });
+
+    it('プレビュースタイルのキャプション色がWCAG AA相当のコントラストを維持している', () => {
+      expect(adminHtml).toContain('figcaption');
+      expect(adminHtml).toContain('color: #595959');
+      expect(adminHtml).not.toContain('color: #888');
     });
   });
 
@@ -78,6 +88,7 @@ describe('管理画面HTML（public/admin/index.html）の検証', () => {
 
     it('完全削除ボタンの無効状態スタイルが定義されている', () => {
       expect(adminHtml).toContain('.cms-full-delete-btn:disabled');
+      expect(adminHtml).toContain('color: #595959 !important');
     });
   });
 
@@ -274,6 +285,56 @@ describe('管理画面HTML（public/admin/index.html）の検証', () => {
       expect(adminHtml).toContain('borderColor');
       // rgb\( はJS正規表現内で使用されている
       expect(adminHtml).toMatch(/rgb/);
+    });
+
+    it('グルーピング表示時にグループ順をソート方向に合わせる機能がある（CMS-19）', () => {
+      // Decap CMSのview_groupsはデフォルト昇順のため、ソート方向に応じてDOM並べ替え
+      expect(adminHtml).toContain('reverseViewGroups');
+      expect(adminHtml).toContain('GroupHeading');
+      // ISO形式・日本語形式両対応のソートキー抽出
+      expect(adminHtml).toContain('getSortKey');
+      // エントリ日付からソート方向を検出（.entry-date要素を参照）
+      expect(adminHtml).toContain('isDescending');
+      expect(adminHtml).toContain('entry-date');
+    });
+
+    it('年月グルーピングがデフォルトで自動有効化される（CMS-19）', () => {
+      // postsコレクション表示時にグルーピングドロップダウンを自動操作
+      expect(adminHtml).toContain('activateDefaultGrouping');
+      expect(adminHtml).toContain('cms-group-activated');
+      expect(adminHtml).toContain('aria-haspopup');
+    });
+
+    it('グルーピングドロップダウンが常時非表示になる（CMS-19）', () => {
+      // hideGroupControlはMutationObserverから毎回呼ばれ、React再描画後も再非表示
+      // 「グルーピング」テキストを明示的に検索（「新規作成」等の誤マッチ防止）
+      expect(adminHtml).toContain('hideGroupControl');
+      expect(adminHtml).toMatch(/グルーピング.*group/is);
+    });
+
+    it('グループ見出しが日本語形式に変換される（CMS-19）', () => {
+      // "年月 2026-02" → "2026年2月"
+      expect(adminHtml).toContain('formatGroupHeadings');
+      expect(adminHtml).toContain('jaFormatted');
+    });
+
+    it('年月選択プルダウンで選択年月のみ表示される（CMS-19）', () => {
+      // グルーピング見出しから年月リストを生成し、選択年月だけに絞り込む
+      expect(adminHtml).toContain('createMonthSelector');
+      expect(adminHtml).toContain('cms-month-selector');
+      expect(adminHtml).toContain('すべての年月');
+      expect(adminHtml).toContain('applyMonthFilter');
+      expect(adminHtml).toContain('activeFilter');
+      expect(adminHtml).toContain('previousValue');
+      expect(adminHtml).toContain('optionsSignature');
+      expect(adminHtml).toContain("sel.dataset.optionsSignature !== optionsSignature");
+      expect(adminHtml).toContain("container.style.display = visible ? '' : 'none'");
+      expect(adminHtml).not.toContain('scrollIntoView');
+    });
+
+    it('年月選択プルダウンにアクセシブルネームと44pxタップ領域がある', () => {
+      expect(adminHtml).toContain("sel.setAttribute('aria-label', '年月で絞り込み')");
+      expect(adminHtml).toMatch(/@media \(max-width: 899px\)[\s\S]*#cms-month-selector[\s\S]*min-height: 44px/);
     });
   });
 

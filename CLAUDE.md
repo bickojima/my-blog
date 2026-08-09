@@ -23,9 +23,9 @@
 npm run dev          # 開発サーバー起動（前処理含む）
 npm run build        # テスト必須ビルド（vitest run → normalize-images → organize-posts → astro build → image-optimize）
 npm run build:raw    # テストなしビルド（build.test.mjs内部で使用、Cloudflare Pages用）
-npm test             # Vitest 全テスト実行（519テスト、記事数により変動）
+npm test             # Vitest 全テスト実行（586テスト、記事数により変動）
 npm run test:watch   # Vitest ウォッチモード
-npm run test:e2e     # Playwright E2Eテスト（要: npm run build 済み、375テスト：367実行+8スキップ）
+npm run test:e2e     # Playwright E2Eテスト（要: npm run build 済み、444テスト：436実行+8スキップ）
 ```
 
 ## ディレクトリ構成
@@ -36,7 +36,9 @@ src/
 ├── content/pages/           # 固定ページMarkdown（frontmatter: title, slug, order, draft）
 ├── pages/                   # Astroルーティング（/posts/[year]/[month]/[slug], /[slug]）
 ├── layouts/Base.astro       # 共通レイアウト（CSS image-orientation: from-image、ヘッダーナビ動的生成）
-├── plugins/rehype-image-caption.mjs  # img → figure/figcaption 変換プラグイン
+├── plugins/
+│   ├── rehype-image-caption.mjs  # img → figure/figcaption 変換
+│   └── rehype-focusable-code-blocks.mjs  # preへtabindex付与
 ├── integrations/image-optimize.mjs   # ビルド後画像リサイズ（sharp, MAX_WIDTH: 1200）
 ├── lib/posts.ts             # URL生成ユーティリティ
 └── content.config.ts        # Zodスキーマ定義
@@ -56,9 +58,9 @@ docs/
 functions/auth/              # Cloudflare Functions: GitHub OAuth proxy
 
 tests/
-├── *.test.mjs               # Vitest単体・統合テスト（7ファイル）
+├── *.test.mjs               # Vitest単体・統合テスト（8ファイル）
 ├── fuzz-validation.test.mjs # ファズテスト（XSS/SQLi/パストラバーサル/プロトタイプ汚染等、215テスト）
-├── e2e/                     # Playwright E2E（site, cms, cms-customizations, cms-crud, cms-operations, accessibility）
+├── e2e/                     # Playwright E2E（site, cms, cms-customizations, cms-crud, cms-operations, cms-exploratory, accessibility）
 └── TEST-REPORT.md           # テスト計画書・テストケース一覧・実行結果
 ```
 
@@ -73,12 +75,14 @@ tests/
 - Decap CMS v3.10.0 をDOM操作でカスタマイズ（単一MutationObserver、RAFデバウンス済み、単一IIFE、'use strict'/const/let統一）
 - モバイル: ドロップダウンは `position: fixed; bottom: 0` のボトムシート形式
 - プレビュースタイル: `CMS.registerPreviewStyle()` で本番サイト相当のCSSをプレビューiframeに注入
-- 主要JS関数: `addSiteLink`, `formatCollectionEntries`, `relabelImageButtons`, `updateDeleteButtonState`, `showPublicUrl`, `manageDropdownOverlay`, `hideCodeBlockOnMobile`, `restrictImageInputAccept`
+- 主要JS関数: `addSiteLink`, `formatCollectionEntries`, `relabelImageButtons`, `updateDeleteButtonState`, `showPublicUrl`, `manageDropdownOverlay`, `hideCodeBlockOnMobile`, `activateDefaultGrouping`, `reverseViewGroups`, `formatGroupHeadings`, `createMonthSelector`, `restrictImageInputAccept`
 - `showPublicUrl`: EditorControlBarの表示状態（`getBoundingClientRect`）でエディタ画面を判定。ハッシュURLからコレクション種別（posts/pages）を判定し、記事は`/posts/年/月/タイトル`、固定ページは`/slug`形式でURL生成
 - `manageDropdownOverlay`: ドロップダウン表示時のみURLバーを退避（`hiddenByDropdown`フラグで誤復元を防止）
 - **Slate codeblockクラッシュ対策**: モバイル（≤799px）でcodeblockボタン非表示、`toSlatePoint`エラーハンドラ、touchmoveエディタ除外
 - `formatCollectionEntries`: 記事は「日付 | 下書き | タイトル」、固定ページは「番号 | 下書き | タイトル」形式で一覧を整形。下書き時はオレンジの「下書き」バッジを表示
-- **コレクション表示順序**: config.yml で posts が先頭、pages が2番目（CMS初期表示で記事が最初に表示される）。固定ページはorder昇順がデフォルトソート（`{field: order, default_sort: asc}`）
+- **コレクション表示順序**: config.yml で posts が先頭、pages が2番目（CMS初期表示で記事が最初に表示される）。固定ページはorder昇順がデフォルトソート（`{field: order, default_sort: asc}`）。記事はdate降順がデフォルトソート（`{field: date, default_sort: desc}`）
+- **記事月別グルーピング**: config.yml の `view_groups` で記事一覧を「年月」（`\d{4}-\d{2}`パターン）でグルーピング表示（CMS-18）
+- **年月グルーピングUI（CMS-19）**: `activateDefaultGrouping()`でpostsコレクション表示時に自動有効化（react-aria-menubutton製ドロップダウンの2段階クリック操作）。`reverseViewGroups()`で降順並べ替え（`getSortKey()`でISO/日本語両形式対応）。`formatGroupHeadings()`で「年月 2026-02」→「2026年2月」に日本語化。`createMonthSelector()`で年月選択`<select>`プルダウンを作成し元のグルーピングドロップダウンを非表示
 
 ### ビルドパイプライン
 `normalize-images.mjs` → `organize-posts.mjs` → `astro build` → `image-optimize.mjs`（Astro integration）
@@ -91,14 +95,26 @@ tests/
 - ドロップダウン: ページ名部分は直接リンク（即遷移）、▾ボタンはトグル
 - PC: mouseenter/mouseleave（300ms遅延閉じ）、モバイル: タップでトグル
 
+### Modern Web Guidance準拠
+- 独自実装部はGoogle公式Modern Web Guidanceスキル準拠を基本方針とする
+- 対象は公開サイトのAstro実装と `public/admin/index.html` の独自カスタマイズのみ
+- Decap CMS本体UIは引用元レポジトリの実装を尊重し、保存・OAuth・プレビュー互換性を壊す変更は非準拠許容とする
+- 明確なLCP候補のみ `fetchpriority="high"` と非lazyを適用する。Markdown本文画像の一律高優先度化は禁止
+- コンテナクエリ、ARIA状態同期、コントラスト改善など、Baseline対応済みでリスクの低い改善を優先する
+- `content-visibility`, `contain-intrinsic-size`, `text-wrap`, `:focus-visible`, `aria-label`/`aria-labelledby` など、非対応ブラウザで自然にフォールバックするWeb標準機能を優先して横展開する
+- UI変更の検証は、実際のクリック・入力・select選択などのE2E操作を必須とし、DOM直叩きだけで完了扱いにしない
+
 ## テスト
 
-- **Vitest**: 設定検証、コンテンツ検証、単体テスト、ビルド統合テスト、セキュリティ検証、ファズテスト、基本機能保護テスト（519テスト、記事数により変動）
-- **Playwright**: PC/iPad/iPhone 3デバイス × 125テスト = 375テスト（367実行+8スキップ、ローカルのみ、CIでは未実行）
+- **Vitest**: 設定検証、コンテンツ検証、単体テスト、ビルド統合テスト、セキュリティ検証、ファズテスト、基本機能保護テスト（586テスト、記事数により変動）。`.github/workflows/ci.yml` によりmain/staging/feature/*へのpush・PRで自動実行される
+- **Playwright**: PC/iPad/iPhone 3デバイスで444テスト（436実行+8スキップ、ローカルのみ、CIでは未実行。3デバイスフル実行は実行時間の都合でローカル運用を継続）
 - コンテンツ検証テストは記事数・ページ数に応じて動的展開される
 - テスト実行後、失敗がある場合は原因を調査し修正する（テストを削除・スキップしない）
 - **テストにコンテンツをハードコードしない**: 記事名・固定ページ名・URL等はソースから動的取得する（コンテンツ変更でテストが壊れない設計）
-- **CMS E2Eテストの必須方式**: OAuthモック（postMessageシミュレーション）＋ GitHub APIモック（`page.route()`全面インターセプト）を統一使用する。今後のCMSテスト追加時もこの方式に従うこと
+- **CMS E2Eテストの必須方式**: OAuthモック（postMessageシミュレーション）＋ GitHub APIモック（`page.route()`全面インターセプト）を統一使用する。今後のCMSテスト追加時もこの方式に従うこと。**Playwright test runnerでは `window.open` モンキーパッチ方式を使用**（`context.route()`方式はtest runnerで動作しない。詳細: DOCUMENTATION.md 4.9.10章）
+- **E2Eスクリーンショットエビデンス必須**: CMS関連のE2Eテストでは認証後のCMS画面スクリーンショットを必ず取得する。ログイン画面のみのスクリーンショットは不可。3デバイス（PC/iPad/iPhone）で `evidence/YYYY-MM-DD/screenshots/` に保存する
+- **実操作E2E必須**: UI変更・CMS変更・Modern Web Guidance対応では、DOMを直接書き換える `page.evaluate()` やイベント発火だけを合格条件にしてはならない。クリック、入力、select選択、キーボード操作、メニュー展開など、ユーザーが実際に行うPlaywright操作（`click`, `fill`, `selectOption`, `press`, ファイル選択等）で最低1本は再現・確認すること。DOM直叩きは状態確認や補助に限定する
+- **認証後スクリーンショットの取得方法**: OAuthポップアップのインターセプトには `context.route()` を使用する（`page.route()` ではポップアップウィンドウのnavigationをインターセプトできない）。3ステップOAuthハンドシェイク: (1) `authorizing:github` 送信 → (2) 親ACK待ち → (3) `authorization:github:success:{token}` 送信。参考実装: `tests/e2e/cms-operations.spec.ts` の `openCmsWithMultiArticles()`、`evidence/2026-02-23/verify-cms-crud.mjs` の `openCmsWithAuth()`
 
 ## ドキュメント体系
 
@@ -119,7 +135,7 @@ DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を�
 ## 変更時のルール
 
 ### コード変更時
-1. コード修正時は関連ドキュメント（README.md, docs/DOCUMENTATION.md, tests/TEST-REPORT.md, CLAUDE.md）も必ず更新する
+1. **ドキュメント更新は完了条件**: コード修正時は関連ドキュメント（README.md, docs/DOCUMENTATION.md, tests/TEST-REPORT.md, CLAUDE.md）も必ず更新する。要件・設計・テスト・運用ルール・バグ一覧・QA履歴のどれに影響するかを確認し、該当箇所を更新しないままコミットしてはならない
 2. テストが失敗した場合はテストを修正し、TEST-REPORT.md のテストケース説明を更新する
 3. admin/index.html を変更した場合は `admin-html.test.mjs` との整合性を確認する
 4. config.yml を変更した場合は `cms-config.test.mjs` との整合性を確認する
@@ -130,6 +146,9 @@ DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を�
 9. **個人情報をコミット・コード・ドキュメントに含めない**: gitコミットのauthor情報は `tbi <noreply@users.noreply.github.com>` を使用する（`git -c user.name="tbi" -c user.email="noreply@users.noreply.github.com" commit`）。氏名・メールアドレス・電話番号等の個人情報をソースコード・ドキュメント・コミットメッセージに含めてはならない。git logから個人情報を取得して再利用しない
 10. **動作確認エビデンスを取得する**: コード変更のstaging検証時・mainマージ前に、Playwright自動検証でスクリーンショット付きHTMLエビデンスレポートを作成する。詳細は下記「エビデンス取得方針」を参照
 11. **エビデンス提出前に社内レビューを実施する**: エビデンス（スクリーンショット・レポート）は提出前に必ず内容を確認し、期待通りのスクリーンショットが取得できているか（ログイン画面のみ等になっていないか）をレビューする
+12. **staging先行を徹底する**: ユーザーが明示的にmain反映を指示しない限り、コード・ドキュメント変更はstagingブランチへ先行反映する。mainへの直接pushは禁止
+13. **Modern Web Guidance対応時のE2Eエビデンス**: 過去エビデンススクリプト（`evidence/YYYY-MM-DD/verify-*.mjs`）の方式を優先して使う。CMS画面はOAuthモックとGitHub APIモックを使い、認証後画面のスクリーンショットを保存する
+14. **実操作確認なしで完了扱いにしない**: 変更対象がユーザー操作を伴う場合、静的テスト・DOM検証・`page.evaluate()`だけでは完了不可。必ず実際のブラウザ操作をE2Eで行い、操作後の画面状態とスクリーンショットを確認してから完了報告する
 
 ### エビデンス取得方針
 - **取得タイミング**: staging検証時、mainマージ前
@@ -137,8 +156,11 @@ DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を�
 - **レポート形式**: `report.html`（画像埋め込み、PC/iPad/iPhone 3デバイス横並び表示）
 - **スクリーンショット**: `screenshots/`, `site-interactive/`, `cms-interactive/` サブフォルダに整理
 - **検証スクリプト**: `verify-staging.mjs`（基本動作確認）、`verify-site-interactive.mjs`（サイト操作性、10シナリオ×3デバイス）、`verify-cms-interactive.mjs`（CMS操作性、16シナリオ×3デバイス）、`verify-cms-crud.mjs`（CMS CRUD操作、16シナリオ×3デバイス）、`verify-security.mjs`（セキュリティ検証、10項目）
+- **過去手法の優先**: 新しいE2Eエビデンスを作る場合も、既存スクリプトの構成（スタンドアロンPlaywright、赤枠アノテーション、HTMLレポート、結果JSON）を踏襲する。**雛形として `evidence/2026-05-24/verify-comprehensive.mjs` を優先使用する**（150シナリオ×3デバイス対応の最新包括版）。旧スクリプト: `verify-site-interactive.mjs` / `verify-cms-interactive.mjs` / `verify-cms-crud.mjs` / `verify-cms19-grouping.mjs`
+- **CMS OAuthモック必須**: CMSエビデンスは実GitHub認証に依存させず、OAuth 3ステップハンドシェイクとGitHub APIモックで擬似ログインする。認証後のCMS独自カスタマイズ画面を撮影すること
 - **赤枠アノテーション**: 全スクリーンショットの注目箇所に赤枠とラベルを必ず付与する（ボタン・メニュー・重なり検出箇所・バグ再発防止確認箇所）
 - **ボタン操作テスト**: ボタンを実際に押下してメニュー展開・モーダル表示をエビデンス取得。複数メニュー同時展開時の操作性も確認
+- **フォーム/セレクト実操作テスト**: input/select/textarea/file picker等は、値をDOMへ直接代入するだけでなく、Playwrightの実操作APIで操作する。特にネイティブselect、モバイルメニュー、CMSのReact管理下DOMは、実操作でハング・フォーカス喪失・再描画競合がないことを確認する
 - **CMS重点検証**: 記事編集画面・画像アップロード画面・メディアライブラリはバグが多いため重点的にエビデンスを取得
 - **過去バグ検証マトリクス**: Bug #1,#4,#5,#6,#7,#8,#9,#11,#13,#14,#15,#29,#30,#31,#32,#33の再発確認をエビデンスに含める
 - **テストデバイス**: PC (1280x800) / iPad Pro 11 (834x1194) / iPhone 14 (390x844)
@@ -146,6 +168,8 @@ DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を�
 - **エビデンス取得後の必須作業**: (1) 社内レビュー（全数確認）→ (2) report.html更新（PC/iPad/iPhone横並び形式）→ (3) 作業完了報告書（work-completion-report.html）作成 → (4) フォルダ整理（デバッグファイル削除）→ (5) コミット・プッシュ
 - **フォルダ構成**: `evidence/YYYY-MM-DD/` 直下に `report.html`, `work-completion-report.html`, `verify-*.mjs`, `*-results.json` を配置。スクリーンショットは `screenshots/`, `site-interactive/`, `cms-interactive/`, `cms-crud/`, `security/` サブフォルダに整理。デバッグ用スクリーンショットや一時ファイルはコミット前に削除する
 - **CMS CRUD認証**: verify-cms-crud.mjsはDecap CMS 3ステップOAuthハンドシェイクをcontext.route()でシミュレート。実行前にconfig.ymlのbase_urlをlocalhost（テストサーバーURL）に一時変更し、実行後は必ず元の値に復元してからコミットする（詳細: DOCUMENTATION.md 4.9.8章）
+- **E2Eテストのスクリーンショットエビデンス**: CMS関連のE2Eスペックテスト（Playwright）でも認証後のCMS画面スクリーンショットを `evidence/YYYY-MM-DD/screenshots/` に保存する。ファイル名規則: `e{テストID}-{検証項目}-{デバイス名}.png`。認証には `context.route()` + 3ステップOAuthハンドシェイクを使用する。`page.route()` ではOAuthポップアップをインターセプトできないため不可（Bug #36）
+- **エビデンスの格納ルール**: エビデンス（スクリーンショット・レポート・検証結果JSON）は必ず `evidence/YYYY-MM-DD/` フォルダに格納する。ルートディレクトリや他の日付フォルダに格納してはならない。過去日付のエビデンスフォルダを上書き・削除しないこと
 
 ### 新機能追加時（要件トレーサビリティの維持）
 1. docs/DOCUMENTATION.md の要件一覧（1.2章 FR / 1.3章 CMS / 1.4.1章 NFR / 1.4.2章 SEC）に要件IDを追加
