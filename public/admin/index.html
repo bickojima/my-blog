@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html lang="ja">
   <head>
     <meta charset="utf-8" />
     <meta name="robots" content="noindex" />
@@ -315,6 +315,36 @@
         }
       }
 
+      /* --- タップ領域44px確保（WCAG 2.5.5, max-width: 899px）--- */
+      /* iPad Pro 11（834px）を含むタブレット/モバイル範囲で適用 */
+      @media (max-width: 899px) {
+        [class*=CollectionTopNewButton],
+        [class*=CollectionTopNewButton] button,
+        [class*=CollectionTopNewButton] a,
+        [class*=CollectionTopNewButton] [role="button"],
+        [class*=CollectionTop] button,
+        [class*=CollectionTop] [role="button"],
+        [class*=AppHeaderButton],
+        [class*=AppHeaderButton] button,
+        [class*=QuickNewButton],
+        [class*=QuickNewButton] button,
+        [class*=AppHeaderQuickNewButton],
+        [class*=AppHeaderQuickNewButton] button,
+        [class*=ViewControls] button,
+        [class*=ViewControls] [role="button"],
+        #cms-month-selector,
+        /* エディタツールバーボタン（EditorControlBar内 ToolbarButton） */
+        [class*=ToolbarButton],
+        [class*=PublishedToolbarButton],
+        /* ソート・グルーピングボタン（[role="button"][aria-haspopup]）*/
+        [role="button"][aria-haspopup="true"],
+        [role="button"][aria-haspopup="listbox"],
+        [role="button"][aria-haspopup="menu"] {
+          min-height: 44px !important;
+          min-width: 44px !important;
+        }
+      }
+
       /* --- iPhone画像のEXIF回転をCMSプレビューで正しく反映 --- */
       /* img要素全体 + Decap CMSのReactコンポーネント内の画像にも適用 */
       img,
@@ -393,8 +423,8 @@
 
       /* 完全削除ボタン：無効状態 */
       .cms-full-delete-btn:disabled {
-        background: #ccc !important;
-        color: #888 !important;
+        background: #e0e0e0 !important;
+        color: #595959 !important;
         cursor: not-allowed !important;
         opacity: 0.6 !important;
       }
@@ -469,7 +499,7 @@
         }
         figcaption {
           font-size: 0.85rem;
-          color: #888;
+          color: #595959;
           text-align: center;
           margin-top: 0.5rem;
         }
@@ -850,6 +880,229 @@
           }
         }
 
+        // 記事一覧: グルーピングドロップダウンを常時非表示（CMS-19）
+        // postsコレクションではグルーピングボタンの代わりに年月セレクターを表示する
+        // MutationObserverから毎回呼ばれるため、Reactの再描画で復活しても即座に再非表示
+        // [role="button"][aria-haspopup="true"]は「新規作成」「ソート」等にも付くため
+        // テキスト「グルーピング」または「Group」を含む要素を明示的に特定する
+        function hideGroupControl() {
+          const hash = window.location.hash || '';
+          if (hash.indexOf('/collections/posts') === -1 || hash.indexOf('/entries/') !== -1) return;
+
+          const triggers = document.querySelectorAll('[role="button"][aria-haspopup="true"]');
+          for (const t of triggers) {
+            const text = (t.textContent || '').trim();
+            if (text.indexOf('グルーピング') !== -1 || text.toLowerCase().indexOf('group') !== -1) {
+              const wrapper = t.parentElement;
+              if (wrapper) wrapper.style.display = 'none';
+              break;
+            }
+          }
+        }
+
+        // 記事一覧: 年月グルーピングをデフォルト有効化（CMS-19）
+        // postsコレクション表示時にview_groupsの年月グルーピングを自動選択
+        // Decap CMSのGroupControlはreact-aria-menubutton製ドロップダウンで、
+        // メニューは開くまでDOMに存在しないため2段階操作が必要
+        function activateDefaultGrouping() {
+          const hash = window.location.hash || '';
+          if (hash.indexOf('/collections/posts') === -1 || hash.indexOf('/entries/') !== -1) return;
+
+          // 既にグルーピング有効ならスキップ
+          if (document.querySelectorAll('[class*="GroupHeading"]').length > 0) return;
+
+          // 二重実行防止
+          if (document.getElementById('cms-group-activated')) return;
+
+          // グルーピングドロップダウンのトリガーを探す
+          // role="button" + aria-haspopup="true" は「新規作成」「ソート」等にも付くため
+          // テキスト「グルーピング」または「Group」を含む要素を明示的に特定する
+          const triggers = document.querySelectorAll('[role="button"][aria-haspopup="true"]');
+          let groupTrigger = null;
+          for (const t of triggers) {
+            const text = (t.textContent || '').trim();
+            if (text.indexOf('グルーピング') !== -1 || text.toLowerCase().indexOf('group') !== -1) {
+              groupTrigger = t;
+              break;
+            }
+          }
+          if (!groupTrigger) return;
+
+          // 二重実行防止マーカー
+          const marker = document.createElement('span');
+          marker.id = 'cms-group-activated';
+          marker.style.display = 'none';
+          document.body.appendChild(marker);
+
+          // ドロップダウンを開く
+          groupTrigger.click();
+
+          // メニューがReactで描画されるのを待ってから年月を選択
+          setTimeout(function() {
+            const items = document.querySelectorAll('[role="menuitem"]');
+            for (const item of items) {
+              if ((item.textContent || '').trim() === '年月') {
+                item.click();
+                break;
+              }
+            }
+          }, 100);
+        }
+
+        // グルーピング表示時にグループ順をソート方向に合わせる（CMS-19）
+        // デフォルト（日付降順）→ グループ降順（最新が先頭）
+        // 日付昇順ソート時 → グループ昇順（古い月が先頭）
+        // ISO形式（"年月 2026-02"）と日本語形式（"2026年2月"）の両方に対応
+        function reverseViewGroups() {
+          const headings = document.querySelectorAll('[class*="GroupHeading"]');
+          if (headings.length < 2) return;
+
+          // ソートキーを抽出（YYYYMM形式に正規化）
+          function getSortKey(text) {
+            const iso = text.match(/(\d{4})-(\d{2})/);
+            if (iso) return iso[1] + iso[2];
+            const jp = text.match(/(\d{4})年(\d{1,2})月/);
+            if (jp) return jp[1] + jp[2].padStart(2, '0');
+            return text;
+          }
+
+          // エントリの日付からソート方向を検出
+          // 同一グループコンテナ内の .entry-date を比較（グローバル比較はグループ順に影響されるため不可）
+          let isDescending = true;
+          for (const h of headings) {
+            const container = h.parentElement;
+            if (!container) continue;
+            const groupDates = container.querySelectorAll('.entry-date');
+            if (groupDates.length >= 2) {
+              const first = (groupDates[0].textContent || '').trim();
+              const last = (groupDates[groupDates.length - 1].textContent || '').trim();
+              if (first && last && first !== last) {
+                isDescending = first > last;
+                break;
+              }
+            }
+          }
+
+          const firstKey = getSortKey((headings[0].textContent || '').trim());
+          const secondKey = getSortKey((headings[1].textContent || '').trim());
+
+          // ソート方向とグループ順が一致していれば何もしない
+          if (isDescending && firstKey >= secondKey) return;
+          if (!isDescending && firstKey <= secondKey) return;
+
+          // グループコンテナ（見出しの親要素）を逆順に並べ替え
+          const containers = [];
+          for (const h of headings) {
+            if (h.parentElement) containers.push(h.parentElement);
+          }
+          const parent = containers[0].parentElement;
+          if (!parent) return;
+
+          for (let i = containers.length - 1; i >= 0; i--) {
+            parent.appendChild(containers[i]);
+          }
+        }
+
+        // グルーピング見出しを日本語形式に変換（CMS-19）
+        // "年月 2026-02" → "2026年2月"
+        function formatGroupHeadings() {
+          const headings = document.querySelectorAll('[class*="GroupHeading"]');
+          for (const h of headings) {
+            if (h.dataset.jaFormatted) continue;
+            const text = (h.textContent || '').trim();
+            const m = text.match(/(\d{4})-(\d{2})/);
+            if (m) {
+              h.textContent = m[1] + '年' + parseInt(m[2], 10) + '月';
+              h.dataset.jaFormatted = 'true';
+            }
+          }
+        }
+
+        // 年月選択プルダウン作成（CMS-19）
+        // グループ見出しから年月リストを生成し、選択で該当年月だけに絞り込む
+        // 元のグルーピングドロップダウンを非表示にし、代わりに月セレクターを配置
+        function createMonthSelector() {
+          const hash = window.location.hash || '';
+          const isPostsList = hash.indexOf('/collections/posts') !== -1 && hash.indexOf('/entries/') === -1;
+
+          const selector = document.getElementById('cms-month-selector');
+
+          if (!isPostsList) {
+            if (selector) selector.style.display = 'none';
+            return;
+          }
+
+          const headings = document.querySelectorAll('[class*="GroupHeading"]');
+          if (headings.length === 0) {
+            if (selector) selector.style.display = 'none';
+            return;
+          }
+
+          const arr = Array.from(headings);
+          const monthValues = arr.map(function(h) { return h.textContent || ''; });
+          const optionsSignature = monthValues.join('|');
+
+          function applyMonthFilter(selectedValue) {
+            const selected = selectedValue !== undefined ? selectedValue : (sel ? sel.value : '');
+            const currentHeadings = document.querySelectorAll('[class*="GroupHeading"]');
+            for (const h of currentHeadings) {
+              const container = h.parentElement;
+              if (!container) continue;
+              const headingText = h.textContent || '';
+              const visible = !selected || headingText === selected;
+              container.style.display = visible ? '' : 'none';
+            }
+            if (sel) sel.dataset.activeFilter = selected;
+          }
+
+          // セレクター要素の作成または更新
+          let sel = selector;
+          const previousValue = sel ? sel.value : '';
+          if (!sel) {
+            sel = document.createElement('select');
+            sel.id = 'cms-month-selector';
+            sel.setAttribute('aria-label', '年月で絞り込み');
+            sel.style.cssText = 'padding:8px 12px;border:1px solid #ddd;border-radius:6px;font-size:14px;background:#fff;cursor:pointer;margin-left:6px;';
+
+            // CollectionControls付近に配置
+            const controlsArea = document.querySelector('[class*="CollectionControls"]')
+              || document.querySelector('[class*="ViewControls"]');
+            if (controlsArea) {
+              controlsArea.appendChild(sel);
+            } else {
+              return;
+            }
+          }
+
+          // ネイティブselectを開いている最中にoptionを再構築するとブラウザが固まるため、
+          // グループ見出しの構成が変わった場合だけ選択肢を作り直す。
+          if (sel.dataset.optionsSignature !== optionsSignature) {
+            sel.textContent = '';
+            const allOpt = document.createElement('option');
+            allOpt.value = '';
+            allOpt.textContent = 'すべての年月';
+            sel.appendChild(allOpt);
+            for (const monthValue of monthValues) {
+              const opt = document.createElement('option');
+              opt.value = monthValue;
+              opt.textContent = monthValue;
+              sel.appendChild(opt);
+            }
+            if (previousValue && monthValues.indexOf(previousValue) !== -1) {
+              sel.value = previousValue;
+            }
+            sel.dataset.optionsSignature = optionsSignature;
+          }
+          sel.dataset.count = String(headings.length);
+          sel.style.display = '';
+
+          // 選択変更時に該当年月だけ表示
+          sel.onchange = function() {
+            applyMonthFilter();
+          };
+          applyMonthFilter();
+        }
+
         // iPhoneからのHEICファイルを制限（JPEG/PNG/WebP/GIFのみ受付）
         // 画像input要素のaccept属性を制限し、iPhoneはHEICを自動的にJPEGに変換
         function restrictImageInputAccept() {
@@ -873,6 +1126,11 @@
             showPublicUrl();
             manageDropdownOverlay();
             hideCodeBlockOnMobile();
+            hideGroupControl();
+            activateDefaultGrouping();
+            reverseViewGroups();
+            formatGroupHeadings();
+            createMonthSelector();
             restrictImageInputAccept();
           }
 

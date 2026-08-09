@@ -1,0 +1,182 @@
+[
+  {
+    "device": "PC",
+    "id": "cms19-default",
+    "name": "デフォルト表示（降順・グルーピング有効・月セレクター）",
+    "headings": [
+      "2026年2月",
+      "2026年1月",
+      "2025年12月"
+    ],
+    "dates": [
+      "2026-02-24",
+      "2026-02-20",
+      "2026-01-15",
+      "2025-12-01"
+    ],
+    "monthSelectorVisible": true,
+    "groupBtnHidden": true,
+    "isDescGroups": true,
+    "isJapaneseFormat": true,
+    "pass": true,
+    "screenshot": "screenshots/cms19-cms19-default-PC.png"
+  },
+  {
+    "device": "PC",
+    "id": "cms19-sort-asc",
+    "name": "ソート昇順切替→グループ昇順",
+    "headings": [
+      "2025年12月",
+      "2026年1月",
+      "2026年2月"
+    ],
+    "dates": [
+      "2025-12-01",
+      "2026-01-15",
+      "2026-02-20",
+      "2026-02-24"
+    ],
+    "isAscGroups": true,
+    "pass": true,
+    "screenshot": "screenshots/cms19-cms19-sort-asc-PC.png"
+  },
+  {
+    "device": "PC",
+    "id": "cms19-sort-desc-restore",
+    "name": "ソート降順復帰→グループ降順",
+    "headings": [
+      "2026年2月",
+      "2026年1月",
+      "2025年12月"
+    ],
+    "dates": [
+      "2026-02-24",
+      "2026-02-20",
+      "2026-01-15",
+      "2025-12-01"
+    ],
+    "isDescGroups": true,
+    "pass": true,
+    "screenshot": "screenshots/cms19-cms19-sort-desc-restore-PC.png"
+  },
+  {
+    "device": "iPad",
+    "id": "cms19-default",
+    "name": "デフォルト表示（降順・グルーピング有効・月セレクター）",
+    "headings": [
+      "2026年2月",
+      "2026年1月",
+      "2025年12月"
+    ],
+    "dates": [
+      "2026-02-24",
+      "2026-02-20",
+      "2026-01-15",
+      "2025-12-01"
+    ],
+    "monthSelectorVisible": true,
+    "groupBtnHidden": true,
+    "isDescGroups": true,
+    "isJapaneseFormat": true,
+    "pass": true,
+    "screenshot": "screenshots/cms19-cms19-default-iPad.png"
+  },
+  {
+    "device": "iPad",
+    "id": "cms19-sort-asc",
+    "name": "ソート昇順切替→グループ昇順",
+    "headings": [
+      "2025年12月",
+      "2026年1月",
+      "2026年2月"
+    ],
+    "dates": [
+      "2025-12-01",
+      "2026-01-15",
+      "2026-02-20",
+      "2026-02-24"
+    ],
+    "isAscGroups": true,
+    "pass": true,
+    "screenshot": "screenshots/cms19-cms19-sort-asc-iPad.png"
+  },
+  {
+    "device": "iPad",
+    "id": "cms19-sort-desc-restore",
+    "name": "ソート降順復帰→グループ降順",
+    "headings": [
+      "2026年2月",
+      "2026年1月",
+      "2025年12月"
+    ],
+    "dates": [
+      "2026-02-24",
+      "2026-02-20",
+      "2026-01-15",
+      "2025-12-01"
+    ],
+    "isDescGroups": true,
+    "pass": true,
+    "screenshot": "screenshots/cms19-cms19-sort-desc-restore-iPad.png"
+  },
+  {
+    "device": "iPhone",
+    "id": "cms19-default",
+    "name": "デフォルト表示（降順・グルーピング有効・月セレクター）",
+    "headings": [
+      "2026年2月",
+      "2026年1月",
+      "2025年12月"
+    ],
+    "dates": [
+      "2026-02-24",
+      "2026-02-20",
+      "2026-01-15",
+      "2025-12-01"
+    ],
+    "monthSelectorVisible": true,
+    "groupBtnHidden": true,
+    "isDescGroups": true,
+    "isJapaneseFormat": true,
+    "pass": true,
+    "screenshot": "screenshots/cms19-cms19-default-iPhone.png"
+  },
+  {
+    "device": "iPhone",
+    "id": "cms19-sort-asc",
+    "name": "ソート昇順切替→グループ昇順",
+    "headings": [
+      "2025年12月",
+      "2026年1月",
+      "2026年2月"
+    ],
+    "dates": [
+      "2025-12-01",
+      "2026-01-15",
+      "2026-02-20",
+      "2026-02-24"
+    ],
+    "isAscGroups": true,
+    "pass": true,
+    "screenshot": "screenshots/cms19-cms19-sort-asc-iPhone.png"
+  },
+  {
+    "device": "iPhone",
+    "id": "cms19-sort-desc-restore",
+    "name": "ソート降順復帰→グループ降順",
+    "headings": [
+      "2026年2月",
+      "2026年1月",
+      "2025年12月"
+    ],
+    "dates": [
+      "2026-02-24",
+      "2026-02-20",
+      "2026-01-15",
+      "2025-12-01"
+    ],
+    "isDescGroups": true,
+    "pass": true,
+    "screenshot": "screenshots/cms19-cms19-sort-desc-restore-iPhone.png"
+  }
+]

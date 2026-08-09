@@ -14,6 +14,11 @@ Astro + Decap CMS によるブログサイト。Cloudflare Pages でホスティ
 | 1.5 | 2026-02-21 | 章番号再構成、セクション順序修正、テスト件数更新 |
 | 1.6 | 2026-02-21 | マージ手順リファレンス追加、テスト件数更新（243テスト） |
 | 1.7 | 2026-02-21 | 固定ページ下書きバッジ・デフォルトソート追加（CMS-16）、config.ymlスキーマ検証テスト追加、テスト件数更新（245 Vitest + 240 E2E） |
+| 1.8 | 2026-05-22 | Modern Web Guidance準拠対応をstaging先行反映（先頭サムネイルLCP優先度、コンテナクエリ、ナビARIA状態同期、CMS独自プレビュースタイルのコントラスト改善） |
+| 1.9 | 2026-06-11 | Modern Web GuidanceレビューF-1〜F-10対応（描画最適化範囲、キーボード操作、タップ領域、CMS/本文/コードブロックa11y、画像属性） |
+| 1.10 | 2026-07-04 | ドキュメント整理: テスト件数を実測に更新（562 Vitest + 432 E2E）、プロジェクト構成を最新化（E2E 7ファイル・rehypeプラグイン・evidence/）、参考リンクの章配置を修正 |
+| 1.11 | 2026-07-04 | 個人ブログ化ロードマップ（site/canonical, OGP, RSS, サイトマップ, タグ一覧, 前後記事ナビ, ダークモード, ページネーション）実装。robots.txtのstaging誤設定（Bug #41）とページネーション重複コンテンツ（Bug #42）を修正。テスト件数585 Vitest + 444 E2Eへ更新 |
+| 1.12 | 2026-07-05 | ライトモード本文リンクのコントラスト比不足（Bug #43、WCAG AA未達）を修正。テスト件数586 Vitestへ更新 |
 
 詳細なシステム変更履歴は [DOCUMENTATION.md](docs/DOCUMENTATION.md) を参照。
 
@@ -84,7 +89,8 @@ my-blog/
 │   ├── integrations/
 │   │   └── image-optimize.mjs    # ビルド時画像最適化
 │   ├── plugins/
-│   │   └── rehype-image-caption.mjs  # 画像キャプションプラグイン
+│   │   ├── rehype-image-caption.mjs  # 画像キャプションプラグイン
+│   │   └── rehype-focusable-code-blocks.mjs  # コードブロックのキーボード到達性
 │   ├── layouts/
 │   │   └── Base.astro            # 共通レイアウト
 │   ├── lib/
@@ -98,8 +104,13 @@ my-blog/
 │   ├── e2e/                      # E2Eテスト（Playwright）
 │   │   ├── site.spec.ts          # 静的サイトE2Eテスト
 │   │   ├── cms.spec.ts           # CMS管理画面E2Eテスト
-│   │   └── cms-customizations.spec.ts  # CMS UIカスタマイズ検証テスト
+│   │   ├── cms-customizations.spec.ts  # CMS UIカスタマイズ検証テスト
+│   │   ├── cms-crud.spec.ts      # CMS CRUD操作テスト
+│   │   ├── cms-operations.spec.ts # CMS実操作テスト
+│   │   ├── cms-exploratory.spec.ts # CMS探索的テスト
+│   │   └── accessibility.spec.ts # アクセシビリティテスト（axe-core）
 │   └── TEST-REPORT.md            # テスト仕様書
+├── evidence/                     # 動作確認エビデンス（日付フォルダごと）
 ├── CLAUDE.md                     # Claude Code向けプロジェクトガイド
 ├── astro.config.mjs
 ├── playwright.config.ts          # Playwright設定（PC/iPad/iPhone）
@@ -116,9 +127,9 @@ my-blog/
 | `npm run dev` | 開発サーバー起動（localhost:4321） |
 | `npm run build` | 本番ビルド（`./dist/` に出力） |
 | `npm run preview` | ビルド結果のローカルプレビュー |
-| `npm test` | 単体・統合テスト実行（Vitest / 247テスト、記事数により変動） |
+| `npm test` | 単体・統合テスト実行（Vitest / 586テスト、記事数により変動） |
 | `npm run test:watch` | ウォッチモードでテスト実行 |
-| `npm run test:e2e` | E2Eテスト実行（Playwright / PC・iPad・iPhone 240テスト） |
+| `npm run test:e2e` | E2Eテスト実行（Playwright / PC・iPad・iPhone 444テスト: 436実行+8スキップ） |
 
 ## 5. 管理画面のUIカスタマイズ
 
@@ -237,8 +248,20 @@ main (本番)  ←── merge ── staging (テスト) ←── merge ──
 | `tests/TEST-REPORT.md` | テスト仕様書（テストケース一覧・要件トレーサビリティ） |
 | `CLAUDE.md` | Claude Code向けプロジェクトガイド（開発規約・注意事項） |
 
-## 10. 参考リンク
+## 10. Modern Web Guidance準拠方針
 
+Google公式Modern Web Guidanceスキル準拠を方針とし、公開サイトとCMS独自カスタマイズに限って適用する。初期ビューポート内への`content-visibility`適用を避け、キーボード操作、44pxタップ領域、識別可能な本文リンク、スクロール可能コードブロックへの到達性を維持する。Decap CMS本体UIは引用元レポジトリの実装を尊重し、保存・OAuth・プレビュー互換性の再発リスクが高い変更は非準拠許容として扱う。
+
+## 11. 参考リンク
+
+- [Modern Web Guidance - Chrome for Developers](https://developer.chrome.com/docs/modern-web-guidance?hl=ja)
+- [Modern Web Guidance Get started](https://developer.chrome.com/docs/modern-web-guidance/get-started?hl=ja)
 - [Astro ドキュメント](https://docs.astro.build)
 - [Decap CMS ドキュメント](https://decapcms.org/docs/)
 - [Cloudflare Pages ドキュメント](https://developers.cloudflare.com/pages/)
+
+## 12. エビデンス管理方針（#90）
+
+`evidence/` ディレクトリはE2Eテストや機能検証のエビデンス保存用に使用します。
+- 一時的な検証動画（`.mp4`, `.webm`）や試行ログ (`evidence/tmp/`) は `.gitignore` によりコミットから除外されます。
+- リポジトリサイズ抑制のため、コミット対象のエビデンスは必要最小限の静止画像・ログに限定します。

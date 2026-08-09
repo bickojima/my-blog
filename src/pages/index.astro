@@ -1,13 +1,17 @@
 ---
 import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
+import Pagination from '../components/Pagination.astro';
 import { getPostUrl } from '../lib/posts';
 
+const PAGE_SIZE = 10;
 const allPosts = await getCollection('posts');
 const posts = allPosts
   .filter(post => !post.data.draft)
   .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime());
 
+const totalPages = Math.ceil(posts.length / PAGE_SIZE);
+const displayPosts = posts.slice(0, PAGE_SIZE);
 ---
 
 <Base title="tbiのブログ">
@@ -16,11 +20,20 @@ const posts = allPosts
   {posts.length === 0 && <p class="no-posts">まだ記事がありません。</p>}
 
   <div class="post-list">
-    {posts.map(post => (
+    {displayPosts.map((post, index) => (
       <article class="post-card">
         {post.data.thumbnail && (
           <a href={getPostUrl(post)}>
-            <img src={post.data.thumbnail} alt={post.data.title} class="post-thumbnail" loading="lazy" decoding="async" />
+            <img
+              src={post.data.thumbnail}
+              alt={post.data.title}
+              class="post-thumbnail"
+              width="1200"
+              height="800"
+              loading={index === 0 ? 'eager' : 'lazy'}
+              fetchpriority={index === 0 ? 'high' : undefined}
+              decoding="async"
+            />
           </a>
         )}
         <div class="post-body">
@@ -43,22 +56,33 @@ const posts = allPosts
     ))}
   </div>
 
+  <Pagination
+    currentPage={1}
+    lastPage={totalPages}
+    nextUrl={totalPages > 1 ? '/page/2' : undefined}
+  />
+
   <style>
     h1 {
       font-size: 1.4rem;
       margin-bottom: 1.5rem;
     }
     .no-posts {
-      color: #767676;
+      color: var(--color-text-muted);
     }
     .post-list {
       display: flex;
       flex-direction: column;
       gap: 1.5rem;
+      container-type: inline-size;
     }
     .post-card {
-      border-bottom: 1px solid #eee;
+      border-bottom: 1px solid var(--color-border);
       padding-bottom: 1.5rem;
+    }
+    .post-card:nth-child(n+7) {
+      content-visibility: auto;
+      contain-intrinsic-size: auto 220px;
     }
     .post-thumbnail {
       width: 100%;
@@ -75,20 +99,27 @@ const posts = allPosts
     }
     .post-meta time {
       font-size: 0.85rem;
-      color: #767676;
+      color: var(--color-text-muted);
     }
     .post-title {
       display: block;
       font-size: 1.15rem;
       font-weight: bold;
       margin-bottom: 0.25rem;
+      text-wrap: pretty;
     }
     .post-title:hover {
       text-decoration: underline;
     }
+    .post-title:focus-visible,
+    .tag:focus-visible {
+      outline: 2px solid var(--color-focus);
+      outline-offset: 3px;
+      border-radius: 3px;
+    }
     .post-summary {
       font-size: 0.9rem;
-      color: #666;
+      color: var(--color-text-muted);
       line-height: 1.6;
     }
     .post-tags {
@@ -99,14 +130,26 @@ const posts = allPosts
     }
     .tag {
       font-size: 0.75rem;
-      background: #f0f0f0;
-      color: #555;
+      background: var(--color-tag-bg);
+      color: var(--color-tag-text);
       padding: 0.1rem 0.5rem;
       border-radius: 3px;
     }
     .tag:hover {
-      background: #333;
-      color: #fff;
+      background: var(--color-invert-bg);
+      color: var(--color-invert-text);
+    }
+    @container (min-width: 560px) {
+      .post-card:has(.post-thumbnail) {
+        display: grid;
+        grid-template-columns: 180px 1fr;
+        gap: 1rem;
+        align-items: start;
+      }
+      .post-thumbnail {
+        height: 120px;
+        margin-bottom: 0;
+      }
     }
   </style>
 </Base>

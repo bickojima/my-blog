@@ -1,0 +1,1122 @@
+[
+  {
+    "device": "PC",
+    "id": "S01",
+    "name": "トップページ: LCP画像属性・content-visibility・コンテナクエリ",
+    "pass": true,
+    "detail": {
+      "firstImg": {
+        "loading": "eager",
+        "fetchpriority": "high",
+        "hasWH": true
+      },
+      "secondImgLoading": "lazy",
+      "cardInfo": [
+        {
+          "i": 0,
+          "top": 161,
+          "cv": "visible",
+          "aboveFold": true
+        },
+        {
+          "i": 1,
+          "top": 339,
+          "cv": "visible",
+          "aboveFold": true
+        },
+        {
+          "i": 2,
+          "top": 517,
+          "cv": "visible",
+          "aboveFold": true
+        },
+        {
+          "i": 3,
+          "top": 694,
+          "cv": "visible",
+          "aboveFold": true
+        },
+        {
+          "i": 4,
+          "top": 872,
+          "cv": "visible",
+          "aboveFold": false
+        }
+      ],
+      "layout": "grid",
+      "vh": 800,
+      "containerType": "inline-size"
+    }
+  },
+  {
+    "device": "PC",
+    "id": "S01b",
+    "name": "content-visibility:auto はファーストビュー外のみか（ガイド要件）",
+    "pass": true,
+    "detail": {
+      "violatingCards": []
+    }
+  },
+  {
+    "device": "PC",
+    "id": "S02",
+    "name": "キーボードTab巡回・focus-visible・折返し下到達",
+    "pass": true,
+    "detail": {
+      "steps": 34,
+      "reachedBelowFold": true,
+      "focusVisibleStyled": 34,
+      "sample": [
+        {
+          "tag": "A",
+          "cls": "site-title",
+          "text": "tbiのブログ",
+          "outline": "1px rgb(0, 95, 204)",
+          "docTop": 16
+        },
+        {
+          "tag": "A",
+          "cls": "nav-dropdown-link",
+          "text": "プロフィール",
+          "outline": "2px rgb(26, 115, 232)",
+          "docTop": 24
+        },
+        {
+          "tag": "BUTTON",
+          "cls": "nav-dropdown-toggle",
+          "text": "▾",
+          "outline": "2px rgb(26, 115, 232)",
+          "docTop": 23
+        },
+        {
+          "tag": "A",
+          "cls": "",
+          "text": "",
+          "outline": "1px rgb(0, 95, 204)",
+          "docTop": 161
+        },
+        {
+          "tag": "A",
+          "cls": "post-title",
+          "text": "チャーハン美味しい",
+          "outline": "2px rgb(26, 115, 232)",
+          "docTop": 189
+        },
+        {
+          "tag": "A",
+          "cls": "tag",
+          "text": "福しん",
+          "outline": "2px rgb(26, 115, 232)",
+          "docTop": 258
+        },
+        {
+          "tag": "A",
+          "cls": "",
+          "text": "",
+          "outline": "1px rgb(0, 95, 204)",
+          "docTop": 339
+        },
+        {
+          "tag": "A",
+          "cls": "post-title",
+          "text": "ケバブラップ美味しい",
+          "outline": "2px rgb(26, 115, 232)",
+          "docTop": 367
+        }
+      ]
+    }
+  },
+  {
+    "device": "PC",
+    "id": "S03",
+    "name": "ドロップダウン開閉とaria-expanded同期",
+    "pass": true,
+    "detail": {
+      "opened": true,
+      "ariaExpanded": "true"
+    }
+  },
+  {
+    "device": "PC",
+    "id": "S03b",
+    "name": "Escapeキーでドロップダウンが閉じる",
+    "pass": true,
+    "detail": {
+      "closedByEsc": true
+    }
+  },
+  {
+    "device": "PC",
+    "id": "S03c",
+    "name": "フォーカスがメニューを離れた後も開いたままか（開いたまま=操作性課題）",
+    "pass": true,
+    "detail": {
+      "staysOpenAfterTabAway": false
+    }
+  },
+  {
+    "device": "PC",
+    "id": "S04",
+    "name": "記事詳細: 本文リンクが視覚的に判別可能か",
+    "pass": true,
+    "detail": {
+      "url": "/posts/2026/02/%E3%83%81%E3%83%A3%E3%83%BC%E3%83%8F%E3%83%B3%E7%BE%8E%E5%91%B3%E3%81%97%E3%81%84",
+      "h1Wrap": "balance",
+      "bodyLink": "no-link-in-content",
+      "pre": "no-pre"
+    }
+  },
+  {
+    "device": "PC",
+    "id": "S05",
+    "name": "axe-core違反（トップ/記事）",
+    "pass": true,
+    "detail": {
+      "top": [],
+      "post": []
+    }
+  },
+  {
+    "device": "PC",
+    "id": "S99",
+    "name": "コンソールエラー（サイト）",
+    "pass": true,
+    "detail": {
+      "consoleErrors": []
+    }
+  },
+  {
+    "device": "iPad",
+    "id": "S01",
+    "name": "トップページ: LCP画像属性・content-visibility・コンテナクエリ",
+    "pass": true,
+    "detail": {
+      "firstImg": {
+        "loading": "eager",
+        "fetchpriority": "high",
+        "hasWH": true
+      },
+      "secondImgLoading": "lazy",
+      "cardInfo": [
+        {
+          "i": 0,
+          "top": 174,
+          "cv": "visible",
+          "aboveFold": true
+        },
+        {
+          "i": 1,
+          "top": 352,
+          "cv": "visible",
+          "aboveFold": true
+        },
+        {
+          "i": 2,
+          "top": 529,
+          "cv": "visible",
+          "aboveFold": true
+        },
+        {
+          "i": 3,
+          "top": 707,
+          "cv": "visible",
+          "aboveFold": true
+        },
+        {
+          "i": 4,
+          "top": 885,
+          "cv": "visible",
+          "aboveFold": true
+        }
+      ],
+      "layout": "grid",
+      "vh": 1194,
+      "containerType": "inline-size"
+    }
+  },
+  {
+    "device": "iPad",
+    "id": "S01b",
+    "name": "content-visibility:auto はファーストビュー外のみか（ガイド要件）",
+    "pass": true,
+    "detail": {
+      "violatingCards": []
+    }
+  },
+  {
+    "device": "iPad",
+    "id": "S02",
+    "name": "キーボードTab巡回・focus-visible・折返し下到達",
+    "pass": true,
+    "detail": {
+      "steps": 34,
+      "reachedBelowFold": true,
+      "focusVisibleStyled": 34,
+      "sample": [
+        {
+          "tag": "A",
+          "cls": "site-title",
+          "text": "tbiのブログ",
+          "outline": "1px rgb(229, 151, 0)",
+          "docTop": 22
+        },
+        {
+          "tag": "A",
+          "cls": "nav-dropdown-link",
+          "text": "プロフィール",
+          "outline": "2px rgb(26, 115, 232)",
+          "docTop": 16
+        },
+        {
+          "tag": "BUTTON",
+          "cls": "nav-dropdown-toggle",
+          "text": "▾",
+          "outline": "2px rgb(26, 115, 232)",
+          "docTop": 17
+        },
+        {
+          "tag": "A",
+          "cls": "",
+          "text": "",
+          "outline": "1px rgb(229, 151, 0)",
+          "docTop": 174
+        },
+        {
+          "tag": "A",
+          "cls": "post-title",
+          "text": "チャーハン美味しい",
+          "outline": "2px rgb(26, 115, 232)",
+          "docTop": 202
+        },
+        {
+          "tag": "A",
+          "cls": "tag",
+          "text": "福しん",
+          "outline": "2px rgb(26, 115, 232)",
+          "docTop": 271
+        },
+        {
+          "tag": "A",
+          "cls": "",
+          "text": "",
+          "outline": "1px rgb(229, 151, 0)",
+          "docTop": 352
+        },
+        {
+          "tag": "A",
+          "cls": "post-title",
+          "text": "ケバブラップ美味しい",
+          "outline": "2px rgb(26, 115, 232)",
+          "docTop": 380
+        }
+      ]
+    }
+  },
+  {
+    "device": "iPad",
+    "id": "S03",
+    "name": "ドロップダウン開閉とaria-expanded同期",
+    "pass": true,
+    "detail": {
+      "opened": true,
+      "ariaExpanded": "true"
+    }
+  },
+  {
+    "device": "iPad",
+    "id": "S03b",
+    "name": "Escapeキーでドロップダウンが閉じる",
+    "pass": true,
+    "detail": {
+      "closedByEsc": true
+    }
+  },
+  {
+    "device": "iPad",
+    "id": "S03c",
+    "name": "フォーカスがメニューを離れた後も開いたままか（開いたまま=操作性課題）",
+    "pass": true,
+    "detail": {
+      "staysOpenAfterTabAway": false
+    }
+  },
+  {
+    "device": "iPad",
+    "id": "S04",
+    "name": "記事詳細: 本文リンクが視覚的に判別可能か",
+    "pass": true,
+    "detail": {
+      "url": "/posts/2026/02/%E3%83%81%E3%83%A3%E3%83%BC%E3%83%8F%E3%83%B3%E7%BE%8E%E5%91%B3%E3%81%97%E3%81%84",
+      "h1Wrap": "balance",
+      "bodyLink": "no-link-in-content",
+      "pre": "no-pre"
+    }
+  },
+  {
+    "device": "iPad",
+    "id": "S05",
+    "name": "axe-core違反（トップ/記事）",
+    "pass": true,
+    "detail": {
+      "top": [],
+      "post": []
+    }
+  },
+  {
+    "device": "iPad",
+    "id": "S06",
+    "name": "タップターゲット最小サイズ（24px=WCAG2.2 AA / 44px=AAA）",
+    "pass": true,
+    "detail": {
+      "small": [],
+      "all": [
+        {
+          "sel": "nav-dropdown-link",
+          "w": 80,
+          "h": 44
+        },
+        {
+          "sel": "nav-dropdown-toggle",
+          "w": 44,
+          "h": 44
+        },
+        {
+          "sel": "tag",
+          "w": 52,
+          "h": 25
+        },
+        {
+          "sel": "tag",
+          "w": 51,
+          "h": 25
+        },
+        {
+          "sel": "tag",
+          "w": 75,
+          "h": 25
+        },
+        {
+          "sel": "tag",
+          "w": 40,
+          "h": 25
+        },
+        {
+          "sel": "tag",
+          "w": 64,
+          "h": 25
+        },
+        {
+          "sel": "tag",
+          "w": 76,
+          "h": 25
+        },
+        {
+          "sel": "admin-link",
+          "w": 44,
+          "h": 44
+        }
+      ]
+    }
+  },
+  {
+    "device": "iPad",
+    "id": "S99",
+    "name": "コンソールエラー（サイト）",
+    "pass": true,
+    "detail": {
+      "consoleErrors": []
+    }
+  },
+  {
+    "device": "iPhone",
+    "id": "S01",
+    "name": "トップページ: LCP画像属性・content-visibility・コンテナクエリ",
+    "pass": true,
+    "detail": {
+      "firstImg": {
+        "loading": "eager",
+        "fetchpriority": "high",
+        "hasWH": true
+      },
+      "secondImgLoading": "lazy",
+      "cardInfo": [
+        {
+          "i": 0,
+          "top": 174,
+          "cv": "visible",
+          "aboveFold": true
+        },
+        {
+          "i": 1,
+          "top": 565,
+          "cv": "visible",
+          "aboveFold": true
+        },
+        {
+          "i": 2,
+          "top": 956,
+          "cv": "visible",
+          "aboveFold": false
+        },
+        {
+          "i": 3,
+          "top": 1348,
+          "cv": "visible",
+          "aboveFold": false
+        },
+        {
+          "i": 4,
+          "top": 1739,
+          "cv": "visible",
+          "aboveFold": false
+        }
+      ],
+      "layout": "block",
+      "vh": 664,
+      "containerType": "inline-size"
+    }
+  },
+  {
+    "device": "iPhone",
+    "id": "S01b",
+    "name": "content-visibility:auto はファーストビュー外のみか（ガイド要件）",
+    "pass": true,
+    "detail": {
+      "violatingCards": []
+    }
+  },
+  {
+    "device": "iPhone",
+    "id": "S02",
+    "name": "キーボードTab巡回・focus-visible・折返し下到達",
+    "pass": true,
+    "detail": {
+      "steps": 34,
+      "reachedBelowFold": true,
+      "focusVisibleStyled": 34,
+      "sample": [
+        {
+          "tag": "A",
+          "cls": "site-title",
+          "text": "tbiのブログ",
+          "outline": "1px rgb(229, 151, 0)",
+          "docTop": 22
+        },
+        {
+          "tag": "A",
+          "cls": "nav-dropdown-link",
+          "text": "プロフィール",
+          "outline": "2px rgb(26, 115, 232)",
+          "docTop": 16
+        },
+        {
+          "tag": "BUTTON",
+          "cls": "nav-dropdown-toggle",
+          "text": "▾",
+          "outline": "2px rgb(26, 115, 232)",
+          "docTop": 17
+        },
+        {
+          "tag": "A",
+          "cls": "",
+          "text": "",
+          "outline": "1px rgb(229, 151, 0)",
+          "docTop": 371
+        },
+        {
+          "tag": "A",
+          "cls": "post-title",
+          "text": "チャーハン美味しい",
+          "outline": "2px rgb(26, 115, 232)",
+          "docTop": 423
+        },
+        {
+          "tag": "A",
+          "cls": "tag",
+          "text": "福しん",
+          "outline": "2px rgb(26, 115, 232)",
+          "docTop": 491
+        },
+        {
+          "tag": "A",
+          "cls": "",
+          "text": "",
+          "outline": "1px rgb(229, 151, 0)",
+          "docTop": 762
+        },
+        {
+          "tag": "A",
+          "cls": "post-title",
+          "text": "ケバブラップ美味しい",
+          "outline": "2px rgb(26, 115, 232)",
+          "docTop": 814
+        }
+      ]
+    }
+  },
+  {
+    "device": "iPhone",
+    "id": "S03",
+    "name": "ドロップダウン開閉とaria-expanded同期",
+    "pass": true,
+    "detail": {
+      "opened": true,
+      "ariaExpanded": "true"
+    }
+  },
+  {
+    "device": "iPhone",
+    "id": "S03b",
+    "name": "Escapeキーでドロップダウンが閉じる",
+    "pass": true,
+    "detail": {
+      "closedByEsc": true
+    }
+  },
+  {
+    "device": "iPhone",
+    "id": "S03c",
+    "name": "フォーカスがメニューを離れた後も開いたままか（開いたまま=操作性課題）",
+    "pass": true,
+    "detail": {
+      "staysOpenAfterTabAway": false
+    }
+  },
+  {
+    "device": "iPhone",
+    "id": "S04",
+    "name": "記事詳細: 本文リンクが視覚的に判別可能か",
+    "pass": true,
+    "detail": {
+      "url": "/posts/2026/02/%E3%83%81%E3%83%A3%E3%83%BC%E3%83%8F%E3%83%B3%E7%BE%8E%E5%91%B3%E3%81%97%E3%81%84",
+      "h1Wrap": "balance",
+      "bodyLink": "no-link-in-content",
+      "pre": "no-pre"
+    }
+  },
+  {
+    "device": "iPhone",
+    "id": "S05",
+    "name": "axe-core違反（トップ/記事）",
+    "pass": true,
+    "detail": {
+      "top": [],
+      "post": []
+    }
+  },
+  {
+    "device": "iPhone",
+    "id": "S06",
+    "name": "タップターゲット最小サイズ（24px=WCAG2.2 AA / 44px=AAA）",
+    "pass": true,
+    "detail": {
+      "small": [],
+      "all": [
+        {
+          "sel": "nav-dropdown-link",
+          "w": 80,
+          "h": 44
+        },
+        {
+          "sel": "nav-dropdown-toggle",
+          "w": 44,
+          "h": 44
+        },
+        {
+          "sel": "tag",
+          "w": 52,
+          "h": 25
+        },
+        {
+          "sel": "tag",
+          "w": 51,
+          "h": 25
+        },
+        {
+          "sel": "tag",
+          "w": 75,
+          "h": 25
+        },
+        {
+          "sel": "tag",
+          "w": 40,
+          "h": 25
+        },
+        {
+          "sel": "tag",
+          "w": 64,
+          "h": 25
+        },
+        {
+          "sel": "tag",
+          "w": 76,
+          "h": 25
+        },
+        {
+          "sel": "admin-link",
+          "w": 44,
+          "h": 44
+        }
+      ]
+    }
+  },
+  {
+    "device": "iPhone",
+    "id": "S99",
+    "name": "コンソールエラー（サイト）",
+    "pass": true,
+    "detail": {
+      "consoleErrors": []
+    }
+  },
+  {
+    "device": "PC",
+    "id": "C01",
+    "name": "CMS一覧: 年月グルーピング自動有効化・日本語見出し",
+    "pass": true,
+    "detail": {
+      "headings": [
+        "2026年2月",
+        "2026年1月",
+        "2025年12月"
+      ],
+      "selInfo": {
+        "options": [
+          "すべての年月",
+          "2026年2月",
+          "2026年1月",
+          "2025年12月"
+        ],
+        "h": 37,
+        "w": 142,
+        "hasLabel": true
+      },
+      "entries": 12
+    }
+  },
+  {
+    "device": "PC",
+    "id": "C01b",
+    "name": "月セレクターにアクセシブルネーム（label/aria-label）があるか",
+    "pass": true,
+    "detail": {
+      "selInfo": {
+        "options": [
+          "すべての年月",
+          "2026年2月",
+          "2026年1月",
+          "2025年12月"
+        ],
+        "h": 37,
+        "w": 142,
+        "hasLabel": true
+      }
+    }
+  },
+  {
+    "device": "PC",
+    "id": "C01c",
+    "name": "グループ順が新しい年月から（日付降順ソートと一致）",
+    "pass": true,
+    "detail": {
+      "keys": [
+        "202602",
+        "202601",
+        "202512"
+      ]
+    }
+  },
+  {
+    "device": "PC",
+    "id": "C02",
+    "name": "月セレクター絞り込み（2026年2月選択）",
+    "pass": true,
+    "detail": {
+      "visibleHeadings": [
+        "2026年2月"
+      ],
+      "target": "2026年2月"
+    }
+  },
+  {
+    "device": "PC",
+    "id": "C04",
+    "name": "エディタ画面表示・公開URLバー",
+    "pass": true,
+    "detail": {
+      "hash": "#/collections/posts/entries/2026/02/ramen",
+      "hasTitleInput": true,
+      "urlBar": "公開URL:http://localhost:4180/posts/2026/02/ramen",
+      "toolbar": [
+        {
+          "w": 102,
+          "h": 36
+        },
+        {
+          "w": 86,
+          "h": 36
+        },
+        {
+          "w": 36,
+          "h": 36
+        },
+        {
+          "w": 36,
+          "h": 36
+        },
+        {
+          "w": 36,
+          "h": 36
+        },
+        {
+          "w": 36,
+          "h": 36
+        },
+        {
+          "w": 36,
+          "h": 36
+        },
+        {
+          "w": 36,
+          "h": 36
+        },
+        {
+          "w": 36,
+          "h": 36
+        },
+        {
+          "w": 36,
+          "h": 36
+        },
+        {
+          "w": 36,
+          "h": 36
+        },
+        {
+          "w": 36,
+          "h": 36
+        }
+      ]
+    }
+  },
+  {
+    "device": "PC",
+    "id": "C05",
+    "name": "axe-core違反（CMS一覧画面・参考値）",
+    "pass": null,
+    "detail": {
+      "count": 4,
+      "violations": [
+        {
+          "id": "aria-command-name",
+          "impact": "serious",
+          "help": "ARIA commands must have an accessible name",
+          "nodes": [
+            ".css-3kqcwa-AvatarDropdownButton"
+          ]
+        },
+        {
+          "id": "button-name",
+          "impact": "critical",
+          "help": "Buttons must have discernible text",
+          "nodes": [
+            ".css-1bbwdvf-ViewControlsButton-button-button",
+            ".css-6akal5-ViewControlsButton-button-button"
+          ]
+        },
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "nodes": [
+            ".css-xduxlj-AppHeaderButton-button-button-buttonActive-buttonActive-buttonActive-buttonActive-buttonActive-buttonActive-buttonActive-buttonActive-AppHeaderButton-AppHeaderButton",
+            "a[data-testid=\"pages\"]",
+            "#年月2026-02 > div > .css-1y2l20x-CardsGrid.etq0ss00 > .css-gtrr8n-ListCard-card-card.effeus410 > .css-6x6ze7-ListCardLink.effeus49 > .css-v1zvwj-ListCardTitle.effeus45[data-formatted=\"true\"] > .entry-date",
+            ".entry-draft",
+            "#年月2026-01 > div > .css-1y2l20x-CardsGrid.etq0ss00 > .css-gtrr8n-ListCard-card-card.effeus410 > .css-6x6ze7-ListCardLink.effeus49 > .css-v1zvwj-ListCardTitle.effeus45[data-formatted=\"true\"] > .entry-date"
+          ]
+        },
+        {
+          "id": "region",
+          "impact": "moderate",
+          "help": "All page content should be contained by landmarks",
+          "nodes": [
+            "div[data-evidence-annotation=\"true\"]:nth-child(12)"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "device": "PC",
+    "id": "C99",
+    "name": "コンソールエラー（CMS）",
+    "pass": true,
+    "detail": {
+      "consoleErrors": []
+    }
+  },
+  {
+    "device": "iPhone",
+    "id": "C01",
+    "name": "CMS一覧: 年月グルーピング自動有効化・日本語見出し",
+    "pass": true,
+    "detail": {
+      "headings": [
+        "2026年2月",
+        "2026年1月",
+        "2025年12月"
+      ],
+      "selInfo": {
+        "options": [
+          "すべての年月",
+          "2026年2月",
+          "2026年1月",
+          "2025年12月"
+        ],
+        "h": 44,
+        "w": 142,
+        "hasLabel": true
+      },
+      "entries": 12
+    }
+  },
+  {
+    "device": "iPhone",
+    "id": "C01b",
+    "name": "月セレクターにアクセシブルネーム（label/aria-label）があるか",
+    "pass": true,
+    "detail": {
+      "selInfo": {
+        "options": [
+          "すべての年月",
+          "2026年2月",
+          "2026年1月",
+          "2025年12月"
+        ],
+        "h": 44,
+        "w": 142,
+        "hasLabel": true
+      }
+    }
+  },
+  {
+    "device": "iPhone",
+    "id": "C01c",
+    "name": "グループ順が新しい年月から（日付降順ソートと一致）",
+    "pass": true,
+    "detail": {
+      "keys": [
+        "202602",
+        "202601",
+        "202512"
+      ]
+    }
+  },
+  {
+    "device": "iPhone",
+    "id": "C02",
+    "name": "月セレクター絞り込み（2026年2月選択）",
+    "pass": true,
+    "detail": {
+      "visibleHeadings": [
+        "2026年2月"
+      ],
+      "target": "2026年2月"
+    }
+  },
+  {
+    "device": "iPhone",
+    "id": "C03",
+    "name": "CMS一覧画面の操作要素44px確保（WCAG 2.5.5）",
+    "pass": true,
+    "detail": {
+      "small": [],
+      "all": [
+        {
+          "sel": "[class*=\"CollectionTopNewButton\"]",
+          "text": "記事を作成",
+          "w": 90,
+          "h": 44
+        },
+        {
+          "sel": "[role=\"button\"][aria-haspopup]",
+          "text": "新規作成",
+          "w": 94,
+          "h": 44
+        },
+        {
+          "sel": "[role=\"button\"][aria-haspopup]",
+          "text": "",
+          "w": 48,
+          "h": 51
+        },
+        {
+          "sel": "[role=\"button\"][aria-haspopup]",
+          "text": "ソート",
+          "w": 80,
+          "h": 44
+        },
+        {
+          "sel": "#cms-month-selector",
+          "text": "すべての年月2026年2月20",
+          "w": 142,
+          "h": 44
+        },
+        {
+          "sel": "[class*=\"AppHeader\"] button, [class*=\"Ap",
+          "text": "コンテンツ",
+          "w": 116,
+          "h": 56
+        },
+        {
+          "sel": "[class*=\"AppHeader\"] button, [class*=\"Ap",
+          "text": "メディア",
+          "w": 98,
+          "h": 56
+        }
+      ]
+    }
+  },
+  {
+    "device": "iPhone",
+    "id": "C04",
+    "name": "エディタ画面表示・公開URLバー",
+    "pass": true,
+    "detail": {
+      "hash": "#/collections/posts/entries/2026/02/ramen",
+      "hasTitleInput": true,
+      "urlBar": "公開URL:http://localhost:4180/posts/2026/02/ramen",
+      "toolbar": [
+        {
+          "w": 66,
+          "h": 44
+        },
+        {
+          "w": 80,
+          "h": 44
+        },
+        {
+          "w": 48,
+          "h": 44
+        },
+        {
+          "w": 48,
+          "h": 44
+        },
+        {
+          "w": 48,
+          "h": 44
+        },
+        {
+          "w": 48,
+          "h": 44
+        },
+        {
+          "w": 48,
+          "h": 44
+        },
+        {
+          "w": 48,
+          "h": 44
+        },
+        {
+          "w": 48,
+          "h": 44
+        },
+        {
+          "w": 48,
+          "h": 44
+        },
+        {
+          "w": 48,
+          "h": 44
+        },
+        {
+          "w": 48,
+          "h": 44
+        }
+      ]
+    }
+  },
+  {
+    "device": "iPhone",
+    "id": "C04b",
+    "name": "エディタツールバー44px確保",
+    "pass": true,
+    "detail": {
+      "smallToolbar": []
+    }
+  },
+  {
+    "device": "iPhone",
+    "id": "C05",
+    "name": "axe-core違反（CMS一覧画面・参考値）",
+    "pass": null,
+    "detail": {
+      "count": 4,
+      "violations": [
+        {
+          "id": "aria-command-name",
+          "impact": "serious",
+          "help": "ARIA commands must have an accessible name",
+          "nodes": [
+            ".css-3kqcwa-AvatarDropdownButton"
+          ]
+        },
+        {
+          "id": "button-name",
+          "impact": "critical",
+          "help": "Buttons must have discernible text",
+          "nodes": [
+            ".css-1bbwdvf-ViewControlsButton-button-button",
+            ".css-6akal5-ViewControlsButton-button-button"
+          ]
+        },
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "nodes": [
+            ".css-xduxlj-AppHeaderButton-button-button-buttonActive-buttonActive-buttonActive-buttonActive-buttonActive-buttonActive-buttonActive-buttonActive-AppHeaderButton-AppHeaderButton",
+            "a[data-testid=\"pages\"]",
+            "#年月2026-02 > div > .css-1y2l20x-CardsGrid.etq0ss00 > .css-gtrr8n-ListCard-card-card.effeus410 > .css-6x6ze7-ListCardLink.effeus49 > .css-v1zvwj-ListCardTitle.effeus45[data-formatted=\"true\"] > .entry-date",
+            ".entry-draft",
+            "#年月2026-01 > div > .css-1y2l20x-CardsGrid.etq0ss00 > .css-gtrr8n-ListCard-card-card.effeus410 > .css-6x6ze7-ListCardLink.effeus49 > .css-v1zvwj-ListCardTitle.effeus45[data-formatted=\"true\"] > .entry-date"
+          ]
+        },
+        {
+          "id": "region",
+          "impact": "moderate",
+          "help": "All page content should be contained by landmarks",
+          "nodes": [
+            "div[data-evidence-annotation=\"true\"]:nth-child(12)"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "device": "iPhone",
+    "id": "C99",
+    "name": "コンソールエラー（CMS）",
+    "pass": true,
+    "detail": {
+      "consoleErrors": []
+    }
+  },
+  {
+    "device": "Source",
+    "id": "F08",
+    "name": "記事・固定ページ本文リンクに下線・識別色・focus-visible",
+    "pass": true,
+    "detail": {}
+  },
+  {
+    "device": "Source",
+    "id": "F09",
+    "name": "rehype pluginがpreへtabindex=0を付与",
+    "pass": true,
+    "detail": {}
+  }
+]

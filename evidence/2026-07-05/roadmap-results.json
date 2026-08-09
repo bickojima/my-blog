@@ -1,0 +1,172 @@
+[
+  {
+    "device": "PC",
+    "id": "S01",
+    "name": "トップページ・canonical・RSS",
+    "pass": true,
+    "screenshot": "screenshots/S01-home-light-PC.png",
+    "checks": {
+      "canonical": "https://staging.reiwa.casa/",
+      "rss": true,
+      "paginationHidden": true
+    }
+  },
+  {
+    "device": "PC",
+    "id": "S02",
+    "name": "タグ一覧と件数",
+    "pass": true,
+    "screenshot": "screenshots/S02-PC.png",
+    "checks": {
+      "hasTags": true
+    }
+  },
+  {
+    "device": "PC",
+    "id": "S03",
+    "name": "前後記事ナビ実遷移",
+    "pass": true,
+    "screenshot": "screenshots/S03-adjacent-nav-PC.png",
+    "checks": {
+      "adjacentLinks": 2
+    }
+  },
+  {
+    "device": "PC",
+    "id": "S04",
+    "name": "OSダークモード",
+    "pass": true,
+    "screenshot": "screenshots/S04-dark-mode-PC.png",
+    "checks": {
+      "media": true,
+      "background": "rgb(11, 15, 25)"
+    }
+  },
+  {
+    "device": "PC",
+    "id": "S05",
+    "name": "/page/1重複防止",
+    "pass": true,
+    "screenshot": "screenshots/S05-page1-404-PC.png",
+    "checks": {
+      "status": 404
+    }
+  },
+  {
+    "device": "iPad",
+    "id": "S01",
+    "name": "トップページ・canonical・RSS",
+    "pass": true,
+    "screenshot": "screenshots/S01-home-light-iPad.png",
+    "checks": {
+      "canonical": "https://staging.reiwa.casa/",
+      "rss": true,
+      "paginationHidden": true
+    }
+  },
+  {
+    "device": "iPad",
+    "id": "S02",
+    "name": "タグ一覧と件数",
+    "pass": true,
+    "screenshot": "screenshots/S02-iPad.png",
+    "checks": {
+      "hasTags": true
+    }
+  },
+  {
+    "device": "iPad",
+    "id": "S03",
+    "name": "前後記事ナビ実遷移",
+    "pass": true,
+    "screenshot": "screenshots/S03-adjacent-nav-iPad.png",
+    "checks": {
+      "adjacentLinks": 2
+    }
+  },
+  {
+    "device": "iPad",
+    "id": "S04",
+    "name": "OSダークモード",
+    "pass": true,
+    "screenshot": "screenshots/S04-dark-mode-iPad.png",
+    "checks": {
+      "media": true,
+      "background": "rgb(11, 15, 25)"
+    }
+  },
+  {
+    "device": "iPad",
+    "id": "S05",
+    "name": "/page/1重複防止",
+    "pass": true,
+    "screenshot": "screenshots/S05-page1-404-iPad.png",
+    "checks": {
+      "status": 404
+    }
+  },
+  {
+    "device": "iPhone",
+    "id": "S01",
+    "name": "トップページ・canonical・RSS",
+    "pass": true,
+    "screenshot": "screenshots/S01-home-light-iPhone.png",
+    "checks": {
+      "canonical": "https://staging.reiwa.casa/",
+      "rss": true,
+      "paginationHidden": true
+    }
+  },
+  {
+    "device": "iPhone",
+    "id": "S02",
+    "name": "タグ一覧と件数",
+    "pass": true,
+    "screenshot": "screenshots/S02-iPhone.png",
+    "checks": {
+      "hasTags": true
+    }
+  },
+  {
+    "device": "iPhone",
+    "id": "S03",
+    "name": "前後記事ナビ実遷移",
+    "pass": true,
+    "screenshot": "screenshots/S03-adjacent-nav-iPhone.png",
+    "checks": {
+      "adjacentLinks": 2
+    }
+  },
+  {
+    "device": "iPhone",
+    "id": "S04",
+    "name": "OSダークモード",
+    "pass": true,
+    "screenshot": "screenshots/S04-dark-mode-iPhone.png",
+    "checks": {
+      "media": true,
+      "background": "rgb(11, 15, 25)"
+    }
+  },
+  {
+    "device": "iPhone",
+    "id": "S05",
+    "name": "/page/1重複防止",
+    "pass": true,
+    "screenshot": "screenshots/S05-page1-404-iPhone.png",
+    "checks": {
+      "status": 404
+    }
+  },
+  {
+    "device": "HTTP",
+    "id": "S06",
+    "name": "robots/RSS静的検証",
+    "pass": true,
+    "screenshot": null,
+    "checks": {
+      "robots": "User-agent: *\nDisallow: /",
+      "rss": true
+    }
+  }
+]

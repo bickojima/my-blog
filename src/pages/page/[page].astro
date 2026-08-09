@@ -1,0 +1,154 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Pagination from '../../components/Pagination.astro';
+import { getPostUrl } from '../../lib/posts';
+
+export async function getStaticPaths({ paginate }: { paginate: any }) {
+  const allPosts = await getCollection('posts');
+  const posts = allPosts
+    .filter(post => !post.data.draft)
+    .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime());
+
+  // 1ページ目は「/」が担うため、重複コンテンツ防止のため /page/1 は生成しない
+  return paginate(posts, { pageSize: 10 }).filter((p: any) => p.params.page !== '1');
+}
+
+const { page } = Astro.props;
+---
+
+<Base title={`記事一覧 - ${page.currentPage}ページ目 - tbiのブログ`}>
+  <h1>記事一覧 ({page.currentPage} / {page.lastPage} ページ)</h1>
+
+  <div class="post-list">
+    {page.data.map((post: any, index: number) => (
+      <article class="post-card">
+        {post.data.thumbnail && (
+          <a href={getPostUrl(post)}>
+            <img
+              src={post.data.thumbnail}
+              alt={post.data.title}
+              class="post-thumbnail"
+              width="1200"
+              height="800"
+              loading={index === 0 ? 'eager' : 'lazy'}
+              fetchpriority={index === 0 ? 'high' : undefined}
+              decoding="async"
+            />
+          </a>
+        )}
+        <div class="post-body">
+          <div class="post-meta">
+            <time datetime={post.data.date}>{post.data.date}</time>
+          </div>
+          <a href={getPostUrl(post)} class="post-title">{post.data.title}</a>
+          {post.data.summary && (
+            <p class="post-summary">{post.data.summary}</p>
+          )}
+          {post.data.tags && post.data.tags.length > 0 && (
+            <div class="post-tags">
+              {post.data.tags.map((tag: string) => (
+                <a href={`/tags/${encodeURIComponent(tag)}`} class="tag">{tag}</a>
+              ))}
+            </div>
+          )}
+        </div>
+      </article>
+    ))}
+  </div>
+
+  <Pagination
+    currentPage={page.currentPage}
+    lastPage={page.lastPage}
+    prevUrl={page.url.prev}
+    nextUrl={page.url.next}
+  />
+
+  <style>
+    h1 {
+      font-size: 1.4rem;
+      margin-bottom: 1.5rem;
+    }
+    .post-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      container-type: inline-size;
+    }
+    .post-card {
+      border-bottom: 1px solid var(--color-border);
+      padding-bottom: 1.5rem;
+    }
+    .post-card:nth-child(n+7) {
+      content-visibility: auto;
+      contain-intrinsic-size: auto 220px;
+    }
+    .post-thumbnail {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      border-radius: 4px;
+      margin-bottom: 0.75rem;
+    }
+    .post-meta {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.25rem;
+    }
+    .post-meta time {
+      font-size: 0.85rem;
+      color: var(--color-text-muted);
+    }
+    .post-title {
+      display: block;
+      font-size: 1.15rem;
+      font-weight: bold;
+      margin-bottom: 0.25rem;
+      text-wrap: pretty;
+    }
+    .post-title:hover {
+      text-decoration: underline;
+    }
+    .post-title:focus-visible,
+    .tag:focus-visible {
+      outline: 2px solid var(--color-focus);
+      outline-offset: 3px;
+      border-radius: 3px;
+    }
+    .post-summary {
+      font-size: 0.9rem;
+      color: var(--color-text-muted);
+      line-height: 1.6;
+    }
+    .post-tags {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-top: 0.5rem;
+    }
+    .tag {
+      font-size: 0.75rem;
+      background: var(--color-tag-bg);
+      color: var(--color-tag-text);
+      padding: 0.1rem 0.5rem;
+      border-radius: 3px;
+    }
+    .tag:hover {
+      background: var(--color-invert-bg);
+      color: var(--color-invert-text);
+    }
+    @container (min-width: 560px) {
+      .post-card:has(.post-thumbnail) {
+        display: grid;
+        grid-template-columns: 180px 1fr;
+        gap: 1rem;
+        align-items: start;
+      }
+      .post-thumbnail {
+        height: 120px;
+        margin-bottom: 0;
+      }
+    }
+  </style>
+</Base>

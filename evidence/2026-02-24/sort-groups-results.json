@@ -1,0 +1,89 @@
+[
+  {
+    "device": "PC",
+    "check": "sort-default",
+    "name": "CMS-17: 記事一覧デフォルトソート（日付降順）",
+    "entryCount": 0,
+    "dates": [],
+    "isSorted": false,
+    "pass": false,
+    "screenshot": "screenshots/e36-sort-default-PC.png"
+  },
+  {
+    "device": "PC",
+    "check": "view-groups",
+    "name": "CMS-18: 年・年月グルーピングボタン",
+    "yearButtonFound": false,
+    "monthButtonFound": false,
+    "pass": true,
+    "screenshot": "screenshots/e36-view-groups-PC.png"
+  },
+  {
+    "device": "PC",
+    "check": "layout-check",
+    "name": "レイアウト崩れ検証（要素重なり）",
+    "sidebarVisible": true,
+    "mainVisible": true,
+    "hasOverlap": true,
+    "pass": false,
+    "screenshot": "screenshots/e36-layout-check-PC.png"
+  },
+  {
+    "device": "iPad",
+    "check": "sort-default",
+    "name": "CMS-17: 記事一覧デフォルトソート（日付降順）",
+    "entryCount": 0,
+    "dates": [],
+    "isSorted": false,
+    "pass": false,
+    "screenshot": "screenshots/e36-sort-default-iPad.png"
+  },
+  {
+    "device": "iPad",
+    "check": "view-groups",
+    "name": "CMS-18: 年・年月グルーピングボタン",
+    "yearButtonFound": false,
+    "monthButtonFound": false,
+    "pass": true,
+    "screenshot": "screenshots/e36-view-groups-iPad.png"
+  },
+  {
+    "device": "iPad",
+    "check": "layout-check",
+    "name": "レイアウト崩れ検証（要素重なり）",
+    "sidebarVisible": true,
+    "mainVisible": true,
+    "hasOverlap": true,
+    "pass": false,
+    "screenshot": "screenshots/e36-layout-check-iPad.png"
+  },
+  {
+    "device": "iPhone",
+    "check": "sort-default",
+    "name": "CMS-17: 記事一覧デフォルトソート（日付降順）",
+    "entryCount": 0,
+    "dates": [],
+    "isSorted": false,
+    "pass": false,
+    "screenshot": "screenshots/e36-sort-default-iPhone.png"
+  },
+  {
+    "device": "iPhone",
+    "check": "view-groups",
+    "name": "CMS-18: 年・年月グルーピングボタン",
+    "yearButtonFound": false,
+    "monthButtonFound": false,
+    "pass": true,
+    "screenshot": "screenshots/e36-view-groups-iPhone.png"
+  },
+  {
+    "device": "iPhone",
+    "check": "layout-check",
+    "name": "レイアウト崩れ検証（要素重なり）",
+    "sidebarVisible": true,
+    "mainVisible": true,
+    "hasOverlap": true,
+    "pass": false,
+    "screenshot": "screenshots/e36-layout-check-iPhone.png"
+  }
+]

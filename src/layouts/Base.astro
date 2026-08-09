@@ -4,14 +4,23 @@ import ArchiveNav from '../components/ArchiveNav.astro';
 
 interface Props {
   title: string;
+  description?: string;
+  ogImage?: string;
+  ogType?: 'website' | 'article';
 }
 
-const { title } = Astro.props;
+const DEFAULT_DESCRIPTION = 'tbiの個人ブログ。日々のできごとを記録しています。';
+
+const { title, description, ogImage, ogType = 'website' } = Astro.props;
 const isStaging = import.meta.env.CF_PAGES_BRANCH === 'staging';
 const siteTitle = isStaging ? '[STAGING] tbiのブログ' : 'tbiのブログ';
 const navPages = (await getCollection('pages'))
   .filter(p => !p.data.draft)
   .sort((a, b) => a.data.order - b.data.order);
+
+const metaDescription = description ?? DEFAULT_DESCRIPTION;
+const canonicalUrl = new URL(Astro.url.pathname, Astro.site).toString();
+const ogImageUrl = ogImage ? new URL(ogImage, Astro.site).toString() : undefined;
 ---
 
 <!DOCTYPE html>
@@ -19,22 +28,76 @@ const navPages = (await getCollection('pages'))
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
   <title>{title}</title>
+  <meta name="description" content={metaDescription} />
+  <link rel="canonical" href={canonicalUrl} />
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={metaDescription} />
+  <meta property="og:type" content={ogType} />
+  <meta property="og:url" content={canonicalUrl} />
+  <meta property="og:site_name" content={siteTitle} />
+  {ogImageUrl && <meta property="og:image" content={ogImageUrl} />}
+  <meta name="twitter:card" content={ogImageUrl ? 'summary_large_image' : 'summary'} />
+  <meta name="twitter:title" content={title} />
+  <meta name="twitter:description" content={metaDescription} />
+  {ogImageUrl && <meta name="twitter:image" content={ogImageUrl} />}
+  <link rel="alternate" type="application/rss+xml" title={siteTitle} href="/rss.xml" />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="icon" href="/favicon.ico" sizes="32x32" />
   <style is:global>
+    :root {
+      /* Crisp Modern Light Mode */
+      --color-bg: #f8fafc;
+      --color-text: #0f172a;
+      --color-text-secondary: #475569;
+      --color-text-muted: #64748b;
+      --color-border: #e2e8f0;
+      --color-link: #0369a1;
+      --color-focus: #0369a1;
+      --color-tag-bg: #f1f5f9;
+      --color-tag-text: #334155;
+      --color-surface: #ffffff;
+      --color-invert-bg: #0f172a;
+      --color-invert-text: #ffffff;
+      --color-invert-muted: #94a3b8;
+
+      /* Motion & Transitions */
+      --transition-fast: 150ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        /* Sleek Slate Blue Dark Mode (Vercel/Linear Inspired) */
+        --color-bg: #0b0f19;
+        --color-text: #f8fafc;
+        --color-text-secondary: #cbd5e1;
+        --color-text-muted: #94a3b8;
+        --color-border: #1e293b;
+        --color-link: #38bdf8;
+        --color-focus: #38bdf8;
+        --color-tag-bg: #1e293b;
+        --color-tag-text: #cbd5e1;
+        --color-surface: #151e2e;
+        --color-invert-bg: #f8fafc;
+        --color-invert-text: #0b0f19;
+        --color-invert-muted: #64748b;
+      }
+    }
     *, *::before, *::after {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
+    a, button, .tag {
+      transition: color var(--transition-fast), background-color var(--transition-fast), border-color var(--transition-fast);
+    }
     html, body {
-      background-color: #fff;
+      background-color: var(--color-bg);
     }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
       line-height: 1.8;
-      color: #333;
+      color: var(--color-text);
     }
     a {
       color: inherit;
@@ -49,7 +112,7 @@ const navPages = (await getCollection('pages'))
   <style>
     header {
       padding: 1rem 1.5rem;
-      border-bottom: 1px solid #eee;
+      border-bottom: 1px solid var(--color-border);
     }
     header nav {
       max-width: 700px;
@@ -61,6 +124,7 @@ const navPages = (await getCollection('pages'))
     .site-title {
       font-size: 1.1rem;
       font-weight: bold;
+      text-wrap: balance;
     }
     .nav-links {
       display: flex;
@@ -68,27 +132,34 @@ const navPages = (await getCollection('pages'))
     }
     .nav-links > a {
       font-size: 0.85rem;
-      color: #595959;
+      color: var(--color-text-secondary);
     }
     .nav-links > a:hover {
-      color: #333;
+      color: var(--color-text);
+    }
+    .nav-links a:focus-visible,
+    .nav-dropdown-toggle:focus-visible,
+    .admin-link:focus-visible {
+      outline: 2px solid var(--color-focus);
+      outline-offset: 3px;
+      border-radius: 3px;
     }
     .nav-dropdown {
       position: relative;
     }
     .nav-dropdown-link {
       font-size: 0.85rem;
-      color: #595959;
+      color: var(--color-text-secondary);
     }
     .nav-dropdown-link:hover {
-      color: #333;
+      color: var(--color-text);
     }
     .nav-dropdown-toggle {
       background: none;
       border: none;
       font-family: inherit;
       font-size: 1.1rem;
-      color: #595959;
+      color: var(--color-text-secondary);
       cursor: pointer;
       padding: 0.1rem 0.3rem;
       margin-left: 0.1rem;
@@ -96,7 +167,7 @@ const navPages = (await getCollection('pages'))
       vertical-align: middle;
     }
     .nav-dropdown-toggle:hover {
-      color: #333;
+      color: var(--color-text);
     }
     .nav-dropdown-menu {
       display: none;
@@ -104,8 +175,8 @@ const navPages = (await getCollection('pages'))
       right: 0;
       top: 100%;
       padding-top: 0.25rem;
-      background: #fff;
-      border: 1px solid #eee;
+      background: var(--color-bg);
+      border: 1px solid var(--color-border);
       border-radius: 4px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.08);
       min-width: 120px;
@@ -118,12 +189,16 @@ const navPages = (await getCollection('pages'))
       display: block;
       padding: 0.4rem 0.8rem;
       font-size: 0.85rem;
-      color: #555;
+      color: var(--color-tag-text);
       white-space: nowrap;
     }
     .nav-dropdown-menu a:hover {
-      background: #f5f5f5;
-      color: #333;
+      background: var(--color-surface);
+      color: var(--color-text);
+    }
+    .nav-dropdown-menu a:focus-visible {
+      background: var(--color-surface);
+      color: var(--color-text);
     }
     main {
       max-width: 700px;
@@ -133,7 +208,7 @@ const navPages = (await getCollection('pages'))
     footer {
       text-align: center;
       padding: 2rem 1.5rem;
-      color: #767676;
+      color: var(--color-text-muted);
       font-size: 0.8rem;
       margin-top: 3rem;
     }
@@ -141,24 +216,48 @@ const navPages = (await getCollection('pages'))
       display: inline-block;
       margin-top: 0.5rem;
       font-size: 0.65rem;
-      color: #767676;
+      color: var(--color-text-muted);
     }
     .admin-link:hover {
-      color: #333;
+      color: var(--color-text);
+    }
+    @media (max-width: 899px), (hover: none), (pointer: coarse) {
+      .nav-links > a,
+      .nav-dropdown-link,
+      .nav-dropdown-toggle,
+      .nav-dropdown-menu a,
+      .admin-link {
+        min-height: 44px;
+      }
+      .nav-links > a,
+      .nav-dropdown-link,
+      .nav-dropdown-menu a,
+      .admin-link {
+        display: inline-flex;
+        align-items: center;
+      }
+      .nav-dropdown-toggle,
+      .admin-link {
+        min-width: 44px;
+        justify-content: center;
+      }
+      .nav-dropdown-menu a {
+        display: flex;
+      }
     }
   </style>
 </head>
 <body>
   <header>
-    <nav>
+    <nav aria-label="メイン">
       <a href="/" class="site-title">{siteTitle}</a>
       <div class="nav-links">
         {navPages.length === 1 ? (
           <a href={`/${navPages[0].slug}`}>{navPages[0].data.title}</a>
         ) : navPages.length > 1 ? (
           <div class="nav-dropdown">
-            <a href={`/${navPages[0].slug}`} class="nav-dropdown-link">{navPages[0].data.title}</a><button class="nav-dropdown-toggle" type="button" aria-label="ページメニュー">▾</button>
-            <div class="nav-dropdown-menu">
+            <a href={`/${navPages[0].slug}`} class="nav-dropdown-link">{navPages[0].data.title}</a><button class="nav-dropdown-toggle" type="button" aria-label="ページメニュー" aria-expanded="false" aria-controls="page-menu">▾</button>
+            <div class="nav-dropdown-menu" id="page-menu">
               {navPages.map(page => (
                 <a href={`/${page.slug}`}>{page.data.title}</a>
               ))}
@@ -180,7 +279,12 @@ const navPages = (await getCollection('pages'))
     const dropdown = document.querySelector('.nav-dropdown');
     if (dropdown) {
       const toggle = dropdown.querySelector('.nav-dropdown-toggle');
+      const setOpen = (open: boolean) => {
+        dropdown.classList.toggle('is-open', open);
+        toggle?.setAttribute('aria-expanded', String(open));
+      };
       let closeTimer: ReturnType<typeof setTimeout> | null = null;
+      let openedByHover = false;
       // PC（ホバー可能デバイス）のみ: mouseenter/mouseleaveで開閉
       // モバイル（タッチデバイス）ではhoverイベントがclickより先に発火し、
       // ドロップダウンが一瞬開いてすぐ閉じるバグを防止するため除外
@@ -188,24 +292,44 @@ const navPages = (await getCollection('pages'))
       if (canHover) {
         dropdown.addEventListener('mouseenter', () => {
           if (closeTimer) { clearTimeout(closeTimer); closeTimer = null; }
-          dropdown.classList.add('is-open');
+          openedByHover = true;
+          setOpen(true);
         });
         dropdown.addEventListener('mouseleave', () => {
           closeTimer = setTimeout(() => {
-            dropdown.classList.remove('is-open');
+            setOpen(false);
+            openedByHover = false;
             closeTimer = null;
           }, 300);
         });
       }
       // ▾ボタン: クリック/タップでトグル
       toggle?.addEventListener('click', () => {
-        dropdown.classList.toggle('is-open');
+        if (dropdown.classList.contains('is-open') && openedByHover) {
+          openedByHover = false;
+          setOpen(true);
+          return;
+        }
+        openedByHover = false;
+        setOpen(!dropdown.classList.contains('is-open'));
       });
       // 外側クリックで閉じる
       document.addEventListener('click', (e) => {
         if (!(e.target instanceof Node) || !dropdown.contains(e.target)) {
-          dropdown.classList.remove('is-open');
+          setOpen(false);
         }
+      });
+      // Escapeで閉じ、キーボードフォーカスがメニュー外へ移動した場合も閉じる
+      document.addEventListener('keydown', (e) => {
+        if (e.key !== 'Escape' || !dropdown.classList.contains('is-open')) return;
+        setOpen(false);
+        openedByHover = false;
+        if (dropdown.contains(document.activeElement)) toggle?.focus();
+      });
+      dropdown.addEventListener('focusout', (e) => {
+        if (e.relatedTarget instanceof Node && dropdown.contains(e.relatedTarget)) return;
+        setOpen(false);
+        openedByHover = false;
       });
     }
   </script>

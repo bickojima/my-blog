@@ -90,6 +90,19 @@ describe('ビルド検証', () => {
       expect(existsSync(join(DIST_DIR, 'robots.txt'))).toBe(true);
     });
 
+    it('staging環境のrobots.txtはDisallow: /でインデックスを防止する（Bug #41再発防止）', () => {
+      const content = readFileSync(join(DIST_DIR, 'robots.txt'), 'utf-8');
+      expect(content).toMatch(/Disallow:\s*\//);
+      expect(content).not.toMatch(/Allow:\s*\//);
+    });
+
+    it('robots.txtのSitemap行はreiwa.casaドメインを指す（Bug #41再発防止）', () => {
+      const content = readFileSync(join(DIST_DIR, 'robots.txt'), 'utf-8');
+      if (content.includes('Sitemap:')) {
+        expect(content).toMatch(/Sitemap:\s*https:\/\/(staging\.)?reiwa\.casa\//);
+      }
+    });
+
     it('_headersファイルが存在する', () => {
       expect(existsSync(join(DIST_DIR, '_headers'))).toBe(true);
     });
@@ -116,6 +129,33 @@ describe('ビルド検証', () => {
         `posts/${firstPost.year}/${firstPost.month}/${firstPost.title}/index.html`
       );
       expect(existsSync(postPath)).toBe(true);
+    });
+  });
+
+  describe('記事一覧のページネーション（重複コンテンツ防止）', () => {
+    const PAGE_SIZE = 10;
+    const totalPages = Math.max(1, Math.ceil(publishedPosts.length / PAGE_SIZE));
+
+    it('/page/1/ は生成されない（1ページ目は / が担う。重複コンテンツ防止）', () => {
+      expect(existsSync(join(DIST_DIR, 'page/1/index.html'))).toBe(false);
+    });
+
+    it('/ の canonical は自身（/）を指す', () => {
+      const html = readFileSync(join(DIST_DIR, 'index.html'), 'utf-8');
+      expect(html).toMatch(/<link rel="canonical" href="https:\/\/[^"]+\/">/);
+    });
+
+    it('公開記事数がPAGE_SIZE超の場合のみ /page/2/ が生成される', () => {
+      const page2Exists = existsSync(join(DIST_DIR, 'page/2/index.html'));
+      expect(page2Exists).toBe(totalPages > 1);
+    });
+
+    it('sitemapに /page/1/ の重複URLが含まれない', () => {
+      const sitemapPath = join(DIST_DIR, 'sitemap-0.xml');
+      if (existsSync(sitemapPath)) {
+        const sitemap = readFileSync(sitemapPath, 'utf-8');
+        expect(sitemap).not.toContain('/page/1/');
+      }
     });
   });
 
@@ -191,6 +231,8 @@ describe('ビルド検証', () => {
       if (publishedPages.length >= 2) {
         expect(indexHtml).toContain('nav-dropdown-toggle');
         expect(indexHtml).toContain('▾');
+        expect(indexHtml).toContain('aria-expanded="false"');
+        expect(indexHtml).toContain('aria-controls="page-menu"');
       }
     });
 
@@ -227,6 +269,7 @@ describe('ビルド検証', () => {
       expect(indexHtml).toContain('mouseleave');
       expect(indexHtml).toContain('nav-dropdown-toggle');
       expect(indexHtml).toContain('is-open');
+      expect(indexHtml).toContain('aria-expanded');
     });
 
     it('mouseleaveに300ms遅延が設定されている', () => {
@@ -253,6 +296,192 @@ describe('ビルド検証', () => {
     it('タグページディレクトリが生成される', () => {
       const tagsDir = join(DIST_DIR, 'tags');
       expect(existsSync(tagsDir)).toBe(true);
+    });
+  });
+
+  describe('個人ブログ化ロードマップ機能検証（FR-22〜FR-28）', () => {
+    /**
+     * 記事frontmatterを日付降順で取得（tags, thumbnail, summary含む）。
+     * getPublishedPosts()はdate/tags/thumbnailを持たないため、この describe 専用に再取得する。
+     */
+    function getPublishedPostsFull() {
+      const files = [];
+      function collect(dir) {
+        if (!existsSync(dir)) return;
+        for (const entry of readdirSync(dir, { withFileTypes: true })) {
+          const fullPath = join(dir, entry.name);
+          if (entry.isDirectory()) collect(fullPath);
+          else if (extname(entry.name) === '.md') files.push(fullPath);
+        }
+      }
+      collect(POSTS_DIR);
+      return files
+        .map((f) => {
+          const { data } = matter(readFileSync(f, 'utf-8'));
+          const dateStr = data.date instanceof Date
+            ? data.date.toISOString().split('T')[0]
+            : String(data.date);
+          return { ...data, date: dateStr, path: f };
+        })
+        .filter((p) => !p.draft)
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    }
+
+    const fullPosts = getPublishedPostsFull();
+
+    describe('FR-22 サイト設定・canonical URL', () => {
+      it('トップページに自身を指すcanonicalが出力される', () => {
+        const html = readFileSync(join(DIST_DIR, 'index.html'), 'utf-8');
+        expect(html).toMatch(/<link rel="canonical" href="https:\/\/[^"]+\/">/);
+      });
+
+      it('記事詳細ページにcanonicalが出力される', () => {
+        if (fullPosts.length === 0) return;
+        const post = fullPosts[0];
+        const html = readFileSync(join(DIST_DIR, `posts/${post.date.split('-')[0]}/${post.date.split('-')[1]}/${post.title}/index.html`), 'utf-8');
+        expect(html).toMatch(/<link rel="canonical" href="https:\/\/[^"]+\/posts\//);
+      });
+    });
+
+    describe('FR-23 OGP・meta description', () => {
+      it('thumbnail付き記事はog:imageが絶対URLで出力される', () => {
+        const postWithThumbnail = fullPosts.find((p) => p.thumbnail);
+        if (!postWithThumbnail) return;
+        const html = readFileSync(
+          join(DIST_DIR, `posts/${postWithThumbnail.date.split('-')[0]}/${postWithThumbnail.date.split('-')[1]}/${postWithThumbnail.title}/index.html`),
+          'utf-8'
+        );
+        expect(html).toMatch(/<meta property="og:image" content="https:\/\/[^"]+">/);
+        expect(html).toContain('twitter:card" content="summary_large_image"');
+      });
+
+      it('summary付き記事はog:description・meta descriptionにsummaryが反映される', () => {
+        const postWithSummary = fullPosts.find((p) => p.summary);
+        if (!postWithSummary) return;
+        const html = readFileSync(
+          join(DIST_DIR, `posts/${postWithSummary.date.split('-')[0]}/${postWithSummary.date.split('-')[1]}/${postWithSummary.title}/index.html`),
+          'utf-8'
+        );
+        expect(html).toContain(`content="${postWithSummary.summary}"`);
+      });
+    });
+
+    describe('FR-24 RSSフィード配信', () => {
+      it('rss.xmlが生成される', () => {
+        expect(existsSync(join(DIST_DIR, 'rss.xml'))).toBe(true);
+      });
+
+      it('公開記事のタイトルが全て含まれる', () => {
+        const rss = readFileSync(join(DIST_DIR, 'rss.xml'), 'utf-8');
+        for (const post of fullPosts) {
+          expect(rss).toContain(`<title>${post.title}</title>`);
+        }
+      });
+
+      it('下書き記事のタイトルが含まれない', () => {
+        const rss = readFileSync(join(DIST_DIR, 'rss.xml'), 'utf-8');
+        const draftTitles = readdirSync(POSTS_DIR, { recursive: true })
+          .filter((f) => String(f).endsWith('.md'))
+          .map((f) => matter(readFileSync(join(POSTS_DIR, String(f)), 'utf-8')).data)
+          .filter((data) => data.draft)
+          .map((data) => data.title);
+        for (const title of draftTitles) {
+          expect(rss).not.toContain(`<title>${title}</title>`);
+        }
+      });
+
+      it('トップページにRSS autodiscoveryリンクがある', () => {
+        const html = readFileSync(join(DIST_DIR, 'index.html'), 'utf-8');
+        expect(html).toContain('type="application/rss+xml"');
+      });
+    });
+
+    describe('FR-25 XMLサイトマップ生成', () => {
+      it('sitemap-index.xmlが生成される', () => {
+        expect(existsSync(join(DIST_DIR, 'sitemap-index.xml'))).toBe(true);
+      });
+
+      it('sitemapに/admin/配下のURLが含まれない', () => {
+        const files = readdirSync(DIST_DIR).filter((f) => /^sitemap-\d+\.xml$/.test(f));
+        for (const f of files) {
+          const content = readFileSync(join(DIST_DIR, f), 'utf-8');
+          expect(content).not.toContain('/admin/');
+        }
+      });
+    });
+
+    describe('FR-26 タグ一覧ページ', () => {
+      it('タグ一覧ページに公開記事の全タグが含まれる', () => {
+        const html = readFileSync(join(DIST_DIR, 'tags/index.html'), 'utf-8');
+        const allTags = new Set(fullPosts.flatMap((p) => p.tags ?? []));
+        for (const tag of allTags) {
+          expect(html).toContain(tag);
+        }
+      });
+
+      it('各タグの記事件数が公開記事のみから集計される', () => {
+        const html = readFileSync(join(DIST_DIR, 'tags/index.html'), 'utf-8');
+        const counts = new Map();
+        for (const post of fullPosts) {
+          for (const tag of post.tags ?? []) counts.set(tag, (counts.get(tag) ?? 0) + 1);
+        }
+        for (const [tag, count] of counts) {
+          const escapedTag = String(tag).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          expect(html).toMatch(new RegExp(`<span class="tag-name"[^>]*>${escapedTag}</span>\\s*<span class="tag-count"[^>]*>${count}</span>`));
+        }
+      });
+    });
+
+    describe('FR-27 記事の前後ナビゲーション', () => {
+      it('最新記事には「次の記事」が表示されない', () => {
+        if (fullPosts.length === 0) return;
+        const newest = fullPosts[0];
+        const html = readFileSync(
+          join(DIST_DIR, `posts/${newest.date.split('-')[0]}/${newest.date.split('-')[1]}/${newest.title}/index.html`),
+          'utf-8'
+        );
+        expect(html).not.toContain('次の記事');
+      });
+
+      it('最古記事には「前の記事」が表示されない', () => {
+        if (fullPosts.length === 0) return;
+        const oldest = fullPosts[fullPosts.length - 1];
+        const html = readFileSync(
+          join(DIST_DIR, `posts/${oldest.date.split('-')[0]}/${oldest.date.split('-')[1]}/${oldest.title}/index.html`),
+          'utf-8'
+        );
+        expect(html).not.toContain('前の記事');
+      });
+
+      it('中間の記事には前後両方のリンクが表示される（記事が3件以上の場合）', () => {
+        if (fullPosts.length < 3) return;
+        const middle = fullPosts[1];
+        const html = readFileSync(
+          join(DIST_DIR, `posts/${middle.date.split('-')[0]}/${middle.date.split('-')[1]}/${middle.title}/index.html`),
+          'utf-8'
+        );
+        expect(html).toContain('前の記事');
+        expect(html).toContain('次の記事');
+      });
+    });
+
+    describe('NFR-08 ダークモード対応', () => {
+      it('meta color-schemeでダーク対応を宣言する', () => {
+        const html = readFileSync(join(DIST_DIR, 'index.html'), 'utf-8');
+        expect(html).toContain('color-scheme" content="light dark"');
+      });
+
+      it('prefers-color-schemeによる配色切り替えがCSSに定義される（バンドル先を横断検索）', () => {
+        const astroDir = join(DIST_DIR, '_astro');
+        const cssFiles = existsSync(astroDir)
+          ? readdirSync(astroDir).filter((f) => f.endsWith('.css'))
+          : [];
+        const found = cssFiles.some((f) =>
+          readFileSync(join(astroDir, f), 'utf-8').includes('prefers-color-scheme:dark')
+          || readFileSync(join(astroDir, f), 'utf-8').includes('prefers-color-scheme: dark')
+        );
+        expect(found).toBe(true);
+      });
     });
   });
 
@@ -302,6 +531,34 @@ describe('ビルド検証', () => {
 
     it('タグリンクが含まれている', () => {
       expect(indexHtml).toContain('href="/tags/');
+    });
+
+    it('先頭サムネイルはLCP候補として高優先度で読み込む', () => {
+      const firstThumbnailMatch = indexHtml.match(/<img[^>]*class="post-thumbnail"[^>]*>/);
+      expect(firstThumbnailMatch).not.toBeNull();
+      expect(firstThumbnailMatch[0]).toContain('width="1200"');
+      expect(firstThumbnailMatch[0]).toContain('height="800"');
+      expect(firstThumbnailMatch[0]).toContain('loading="eager"');
+      expect(firstThumbnailMatch[0]).toContain('fetchpriority="high"');
+      expect(firstThumbnailMatch[0]).toContain('decoding="async"');
+    });
+
+    it('記事カードはコンテナクエリでサイズに応じたレイアウトを適用する', () => {
+      expect(indexHtml).toContain('container-type:inline-size');
+      expect(indexHtml).toContain('@container');
+    });
+
+    it('7件目以降の記事カードはcontent-visibilityで描画負荷を抑える', () => {
+      expect(indexHtml).toContain('content-visibility:auto');
+      expect(indexHtml).toContain('contain-intrinsic-size:auto 220px');
+      const indexSource = readFileSync(join(process.cwd(), 'src/pages/index.astro'), 'utf-8');
+      expect(indexSource).toContain('.post-card:nth-child(n+7)');
+    });
+
+    it('ナビゲーションにアクセシブルなラベルとfocus-visibleスタイルがある', () => {
+      expect(indexHtml).toContain('aria-label="メイン"');
+      expect(indexHtml).toContain('aria-labelledby="archive-heading"');
+      expect(indexHtml).toContain(':focus-visible');
     });
 
     it('アーカイブナビゲーションが含まれている', () => {
@@ -443,6 +700,57 @@ describe('ビルド検証', () => {
       }
       searchForFigure(postsDir);
       expect(foundFigure, 'figure/figcaptionを含む記事が1件もない').toBe(true);
+    });
+  });
+
+  describe('Modern Web Guidanceアクセシビリティ検証', () => {
+    it('本文リンクに下線・識別色・focus-visibleが定義されている', () => {
+      const postPage = readFileSync(
+        join(process.cwd(), 'src/pages/posts/[year]/[month]/[slug].astro'),
+        'utf-8'
+      );
+      const fixedPage = readFileSync(
+        join(process.cwd(), 'src/pages/[slug].astro'),
+        'utf-8'
+      );
+      for (const source of [postPage, fixedPage]) {
+        expect(source).toContain(':global(a)');
+        expect(source.includes('color: #1a73e8') || source.includes('color: var(--color-link)')).toBe(true);
+        expect(source).toContain('text-decoration: underline');
+        expect(source).toContain(':global(a:focus-visible)');
+      }
+    });
+
+    it('本文リンク色（--color-link）はライト/ダーク両配色で背景とのコントラスト比4.5:1以上を満たす（Bug #43再発防止）', () => {
+      // パターンマッチ（var(--color-link)の存在確認）だけでは配色トークンの実値変更による
+      // コントラスト劣化を検知できないため、実際のWCAG相対輝度計算で検証する。
+      function relativeLuminance(hex) {
+        const c = hex.replace('#', '');
+        const [r, g, b] = [0, 2, 4].map((i) => parseInt(c.slice(i, i + 2), 16) / 255);
+        const f = (v) => (v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
+        return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+      }
+      function contrastRatio(hexA, hexB) {
+        const [l1, l2] = [relativeLuminance(hexA), relativeLuminance(hexB)].sort((a, b) => b - a);
+        return (l1 + 0.05) / (l2 + 0.05);
+      }
+      const baseAstro = readFileSync(join(process.cwd(), 'src/layouts/Base.astro'), 'utf-8');
+      const hex = /#[0-9a-fA-F]{6}/;
+      const rootBlock = baseAstro.split(':root {')[1].split('\n    }')[0];
+      const darkBlock = baseAstro.split('prefers-color-scheme: dark)')[1].split('\n      }')[0];
+      const lightBg = rootBlock.match(new RegExp(`--color-bg:\\s*(${hex.source})`))[1];
+      const lightLink = rootBlock.match(new RegExp(`--color-link:\\s*(${hex.source})`))[1];
+      const darkBg = darkBlock.match(new RegExp(`--color-bg:\\s*(${hex.source})`))[1];
+      const darkLink = darkBlock.match(new RegExp(`--color-link:\\s*(${hex.source})`))[1];
+
+      expect(contrastRatio(lightBg, lightLink), `light: ${lightLink} on ${lightBg}`).toBeGreaterThanOrEqual(4.5);
+      expect(contrastRatio(darkBg, darkLink), `dark: ${darkLink} on ${darkBg}`).toBeGreaterThanOrEqual(4.5);
+    });
+
+    it('コードブロック用rehypeプラグインが登録されている', () => {
+      const astroConfig = readFileSync(join(process.cwd(), 'astro.config.mjs'), 'utf-8');
+      expect(astroConfig).toContain('rehypeFocusableCodeBlocks');
+      expect(astroConfig).toContain('rehypePlugins: [rehypeImageCaption, rehypeFocusableCodeBlocks]');
     });
   });
 
