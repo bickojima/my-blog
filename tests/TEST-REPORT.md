@@ -42,6 +42,7 @@
 | 1.34 | 2026-07-04 | ドキュメント整理: 2.7章ファズテスト件数の表記を実測に合わせ214件→215件に修正（テスト実体の変更なし） |
 | 1.35 | 2026-07-04 | 個人ブログ化ロードマップ（FR-22〜FR-28, NFR-08）のテストケースを追加: robots.txt、RSS下書き除外、タグ件数、ページネーションの検証と実操作E2E 4件を追加。build.test.mjs 67→90件、Vitest合計 562→585件、E2E 444件へ更新 |
 | 1.36 | 2026-07-05 | 2.5.4章にBug #43再発防止テスト追加: 本文リンク色（--color-link）のライト/ダーク双方のコントラスト比を実値から計算し4.5:1以上を検証（3件目として追加）。build.test.mjs 90→91件、Vitest合計 586件へ更新 |
+| 1.38 | 2026-08-09 | Bug #45対応: 2.5.5章のrobots.txt環境別ポリシー検証をブランチ対応に変更（`astro.config.mjs`の`SITE_URL`でstaging/mainを判定）。テスト件数増減なし（Vitest 586件） |
 | 1.37 | 2026-07-05 | Bug #44対応: E-36（`cms-operations.spec.ts`）のスクリーンショット出力先を過去日付固定の`evidence/2026-02-24/`から`test-results/`（gitignore対象）へ変更。2.2章のE-36説明を更新。テスト件数増減なし |
 
 ## テスト基盤の変更履歴
@@ -886,7 +887,7 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 
 | No. | テストケース | テスト手法 | 期待結果 |
 | :--- | :--- | :--- | :--- |
-| 1 | staging環境のrobots.txtはDisallow: /でインデックスを防止する | M-01 | `dist/robots.txt`が`Disallow: /`を含み、`Allow: /`を含まない |
+| 1 | robots.txtがブランチに対応するクロール方針になっている | M-01 | `astro.config.mjs`の`SITE_URL`からブランチを判定し、staging時は`Disallow: /`かつ`Allow: /`・`Sitemap:`なし、main時は`Allow: /`かつ`Disallow: /`なし・`Sitemap: https://reiwa.casa/sitemap-index.xml`を含む（Bug #45再発防止、DOCUMENTATION.md 4.6.4章） |
 | 2 | robots.txtのSitemap行はreiwa.casaドメインを指す | M-01 | Sitemap行が存在する場合、`https://(staging.)?reiwa.casa/`にマッチする |
 
 ### 2.5.6 個人ブログ化ロードマップ機能検証（FR-22〜FR-28, NFR-08、記事数により動的スキップ、15件）
