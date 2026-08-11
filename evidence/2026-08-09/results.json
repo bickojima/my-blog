@@ -1,0 +1,369 @@
+[
+  {
+    "device": "Source",
+    "id": "M01",
+    "name": "astro.config.mjs の SITE_URL が main 値",
+    "pass": true,
+    "detail": {
+      "SITE_URL": "https://reiwa.casa"
+    }
+  },
+  {
+    "device": "Source",
+    "id": "M02",
+    "name": "config.yml の branch が main",
+    "pass": true,
+    "detail": {
+      "branch": "main"
+    }
+  },
+  {
+    "device": "Source",
+    "id": "M03",
+    "name": "config.yml の base_url が https://reiwa.casa",
+    "pass": true,
+    "detail": {
+      "base_url": "https://reiwa.casa"
+    }
+  },
+  {
+    "device": "Source",
+    "id": "M04",
+    "name": "robots.txt が main 用（Allow + Sitemap、Bug #45）",
+    "pass": true,
+    "detail": {
+      "robots": "User-agent: *\nAllow: /\nSitemap: https://reiwa.casa/sitemap-index.xml"
+    }
+  },
+  {
+    "device": "Source",
+    "id": "M05",
+    "name": "生成物にstaging URLが混入していない（canonical/OGP/RSS/sitemap）",
+    "pass": true,
+    "detail": {
+      "canonical": "https://reiwa.casa/",
+      "ogUrl": "https://reiwa.casa/",
+      "sitemap": "https://reiwa.casa/sitemap-0.xml",
+      "rss": "https://reiwa.casa/"
+    }
+  },
+  {
+    "device": "Source",
+    "id": "F-1",
+    "name": "MWGレビュー指摘の維持: content-visibility はファーストビュー外のみ（nth-child(n+7)）",
+    "pass": true,
+    "detail": {}
+  },
+  {
+    "device": "Source",
+    "id": "F-2",
+    "name": "MWGレビュー指摘の維持: ナビのEscape/フォーカス離脱クローズ",
+    "pass": true,
+    "detail": {}
+  },
+  {
+    "device": "Source",
+    "id": "F-3",
+    "name": "MWGレビュー指摘の維持: タッチ端末44pxタップ領域",
+    "pass": true,
+    "detail": {}
+  },
+  {
+    "device": "Source",
+    "id": "F-4",
+    "name": "MWGレビュー指摘の維持: CMS月セレクターのaria-label",
+    "pass": true,
+    "detail": {}
+  },
+  {
+    "device": "Source",
+    "id": "F-5",
+    "name": "MWGレビュー指摘の維持: CMS月セレクター44px",
+    "pass": true,
+    "detail": {}
+  },
+  {
+    "device": "Source",
+    "id": "F-6",
+    "name": "MWGレビュー指摘の維持: 管理画面のlang=\"ja\"",
+    "pass": true,
+    "detail": {}
+  },
+  {
+    "device": "Source",
+    "id": "F-7",
+    "name": "MWGレビュー指摘の維持: nav aria-labelにロール名を含めない",
+    "pass": true,
+    "detail": {}
+  },
+  {
+    "device": "Source",
+    "id": "F-8",
+    "name": "MWGレビュー指摘の維持: 本文リンクの下線・識別色（記事/固定ページ）",
+    "pass": true,
+    "detail": {}
+  },
+  {
+    "device": "Source",
+    "id": "F-9",
+    "name": "MWGレビュー指摘の維持: コードブロックのtabindex付与プラグイン",
+    "pass": true,
+    "detail": {}
+  },
+  {
+    "device": "Source",
+    "id": "F-10",
+    "name": "MWGレビュー指摘の維持: サムネイルのwidth/height属性",
+    "pass": true,
+    "detail": {}
+  },
+  {
+    "device": "PC",
+    "id": "S01",
+    "name": "トップページ（ライト）: LCP属性・ファーストビュー内content-visibilityなし",
+    "pass": true,
+    "detail": {
+      "bg": "rgb(248, 250, 252)",
+      "firstImg": {
+        "loading": "eager",
+        "fp": "high",
+        "w": "1200",
+        "h": "800"
+      },
+      "cvInFold": 0,
+      "cards": 5
+    }
+  },
+  {
+    "device": "PC",
+    "id": "S02",
+    "name": "ダークモード配色が適用される（NFR-08）",
+    "pass": true,
+    "detail": {
+      "bg": "rgb(11, 15, 25)",
+      "color": "rgb(248, 250, 252)",
+      "colorScheme": "light dark"
+    }
+  },
+  {
+    "device": "PC",
+    "id": "S03",
+    "name": "記事詳細: canonical・OGP・前後記事ナビ",
+    "pass": true,
+    "detail": {
+      "canonical": "https://reiwa.casa/posts/2026/02/%E3%83%81%E3%83%A3%E3%83%BC%E3%83%8F%E3%83%B3%E7%BE%8E%E5%91%B3%E3%81%97%E3%81%84/",
+      "ogType": "article",
+      "prevNext": 1
+    }
+  },
+  {
+    "device": "PC",
+    "id": "S04",
+    "name": "タグ一覧ページ（FR-26）",
+    "pass": true,
+    "detail": {
+      "h1": "タグ一覧",
+      "tags": 7
+    }
+  },
+  {
+    "device": "PC",
+    "id": "S05",
+    "name": "ナビ実操作: 開閉・aria-expanded・Escape・タップ領域",
+    "pass": true,
+    "detail": {
+      "opened": true,
+      "expanded": "true",
+      "closedByEsc": true,
+      "toggleSize": {
+        "w": 19,
+        "h": 21
+      }
+    }
+  },
+  {
+    "device": "PC",
+    "id": "S06",
+    "name": "axe-core違反（トップ/タグ一覧）",
+    "pass": true,
+    "detail": {
+      "top": [],
+      "tags": []
+    }
+  },
+  {
+    "device": "PC",
+    "id": "S99",
+    "name": "コンソールエラー",
+    "pass": true,
+    "detail": {
+      "errors": []
+    }
+  },
+  {
+    "device": "iPad",
+    "id": "S01",
+    "name": "トップページ（ライト）: LCP属性・ファーストビュー内content-visibilityなし",
+    "pass": true,
+    "detail": {
+      "bg": "rgb(248, 250, 252)",
+      "firstImg": {
+        "loading": "eager",
+        "fp": "high",
+        "w": "1200",
+        "h": "800"
+      },
+      "cvInFold": 0,
+      "cards": 5
+    }
+  },
+  {
+    "device": "iPad",
+    "id": "S02",
+    "name": "ダークモード配色が適用される（NFR-08）",
+    "pass": true,
+    "detail": {
+      "bg": "rgb(11, 15, 25)",
+      "color": "rgb(248, 250, 252)",
+      "colorScheme": "light dark"
+    }
+  },
+  {
+    "device": "iPad",
+    "id": "S03",
+    "name": "記事詳細: canonical・OGP・前後記事ナビ",
+    "pass": true,
+    "detail": {
+      "canonical": "https://reiwa.casa/posts/2026/02/%E3%83%81%E3%83%A3%E3%83%BC%E3%83%8F%E3%83%B3%E7%BE%8E%E5%91%B3%E3%81%97%E3%81%84/",
+      "ogType": "article",
+      "prevNext": 1
+    }
+  },
+  {
+    "device": "iPad",
+    "id": "S04",
+    "name": "タグ一覧ページ（FR-26）",
+    "pass": true,
+    "detail": {
+      "h1": "タグ一覧",
+      "tags": 7
+    }
+  },
+  {
+    "device": "iPad",
+    "id": "S05",
+    "name": "ナビ実操作: 開閉・aria-expanded・Escape・タップ領域",
+    "pass": true,
+    "detail": {
+      "opened": true,
+      "expanded": "true",
+      "closedByEsc": true,
+      "toggleSize": {
+        "w": 44,
+        "h": 44
+      }
+    }
+  },
+  {
+    "device": "iPad",
+    "id": "S06",
+    "name": "axe-core違反（トップ/タグ一覧）",
+    "pass": true,
+    "detail": {
+      "top": [],
+      "tags": []
+    }
+  },
+  {
+    "device": "iPad",
+    "id": "S99",
+    "name": "コンソールエラー",
+    "pass": true,
+    "detail": {
+      "errors": []
+    }
+  },
+  {
+    "device": "iPhone",
+    "id": "S01",
+    "name": "トップページ（ライト）: LCP属性・ファーストビュー内content-visibilityなし",
+    "pass": true,
+    "detail": {
+      "bg": "rgb(248, 250, 252)",
+      "firstImg": {
+        "loading": "eager",
+        "fp": "high",
+        "w": "1200",
+        "h": "800"
+      },
+      "cvInFold": 0,
+      "cards": 5
+    }
+  },
+  {
+    "device": "iPhone",
+    "id": "S02",
+    "name": "ダークモード配色が適用される（NFR-08）",
+    "pass": true,
+    "detail": {
+      "bg": "rgb(11, 15, 25)",
+      "color": "rgb(248, 250, 252)",
+      "colorScheme": "light dark"
+    }
+  },
+  {
+    "device": "iPhone",
+    "id": "S03",
+    "name": "記事詳細: canonical・OGP・前後記事ナビ",
+    "pass": true,
+    "detail": {
+      "canonical": "https://reiwa.casa/posts/2026/02/%E3%83%81%E3%83%A3%E3%83%BC%E3%83%8F%E3%83%B3%E7%BE%8E%E5%91%B3%E3%81%97%E3%81%84/",
+      "ogType": "article",
+      "prevNext": 1
+    }
+  },
+  {
+    "device": "iPhone",
+    "id": "S04",
+    "name": "タグ一覧ページ（FR-26）",
+    "pass": true,
+    "detail": {
+      "h1": "タグ一覧",
+      "tags": 7
+    }
+  },
+  {
+    "device": "iPhone",
+    "id": "S05",
+    "name": "ナビ実操作: 開閉・aria-expanded・Escape・タップ領域",
+    "pass": true,
+    "detail": {
+      "opened": true,
+      "expanded": "true",
+      "closedByEsc": true,
+      "toggleSize": {
+        "w": 44,
+        "h": 44
+      }
+    }
+  },
+  {
+    "device": "iPhone",
+    "id": "S06",
+    "name": "axe-core違反（トップ/タグ一覧）",
+    "pass": true,
+    "detail": {
+      "top": [],
+      "tags": []
+    }
+  },
+  {
+    "device": "iPhone",
+    "id": "S99",
+    "name": "コンソールエラー",
+    "pass": true,
+    "detail": {
+      "errors": []
+    }
+  }
+]
