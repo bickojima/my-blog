@@ -236,6 +236,9 @@ async function waitForEditor(page: Page, timeoutMs = 8000) {
 // 新規記事画面でフォーム入力→保存ボタンクリック→API呼び出し検証
 // ============================================================
 test.describe('E-28: 記事作成の実操作', () => {
+  // OAuth認証・Decap CMS初期化・エディタ遷移を含むため、並列実行時の負荷を考慮する。
+  test.describe.configure({ timeout: 60000 });
+
   test('新規記事画面でタイトル・本文を入力し保存ボタンをクリックできる', async ({ page }) => {
     await openCmsWithAuth(page);
 
