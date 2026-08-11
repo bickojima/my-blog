@@ -45,6 +45,7 @@
 | 1.37 | 2026-07-05 | Bug #44対応: E-36（`cms-operations.spec.ts`）のスクリーンショット出力先を過去日付固定の`evidence/2026-02-24/`から`test-results/`（gitignore対象）へ変更。2.2章のE-36説明を更新。テスト件数増減なし |
 | 1.38 | 2026-08-09 | Bug #45対応: 2.5.5章のrobots.txt環境別ポリシー検証をブランチ対応に変更（`astro.config.mjs`の`SITE_URL`でstaging/mainを判定）。テスト件数増減なし（Vitest 586件） |
 | 1.39 | 2026-08-11 | Issue #97完了対応: Bug #46のVitest探索範囲固定テスト、Bug #47のCMS E-28タイムアウト設定テストを追加。build.test.mjs 91→93件、Vitest合計586→588件。全444件E2Eを再実行し436 PASS・8 skip・flakyなしを確認 |
+| 1.40 | 2026-08-11 | Issue #97のstaging/main反映後結果を追記。mainのtest-and-build・Cloudflare Pages成功、本番27/27・認証済みCMS 3/3のデプロイ後再確認を記録 |
 
 ## テスト基盤の変更履歴
 
@@ -1715,6 +1716,18 @@ npm run build
 | ビルド時間 | 1.44s |
 | 合否判定 | **合格** |
 
+### 4.3.5 Issue #97 デプロイ後確認
+
+| 項目 | 結果 |
+| :--- | :--- |
+| staging | PR #98 / merge `3c95c2337d0faaf1980e6f88dfd1da1413230947` / `test-and-build` success / 実環境HTTP・robots・CMS設定 PASS |
+| main | PR #99 / merge `f47d5f81c1a313c97232d9a41b5f66505ec2c940` |
+| main CI | `test-and-build` check `93721464330` — **success** |
+| Cloudflare Pages | check `93721691730` — **success** / preview `https://d30b5fc7.my-blog-3cg.pages.dev` |
+| 本番再確認 | 27/27 PASS、axe違反0件、コンソールエラー0件 |
+| 認証済みCMS | PC・iPad・iPhone 3/3 PASS、各12記事、ログイン画面なし |
+| Issue | #97を`completed`でクローズ |
+
 ---
 
-**最終更新**: 2026年8月11日
+**最終更新**: 2026年8月11日（v1.40）
