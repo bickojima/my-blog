@@ -90,10 +90,22 @@ describe('ビルド検証', () => {
       expect(existsSync(join(DIST_DIR, 'robots.txt'))).toBe(true);
     });
 
-    it('staging環境のrobots.txtはDisallow: /でインデックスを防止する（Bug #41再発防止）', () => {
+    it('robots.txtがブランチに対応するクロール方針になっている（Bug #41・#45再発防止）', () => {
       const content = readFileSync(join(DIST_DIR, 'robots.txt'), 'utf-8');
-      expect(content).toMatch(/Disallow:\s*\//);
-      expect(content).not.toMatch(/Allow:\s*\//);
+      const astroConfig = readFileSync(join(process.cwd(), 'astro.config.mjs'), 'utf-8');
+      const isStaging = /const SITE_URL = 'https:\/\/staging\.reiwa\.casa'/.test(astroConfig);
+
+      if (isStaging) {
+        // staging: 検索エンジンにインデックスさせない
+        expect(content).toMatch(/Disallow:\s*\//);
+        expect(content).not.toMatch(/Allow:\s*\//);
+        expect(content).not.toMatch(/Sitemap:/);
+      } else {
+        // main（本番）: インデックスを許可しSitemapを提示する（DOCUMENTATION.md 2.5.4章・4.6.4章）
+        expect(content).toMatch(/Allow:\s*\//);
+        expect(content).not.toMatch(/Disallow:\s*\//);
+        expect(content).toMatch(/Sitemap:\s*https:\/\/reiwa\.casa\/sitemap-index\.xml/);
+      }
     });
 
     it('robots.txtのSitemap行はreiwa.casaドメインを指す（Bug #41再発防止）', () => {

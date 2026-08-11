@@ -52,6 +52,7 @@
 | 1.45 | 2026-07-04 | ドキュメント整理: 2.1.1章ディレクトリ構成を最新化（E2E 7ファイル、content/pages・docs/・evidence/・README.md追記）。コード変更なし |
 | 1.46 | 2026-07-04 | 個人ブログ化ロードマップ（issue #81〜#89）の要件ID追加: FR-22〜FR-28（site/canonical, OGP, RSS, サイトマップ, タグ一覧, 前後記事ナビ, ページネーション）、NFR-08（ダークモード対応）を1.2章・1.4章に追加し、1.5章トレーサビリティマトリクスを更新。Bug #41（staging robots.txtの`Allow: /`＋誤ドメイン混入）・Bug #42（ページネーション`/page/1/`重複コンテンツ）を4.5章に追記。RSS下書き除外・タグ件数・実操作E2Eを含むVitest 585件、E2E 444件へ更新 |
 | 1.47 | 2026-07-05 | Bug #43（ダークモード配色刷新によるライトモード本文リンクのコントラスト比不足、WCAG AA未達）を4.5章に追記。`--color-link`/`--color-focus`のライトモード値を修正し、CSSカスタムプロパティの実値からコントラスト比を計算する回帰テストを追加（パターンマッチのみだった既存テストの検知漏れを解消）。Vitest 586件へ更新 |
+| 1.49 | 2026-08-09 | staging → main マージ（本番反映）: Modern Web Guidance対応（F-1〜F-10）、個人ブログ化ロードマップ（FR-22〜FR-28, NFR-08）、ダークモード、Bug #41〜#44対応をmainへ反映。マージ時に`astro.config.mjs`の`SITE_URL`をmain値（`https://reiwa.casa`）へ切替。Bug #45（Bug #41再発防止テストのブランチ非対応によりmainの正しいrobots.txt設定でテストが失敗し、本番robots.txtがstaging値のまま放置されていた問題）を4.5章に追記 |
 | 1.48 | 2026-07-05 | Bug #44（E-36テストのスクリーンショット出力先が`evidence/2026-02-24/`に過去日付固定され、`npm run test:e2e`実行の度に過去エビデンスが上書きされていた）を4.5章に追記。tests/e2e/cms-operations.spec.tsの3箇所を`test-results/`（gitignore対象）配下への出力に修正。テスト件数増減なし |
 
 ## システム変更履歴
@@ -1704,6 +1705,7 @@ GitHubリポジトリが利用可能な場合、以下の手順でシステム�
 | 42 | 2026-07-04 | 記事一覧ページネーション（#89対応）で1ページ目が`/`と`/page/1/`の2URLに重複生成され、`/page/1/`側もsitemapに登録される重複コンテンツ状態になっていた | `src/pages/page/[page].astro`の`getStaticPaths`が`paginate()`の結果をフィルタせずそのまま返しており、`params.page === '1'`のページ（1ページ目）も生成対象に含まれていた。ページネーション機能に対するテストが存在せず検知できなかった | `getStaticPaths`に`.filter((p) => p.params.page !== '1')`を追加し、1ページ目は`/`のみが担うよう修正。build.test.mjsに重複防止検証テストを4件追加（2.5.7章） | build.test.mjs（2.5.7章、4件） |
 | 43 | 2026-07-05 | ダークモード対応（#88）のSleek Slate Blue配色刷新で、ライトモードの本文リンク色`--color-link: #0284c7`が背景`#f8fafc`に対してコントラスト比3.91:1となり、WCAG AA基準（通常文字4.5:1）を下回っていた（FR-17/NFR-08違反）。現在の公開記事・固定ページは本文中に画像リンクのみでテキストリンクが存在しないため、レンダリング上は顕在化していなかった | FR-17の再発防止テスト（`本文リンクに下線・識別色・focus-visibleが定義されている`）が配色トークン導入時に`color: var(--color-link)`という記法の存在確認へ緩和され、トークンの実際の色値が変わってもテストを検知できなくなっていた。実コンテンツにテキストリンクがなくaxe-coreのcolor-contrastルールも発火しなかった | `--color-link`/`--color-focus`をライトモードのみ`#0284c7`→`#0369a1`（コントラスト比5.67:1）に変更。build.test.mjsにCSSカスタムプロパティの実値からWCAG相対輝度・コントラスト比を計算し4.5:1以上を検証する回帰テストを追加（パターンマッチではなく計算による検証） | build.test.mjs（本文リンク色コントラスト比検証、ライト/ダーク各1件） |
 | 44 | 2026-07-05 | E-36テスト（tests/e2e/cms-operations.spec.ts）のスクリーンショット出力先が`evidence/2026-02-24/screenshots/e36-*-${deviceName}.png`という過去日付固定パスでハードコードされており、`npm run test:e2e`を実行するたびに2026-02-24時点のエビデンス画像9枚（default-sort/view-groups/layout × PC/iPad/iPhone）が「実行日の結果」で上書きされ、エビデンス格納規約（過去日付フォルダを上書きしない）に違反していた | E-36テスト実装時（2026-02-24）にその場のエビデンス取得を目的として`evidence/`配下への直書きを行い、以降のリグレッション実行でも同じ固定パスへ書き続ける設計になっていた。エビデンス生成は本来`verify-*.mjs`スクリプトが実行日ディレクトリへ出力する専用の仕組みであり、通常のPlaywright回帰スイートが恒久的なエビデンスパスへ書き込むべきではなかった | 3箇所のスクリーンショット出力先を`evidence/2026-02-24/screenshots/...`から`test-results/e36-*-${deviceName}.png`（gitignore対象、テスト実行時の一時キャプチャ用）に変更。`grep -rn "evidence/20" tests/e2e/`で他のe2eスペックに同様のハードコードがないことを確認済み | tests/e2e/cms-operations.spec.ts（E-36、3件） |
+| 45 | 2026-08-09 | Bug #41の再発防止テスト（`staging環境のrobots.txtはDisallow: /でインデックスを防止する`）がブランチ非依存で`Disallow: /`必須・`Allow: /`禁止を検証していたため、2.5.4章・4.6.4章が定めるmain側の正しい設定（`Allow: /` + `Sitemap:`行）にすると`npm test`が必ず失敗し、4.6.1章のマージ手順（手順5でmainのテストを実行）を完了できない状態になっていた。結果としてmainブランチのrobots.txtがstaging値（`Disallow: /`）のまま放置され、本番サイトが全検索エンジンからインデックス拒否される状態が継続していた（FR-25 サイトマップ・OGP等のSEO施策が無効化） | Bug #41の修正時にstaging側の期待値のみをテスト化し、環境別方針（staging=`Disallow`／main=`Allow`+`Sitemap`）の分岐を実装しなかった。`base_urlがブランチに対応するURLに設定されている`（cms-config.test.mjs）のような既存のブランチ判定パターンが横展開されていなかった | `astro.config.mjs`の`SITE_URL`からブランチを判定し、staging時は`Disallow: /`かつ`Allow: /`・`Sitemap:`なし、main時は`Allow: /`かつ`Disallow: /`なし・`Sitemap: https://reiwa.casa/sitemap-index.xml`を検証するブランチ対応テストへ修正。mainマージ時にrobots.txtを4.6.4章どおりの本番値へ切り替える | build.test.mjs（robots.txt環境別ポリシー検証） |
 
 ---
 
@@ -2182,4 +2184,4 @@ evidence/YYYY-MM-DD/
 
 ---
 
-**最終更新**: 2026年5月25日（v1.42）
+**最終更新**: 2026年8月9日（v1.49）
