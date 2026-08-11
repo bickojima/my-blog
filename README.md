@@ -20,6 +20,7 @@ Astro + Decap CMS によるブログサイト。Cloudflare Pages でホスティ
 | 1.11 | 2026-07-04 | 個人ブログ化ロードマップ（site/canonical, OGP, RSS, サイトマップ, タグ一覧, 前後記事ナビ, ダークモード, ページネーション）実装。robots.txtのstaging誤設定（Bug #41）とページネーション重複コンテンツ（Bug #42）を修正。テスト件数585 Vitest + 444 E2Eへ更新 |
 | 1.12 | 2026-07-05 | ライトモード本文リンクのコントラスト比不足（Bug #43、WCAG AA未達）を修正。テスト件数586 Vitestへ更新 |
 | 1.13 | 2026-08-11 | Issue #97の本番残作業を完了。Vitestの探索範囲逸脱（Bug #46）とCMS E2Eの日付入力タイムアウト（Bug #47）を修正し、回帰テストを追加。テスト件数588 Vitest + 444 E2Eへ更新 |
+| 1.14 | 2026-08-11 | Issue #97の反映実績を確定。staging PR #98、main PR #99を順にマージし、mainのGitHub Actions・Cloudflare Pages成功、本番27/27・認証済みCMS 3/3のデプロイ後再確認、Issueクローズを記録 |
 
 詳細なシステム変更履歴は [DOCUMENTATION.md](docs/DOCUMENTATION.md) を参照。
 

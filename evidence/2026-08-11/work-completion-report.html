@@ -12,13 +12,12 @@
     th, td { border: 1px solid #ccd4df; padding: 10px; text-align: left; vertical-align: top; }
     th { background: #eef2f7; }
     .pass { color: #08752b; font-weight: 700; }
-    .pending { color: #9a6500; font-weight: 700; }
-    code { background: #eef2f7; padding: 2px 5px; border-radius: 3px; }
+    code { background: #eef2f7; padding: 2px 5px; border-radius: 3px; overflow-wrap: anywhere; }
   </style>
 </head>
 <body>
   <h1>Issue #97 作業完了報告書</h1>
-  <p>作成日: 2026-08-11 / 対象リポジトリ: <code>bickojima/my-blog</code></p>
+  <p>作成日: 2026-08-11 / 最終反映確認: 2026-08-11 / 対象リポジトリ: <code>bickojima/my-blog</code></p>
 
   <h2>対応範囲と判断</h2>
   <p>ユーザー確認に基づき、Issue #97の必須残作業のみを対象とした。任意項目F-11（レスポンシブ画像）は新規機能のため対象外とし、別途扱う。</p>
@@ -29,7 +28,7 @@
     <tr><td>REL-97-03</td><td class="pass">PASS</td><td>本番27/27、3デバイス15枚、axe違反・コンソールエラー0件</td></tr>
     <tr><td>REL-97-04</td><td class="pass">PASS</td><td>436 PASS・8 skip / 444件、認証後CMS 3/3</td></tr>
     <tr><td>REL-97-05</td><td class="pass">PASS</td><td>18枚全数レビュー、赤枠不備1件を修正・再取得済み</td></tr>
-    <tr><td>REL-97-06</td><td class="pending">反映工程</td><td>本報告書を含む変更をstaging先行後、mainへ反映し、最終デプロイ情報を追記する</td></tr>
+    <tr><td>REL-97-06</td><td class="pass">PASS</td><td>staging PR #98、main PR #99を順にマージ。mainのCI・Cloudflare Pages成功、本番再確認後にIssue #97をcompletedでクローズ</td></tr>
   </table>
 
   <h2>発見・修正した不具合</h2>
@@ -43,12 +42,23 @@
   <h2>検証結果</h2>
   <table>
     <tr><th>検証</th><th>結果</th></tr>
-    <tr><td><code>npm test</code></td><td class="pass">588/588 PASS（2.50秒）</td></tr>
+    <tr><td><code>npm test</code></td><td class="pass">588/588 PASS（main向けブランチ2.36秒）</td></tr>
     <tr><td><code>npm run build</code></td><td class="pass">495/495前段テスト、18ページ、画像5件最適化、ビルド成功</td></tr>
     <tr><td><code>npm run test:e2e</code></td><td class="pass">436 PASS・8 skip / 444件（15.5分、flakyなし）</td></tr>
     <tr><td>E-28安定性</td><td class="pass">3デバイス×3回 = 9/9 PASS、retries=0</td></tr>
     <tr><td>本番実地検証</td><td class="pass">27/27 PASS</td></tr>
     <tr><td>認証済みCMS証跡</td><td class="pass">3/3 PASS</td></tr>
+  </table>
+
+  <h2>staging・main反映実績</h2>
+  <table>
+    <tr><th>工程</th><th>結果</th></tr>
+    <tr><td>staging</td><td class="pass">PR #98 / merge <code>3c95c2337d0faaf1980e6f88dfd1da1413230947</code> / <code>test-and-build</code> success。実環境HTTP 200、<code>Disallow: /</code>、<code>branch: staging</code>、staging <code>base_url</code>を確認</td></tr>
+    <tr><td>main</td><td class="pass">PR #99 / merge <code>f47d5f81c1a313c97232d9a41b5f66505ec2c940</code></td></tr>
+    <tr><td>main CI</td><td class="pass"><code>test-and-build</code> check <code>93721464330</code> — success</td></tr>
+    <tr><td>Cloudflare Pages</td><td class="pass">check <code>93721691730</code> — Deploy successful / preview <code>https://d30b5fc7.my-blog-3cg.pages.dev</code></td></tr>
+    <tr><td>デプロイ後確認</td><td class="pass">本番27/27、認証済みCMS 3/3（各12記事）、axe違反・コンソールエラー0件</td></tr>
+    <tr><td>Issue</td><td class="pass">#97をstate reason <code>completed</code>でクローズ</td></tr>
   </table>
 
   <h2>変更ファイル</h2>

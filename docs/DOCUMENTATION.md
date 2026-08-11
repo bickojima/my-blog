@@ -55,6 +55,7 @@
 | 1.48 | 2026-07-05 | Bug #44（E-36テストのスクリーンショット出力先が`evidence/2026-02-24/`に過去日付固定され、`npm run test:e2e`実行の度に過去エビデンスが上書きされていた）を4.5章に追記。tests/e2e/cms-operations.spec.tsの3箇所を`test-results/`（gitignore対象）配下への出力に修正。テスト件数増減なし |
 | 1.49 | 2026-08-09 | staging → main マージ（本番反映）: Modern Web Guidance対応（F-1〜F-10）、個人ブログ化ロードマップ（FR-22〜FR-28, NFR-08）、ダークモード、Bug #41〜#44対応をmainへ反映。マージ時に`astro.config.mjs`の`SITE_URL`をmain値（`https://reiwa.casa`）へ切替。Bug #45（Bug #41再発防止テストのブランチ非対応によりmainの正しいrobots.txt設定でテストが失敗し、本番robots.txtがstaging値のまま放置されていた問題）を4.5章に追記 |
 | 1.50 | 2026-08-11 | Issue #97の必須残作業を完了。リリースブランチ削除、CI/Cloudflare Pages、本番SEOリソース・ダークモード、CMS含む全444件E2E、認証後CMS証跡を確認。Bug #46（Vitest探索範囲逸脱）・Bug #47（E-28並列負荷タイムアウト）を修正し、Vitest 588件へ更新 |
+| 1.51 | 2026-08-11 | Issue #97の最終反映実績を追記。staging PR #98、main PR #99、GitHub Actions・Cloudflare Pagesの成功、本番27/27・認証済みCMS 3/3のデプロイ後再確認、Issue #97のcompletedクローズを記録 |
 
 ## システム変更履歴
 
@@ -224,6 +225,15 @@ PR履歴に基づく主要なシステム変更の記録である。
 | REL-97-06 | staging先行反映後にmainへ本番反映し、無影響確認を行ってIssue #97をクローズする | mainのデプロイ成功・本番再確認・Issueクローズを確認する |
 
 F-11（レスポンシブ画像）は新規機能開発に当たり、今回の残作業には含めない。
+
+**Issue #97 反映実績（2026-08-11）:**
+
+| 工程 | 実績 |
+| :--- | :--- |
+| staging先行反映 | PR #98をマージ。merge SHA `3c95c2337d0faaf1980e6f88dfd1da1413230947`、`test-and-build` success。`https://staging.reiwa.casa/`、`robots.txt`、`admin/config.yml`を実地確認し、HTTP 200・`Disallow: /`・`branch: staging`・staging `base_url`を確認 |
+| main本番反映 | PR #99をマージ。merge SHA `f47d5f81c1a313c97232d9a41b5f66505ec2c940`、`test-and-build` check `93721464330` success、Cloudflare Pages check `93721691730` success、preview `https://d30b5fc7.my-blog-3cg.pages.dev` |
+| デプロイ後確認 | 本番27/27 PASS、axe違反0件、コンソールエラー0件。認証済みCMSはPC・iPad・iPhoneの3/3 PASSで、各端末12記事・ログイン画面なしを確認 |
+| 完了処理 | GitHub Issue #97へ結果を記録し、state reason `completed`でクローズ |
 
 ### 1.1.5 Modern Web Guidance準拠方針
 
@@ -2221,4 +2231,4 @@ evidence/YYYY-MM-DD/
 
 ---
 
-**最終更新**: 2026年8月11日（v1.50）
+**最終更新**: 2026年8月11日（v1.51）
