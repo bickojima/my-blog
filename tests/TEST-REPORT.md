@@ -42,8 +42,9 @@
 | 1.34 | 2026-07-04 | ドキュメント整理: 2.7章ファズテスト件数の表記を実測に合わせ214件→215件に修正（テスト実体の変更なし） |
 | 1.35 | 2026-07-04 | 個人ブログ化ロードマップ（FR-22〜FR-28, NFR-08）のテストケースを追加: robots.txt、RSS下書き除外、タグ件数、ページネーションの検証と実操作E2E 4件を追加。build.test.mjs 67→90件、Vitest合計 562→585件、E2E 444件へ更新 |
 | 1.36 | 2026-07-05 | 2.5.4章にBug #43再発防止テスト追加: 本文リンク色（--color-link）のライト/ダーク双方のコントラスト比を実値から計算し4.5:1以上を検証（3件目として追加）。build.test.mjs 90→91件、Vitest合計 586件へ更新 |
-| 1.38 | 2026-08-09 | Bug #45対応: 2.5.5章のrobots.txt環境別ポリシー検証をブランチ対応に変更（`astro.config.mjs`の`SITE_URL`でstaging/mainを判定）。テスト件数増減なし（Vitest 586件） |
 | 1.37 | 2026-07-05 | Bug #44対応: E-36（`cms-operations.spec.ts`）のスクリーンショット出力先を過去日付固定の`evidence/2026-02-24/`から`test-results/`（gitignore対象）へ変更。2.2章のE-36説明を更新。テスト件数増減なし |
+| 1.38 | 2026-08-09 | Bug #45対応: 2.5.5章のrobots.txt環境別ポリシー検証をブランチ対応に変更（`astro.config.mjs`の`SITE_URL`でstaging/mainを判定）。テスト件数増減なし（Vitest 586件） |
+| 1.39 | 2026-08-11 | Issue #97完了対応: Bug #46のVitest探索範囲固定テスト、Bug #47のCMS E-28タイムアウト設定テストを追加。build.test.mjs 91→93件、Vitest合計586→588件。全444件E2Eを再実行し436 PASS・8 skip・flakyなしを確認 |
 
 ## テスト基盤の変更履歴
 
@@ -64,6 +65,7 @@
 | 2026-02-21 | **バグ#29修正・CSP connect-src blob:テスト追加**: CSP `connect-src`に`blob:`不足による画像付き記事保存失敗を修正。build.test.mjs CSP connect-src blob:検証1件追加、fuzz-validation connect-src blob:検証1件追加。計498 Vitest + 240 E2E = 738テスト | - |
 | 2026-02-21 | **E2E CRUDテスト・アクセシビリティテスト追加**: cms-crud.spec.ts新規作成（E-22〜E-24: 記事作成・編集・削除 11テスト）、accessibility.spec.ts新規作成（E-25〜E-27: axe-core WCAG 2.1 AA検証 6テスト）、@axe-core/playwright導入。色コントラスト比修正（WCAG AA 4.5:1準拠）、見出し階層修正。計498 Vitest + 291 E2E = 789テスト | - |
 | 2026-02-23 | **第三者セキュリティ・品質レビュー対応**: SEC-21〜SEC-26対応。fuzz-validationスキーマ更新（date XSSテスト→拒否期待、tags長さ超過テスト追加）、content-validation Windows互換性修正（path.relative正規化、basename使用、CRLF正規表現対応）、build.test.mjs _headersパースCRLF修正、organize-posts.mjs url-map.jsonキー正規化。計519 Vitest + 375 E2E = 894テスト | - |
+| 2026-08-11 | **Issue #97回帰基盤の安定化**: Vitestの対象を`tests/**/*.test.mjs`へ限定し、リポジトリ内の別worktree・依存パッケージのテスト混入を防止。OAuth/CMS初期化を含むE-28へ60秒タイムアウトを設定。回帰テスト2件を追加し、588 Vitest + 444 E2E = 1032テスト | #97 |
 
 ---
 
@@ -458,7 +460,7 @@ admin-html.test.mjs              -     ●     -     -     -     -     -     -  
 
 | No. | 基準 |
 | :--- | :--- |
-| 1 | 全テストケース（Vitest 586件 + E2E 444件 = 1029件）がPASSまたは仕様上の条件スキップであること |
+| 1 | 全テストケース（Vitest 588件 + E2E 444件 = 1032件）がPASSまたは仕様上の条件スキップであること |
 | 2 | `npm run build` が正常に完了すること |
 | 3 | 要件トレーサビリティマトリクス（docs/DOCUMENTATION.md 1.5章）において全要件が「充足」であること |
 
@@ -816,7 +818,7 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 
 ---
 
-## 2.5. ビルド検証 (`build.test.mjs`) — 67件
+## 2.5. ビルド検証 (`build.test.mjs`) — 93件
 
 `npm run build`を実行し、パイプライン全体（normalize-images → organize-posts → astro build → image-optimize）の出力を検証する。全テストケースはビルド完了後に実行される。
 
@@ -922,6 +924,13 @@ Bug #42: `/page/[page].astro`が`paginate()`の結果をフィルタせず生成
 | 2 | / の canonical は自身（/）を指す | M-01 | `<link rel="canonical" href=".../">`が存在する |
 | 3 | 公開記事数がPAGE_SIZE超の場合のみ /page/2/ が生成される | M-01 | 記事数から動的算出した`totalPages`と生成有無が一致する |
 | 4 | sitemapに /page/1/ の重複URLが含まれない | M-01 | `sitemap-0.xml`が`/page/1/`を含まない |
+
+### 2.5.8 テストランナー分離・E2E安定性（Bug #46/#47再発防止、2件）
+
+| No. | テストケース | テスト手法 | 期待結果 |
+| :--- | :--- | :--- | :--- |
+| 1 | Vitestの探索範囲をプロジェクトの単体・統合テストに限定する | M-02 | `vitest.config.ts`に`include: ['tests/**/*.test.mjs']`があり、別worktreeや依存パッケージのテストを収集しない |
+| 2 | OAuth・CMS初期化を含むE-28に並列負荷の余裕を設ける | M-02 | E-28 describeに60秒タイムアウトがあり、全444件並列実行時もリトライなしで完了する |
 
 ### 2.5.1 セキュリティヘッダー検証（8件）
 
@@ -1655,32 +1664,32 @@ npm run build
 
 | 項目 | 結果 |
 | :--- | :--- |
-| 実行日時 | 2026-07-04 |
+| 実行日時 | 2026-08-11 |
 | Vitest バージョン | v4.0.18 |
-| 実行時間 | 2.37s |
+| 実行時間 | 2.50s |
 | 合否判定 | **合格** |
 
 ### 4.3.2 テストファイル別結果
 
 | テストファイル | テスト数 | 結果 | 実行時間 |
 | :--- | :--- | :--- | :--- |
-| `cms-config.test.mjs` | 52 | PASS | 6ms |
-| `admin-html.test.mjs` | 90 | PASS | 8ms |
-| `rehype-image-caption.test.mjs` | 8 | PASS | 2ms |
+| `cms-config.test.mjs` | 52 | PASS | 9ms |
+| `admin-html.test.mjs` | 90 | PASS | 6ms |
+| `rehype-image-caption.test.mjs` | 8 | PASS | 3ms |
 | `rehype-focusable-code-blocks.test.mjs` | 2 | PASS | 2ms |
-| `auth-functions.test.mjs` | 17 | PASS | 29ms |
+| `auth-functions.test.mjs` | 17 | PASS | 33ms |
 | `fuzz-validation.test.mjs` | 215 | PASS | 40ms |
-| `content-validation.test.mjs` | 111 | PASS | 49ms |
-| `build.test.mjs` | 91 | PASS | 2181ms |
-| **合計** | **586** | **全PASS** | **2.40s** |
+| `content-validation.test.mjs` | 111 | PASS | 75ms |
+| `build.test.mjs` | 93 | PASS | 2286ms |
+| **合計** | **588** | **全PASS** | **2.50s** |
 
 ### 4.3.3 E2Eテスト最新実行結果（Playwright）
 
 | 項目 | 結果 |
 | :--- | :--- |
-| 実行日時 | 2026-07-05 |
+| 実行日時 | 2026-08-11 |
 | Playwright バージョン | v1.58.2 |
-| 実行時間 | 15.4m |
+| 実行時間 | 15.5m |
 | 合否判定 | **合格**（436 PASS, 8 skip / 444テスト）|
 
 | テストファイル | PC | iPad | iPhone | 合計 |
@@ -1703,9 +1712,9 @@ npm run build
 | ビルドコマンド | `npm run build` |
 | 生成ページ数 | 18ページ |
 | 画像最適化 | 5ファイル（最大-97%削減） |
-| ビルド時間 | ~1.2s |
+| ビルド時間 | 1.44s |
 | 合否判定 | **合格** |
 
 ---
 
-**最終更新**: 2026年5月25日
+**最終更新**: 2026年8月11日
