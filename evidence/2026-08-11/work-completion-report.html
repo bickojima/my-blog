@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Issue #97 作業完了報告書</title>
+  <style>
+    body { max-width: 1000px; margin: 32px auto; padding: 0 20px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #172033; }
+    h1 { border-bottom: 4px solid #172033; padding-bottom: 12px; }
+    h2 { margin-top: 32px; border-left: 5px solid #2563eb; padding-left: 12px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #ccd4df; padding: 10px; text-align: left; vertical-align: top; }
+    th { background: #eef2f7; }
+    .pass { color: #08752b; font-weight: 700; }
+    .pending { color: #9a6500; font-weight: 700; }
+    code { background: #eef2f7; padding: 2px 5px; border-radius: 3px; }
+  </style>
+</head>
+<body>
+  <h1>Issue #97 作業完了報告書</h1>
+  <p>作成日: 2026-08-11 / 対象リポジトリ: <code>bickojima/my-blog</code></p>
+
+  <h2>対応範囲と判断</h2>
+  <p>ユーザー確認に基づき、Issue #97の必須残作業のみを対象とした。任意項目F-11（レスポンシブ画像）は新規機能のため対象外とし、別途扱う。</p>
+  <table>
+    <tr><th>ID</th><th>判定</th><th>結果</th></tr>
+    <tr><td>REL-97-01</td><td class="pass">PASS</td><td><code>release/2026-08-09-main</code>をリモートから削除</td></tr>
+    <tr><td>REL-97-02</td><td class="pass">PASS</td><td><code>6a320bd</code>のtest-and-build / Cloudflare Pages成功を確認</td></tr>
+    <tr><td>REL-97-03</td><td class="pass">PASS</td><td>本番27/27、3デバイス15枚、axe違反・コンソールエラー0件</td></tr>
+    <tr><td>REL-97-04</td><td class="pass">PASS</td><td>436 PASS・8 skip / 444件、認証後CMS 3/3</td></tr>
+    <tr><td>REL-97-05</td><td class="pass">PASS</td><td>18枚全数レビュー、赤枠不備1件を修正・再取得済み</td></tr>
+    <tr><td>REL-97-06</td><td class="pending">反映工程</td><td>本報告書を含む変更をstaging先行後、mainへ反映し、最終デプロイ情報を追記する</td></tr>
+  </table>
+
+  <h2>発見・修正した不具合</h2>
+  <table>
+    <tr><th>Bug</th><th>根本原因</th><th>対策・再発防止</th></tr>
+    <tr><td>#46</td><td>Vitestが除外指定のみで、未追跡worktree配下の外部テストまで探索した</td><td><code>tests/**/*.test.mjs</code>へ包含範囲を固定し、回帰テスト追加</td></tr>
+    <tr><td>#47</td><td>OAuth/CMS初期化を含むE-28が並列負荷時も既定30秒だった</td><td>E-28を60秒化。対象テスト9回連続成功と全444件flakyなしを確認</td></tr>
+  </table>
+  <p>5 Whysは<code>docs/DOCUMENTATION.md</code> 4.5章に記録した。</p>
+
+  <h2>検証結果</h2>
+  <table>
+    <tr><th>検証</th><th>結果</th></tr>
+    <tr><td><code>npm test</code></td><td class="pass">588/588 PASS（2.50秒）</td></tr>
+    <tr><td><code>npm run build</code></td><td class="pass">495/495前段テスト、18ページ、画像5件最適化、ビルド成功</td></tr>
+    <tr><td><code>npm run test:e2e</code></td><td class="pass">436 PASS・8 skip / 444件（15.5分、flakyなし）</td></tr>
+    <tr><td>E-28安定性</td><td class="pass">3デバイス×3回 = 9/9 PASS、retries=0</td></tr>
+    <tr><td>本番実地検証</td><td class="pass">27/27 PASS</td></tr>
+    <tr><td>認証済みCMS証跡</td><td class="pass">3/3 PASS</td></tr>
+  </table>
+
+  <h2>変更ファイル</h2>
+  <ul>
+    <li><code>vitest.config.ts</code>: 単体・統合テスト探索範囲の固定</li>
+    <li><code>tests/e2e/cms-operations.spec.ts</code>: E-28タイムアウト明示</li>
+    <li><code>tests/build.test.mjs</code>: Bug #46/#47回帰テスト</li>
+    <li><code>README.md</code>、<code>docs/DOCUMENTATION.md</code>、<code>tests/TEST-REPORT.md</code>: QA・設計経緯・5 Whys・実測更新</li>
+    <li><code>evidence/2026-08-11/</code>: 検証スクリプト、JSON、18枚、HTMLレポート</li>
+  </ul>
+</body>
+</html>
