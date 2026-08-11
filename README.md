@@ -19,6 +19,7 @@ Astro + Decap CMS によるブログサイト。Cloudflare Pages でホスティ
 | 1.10 | 2026-07-04 | ドキュメント整理: テスト件数を実測に更新（562 Vitest + 432 E2E）、プロジェクト構成を最新化（E2E 7ファイル・rehypeプラグイン・evidence/）、参考リンクの章配置を修正 |
 | 1.11 | 2026-07-04 | 個人ブログ化ロードマップ（site/canonical, OGP, RSS, サイトマップ, タグ一覧, 前後記事ナビ, ダークモード, ページネーション）実装。robots.txtのstaging誤設定（Bug #41）とページネーション重複コンテンツ（Bug #42）を修正。テスト件数585 Vitest + 444 E2Eへ更新 |
 | 1.12 | 2026-07-05 | ライトモード本文リンクのコントラスト比不足（Bug #43、WCAG AA未達）を修正。テスト件数586 Vitestへ更新 |
+| 1.13 | 2026-08-11 | Issue #97の本番残作業を完了。Vitestの探索範囲逸脱（Bug #46）とCMS E2Eの日付入力タイムアウト（Bug #47）を修正し、回帰テストを追加。テスト件数588 Vitest + 444 E2Eへ更新 |
 
 詳細なシステム変更履歴は [DOCUMENTATION.md](docs/DOCUMENTATION.md) を参照。
 
@@ -127,7 +128,7 @@ my-blog/
 | `npm run dev` | 開発サーバー起動（localhost:4321） |
 | `npm run build` | 本番ビルド（`./dist/` に出力） |
 | `npm run preview` | ビルド結果のローカルプレビュー |
-| `npm test` | 単体・統合テスト実行（Vitest / 586テスト、記事数により変動） |
+| `npm test` | 単体・統合テスト実行（Vitest / 588テスト、記事数により変動） |
 | `npm run test:watch` | ウォッチモードでテスト実行 |
 | `npm run test:e2e` | E2Eテスト実行（Playwright / PC・iPad・iPhone 444テスト: 436実行+8スキップ） |
 

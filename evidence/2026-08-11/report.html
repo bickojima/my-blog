@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Issue #97 本番・CMSエビデンスレポート</title>
+  <style>
+    body { margin: 24px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #172033; background: #f5f7fa; }
+    h1, h2 { margin: 0 0 16px; }
+    h2 { margin-top: 32px; border-left: 5px solid #2563eb; padding-left: 12px; }
+    .summary { padding: 16px 20px; border-left: 5px solid #16803a; background: #ecfdf3; border-radius: 6px; }
+    table { width: 100%; border-collapse: collapse; margin: 12px 0 24px; background: #fff; }
+    th, td { border: 1px solid #d7dde6; padding: 10px; text-align: left; vertical-align: top; }
+    th { color: #fff; background: #273449; }
+    .pass { color: #08752b; font-weight: 700; }
+    .shots td { width: 33.33%; text-align: center; }
+    .shots img { display: block; width: 100%; max-width: 420px; max-height: 640px; object-fit: contain; margin: 0 auto 8px; border: 1px solid #cbd5e1; background: #fff; }
+    code { background: #eef2f7; padding: 2px 5px; border-radius: 3px; }
+  </style>
+</head>
+<body>
+  <h1>Issue #97 本番・CMSエビデンスレポート</h1>
+  <p>実施日: 2026-08-11 / 対象: <code>https://reiwa.casa</code> / デバイス: PC・iPad Pro 11・iPhone 14</p>
+  <div class="summary">
+    <strong>総合判定: PASS</strong><br>
+    本番27/27、認証済みCMS 3/3、Vitest 588/588、Playwright 436 PASS・8 skip / 444件。flakyなし。
+  </div>
+
+  <h2>Issue #97 必須確認</h2>
+  <table>
+    <tr><th>確認項目</th><th>結果</th><th>根拠</th></tr>
+    <tr><td>一時releaseブランチ削除</td><td class="pass">PASS</td><td><code>release/2026-08-09-main</code>がGitHub上に存在しないことを確認</td></tr>
+    <tr><td>main <code>6a320bd</code> CI</td><td class="pass">PASS</td><td><code>test-and-build</code> success</td></tr>
+    <tr><td>main <code>6a320bd</code> Cloudflare Pages</td><td class="pass">PASS</td><td>Deployed successfully</td></tr>
+    <tr><td>robots.txt</td><td class="pass">PASS</td><td><code>Allow: /</code>と本番sitemap URL、<code>Disallow</code>なし</td></tr>
+    <tr><td>sitemap-index / sitemap-0</td><td class="pass">PASS</td><td>HTTP 200、本番URLのみ、17 loc</td></tr>
+    <tr><td>RSS / タグ一覧</td><td class="pass">PASS</td><td>HTTP 200、本番URLのみ、タグ7リンク</td></tr>
+    <tr><td>canonical / og:url</td><td class="pass">PASS</td><td>トップ・記事とも<code>https://reiwa.casa</code></td></tr>
+    <tr><td>ダークモード</td><td class="pass">PASS</td><td>3デバイスで背景<code>rgb(11, 15, 25)</code>、<code>color-scheme: light dark</code></td></tr>
+    <tr><td>CMS E2E</td><td class="pass">PASS</td><td>444件中436 PASS・8 skip、15.5分、flakyなし</td></tr>
+    <tr><td>認証後CMS</td><td class="pass">PASS</td><td>OAuthモック認証後に記事コレクション4件を3デバイスで確認</td></tr>
+  </table>
+
+  <h2>3デバイス・スクリーンショット</h2>
+  <table class="shots">
+    <tr><th>PC</th><th>iPad</th><th>iPhone</th></tr>
+    <tr>
+      <td><img src="screenshots/S01-top-light-PC.png" alt="PC トップライト">S01 トップ・ライト</td>
+      <td><img src="screenshots/S01-top-light-iPad.png" alt="iPad トップライト">S01 トップ・ライト</td>
+      <td><img src="screenshots/S01-top-light-iPhone.png" alt="iPhone トップライト">S01 トップ・ライト</td>
+    </tr>
+    <tr>
+      <td><img src="screenshots/S02-top-dark-PC.png" alt="PC トップダーク">S02 ダークモード</td>
+      <td><img src="screenshots/S02-top-dark-iPad.png" alt="iPad トップダーク">S02 ダークモード</td>
+      <td><img src="screenshots/S02-top-dark-iPhone.png" alt="iPhone トップダーク">S02 ダークモード</td>
+    </tr>
+    <tr>
+      <td><img src="screenshots/S03-post-PC.png" alt="PC 記事詳細">S03 記事・canonical・OGP</td>
+      <td><img src="screenshots/S03-post-iPad.png" alt="iPad 記事詳細">S03 記事・canonical・OGP</td>
+      <td><img src="screenshots/S03-post-iPhone.png" alt="iPhone 記事詳細">S03 記事・canonical・OGP</td>
+    </tr>
+    <tr>
+      <td><img src="screenshots/S04-tags-PC.png" alt="PC タグ一覧">S04 タグ一覧</td>
+      <td><img src="screenshots/S04-tags-iPad.png" alt="iPad タグ一覧">S04 タグ一覧</td>
+      <td><img src="screenshots/S04-tags-iPhone.png" alt="iPhone タグ一覧">S04 タグ一覧</td>
+    </tr>
+    <tr>
+      <td><img src="screenshots/S05-nav-PC.png" alt="PC ナビ">S05 ナビ実操作</td>
+      <td><img src="screenshots/S05-nav-iPad.png" alt="iPad ナビ">S05 ナビ実操作</td>
+      <td><img src="screenshots/S05-nav-iPhone.png" alt="iPhone ナビ">S05 ナビ実操作</td>
+    </tr>
+    <tr>
+      <td><img src="screenshots/CMS01-authenticated-PC.png" alt="PC 認証後CMS">CMS01 認証済み</td>
+      <td><img src="screenshots/CMS01-authenticated-iPad.png" alt="iPad 認証後CMS">CMS01 認証済み</td>
+      <td><img src="screenshots/CMS01-authenticated-iPhone.png" alt="iPhone 認証後CMS">CMS01 認証済み</td>
+    </tr>
+  </table>
+
+  <h2>社内レビュー</h2>
+  <p>全18枚を目視確認。初回レビューでS02の赤枠セレクタ不一致を検出し、<code>.site-header</code>から<code>header</code>へ修正して再取得した。再レビュー後は、ログイン画面のみの画像、赤枠漏れ、レイアウト崩れ、対象外画像を0件と判定した。</p>
+</body>
+</html>
