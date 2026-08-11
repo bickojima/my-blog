@@ -88,6 +88,9 @@ async function annotate(page, items) {
 }
 
 async function runAxe(page) {
+  // 赤枠アノテーションはlandmark外のdivとして残るため、axe実行前に必ず除去する
+  // （残すと region 違反「All page content should be contained by landmarks」を自作してしまう）
+  await page.evaluate(() => document.querySelectorAll('[data-ev-ann]').forEach(e => e.remove()));
   await page.evaluate(AXE_SOURCE);
   return page.evaluate(async () => {
     const r = await axe.run({ resultTypes: ['violations'] });
