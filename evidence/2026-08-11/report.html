@@ -15,7 +15,7 @@
     .pass { color: #08752b; font-weight: 700; }
     .shots td { width: 33.33%; text-align: center; }
     .shots img { display: block; width: 100%; max-width: 420px; max-height: 640px; object-fit: contain; margin: 0 auto 8px; border: 1px solid #cbd5e1; background: #fff; }
-    code { background: #eef2f7; padding: 2px 5px; border-radius: 3px; }
+    code { background: #eef2f7; padding: 2px 5px; border-radius: 3px; overflow-wrap: anywhere; }
   </style>
 </head>
 <body>
@@ -32,13 +32,17 @@
     <tr><td>一時releaseブランチ削除</td><td class="pass">PASS</td><td><code>release/2026-08-09-main</code>がGitHub上に存在しないことを確認</td></tr>
     <tr><td>main <code>6a320bd</code> CI</td><td class="pass">PASS</td><td><code>test-and-build</code> success</td></tr>
     <tr><td>main <code>6a320bd</code> Cloudflare Pages</td><td class="pass">PASS</td><td>Deployed successfully</td></tr>
+    <tr><td>Issue #97 staging反映</td><td class="pass">PASS</td><td>PR #98 / merge <code>3c95c2337d0faaf1980e6f88dfd1da1413230947</code> / CI success / staging実環境正常</td></tr>
+    <tr><td>Issue #97 main反映</td><td class="pass">PASS</td><td>PR #99 / merge <code>f47d5f81c1a313c97232d9a41b5f66505ec2c940</code></td></tr>
+    <tr><td>main最終CI・デプロイ</td><td class="pass">PASS</td><td><code>test-and-build</code> check <code>93721464330</code> / Cloudflare Pages check <code>93721691730</code></td></tr>
     <tr><td>robots.txt</td><td class="pass">PASS</td><td><code>Allow: /</code>と本番sitemap URL、<code>Disallow</code>なし</td></tr>
     <tr><td>sitemap-index / sitemap-0</td><td class="pass">PASS</td><td>HTTP 200、本番URLのみ、17 loc</td></tr>
     <tr><td>RSS / タグ一覧</td><td class="pass">PASS</td><td>HTTP 200、本番URLのみ、タグ7リンク</td></tr>
     <tr><td>canonical / og:url</td><td class="pass">PASS</td><td>トップ・記事とも<code>https://reiwa.casa</code></td></tr>
     <tr><td>ダークモード</td><td class="pass">PASS</td><td>3デバイスで背景<code>rgb(11, 15, 25)</code>、<code>color-scheme: light dark</code></td></tr>
     <tr><td>CMS E2E</td><td class="pass">PASS</td><td>444件中436 PASS・8 skip、15.5分、flakyなし</td></tr>
-    <tr><td>認証後CMS</td><td class="pass">PASS</td><td>OAuthモック認証後に記事コレクション4件を3デバイスで確認</td></tr>
+    <tr><td>認証後CMS</td><td class="pass">PASS</td><td>OAuthモック認証後に記事コレクション12件を3デバイスで確認</td></tr>
+    <tr><td>Issueクローズ</td><td class="pass">PASS</td><td>#97をstate reason <code>completed</code>でクローズ</td></tr>
   </table>
 
   <h2>3デバイス・スクリーンショット</h2>
