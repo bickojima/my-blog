@@ -777,6 +777,19 @@ describe('ビルド検証', () => {
       expect(buildScript).toContain('organize-posts');
       expect(buildScript).toContain('astro build');
     });
+
+    it('Vitestの探索範囲がtests配下の単体・統合テストに限定されている（Bug #46再発防止）', () => {
+      const vitestConfig = readFileSync(join(process.cwd(), 'vitest.config.ts'), 'utf-8');
+      expect(vitestConfig).toContain("include: ['tests/**/*.test.mjs']");
+      expect(vitestConfig).not.toContain("include: ['**/*.{test,spec}");
+    });
+
+    it('CMS記事作成E2Eに並列実行負荷を考慮したタイムアウトが設定されている（Bug #47再発防止）', () => {
+      const cmsOperations = readFileSync(join(process.cwd(), 'tests/e2e/cms-operations.spec.ts'), 'utf-8');
+      const e28Block = cmsOperations.split("test.describe('E-28: 記事作成の実操作'")[1]
+        .split("test.describe('E-29: 記事編集の実操作'")[0];
+      expect(e28Block).toContain('test.describe.configure({ timeout: 60000 })');
+    });
   });
 
   describe('セキュリティヘッダー検証（SEC-10）', () => {
