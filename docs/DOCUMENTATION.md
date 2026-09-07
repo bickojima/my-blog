@@ -56,6 +56,7 @@
 | 1.49 | 2026-08-09 | staging → main マージ（本番反映）: Modern Web Guidance対応（F-1〜F-10）、個人ブログ化ロードマップ（FR-22〜FR-28, NFR-08）、ダークモード、Bug #41〜#44対応をmainへ反映。マージ時に`astro.config.mjs`の`SITE_URL`をmain値（`https://reiwa.casa`）へ切替。Bug #45（Bug #41再発防止テストのブランチ非対応によりmainの正しいrobots.txt設定でテストが失敗し、本番robots.txtがstaging値のまま放置されていた問題）を4.5章に追記 |
 | 1.50 | 2026-08-11 | Issue #97の必須残作業を完了。リリースブランチ削除、CI/Cloudflare Pages、本番SEOリソース・ダークモード、CMS含む全444件E2E、認証後CMS証跡を確認。Bug #46（Vitest探索範囲逸脱）・Bug #47（E-28並列負荷タイムアウト）を修正し、Vitest 588件へ更新 |
 | 1.51 | 2026-08-11 | Issue #97の最終反映実績を追記。staging PR #98、main PR #99、GitHub Actions・Cloudflare Pagesの成功、本番27/27・認証済みCMS 3/3のデプロイ後再確認、Issue #97のcompletedクローズを記録 |
+| 1.52 | 2026-09-07 | Modern Web Guidance 日本語索引（`docs/MODERN-WEB-GUIDANCE.md`）を新規作成し、ドキュメント体系へ追加。全139ガイド（+npm未公開2本）の1行要約、人間向け閲覧手順（公式ドキュメント／GitHub／`retrieve`・`search` CLI）、本ブログの適用実績7項目と検討候補、索引の更新手順を整理。2.2.3章から索引へ導線を追加。コード変更なし |
 
 ## システム変更履歴
 
@@ -667,7 +668,8 @@ my-blog/
 │   ├── e2e/                            # E2Eテスト（Playwright 7ファイル）
 │   └── TEST-REPORT.md                  # テスト計画書・テストケース一覧・実行結果
 ├── docs/
-│   └── DOCUMENTATION.md                # システム設計書（本書）
+│   ├── DOCUMENTATION.md                # システム設計書（本書）
+│   └── MODERN-WEB-GUIDANCE.md          # Modern Web Guidance 日本語索引
 ├── evidence/                           # 動作確認エビデンス（日付フォルダごと）
 ├── README.md                           # プロジェクト概要（人間向け）
 ├── CLAUDE.md                           # Claude Code向けプロジェクトガイド
@@ -754,6 +756,8 @@ my-blog/
 本システムの独自実装部は、Google公式Modern Web Guidanceスキル準拠を基本設計方針とする。適用対象は公開サイトのAstro実装（`src/layouts`, `src/pages`, `src/components`, 独自rehype plugin）およびCMS管理画面の独自カスタマイズ（`public/admin/index.html`内の追加CSS/JS）に限定する。
 
 Modern Web Guidanceは、AIエージェントへGoogle公式のモダンWeb機能知識を注入するため、プロジェクト初期化時または方針更新時に `npx modern-web-guidance@latest install` で導入する。
+
+ガイド本体は英語のエージェント向けスキルとして配布されており、公式にはカテゴリ横断の日本語目次が存在しない。設計判断の根拠を人間が追跡できるようにするため、全ガイドの日本語索引を [MODERN-WEB-GUIDANCE.md](MODERN-WEB-GUIDANCE.md) に維持する。同書は各ガイドの1行要約、本設計方針で適用済みの項目、`npx modern-web-guidance@latest retrieve "<ガイドID>"` によるガイド全文の参照手順、およびガイド追加時の索引更新手順を含む。
 
 Decap CMS本体UIは外部プロダクト由来の実装であり、保存・OAuth・プレビュー互換性を壊すリスクが高いため、Modern Web Guidanceの全面適用対象外とする。記事本文画像のLCP自動判定も、Markdown本文の構造差により誤判定の可能性があるため、明確な主要画像のみ高優先度化し、それ以外は遅延読み込みを維持する。
 
@@ -2231,4 +2235,4 @@ evidence/YYYY-MM-DD/
 
 ---
 
-**最終更新**: 2026年8月11日（v1.51）
+**最終更新**: 2026年9月7日（v1.52）
