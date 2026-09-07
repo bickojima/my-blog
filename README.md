@@ -21,6 +21,7 @@ Astro + Decap CMS によるブログサイト。Cloudflare Pages でホスティ
 | 1.12 | 2026-07-05 | ライトモード本文リンクのコントラスト比不足（Bug #43、WCAG AA未達）を修正。テスト件数586 Vitestへ更新 |
 | 1.13 | 2026-08-11 | Issue #97の本番残作業を完了。Vitestの探索範囲逸脱（Bug #46）とCMS E2Eの日付入力タイムアウト（Bug #47）を修正し、回帰テストを追加。テスト件数588 Vitest + 444 E2Eへ更新 |
 | 1.14 | 2026-08-11 | Issue #97の反映実績を確定。staging PR #98、main PR #99を順にマージし、mainのGitHub Actions・Cloudflare Pages成功、本番27/27・認証済みCMS 3/3のデプロイ後再確認、Issueクローズを記録 |
+| 1.15 | 2026-09-07 | Modern Web Guidance 日本語索引（`docs/MODERN-WEB-GUIDANCE.md`）を新規作成。全139ガイドの1行要約、人間向け閲覧手順、本ブログの適用実績と検討候補を整理。コード変更なし |
 
 詳細なシステム変更履歴は [DOCUMENTATION.md](docs/DOCUMENTATION.md) を参照。
 
@@ -100,7 +101,8 @@ my-blog/
 │   ├── pages/                    # ページルーティング
 │   └── content.config.ts         # コンテンツコレクション定義
 ├── docs/
-│   └── DOCUMENTATION.md          # システム設計書（要件定義・設計・運用）
+│   ├── DOCUMENTATION.md          # システム設計書（要件定義・設計・運用）
+│   └── MODERN-WEB-GUIDANCE.md    # Modern Web Guidance 日本語索引
 ├── tests/                        # 自動テスト
 │   ├── *.test.mjs                # 単体・統合テスト（Vitest）
 │   ├── e2e/                      # E2Eテスト（Playwright）
@@ -248,9 +250,12 @@ main (本番)  ←── merge ── staging (テスト) ←── merge ──
 | `README.md`（本文書） | プロジェクト概要・構成・コマンド |
 | `docs/DOCUMENTATION.md` | システム設計書（要件定義・基本設計・詳細設計・運用設計） |
 | `tests/TEST-REPORT.md` | テスト仕様書（テストケース一覧・要件トレーサビリティ） |
+| `docs/MODERN-WEB-GUIDANCE.md` | Modern Web Guidance 日本語索引（全139ガイドの要約・適用実績・閲覧手順） |
 | `CLAUDE.md` | Claude Code向けプロジェクトガイド（開発規約・注意事項） |
 
 ## 10. Modern Web Guidance準拠方針
+
+ガイドの中身は英語のエージェント向けスキルとして配布されており、公式には日本語の横断的な目次がない。そのため本リポジトリでは **[docs/MODERN-WEB-GUIDANCE.md](docs/MODERN-WEB-GUIDANCE.md) に全139ガイドの日本語索引**（1行要約・本ブログの適用実績・`npx modern-web-guidance@latest retrieve` での読み方）を維持している。
 
 Google公式Modern Web Guidanceスキル準拠を方針とし、公開サイトとCMS独自カスタマイズに限って適用する。初期ビューポート内への`content-visibility`適用を避け、キーボード操作、44pxタップ領域、識別可能な本文リンク、スクロール可能コードブロックへの到達性を維持する。Decap CMS本体UIは引用元レポジトリの実装を尊重し、保存・OAuth・プレビュー互換性の再発リスクが高い変更は非準拠許容として扱う。
 
@@ -258,6 +263,7 @@ Google公式Modern Web Guidanceスキル準拠を方針とし、公開サイト�
 
 - [Modern Web Guidance - Chrome for Developers](https://developer.chrome.com/docs/modern-web-guidance?hl=ja)
 - [Modern Web Guidance Get started](https://developer.chrome.com/docs/modern-web-guidance/get-started?hl=ja)
+- [GoogleChrome/modern-web-guidance（ガイド本文）](https://github.com/GoogleChrome/modern-web-guidance/tree/main/skills/modern-web-guidance/guides)
 - [Astro ドキュメント](https://docs.astro.build)
 - [Decap CMS ドキュメント](https://decapcms.org/docs/)
 - [Cloudflare Pages ドキュメント](https://developers.cloudflare.com/pages/)
