@@ -53,7 +53,8 @@ scripts/
 └── organize-posts.mjs       # prebuild: 記事ファイル整理 + url-map.json生成
 
 docs/
-└── DOCUMENTATION.md         # システム設計書（要件定義・基本設計・詳細設計・運用設計）
+├── DOCUMENTATION.md         # システム設計書（要件定義・基本設計・詳細設計・運用設計）
+└── MODERN-WEB-GUIDANCE.md   # Modern Web Guidance 日本語索引（全139ガイド・適用実績）
 
 functions/auth/              # Cloudflare Functions: GitHub OAuth proxy
 
@@ -96,6 +97,7 @@ tests/
 - PC: mouseenter/mouseleave（300ms遅延閉じ）、モバイル: タップでトグル
 
 ### Modern Web Guidance準拠
+- **ガイド内容の日本語索引は `docs/MODERN-WEB-GUIDANCE.md` を参照**（全139ガイドの1行要約・本ブログの適用実績・`npx modern-web-guidance@latest search`/`retrieve` の使い方）
 - 独自実装部はGoogle公式Modern Web Guidanceスキル準拠を基本方針とする
 - 対象は公開サイトのAstro実装と `public/admin/index.html` の独自カスタマイズのみ
 - Decap CMS本体UIは引用元レポジトリの実装を尊重し、保存・OAuth・プレビュー互換性を壊す変更は非準拠許容とする
@@ -123,6 +125,7 @@ tests/
 | README.md | プロジェクト概要（人間向け） | 1〜10（フラット） |
 | docs/DOCUMENTATION.md | システム設計書（要件定義・設計・運用） | 1.x〜4.x（部ベース） |
 | tests/TEST-REPORT.md | テスト計画書・テストケース一覧・実行結果 | 1.x〜4.x（部ベース） |
+| docs/MODERN-WEB-GUIDANCE.md | Modern Web Guidance 日本語索引（全139ガイド・適用実績） | 1〜7（フラット） |
 | CLAUDE.md | 本ファイル（Claude Code向けガイド） | — |
 
 ### ドキュメント章番号体系
