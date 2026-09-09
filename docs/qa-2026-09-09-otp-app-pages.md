@@ -90,4 +90,6 @@
 - ローカル: Vitest 610件、FR-29実操作E2E 9件（3デバイス）、既存セキュリティ検証10件が成功。
 - 証跡の注釈位置調整後にメニュー操作3件を再実行し成功。PC・iPad・iPhoneのスクリーンショットを全数目視確認した。
 - セキュリティ検証は既存 `verify-security.mjs` を既存のローカルE2Eサーバーへ接続して実行。過去証跡を保護し、サーバーの強制終了処理を除外。HTTPセキュリティヘッダーの実配信はローカルサーバーの対象外。
-- 証跡: `evidence/2026-09-09/report.html`。全E2E・staging・本番の結果は追記する。
+- 全E2E: 445件成功・既存の条件付きスキップ8件・失敗0件（18.1分）。GitHub CIも成功。
+- staging反映: PR #106（`9c9de0c`）。GitHub CI・Cloudflare Pages成功。実サイトのFR-29 E2Eは9 passed（PC/iPad/iPhone）、画面も全3枚確認済み。
+- 証跡: `evidence/2026-09-09/report.html`。
