@@ -1,9 +1,9 @@
 ---
-layout: ../../layouts/AppInfo.astro
 title: playwright-home プライバシーポリシー
-description: playwright-home のGmail連携で取得する情報、利用目的、保存、共有、アクセス取り消しの方針。
-appHome: /playwright-home/
-privacy: /playwright-home/privacy/
+slug: playwright-home-privacy
+order: 4
+draft: false
+noindex: true
 ---
 
 制定日：2026年9月9日
@@ -18,3 +18,5 @@ playwright-home のGmail連携には、次の方針を適用します。
 Google APIから受け取る情報の使用・転送は、Limited Use要件を含む[Google API Services User Data Policy](https://developers.google.com/terms/api-services-user-data-policy)に従います。
 
 連絡先：Googleの同意画面に表示されるサポートメール。変更時は本ページを更新します。
+
+[playwright-home の紹介](/playwright-home/)

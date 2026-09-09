@@ -71,4 +71,6 @@ collections:
           pattern: ['^[a-z0-9-]+$', '半角英数字とハイフンのみ'] }
       - { label: "表示順", name: "order", widget: "number", default: 1, value_type: "int", min: 1 }
       - { label: "下書き", name: "draft", widget: "boolean", default: false, required: false }
+      - { label: "検索結果に出さない", name: "noindex", widget: "boolean", default: false, required: false,
+          hint: "ONにするとnoindexが付き、サイトマップからも外れます" }
       - { label: "本文", name: "body", widget: "markdown" }
