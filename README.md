@@ -23,6 +23,7 @@ Astro + Decap CMS によるブログサイト。Cloudflare Pages でホスティ
 | 1.14 | 2026-08-11 | Issue #97の反映実績を確定。staging PR #98、main PR #99を順にマージし、mainのGitHub Actions・Cloudflare Pages成功、本番27/27・認証済みCMS 3/3のデプロイ後再確認、Issueクローズを記録 |
 | 1.15 | 2026-09-07 | Modern Web Guidance 日本語索引（`docs/MODERN-WEB-GUIDANCE.md`）を新規作成。全139ガイドの1行要約、人間向け閲覧手順、本ブログの適用実績と検討候補を整理。コード変更なし |
 | 1.16 | 2026-09-09 | FR-29: 個人用アプリの紹介・Gmailプライバシーページを固定ページとして追加。CMSから編集でき、検索結果には出さない（noindex・sitemap除外） |
+| 1.17 | 2026-09-09 | FR-29: noindex固定ページをヘッダーナビから除外。2ページの公開URLとCMS編集は維持 |
 
 詳細なシステム変更履歴は [DOCUMENTATION.md](docs/DOCUMENTATION.md) を参照。
 
@@ -37,7 +38,7 @@ Astro + Decap CMS によるブログサイト。Cloudflare Pages でホスティ
 - **CMS**: Decap CMS v3.10.0
 
 アプリ案内（FR-29）: `/playwright-home/` と `/playwright-home-privacy/`。
-CMSの固定ページ（`src/content/pages/`）で管理する。要件・Google登録値は [QA記録](docs/qa-2026-09-09-otp-app-pages.md)。
+CMSの固定ページ（`src/content/pages/`）で管理する。`noindex: true` の固定ページはヘッダーナビにも表示しない。要件・Google登録値は [QA記録](docs/qa-2026-09-09-otp-app-pages.md)。
 
 ## 2. システム構成図
 

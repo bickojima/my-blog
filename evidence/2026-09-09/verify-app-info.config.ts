@@ -17,7 +17,7 @@ export default defineConfig({
   timeout: 30000,
   retries: 0,
   workers: 3,
-  reporter: [['list'], ['json', { outputFile: './app-info-results.json' }]],
+  reporter: [['list'], ['json', { outputFile: process.env.APP_INFO_RESULT_FILE || './app-info-results.json' }]],
   use: { baseURL, headless: true },
   projects: [
     { name: 'PC', use: { browserName: 'chromium', viewport: { width: 1280, height: 800 } } },
