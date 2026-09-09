@@ -477,59 +477,58 @@ describe('ビルド検証', () => {
       });
     });
 
-    describe('FR-29 個人用アプリ案内ページ', () => {
-      // 対象ページはソースから動的取得する（URLをテストへハードコードしない）
-      const APP_INFO_LAYOUT = 'AppInfo.astro';
-      const appInfoRoutes = () => {
-        const root = join(process.cwd(), 'src/pages');
-        const walk = (dir) =>
-          readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
-            const file = join(dir, entry.name);
-            if (entry.isDirectory()) return walk(file);
-            if (!entry.name.endsWith('.md')) return [];
-            const source = readFileSync(file, 'utf-8');
-            if (!source.includes(APP_INFO_LAYOUT)) return [];
-            return [
-              file
-                .slice(root.length)
-                .replace(/index\.md$/, '')
-                .replace(/\.md$/, '/')
-                .replaceAll('\\', '/'),
-            ];
-          });
-        return walk(root);
-      };
+    describe('FR-29 検索除外の固定ページ', () => {
+      // 対象は固定ページのfrontmatterから決める（URLをテストへハードコードしない）
+      const PAGES_DIR = join(process.cwd(), 'src/content/pages');
+      const pageData = () =>
+        readdirSync(PAGES_DIR)
+          .filter((file) => file.endsWith('.md'))
+          .map((file) => matter(readFileSync(join(PAGES_DIR, file), 'utf-8')).data);
+      const noindexPages = () => pageData().filter((d) => d.noindex === true && d.draft !== true);
+      const indexedPages = () => pageData().filter((d) => d.noindex !== true && d.draft !== true);
 
-      it('アプリ案内ページがビルドされる', () => {
-        const routes = appInfoRoutes();
-        expect(routes.length).toBeGreaterThan(0);
-        for (const route of routes) {
-          expect(existsSync(join(DIST_DIR, route.replace(/^\//, ''), 'index.html'))).toBe(true);
+      it('検索除外の固定ページがビルドされる', () => {
+        expect(noindexPages().length).toBeGreaterThan(0);
+        for (const d of noindexPages()) {
+          expect(existsSync(join(DIST_DIR, d.slug, 'index.html'))).toBe(true);
         }
       });
 
-      it('アプリ案内ページに noindex が付与される', () => {
-        for (const route of appInfoRoutes()) {
-          const html = readFileSync(join(DIST_DIR, route.replace(/^\//, ''), 'index.html'), 'utf-8');
-          expect(html).toContain('name="robots"');
-          expect(html).toContain('noindex');
+      it('検索除外の固定ページに noindex が付与される', () => {
+        for (const d of noindexPages()) {
+          const html = readFileSync(join(DIST_DIR, d.slug, 'index.html'), 'utf-8');
+          expect(html).toContain('<meta name="robots" content="noindex">');
         }
       });
 
-      it('アプリ案内ページがsitemapに含まれない', () => {
+      it('検索除外の固定ページがsitemapに含まれない', () => {
         const files = readdirSync(DIST_DIR).filter((f) => /^sitemap-\d+\.xml$/.test(f));
         expect(files.length).toBeGreaterThan(0);
         for (const f of files) {
           const content = readFileSync(join(DIST_DIR, f), 'utf-8');
-          for (const route of appInfoRoutes()) {
-            expect(content).not.toContain(route);
+          for (const d of noindexPages()) {
+            expect(content).not.toContain(`/${d.slug}/`);
           }
         }
       });
 
-      it('記事・固定ページには noindex が付かない', () => {
+      it('noindex指定のない固定ページには noindex が付かず、sitemapに載る', () => {
+        const sitemap = readdirSync(DIST_DIR)
+          .filter((f) => /^sitemap-\d+\.xml$/.test(f))
+          .map((f) => readFileSync(join(DIST_DIR, f), 'utf-8'))
+          .join('');
+        for (const d of indexedPages()) {
+          const html = readFileSync(join(DIST_DIR, d.slug, 'index.html'), 'utf-8');
+          expect(html).not.toContain('name="robots"');
+          expect(sitemap).toContain(`/${d.slug}/`);
+        }
+      });
+
+      it('検索除外ページもヘッダーナビから到達できる（CMS固定ページとして統合されている）', () => {
         const html = readFileSync(join(DIST_DIR, 'index.html'), 'utf-8');
-        expect(html).not.toContain('noindex');
+        for (const d of noindexPages()) {
+          expect(html).toContain(`href="/${d.slug}"`);
+        }
       });
     });
 
