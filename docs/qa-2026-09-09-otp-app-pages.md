@@ -93,3 +93,20 @@
 - 全E2E: 445件成功・既存の条件付きスキップ8件・失敗0件（18.1分）。GitHub CIも成功。
 - staging反映: PR #106（`9c9de0c`）。GitHub CI・Cloudflare Pages成功。実サイトのFR-29 E2Eは9 passed（PC/iPad/iPhone）、画面も全3枚確認済み。
 - 証跡: `evidence/2026-09-09/report.html`。
+
+### main反映後の本番検証（2026-09-09 21:29〜21:33 JST）
+
+PR #107（`e1d27cc`）のCloudflare Pagesデプロイ完了後に実施した。
+
+| 確認 | 結果 |
+| --- | --- |
+| FR-29 E2E（`https://reiwa.casa`、3ケース×PC/iPad/iPhone） | 9 passed / 0 failed |
+| `/playwright-home/`・`/playwright-home-privacy/` | いずれも200、`<meta name="robots" content="noindex">` あり |
+| `/`・`/about/`・`/profile/` | いずれも200、`robots` メタなし（非波及） |
+| ヘッダーメニューのリンク | `/profile` と `/about` のみ。noindexの2ページは出ない |
+| `sitemap-0.xml` | 17URL、`playwright-home` を含まない |
+| `robots.txt` | `Allow: /` ＋ 本番Sitemap（staging値の混入なし） |
+| Vitest（main） | 610 passed |
+
+証跡: `evidence/2026-09-09/screenshots-production/`（9枚）、`app-info-results-production.json`。
+2ページの公開URL・CMS編集・本文の相互リンクは維持されている。Googleへ登録するURLは変わらない。
