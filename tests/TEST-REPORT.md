@@ -1687,7 +1687,7 @@ npm run build
 
 | 項目 | 結果 |
 | :--- | :--- |
-| 実行日時 | 2026-08-11 |
+| 実行日時 | 2026-09-09 |
 | Vitest バージョン | v4.0.18 |
 | 実行時間 | 2.50s |
 | 合否判定 | **合格** |
@@ -1710,10 +1710,10 @@ npm run build
 
 | 項目 | 結果 |
 | :--- | :--- |
-| 実行日時 | 2026-08-11 |
+| 実行日時 | 2026-09-09 |
 | Playwright バージョン | v1.58.2 |
-| 実行時間 | 15.5m |
-| 合否判定 | **合格**（436 PASS, 8 skip / 444テスト）|
+| 実行時間 | 15.7m |
+| 合否判定 | **合格**（442 PASS, 8 skip / 450テスト）|
 
 | テストファイル | PC | iPad | iPhone | 合計 |
 | :--- | :--- | :--- | :--- | :--- |
@@ -1724,7 +1724,8 @@ npm run build
 | `cms-operations.spec.ts`（E-28〜E-36） | 27 PASS, 4 skip | 28 PASS, 3 skip | 31 PASS | 86 PASS, 7 skip |
 | `accessibility.spec.ts`（E-25〜E-27） | 6 PASS | 6 PASS | 6 PASS | 18 |
 | `cms-exploratory.spec.ts`（E-37, E-39〜E-43） | 12 PASS | 12 PASS | 12 PASS | 36 |
-| **合計** | **143 PASS, 5 skip** | **145 PASS, 3 skip** | **148 PASS** | **436 PASS, 8 skip** |
+| `app-info.spec.ts`（E-46） | 2 PASS | 2 PASS | 2 PASS | 6 |
+| **合計** | **145 PASS, 5 skip** | **147 PASS, 3 skip** | **150 PASS** | **442 PASS, 8 skip** |
 
 **スキップ内訳**: E-34のボトムシート・codeblock・URLバーはPC/iPadでskip、CMSタップ領域はPCのみskip。E-21公開サイトタッチ領域はPCのみskip。合計8件skip。
 
