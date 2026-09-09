@@ -7,11 +7,13 @@ interface Props {
   description?: string;
   ogImage?: string;
   ogType?: 'website' | 'article';
+  /** 検索結果に出さないページで true。sitemapのfilterと合わせて使う */
+  noindex?: boolean;
 }
 
 const DEFAULT_DESCRIPTION = 'tbiの個人ブログ。日々のできごとを記録しています。';
 
-const { title, description, ogImage, ogType = 'website' } = Astro.props;
+const { title, description, ogImage, ogType = 'website', noindex = false } = Astro.props;
 const isStaging = import.meta.env.CF_PAGES_BRANCH === 'staging';
 const siteTitle = isStaging ? '[STAGING] tbiのブログ' : 'tbiのブログ';
 const navPages = (await getCollection('pages'))
@@ -31,6 +33,7 @@ const ogImageUrl = ogImage ? new URL(ogImage, Astro.site).toString() : undefined
   <meta name="color-scheme" content="light dark">
   <title>{title}</title>
   <meta name="description" content={metaDescription} />
+  {noindex && <meta name="robots" content="noindex" />}
   <link rel="canonical" href={canonicalUrl} />
   <meta property="og:title" content={title} />
   <meta property="og:description" content={metaDescription} />

@@ -235,3 +235,13 @@ DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を�
 - テストに特定のコンテンツ名をハードコードする（記事タイトル、固定ページ名等はソースから動的取得する）
 - staging で検証せずに直接 main にコード変更をプッシュする
 - ユーザーが明示的に指示しない限り main にマージする（自己判断でマージしない）
+
+## 検索除外の固定ページ（FR-29）
+
+`playwright-home` / `playwright-home-privacy` はOAuth同意画面から参照する公開説明。通常の固定ページコレクション（`src/content/pages/`）で管理し、CMSから編集できる。個人情報・金融機関名・連携サービス名・機器構成は掲載しない。
+
+- frontmatter の `noindex: true` で `<meta name="robots" content="noindex">` を付ける。CMSの「検索結果に出さない」で切り替える。
+- sitemap除外は `astro.config.mjs` の `filter` で行う。**frontmatterとfilterのずれは `build.test.mjs`（FR-29）が検出する**ので、slugを変えたらfilterも直す。
+- 原稿変更時は `tests/e2e/app-info.spec.ts` のソース連動E2E（2ページ×3デバイス）で確認する。
+- **CMSに項目を足さずにフロントマターを増やさない**。Decap CMSは設定にない項目を保存時に落とす。`cms-config.test.mjs` が固定ページの全フロントマター項目とZodスキーマ項目をCMS設定と突き合わせて検出する。
+- 現行テスト定義はVitest 610件、E2E 450件（旧444件＋FR-29 6件）。QAは `docs/qa-2026-09-09-otp-app-pages.md`。

@@ -477,6 +477,61 @@ describe('ビルド検証', () => {
       });
     });
 
+    describe('FR-29 検索除外の固定ページ', () => {
+      // 対象は固定ページのfrontmatterから決める（URLをテストへハードコードしない）
+      const PAGES_DIR = join(process.cwd(), 'src/content/pages');
+      const pageData = () =>
+        readdirSync(PAGES_DIR)
+          .filter((file) => file.endsWith('.md'))
+          .map((file) => matter(readFileSync(join(PAGES_DIR, file), 'utf-8')).data);
+      const noindexPages = () => pageData().filter((d) => d.noindex === true && d.draft !== true);
+      const indexedPages = () => pageData().filter((d) => d.noindex !== true && d.draft !== true);
+
+      it('検索除外の固定ページがビルドされる', () => {
+        expect(noindexPages().length).toBeGreaterThan(0);
+        for (const d of noindexPages()) {
+          expect(existsSync(join(DIST_DIR, d.slug, 'index.html'))).toBe(true);
+        }
+      });
+
+      it('検索除外の固定ページに noindex が付与される', () => {
+        for (const d of noindexPages()) {
+          const html = readFileSync(join(DIST_DIR, d.slug, 'index.html'), 'utf-8');
+          expect(html).toContain('<meta name="robots" content="noindex">');
+        }
+      });
+
+      it('検索除外の固定ページがsitemapに含まれない', () => {
+        const files = readdirSync(DIST_DIR).filter((f) => /^sitemap-\d+\.xml$/.test(f));
+        expect(files.length).toBeGreaterThan(0);
+        for (const f of files) {
+          const content = readFileSync(join(DIST_DIR, f), 'utf-8');
+          for (const d of noindexPages()) {
+            expect(content).not.toContain(`/${d.slug}/`);
+          }
+        }
+      });
+
+      it('noindex指定のない固定ページには noindex が付かず、sitemapに載る', () => {
+        const sitemap = readdirSync(DIST_DIR)
+          .filter((f) => /^sitemap-\d+\.xml$/.test(f))
+          .map((f) => readFileSync(join(DIST_DIR, f), 'utf-8'))
+          .join('');
+        for (const d of indexedPages()) {
+          const html = readFileSync(join(DIST_DIR, d.slug, 'index.html'), 'utf-8');
+          expect(html).not.toContain('name="robots"');
+          expect(sitemap).toContain(`/${d.slug}/`);
+        }
+      });
+
+      it('検索除外ページもヘッダーナビから到達できる（CMS固定ページとして統合されている）', () => {
+        const html = readFileSync(join(DIST_DIR, 'index.html'), 'utf-8');
+        for (const d of noindexPages()) {
+          expect(html).toContain(`href="/${d.slug}"`);
+        }
+      });
+    });
+
     describe('NFR-08 ダークモード対応', () => {
       it('meta color-schemeでダーク対応を宣言する', () => {
         const html = readFileSync(join(DIST_DIR, 'index.html'), 'utf-8');

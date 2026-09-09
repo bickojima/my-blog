@@ -16,7 +16,9 @@ export default defineConfig({
   integrations: [
     imageOptimize(),
     sitemap({
-      filter: (page) => !page.includes('/admin/'),
+      // /admin/ はCMS、/playwright-home はfrontmatterで noindex: true の固定ページ。
+      // 両者のずれは build.test.mjs（FR-29）が検出する。
+      filter: (page) => !page.includes('/admin/') && !page.includes('/playwright-home'),
     }),
   ],
   markdown: {
