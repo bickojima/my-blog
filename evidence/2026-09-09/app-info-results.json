@@ -1,0 +1,321 @@
+{
+  "config": {
+    "configFile": "./evidence/2026-09-09/verify-app-info.config.ts",
+    "rootDir": "./tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 3
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "./evidence/2026-09-09/screenshots",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 3
+        },
+        "id": "PC",
+        "name": "PC",
+        "testDir": "./tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "app-info.spec.ts"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "./evidence/2026-09-09/screenshots",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 3
+        },
+        "id": "iPad",
+        "name": "iPad",
+        "testDir": "./tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "app-info.spec.ts"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "./evidence/2026-09-09/screenshots",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 3
+        },
+        "id": "iPhone",
+        "name": "iPhone",
+        "testDir": "./tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "app-info.spec.ts"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "./app-info-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "runAgents": "none",
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.58.2",
+    "workers": 3,
+    "webServer": {
+      "command": "npx serve dist -l tcp://127.0.0.1:4178",
+      "cwd": "./",
+      "url": "http://127.0.0.1:4178",
+      "reuseExistingServer": false
+    }
+  },
+  "suites": [
+    {
+      "title": "app-info.spec.ts",
+      "file": "app-info.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "FR-29: アプリ案内の表示・実リンク操作・アクセシビリティ /playwright-home/",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "PC",
+              "projectName": "PC",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 659,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-09T02:02:05.491Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "14711ce388bd96479eeb-59946741f17166542cfc",
+          "file": "app-info.spec.ts",
+          "line": 22,
+          "column": 3
+        },
+        {
+          "title": "FR-29: アプリ案内の表示・実リンク操作・アクセシビリティ /playwright-home/privacy/",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "PC",
+              "projectName": "PC",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 424,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-09T02:02:06.915Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "14711ce388bd96479eeb-f3d423fa2e0315fa386e",
+          "file": "app-info.spec.ts",
+          "line": 22,
+          "column": 3
+        },
+        {
+          "title": "FR-29: アプリ案内の表示・実リンク操作・アクセシビリティ /playwright-home/",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "iPad",
+              "projectName": "iPad",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 1,
+                  "status": "passed",
+                  "duration": 729,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-09T02:02:05.479Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "14711ce388bd96479eeb-f221353fa708e1fcb09f",
+          "file": "app-info.spec.ts",
+          "line": 22,
+          "column": 3
+        },
+        {
+          "title": "FR-29: アプリ案内の表示・実リンク操作・アクセシビリティ /playwright-home/privacy/",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "iPad",
+              "projectName": "iPad",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 1,
+                  "status": "passed",
+                  "duration": 457,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-09T02:02:06.985Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "14711ce388bd96479eeb-439745624c4a2477a5b7",
+          "file": "app-info.spec.ts",
+          "line": 22,
+          "column": 3
+        },
+        {
+          "title": "FR-29: アプリ案内の表示・実リンク操作・アクセシビリティ /playwright-home/",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "iPhone",
+              "projectName": "iPhone",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 2,
+                  "status": "passed",
+                  "duration": 710,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-09T02:02:05.483Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "14711ce388bd96479eeb-8aa303dce7009139ffda",
+          "file": "app-info.spec.ts",
+          "line": 22,
+          "column": 3
+        },
+        {
+          "title": "FR-29: アプリ案内の表示・実リンク操作・アクセシビリティ /playwright-home/privacy/",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "iPhone",
+              "projectName": "iPhone",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 2,
+                  "status": "passed",
+                  "duration": 471,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-09T02:02:06.966Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "14711ce388bd96479eeb-5dac14b28abf72ebc83d",
+          "file": "app-info.spec.ts",
+          "line": 22,
+          "column": 3
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-09T02:02:04.490Z",
+    "duration": 2983.433,
+    "expected": 6,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

@@ -46,6 +46,7 @@
 | 1.38 | 2026-08-09 | Bug #45対応: 2.5.5章のrobots.txt環境別ポリシー検証をブランチ対応に変更（`astro.config.mjs`の`SITE_URL`でstaging/mainを判定）。テスト件数増減なし（Vitest 586件） |
 | 1.39 | 2026-08-11 | Issue #97完了対応: Bug #46のVitest探索範囲固定テスト、Bug #47のCMS E-28タイムアウト設定テストを追加。build.test.mjs 91→93件、Vitest合計586→588件。全444件E2Eを再実行し436 PASS・8 skip・flakyなしを確認 |
 | 1.40 | 2026-08-11 | Issue #97のstaging/main反映後結果を追記。mainのtest-and-build・Cloudflare Pages成功、本番27/27・認証済みCMS 3/3のデプロイ後再確認を記録 |
+| 1.41 | 2026-09-09 | FR-29のE-46を追加。アプリ案内の2ページをソースから動的取得し3デバイスで表示・リンク・アクセシビリティ・noindexを確認。E2E定義は444→450件。noindex・sitemap除外のビルド検証4件を追加しVitestは588→592件 |
 
 ## テスト基盤の変更履歴
 
@@ -461,7 +462,7 @@ admin-html.test.mjs              -     ●     -     -     -     -     -     -  
 
 | No. | 基準 |
 | :--- | :--- |
-| 1 | 全テストケース（Vitest 588件 + E2E 444件 = 1032件）がPASSまたは仕様上の条件スキップであること |
+| 1 | 全テストケース（Vitest 592件 + E2E 450件 = 1042件）がPASSまたは仕様上の条件スキップであること |
 | 2 | `npm run build` が正常に完了すること |
 | 3 | 要件トレーサビリティマトリクス（docs/DOCUMENTATION.md 1.5章）において全要件が「充足」であること |
 
@@ -933,6 +934,17 @@ Bug #42: `/page/[page].astro`が`paginate()`の結果をフィルタせず生成
 | 1 | Vitestの探索範囲をプロジェクトの単体・統合テストに限定する | M-02 | `vitest.config.ts`に`include: ['tests/**/*.test.mjs']`があり、別worktreeや依存パッケージのテストを収集しない |
 | 2 | OAuth・CMS初期化を含むE-28に並列負荷の余裕を設ける | M-02 | E-28 describeに60秒タイムアウトがあり、全444件並列実行時もリトライなしで完了する |
 
+### 2.5.9 個人用アプリ案内ページ検証（FR-29、4件）
+
+`AppInfo.astro` レイアウトを使うMarkdownを `src/pages/` から走査し、対象URLをテストへハードコードしない。
+
+| No. | テストケース | テスト手法 | 期待結果 |
+| :--- | :--- | :--- | :--- |
+| 1 | アプリ案内ページがビルドされる | M-01 | 対象ルートごとに `dist/<route>/index.html` が存在する |
+| 2 | アプリ案内ページに noindex が付与される | M-01 | `<meta name="robots" content="noindex">` を含む |
+| 3 | アプリ案内ページがsitemapに含まれない | M-01 | `sitemap-*.xml` が対象ルートを含まない |
+| 4 | 記事・固定ページには noindex が付かない | M-01 | トップページのHTMLに `noindex` が現れない |
+
 ### 2.5.1 セキュリティヘッダー検証（8件）
 
 | No. | テストケース | カテゴリ | テスト手法 | 期待結果 |
@@ -1398,6 +1410,16 @@ axe-coreエンジン（@axe-core/playwright）を使用してWCAG 2.1 Level AA�
 | E-26 | 固定ページ・ナビゲーションのアクセシビリティ | 固定ページのa11y違反なし、画像alt属性、見出し階層（h1→h2スキップなし） | axe-core WCAG 2.1 AA + DOM検証 |
 | E-27 | CMS管理画面のアクセシビリティ | CMS管理画面にcriticalなa11y違反がないこと（サードパーティCMSのためcriticalのみ） | axe-core WCAG 2.1 AA |
 
+#### 個人用アプリ案内テスト (`tests/e2e/app-info.spec.ts`)
+
+`src/pages/` 配下で `AppInfo.astro` レイアウトを使うMarkdownを走査し、タイトル・URL・相互リンクをソースから動的取得する（コンテンツをハードコードしない）。
+
+| No. | テストケース | 検証内容 | テスト手法 |
+| :--- | :--- | :--- | :--- |
+| E-46 | アプリ案内の表示・実リンク操作・アクセシビリティ（FR-29） | HTTP 200、title/h1一致、`lang="ja"`、`robots` が `noindex`、フォーム不在、横スクロール非発生、axe WCAG 2.1 AA違反なし、ポリシーリンクclick遷移、紹介リンクEnter遷移 | 実操作（click / press）＋axe。2ページ×PC/iPad/iPhoneで6件 |
+
+E2E定義は450件（既存444件＋E-46の6件）。結果と画像は `evidence/2026-09-09/` に保存する。
+
 ### 4.1.4 デバイス別テスト
 
 全テストケースを以下の3デバイスで実行する（合計444テスト：436実行 + 8スキップ）。
@@ -1665,7 +1687,7 @@ npm run build
 
 | 項目 | 結果 |
 | :--- | :--- |
-| 実行日時 | 2026-08-11 |
+| 実行日時 | 2026-09-09 |
 | Vitest バージョン | v4.0.18 |
 | 実行時間 | 2.50s |
 | 合否判定 | **合格** |
@@ -1681,17 +1703,17 @@ npm run build
 | `auth-functions.test.mjs` | 17 | PASS | 33ms |
 | `fuzz-validation.test.mjs` | 215 | PASS | 40ms |
 | `content-validation.test.mjs` | 111 | PASS | 75ms |
-| `build.test.mjs` | 93 | PASS | 2286ms |
-| **合計** | **588** | **全PASS** | **2.50s** |
+| `build.test.mjs` | 97 | PASS | 2286ms |
+| **合計** | **592** | **全PASS** | **2.50s** |
 
 ### 4.3.3 E2Eテスト最新実行結果（Playwright）
 
 | 項目 | 結果 |
 | :--- | :--- |
-| 実行日時 | 2026-08-11 |
+| 実行日時 | 2026-09-09 |
 | Playwright バージョン | v1.58.2 |
-| 実行時間 | 15.5m |
-| 合否判定 | **合格**（436 PASS, 8 skip / 444テスト）|
+| 実行時間 | 15.7m |
+| 合否判定 | **合格**（442 PASS, 8 skip / 450テスト）|
 
 | テストファイル | PC | iPad | iPhone | 合計 |
 | :--- | :--- | :--- | :--- | :--- |
@@ -1702,7 +1724,8 @@ npm run build
 | `cms-operations.spec.ts`（E-28〜E-36） | 27 PASS, 4 skip | 28 PASS, 3 skip | 31 PASS | 86 PASS, 7 skip |
 | `accessibility.spec.ts`（E-25〜E-27） | 6 PASS | 6 PASS | 6 PASS | 18 |
 | `cms-exploratory.spec.ts`（E-37, E-39〜E-43） | 12 PASS | 12 PASS | 12 PASS | 36 |
-| **合計** | **143 PASS, 5 skip** | **145 PASS, 3 skip** | **148 PASS** | **436 PASS, 8 skip** |
+| `app-info.spec.ts`（E-46） | 2 PASS | 2 PASS | 2 PASS | 6 |
+| **合計** | **145 PASS, 5 skip** | **147 PASS, 3 skip** | **150 PASS** | **442 PASS, 8 skip** |
 
 **スキップ内訳**: E-34のボトムシート・codeblock・URLバーはPC/iPadでskip、CMSタップ領域はPCのみskip。E-21公開サイトタッチ領域はPCのみskip。合計8件skip。
 
@@ -1730,4 +1753,4 @@ npm run build
 
 ---
 
-**最終更新**: 2026年8月11日（v1.40）
+**最終更新**: 2026年9月9日（v1.41）
