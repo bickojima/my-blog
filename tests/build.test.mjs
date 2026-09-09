@@ -43,7 +43,7 @@ function getPublishedPages() {
     .filter(f => extname(f) === '.md')
     .map(f => {
       const { data } = matter(readFileSync(join(PAGES_DIR, f), 'utf-8'));
-      return { title: data.title, slug: data.slug, order: data.order, draft: data.draft };
+      return { title: data.title, slug: data.slug, order: data.order, draft: data.draft, noindex: data.noindex };
     })
     .filter(p => !p.draft)
     .sort((a, b) => a.order - b.order);
@@ -54,6 +54,7 @@ const publishedPosts = getPublishedPosts();
 const publishedPages = getPublishedPages();
 const firstPost = publishedPosts[0];
 const firstPage = publishedPages[0];
+const navigationPages = publishedPages.filter(page => !page.noindex);
 
 describe('ビルド検証', () => {
   beforeAll(() => {
@@ -227,20 +228,20 @@ describe('ビルド検証', () => {
       indexHtml = readFileSync(join(DIST_DIR, 'index.html'), 'utf-8');
     });
 
-    it('トップページのヘッダーに全固定ページへのリンクがある', () => {
-      for (const page of publishedPages) {
+    it('トップページのヘッダーに表示対象の固定ページへのリンクがある', () => {
+      for (const page of navigationPages) {
         expect(indexHtml).toContain(`href="/${page.slug}"`);
       }
     });
 
     it('ドロップダウン構造（nav-dropdown）が存在する（固定ページ2つ以上）', () => {
-      if (publishedPages.length >= 2) {
+      if (navigationPages.length >= 2) {
         expect(indexHtml).toContain('nav-dropdown');
       }
     });
 
     it('ドロップダウントグルボタン（▾）が存在する', () => {
-      if (publishedPages.length >= 2) {
+      if (navigationPages.length >= 2) {
         expect(indexHtml).toContain('nav-dropdown-toggle');
         expect(indexHtml).toContain('▾');
         expect(indexHtml).toContain('aria-expanded="false"');
@@ -249,14 +250,14 @@ describe('ビルド検証', () => {
     });
 
     it('ドロップダウンメニュー（nav-dropdown-menu）が存在する', () => {
-      if (publishedPages.length >= 2) {
+      if (navigationPages.length >= 2) {
         expect(indexHtml).toContain('nav-dropdown-menu');
       }
     });
 
     it('最優先ページ（order最小）が直接リンクとして表示される', () => {
-      if (publishedPages.length >= 2) {
-        const topPage = publishedPages[0];
+      if (navigationPages.length >= 2) {
+        const topPage = navigationPages[0];
         // Astroビルドではscoped属性が付与されるため、href+classで照合
         const escapedSlug = topPage.slug.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         expect(indexHtml).toMatch(new RegExp(`href="/${escapedSlug}"[^>]*class="nav-dropdown-link"`));
@@ -264,13 +265,13 @@ describe('ビルド検証', () => {
       }
     });
 
-    it('ドロップダウンメニューに全固定ページが含まれている', () => {
-      if (publishedPages.length >= 2) {
+    it('ドロップダウンメニューに表示対象の固定ページが含まれている', () => {
+      if (navigationPages.length >= 2) {
         const menuMatch = indexHtml.match(
           /nav-dropdown-menu[\s\S]*?<\/div>/
         );
         expect(menuMatch).not.toBeNull();
-        for (const page of publishedPages) {
+        for (const page of navigationPages) {
           expect(menuMatch[0]).toContain(page.title);
         }
       }
@@ -296,7 +297,7 @@ describe('ビルド検証', () => {
     });
 
     it('固定ページが各ページの出力にもドロップダウンナビを持つ', () => {
-      if (publishedPages.length >= 2) {
+      if (navigationPages.length >= 2) {
         const pageHtml = readFileSync(join(DIST_DIR, `${firstPage.slug}/index.html`), 'utf-8');
         expect(pageHtml).toContain('nav-dropdown');
         expect(pageHtml).toContain('nav-dropdown-menu');
@@ -524,10 +525,17 @@ describe('ビルド検証', () => {
         }
       });
 
-      it('検索除外ページもヘッダーナビから到達できる（CMS固定ページとして統合されている）', () => {
-        const html = readFileSync(join(DIST_DIR, 'index.html'), 'utf-8');
-        for (const d of noindexPages()) {
-          expect(html).toContain(`href="/${d.slug}"`);
+      it('検索除外ページはヘッダーナビに含まれず、通常の固定ページは残る', () => {
+        for (const slug of ['', ...pageData().filter(d => !d.draft).map(d => d.slug)]) {
+          const html = readFileSync(join(DIST_DIR, slug, 'index.html'), 'utf-8');
+          const header = html.match(/<header[\s\S]*?<\/header>/)?.[0];
+          expect(header).toBeDefined();
+          for (const d of noindexPages()) {
+            expect(header).not.toMatch(new RegExp(`href="/${d.slug}/?"`));
+          }
+          for (const d of indexedPages()) {
+            expect(header).toContain(`href="/${d.slug}"`);
+          }
         }
       });
     });
