@@ -1418,7 +1418,12 @@ axe-coreエンジン（@axe-core/playwright）を使用してWCAG 2.1 Level AA�
 | :--- | :--- | :--- | :--- |
 | E-46 | アプリ案内の表示・実リンク操作・アクセシビリティ（FR-29） | HTTP 200、title/h1一致、`lang="ja"`、`robots` が `noindex`、フォーム不在、横スクロール非発生、axe WCAG 2.1 AA違反なし、ポリシーリンクclick遷移、紹介リンクEnter遷移 | 実操作（click / press）＋axe。2ページ×PC/iPad/iPhoneで6件 |
 
-E2E定義は450件（既存444件＋E-46の6件）。結果と画像は `evidence/2026-09-09/` に保存する。
+E2E定義は450件（既存444件＋E-46の6件）。ローカルdistとstaging実機の両方で実行し、結果と画像を `evidence/2026-09-09/` に保存する。
+
+| 実行環境 | 結果 | 証跡 |
+| :--- | :--- | :--- |
+| ローカル `dist` | 6 passed | `app-info-results.json` / `screenshots/` |
+| staging実機（https://staging.reiwa.casa） | 6 passed | `app-info-results-staging.json` / `screenshots-staging/` |
 
 ### 4.1.4 デバイス別テスト
 

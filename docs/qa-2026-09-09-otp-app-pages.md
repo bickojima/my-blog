@@ -36,9 +36,11 @@
 | `npm run build` | 成功。`dist/playwright-home/index.html` と `dist/playwright-home/privacy/index.html` を生成 |
 | FR-29 E2E（`evidence/2026-09-09/verify-app-info.config.ts`） | 6 passed（2ページ×PC/iPad/iPhone） |
 | `npm run test:e2e`（全体） | 442 passed / 8 skipped（定義450件）。既存テストの退行なし |
+| FR-29 E2E（staging実機） | 6 passed。`https://staging.reiwa.casa/playwright-home/` に対して実行 |
 
 - `webServer.cwd` 修正後のE2Eをこの引き継ぎで実行し、合格を確認した。
 - 証跡は `evidence/2026-09-09/screenshots/`（6枚）と `app-info-results.json`。赤枠は注釈で、合否は実クリック・Enter操作とaxeで判定する。
+- staging実機の実測: 両ページとも `<meta name="robots" content="noindex">` あり、`sitemap-0.xml` に不掲載、トップページに `noindex` の混入なし。
 - 追加した2ページはヘッダーナビ・RSSに載らない。当初はsitemapに載せていたが、ユーザーの指示により **`noindex` ＋ sitemap除外** に変更した（`Base.astro` の `noindex` プロパティと `astro.config.mjs` の `filter`）。Googleの要件は公開アクセス可能であることで、`noindex` は同意画面の登録を妨げない。
 
 ## main反映時の注意

@@ -1,3 +1,10 @@
+// FR-29（E-46）の単独実行用。
+//   ローカルdist:  npx playwright test --config evidence/2026-09-09/verify-app-info.config.ts
+//   staging実機:   APP_INFO_BASE_URL=https://staging.reiwa.casa npx playwright test \
+//                    --config evidence/2026-09-09/verify-app-info.config.ts \
+//                    --output=evidence/2026-09-09/screenshots-staging
+// APP_INFO_BASE_URL を渡すとローカルサーバーは起動しない。結果JSONは同じ名前で上書きされるため、
+// 実機実行の結果は app-info-results-staging.json へ手動で退避する。
 import { defineConfig, devices } from '@playwright/test';
 import { fileURLToPath } from 'node:url';
 
