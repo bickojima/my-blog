@@ -22,6 +22,7 @@ Astro + Decap CMS によるブログサイト。Cloudflare Pages でホスティ
 | 1.13 | 2026-08-11 | Issue #97の本番残作業を完了。Vitestの探索範囲逸脱（Bug #46）とCMS E2Eの日付入力タイムアウト（Bug #47）を修正し、回帰テストを追加。テスト件数588 Vitest + 444 E2Eへ更新 |
 | 1.14 | 2026-08-11 | Issue #97の反映実績を確定。staging PR #98、main PR #99を順にマージし、mainのGitHub Actions・Cloudflare Pages成功、本番27/27・認証済みCMS 3/3のデプロイ後再確認、Issueクローズを記録 |
 | 1.15 | 2026-09-07 | Modern Web Guidance 日本語索引（`docs/MODERN-WEB-GUIDANCE.md`）を新規作成。全139ガイドの1行要約、人間向け閲覧手順、本ブログの適用実績と検討候補を整理。コード変更なし |
+| 1.16 | 2026-09-09 | FR-29: 個人用アプリの紹介・Gmailプライバシーページを固定ページとして追加。CMSから編集でき、検索結果には出さない（noindex・sitemap除外） |
 
 詳細なシステム変更履歴は [DOCUMENTATION.md](docs/DOCUMENTATION.md) を参照。
 
@@ -34,6 +35,9 @@ Astro + Decap CMS によるブログサイト。Cloudflare Pages でホスティ
 - **管理画面**: https://reiwa.casa/admin（テスト: https://staging.reiwa.casa/admin）
 - **認証方式**: GitHub OAuth（本番・テスト各環境に専用OAuth App）
 - **CMS**: Decap CMS v3.10.0
+
+アプリ案内（FR-29）: `/playwright-home/` と `/playwright-home-privacy/`。
+CMSの固定ページ（`src/content/pages/`）で管理する。要件・Google登録値は [QA記録](docs/qa-2026-09-09-otp-app-pages.md)。
 
 ## 2. システム構成図
 
@@ -131,7 +135,7 @@ my-blog/
 | `npm run dev` | 開発サーバー起動（localhost:4321） |
 | `npm run build` | 本番ビルド（`./dist/` に出力） |
 | `npm run preview` | ビルド結果のローカルプレビュー |
-| `npm test` | 単体・統合テスト実行（Vitest / 588テスト、記事数により変動） |
+| `npm test` | 単体・統合テスト実行（Vitest / 610テスト、記事数により変動） |
 | `npm run test:watch` | ウォッチモードでテスト実行 |
 | `npm run test:e2e` | E2Eテスト実行（Playwright / PC・iPad・iPhone 444テスト: 436実行+8スキップ） |
 

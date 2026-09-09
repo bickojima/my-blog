@@ -23,6 +23,8 @@ const pages = defineCollection({
     title: z.string().min(1).max(200),
     order: z.number().int().min(1).default(1),
     draft: z.boolean().default(false),
+    // 検索結果に出さないページ。noindexメタとsitemap除外をセットで適用する
+    noindex: z.boolean().default(false),
   }),
 });
 
