@@ -46,7 +46,7 @@
 | 1.38 | 2026-08-09 | Bug #45対応: 2.5.5章のrobots.txt環境別ポリシー検証をブランチ対応に変更（`astro.config.mjs`の`SITE_URL`でstaging/mainを判定）。テスト件数増減なし（Vitest 586件） |
 | 1.39 | 2026-08-11 | Issue #97完了対応: Bug #46のVitest探索範囲固定テスト、Bug #47のCMS E-28タイムアウト設定テストを追加。build.test.mjs 91→93件、Vitest合計586→588件。全444件E2Eを再実行し436 PASS・8 skip・flakyなしを確認 |
 | 1.40 | 2026-08-11 | Issue #97のstaging/main反映後結果を追記。mainのtest-and-build・Cloudflare Pages成功、本番27/27・認証済みCMS 3/3のデプロイ後再確認を記録 |
-| 1.41 | 2026-09-09 | FR-29のE-46を追加。アプリ案内の2ページをソースから動的取得し3デバイスで表示・リンク・アクセシビリティ・noindexを確認。E2E定義は444→450件。noindex・sitemap除外のビルド検証4件を追加しVitestは588→592件 |
+| 1.41 | 2026-09-09 | FR-29のE-46を追加。検索除外の固定ページをfrontmatterから動的取得し3デバイスで表示・リンク・アクセシビリティ・noindexを確認。E2E定義は444→450件。noindex・sitemap除外のビルド検証5件、CMS保存でフロントマター項目が消えないことのCMS設定検証3件、固定ページ2件増によるコンテンツ検証の動的展開でVitestは588→610件 |
 
 ## テスト基盤の変更履歴
 
@@ -462,7 +462,7 @@ admin-html.test.mjs              -     ●     -     -     -     -     -     -  
 
 | No. | 基準 |
 | :--- | :--- |
-| 1 | 全テストケース（Vitest 592件 + E2E 450件 = 1042件）がPASSまたは仕様上の条件スキップであること |
+| 1 | 全テストケース（Vitest 610件 + E2E 450件 = 1060件）がPASSまたは仕様上の条件スキップであること |
 | 2 | `npm run build` が正常に完了すること |
 | 3 | 要件トレーサビリティマトリクス（docs/DOCUMENTATION.md 1.5章）において全要件が「充足」であること |
 
@@ -749,7 +749,7 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 
 ---
 
-## 2.4. CMS設定検証 (`cms-config.test.mjs`) — 52件
+## 2.4. CMS設定検証 (`cms-config.test.mjs`) — 55件
 
 `public/admin/config.yml`をパースし、設定値の正当性を検証する。
 
@@ -791,6 +791,9 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 | 33 | pagesのslugフィールドにバリデーションパターンがある | pages フィールド | M-04 | `pattern[0] === "^[a-z0-9-]+$"` |
 | 34 | pagesのorderフィールドがnumberウィジェットである | pages フィールド | M-04 | `widget === "number"`, `value_type === "int"` |
 | 35 | pagesのdraftフィールドがbooleanウィジェットでデフォルトfalseである | pages フィールド | M-04 | `widget === "boolean"`, `default === false` |
+| 35b | pagesのnoindexフィールドがbooleanウィジェットでデフォルトfalseである（FR-29） | pages フィールド | M-04 | `widget === "boolean"`、`default === false` |
+| 35c | 既存固定ページのフロントマター項目がすべてCMSフィールドに定義されている（FR-29） | pages フィールド | M-04 | `src/content/pages/*.md` の全キーが `fields` の `name` に存在する。CMS保存時の項目欠落を防ぐ |
+| 35d | 固定ページのZodスキーマ項目がすべてCMSフィールドに定義されている（FR-29） | pages フィールド | M-04 | `content.config.ts` の pages スキーマの全キーが `fields` に存在する |
 | 36 | pagesのbodyフィールドがmarkdownウィジェットである | pages フィールド | M-04 | `widget === "markdown"` |
 | 37 | pagesコレクションのフォーマットがfrontmatterに設定されている | pages | M-03 | `format === "frontmatter"` |
 | 38 | pagesのサマリー表示にorder・draft・titleが含まれている | pages | M-03, M-02 | `summary`に`{{order}}`、`{{draft}}`、`{{title}}`が含まれる |
@@ -820,7 +823,7 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 
 ---
 
-## 2.5. ビルド検証 (`build.test.mjs`) — 93件
+## 2.5. ビルド検証 (`build.test.mjs`) — 98件
 
 `npm run build`を実行し、パイプライン全体（normalize-images → organize-posts → astro build → image-optimize）の出力を検証する。全テストケースはビルド完了後に実行される。
 
@@ -934,16 +937,17 @@ Bug #42: `/page/[page].astro`が`paginate()`の結果をフィルタせず生成
 | 1 | Vitestの探索範囲をプロジェクトの単体・統合テストに限定する | M-02 | `vitest.config.ts`に`include: ['tests/**/*.test.mjs']`があり、別worktreeや依存パッケージのテストを収集しない |
 | 2 | OAuth・CMS初期化を含むE-28に並列負荷の余裕を設ける | M-02 | E-28 describeに60秒タイムアウトがあり、全444件並列実行時もリトライなしで完了する |
 
-### 2.5.9 個人用アプリ案内ページ検証（FR-29、4件）
+### 2.5.9 検索除外の固定ページ検証（FR-29、5件）
 
-`AppInfo.astro` レイアウトを使うMarkdownを `src/pages/` から走査し、対象URLをテストへハードコードしない。
+`src/content/pages/` のfrontmatterから対象を決め、URLをテストへハードコードしない。frontmatterの `noindex` と `astro.config.mjs` の sitemap `filter` のずれを #3 が検出する。
 
 | No. | テストケース | テスト手法 | 期待結果 |
 | :--- | :--- | :--- | :--- |
-| 1 | アプリ案内ページがビルドされる | M-01 | 対象ルートごとに `dist/<route>/index.html` が存在する |
-| 2 | アプリ案内ページに noindex が付与される | M-01 | `<meta name="robots" content="noindex">` を含む |
-| 3 | アプリ案内ページがsitemapに含まれない | M-01 | `sitemap-*.xml` が対象ルートを含まない |
-| 4 | 記事・固定ページには noindex が付かない | M-01 | トップページのHTMLに `noindex` が現れない |
+| 1 | 検索除外の固定ページがビルドされる | M-01 | `noindex: true` のslugごとに `dist/<slug>/index.html` が存在する |
+| 2 | 検索除外の固定ページに noindex が付与される | M-01 | `<meta name="robots" content="noindex">` を含む |
+| 3 | 検索除外の固定ページがsitemapに含まれない | M-01 | `sitemap-*.xml` が対象slugを含まない |
+| 4 | noindex指定のない固定ページには noindex が付かず、sitemapに載る | M-01 | 既存の固定ページに `robots` メタがなく、sitemapに掲載される |
+| 5 | 検索除外ページもヘッダーナビから到達できる | M-01 | トップページのナビに対象slugへのリンクがある |
 
 ### 2.5.1 セキュリティヘッダー検証（8件）
 
@@ -1410,13 +1414,13 @@ axe-coreエンジン（@axe-core/playwright）を使用してWCAG 2.1 Level AA�
 | E-26 | 固定ページ・ナビゲーションのアクセシビリティ | 固定ページのa11y違反なし、画像alt属性、見出し階層（h1→h2スキップなし） | axe-core WCAG 2.1 AA + DOM検証 |
 | E-27 | CMS管理画面のアクセシビリティ | CMS管理画面にcriticalなa11y違反がないこと（サードパーティCMSのためcriticalのみ） | axe-core WCAG 2.1 AA |
 
-#### 個人用アプリ案内テスト (`tests/e2e/app-info.spec.ts`)
+#### 検索除外ページテスト (`tests/e2e/app-info.spec.ts`)
 
-`src/pages/` 配下で `AppInfo.astro` レイアウトを使うMarkdownを走査し、タイトル・URL・相互リンクをソースから動的取得する（コンテンツをハードコードしない）。
+`src/content/pages/` のfrontmatterで `noindex: true` の固定ページを走査し、タイトル・URLをソースから動的取得する（コンテンツをハードコードしない）。
 
 | No. | テストケース | 検証内容 | テスト手法 |
 | :--- | :--- | :--- | :--- |
-| E-46 | アプリ案内の表示・実リンク操作・アクセシビリティ（FR-29） | HTTP 200、title/h1一致、`lang="ja"`、`robots` が `noindex`、フォーム不在、横スクロール非発生、axe WCAG 2.1 AA違反なし、ポリシーリンクclick遷移、紹介リンクEnter遷移 | 実操作（click / press）＋axe。2ページ×PC/iPad/iPhoneで6件 |
+| E-46 | 検索除外ページの表示・実リンク操作・アクセシビリティ（FR-29） | HTTP 200、title/h1一致、`lang="ja"`、`robots` が `noindex`、フォーム不在、横スクロール非発生、axe WCAG 2.1 AA違反なし、本文リンクのclick遷移 | 実操作（click）＋axe。2ページ×PC/iPad/iPhoneで6件 |
 
 E2E定義は450件（既存444件＋E-46の6件）。ローカルdistとstaging実機の両方で実行し、結果と画像を `evidence/2026-09-09/` に保存する。
 
@@ -1427,7 +1431,7 @@ E2E定義は450件（既存444件＋E-46の6件）。ローカルdistとstaging�
 
 ### 4.1.4 デバイス別テスト
 
-全テストケースを以下の3デバイスで実行する（合計444テスト：436実行 + 8スキップ）。
+全テストケースを以下の3デバイスで実行する（合計450テスト：442実行 + 8スキップ）。
 
 | デバイス | ビューポート | 用途 |
 | :--- | :--- | :--- |
@@ -1701,15 +1705,15 @@ npm run build
 
 | テストファイル | テスト数 | 結果 | 実行時間 |
 | :--- | :--- | :--- | :--- |
-| `cms-config.test.mjs` | 52 | PASS | 9ms |
+| `cms-config.test.mjs` | 55 | PASS | 9ms |
 | `admin-html.test.mjs` | 90 | PASS | 6ms |
 | `rehype-image-caption.test.mjs` | 8 | PASS | 3ms |
 | `rehype-focusable-code-blocks.test.mjs` | 2 | PASS | 2ms |
 | `auth-functions.test.mjs` | 17 | PASS | 33ms |
 | `fuzz-validation.test.mjs` | 215 | PASS | 40ms |
-| `content-validation.test.mjs` | 111 | PASS | 75ms |
-| `build.test.mjs` | 97 | PASS | 2286ms |
-| **合計** | **592** | **全PASS** | **2.50s** |
+| `content-validation.test.mjs` | 125 | PASS | 75ms |
+| `build.test.mjs` | 98 | PASS | 2286ms |
+| **合計** | **610** | **全PASS** | **2.50s** |
 
 ### 4.3.3 E2Eテスト最新実行結果（Playwright）
 

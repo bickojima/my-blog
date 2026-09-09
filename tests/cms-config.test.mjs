@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'fs';
+import { readFileSync, readdirSync } from 'fs';
 import { join } from 'path';
 import yaml from 'js-yaml';
+import matter from 'gray-matter';
 
 const configPath = join(process.cwd(), 'public/admin/config.yml');
 const configRaw = readFileSync(configPath, 'utf-8');
@@ -160,6 +161,38 @@ describe('CMS設定（config.yml）の検証', () => {
         it('bodyフィールドがmarkdownウィジェット', () => {
           const body = fields.find(f => f.name === 'body');
           expect(body.widget).toBe('markdown');
+        });
+
+        it('noindexフィールドがbooleanウィジェットでデフォルトfalse（FR-29）', () => {
+          const noindex = fields.find(f => f.name === 'noindex');
+          expect(noindex).toBeDefined();
+          expect(noindex.widget).toBe('boolean');
+          expect(noindex.default).toBe(false);
+        });
+
+        // Decap CMSは設定にないフロントマター項目を保存時に落とす。
+        // CMSで1回編集しただけでnoindexやdraftが消える事故を防ぐ。
+        it('既存固定ページのフロントマター項目がすべてCMSフィールドに定義されている', () => {
+          const pagesDir = join(process.cwd(), 'src/content/pages');
+          const files = readdirSync(pagesDir).filter(f => f.endsWith('.md'));
+          expect(files.length).toBeGreaterThan(0);
+          for (const file of files) {
+            const { data } = matter(readFileSync(join(pagesDir, file), 'utf-8'));
+            for (const key of Object.keys(data)) {
+              expect(fieldNames, `${file} の "${key}" がCMS設定に無い（保存時に消える）`).toContain(key);
+            }
+          }
+        });
+
+        // スキーマ側で定義した項目もCMSから編集できないと、CMS保存で既定値へ戻る。
+        it('固定ページのZodスキーマ項目がすべてCMSフィールドに定義されている', () => {
+          const schema = readFileSync(join(process.cwd(), 'src/content.config.ts'), 'utf-8');
+          const pagesBlock = schema.split('const pages = defineCollection(')[1].split('});')[0];
+          const schemaKeys = [...pagesBlock.matchAll(/^\s{4}([a-zA-Z][a-zA-Z0-9_]*):/gm)].map(m => m[1]);
+          expect(schemaKeys).toContain('noindex');
+          for (const key of schemaKeys) {
+            expect(fieldNames, `スキーマの "${key}" がCMS設定に無い`).toContain(key);
+          }
         });
       });
 
