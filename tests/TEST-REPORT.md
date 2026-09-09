@@ -48,6 +48,7 @@
 | 1.40 | 2026-08-11 | Issue #97のstaging/main反映後結果を追記。mainのtest-and-build・Cloudflare Pages成功、本番27/27・認証済みCMS 3/3のデプロイ後再確認を記録 |
 | 1.41 | 2026-09-09 | FR-29のE-46を追加。検索除外の固定ページをfrontmatterから動的取得し3デバイスで表示・リンク・アクセシビリティ・noindexを確認。E2E定義は444→450件。noindex・sitemap除外のビルド検証5件、CMS保存でフロントマター項目が消えないことのCMS設定検証3件、固定ページ2件増によるコンテンツ検証の動的展開でVitestは588→610件 |
 | 1.42 | 2026-09-09 | FR-29追加QA: noindex固定ページをヘッダーナビから除外。ビルド検証を更新し、実メニュー操作E2Eを3件追加（453定義） |
+| 1.43 | 2026-09-09 | main反映後の本番実機検証（E-46の9件）を追記。E-46にメニュー除外を含めた際に更新漏れだったE2E件数（450→453件、442→445 PASS）と最新実行結果を実測値へ是正 |
 
 ## テスト基盤の変更履歴
 
@@ -463,7 +464,7 @@ admin-html.test.mjs              -     ●     -     -     -     -     -     -  
 
 | No. | 基準 |
 | :--- | :--- |
-| 1 | 全テストケース（Vitest 610件 + E2E 450件 = 1060件）がPASSまたは仕様上の条件スキップであること |
+| 1 | 全テストケース（Vitest 610件 + E2E 453件 = 1063件）がPASSまたは仕様上の条件スキップであること |
 | 2 | `npm run build` が正常に完了すること |
 | 3 | 要件トレーサビリティマトリクス（docs/DOCUMENTATION.md 1.5章）において全要件が「充足」であること |
 
@@ -1423,16 +1424,19 @@ axe-coreエンジン（@axe-core/playwright）を使用してWCAG 2.1 Level AA�
 | :--- | :--- | :--- | :--- |
 | E-46 | 検索除外ページの表示・実リンク操作・アクセシビリティ（FR-29） | HTTP 200、title/h1一致、`lang="ja"`、`robots` が `noindex`、フォーム不在、横スクロール非発生、axe WCAG 2.1 AA違反なし、本文リンクのclick遷移 | 実操作（click）＋axe。2ページ×PC/iPad/iPhoneで6件＋ナビの展開・表示対象・リンク遷移を3デバイスで確認（計9件） |
 
-E2E定義は450件（既存444件＋E-46の6件）。ローカルdistとstaging実機の両方で実行し、結果と画像を `evidence/2026-09-09/` に保存する。
+E2E定義は453件（既存444件＋E-46の9件）。ローカルdist・staging実機・本番実機で実行し、結果と画像を `evidence/2026-09-09/` に保存する。
 
 | 実行環境 | 結果 | 証跡 |
 | :--- | :--- | :--- |
-| ローカル `dist` | 6 passed | `app-info-results.json` / `screenshots/` |
-| staging実機（https://staging.reiwa.casa） | 6 passed | `app-info-results-staging.json` / `screenshots-staging/` |
+| ローカル `dist` | ページ検証6件 passed ＋ メニュー除外3デバイス passed | `app-info-results.json` / `noindex-nav-results.json`（local）/ `screenshots/` |
+| staging実機（https://staging.reiwa.casa） | 同上 | `app-info-results-staging.json` / `noindex-nav-results.json`（staging）/ `screenshots-staging/` |
+| 本番実機（https://reiwa.casa） | 9 passed（E-46の全件を1回で実行） | `app-info-results-production.json` / `noindex-nav-results.json`（production）/ `screenshots-production/` |
+
+ローカル・stagingはメニュー除外の追加前後で2回に分けて取得したため証跡が2ファイルに分かれる。本番は追加後の定義9件をまとめて実行した。
 
 ### 4.1.4 デバイス別テスト
 
-全テストケースを以下の3デバイスで実行する（合計450テスト：442実行 + 8スキップ）。
+全テストケースを以下の3デバイスで実行する（合計453テスト：445実行 + 8スキップ）。
 
 | デバイス | ビューポート | 用途 |
 | :--- | :--- | :--- |
@@ -1722,8 +1726,8 @@ npm run build
 | :--- | :--- |
 | 実行日時 | 2026-09-09 |
 | Playwright バージョン | v1.58.2 |
-| 実行時間 | 15.7m |
-| 合否判定 | **合格**（442 PASS, 8 skip / 450テスト）|
+| 実行時間 | 18.1m |
+| 合否判定 | **合格**（445 PASS, 8 skip / 453テスト）|
 
 | テストファイル | PC | iPad | iPhone | 合計 |
 | :--- | :--- | :--- | :--- | :--- |
@@ -1734,8 +1738,8 @@ npm run build
 | `cms-operations.spec.ts`（E-28〜E-36） | 27 PASS, 4 skip | 28 PASS, 3 skip | 31 PASS | 86 PASS, 7 skip |
 | `accessibility.spec.ts`（E-25〜E-27） | 6 PASS | 6 PASS | 6 PASS | 18 |
 | `cms-exploratory.spec.ts`（E-37, E-39〜E-43） | 12 PASS | 12 PASS | 12 PASS | 36 |
-| `app-info.spec.ts`（E-46） | 2 PASS | 2 PASS | 2 PASS | 6 |
-| **合計** | **145 PASS, 5 skip** | **147 PASS, 3 skip** | **150 PASS** | **442 PASS, 8 skip** |
+| `app-info.spec.ts`（E-46） | 3 PASS | 3 PASS | 3 PASS | 9 |
+| **合計** | **146 PASS, 5 skip** | **148 PASS, 3 skip** | **151 PASS** | **445 PASS, 8 skip** |
 
 **スキップ内訳**: E-34のボトムシート・codeblock・URLバーはPC/iPadでskip、CMSタップ領域はPCのみskip。E-21公開サイトタッチ領域はPCのみskip。合計8件skip。
 

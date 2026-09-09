@@ -40,6 +40,27 @@
         "iPad": "screenshots/noindex-nav-staging_iPad.png",
         "iPhone": "screenshots/noindex-nav-staging_iPhone.png"
       }
+    },
+    "production": {
+      "verifiedAt": "2026-09-09T12:29:43+00:00",
+      "result": "passed",
+      "devices": [
+        "PC",
+        "iPad",
+        "iPhone"
+      ],
+      "checks": [
+        "メニューの実クリック展開",
+        "noindex固定ページの不掲載",
+        "通常固定ページの掲載・遷移",
+        "説明2ページの直接アクセス・相互リンク・noindex・axe",
+        "sitemap非掲載・robots.txt本番値のHTTP実測"
+      ],
+      "screenshots": {
+        "PC": "screenshots-production/noindex-nav_PC.png",
+        "iPad": "screenshots-production/noindex-nav_iPad.png",
+        "iPhone": "screenshots-production/noindex-nav_iPhone.png"
+      }
     }
   }
 }
