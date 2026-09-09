@@ -103,7 +103,7 @@
       "line": 0,
       "specs": [
         {
-          "title": "FR-29: アプリ案内の表示・実リンク操作・アクセシビリティ /playwright-home/",
+          "title": "FR-29: 検索除外ページの表示・実リンク操作・アクセシビリティ /playwright-home-privacy/",
           "ok": true,
           "tags": [],
           "tests": [
@@ -118,12 +118,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 659,
+                  "duration": 715,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-09T02:02:05.491Z",
+                  "startTime": "2026-09-09T02:27:32.412Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -131,13 +131,13 @@
               "status": "expected"
             }
           ],
-          "id": "14711ce388bd96479eeb-59946741f17166542cfc",
+          "id": "14711ce388bd96479eeb-d1656c8b06e2d3bbefe9",
           "file": "app-info.spec.ts",
-          "line": 22,
+          "line": 16,
           "column": 3
         },
         {
-          "title": "FR-29: アプリ案内の表示・実リンク操作・アクセシビリティ /playwright-home/privacy/",
+          "title": "FR-29: 検索除外ページの表示・実リンク操作・アクセシビリティ /playwright-home/",
           "ok": true,
           "tags": [],
           "tests": [
@@ -152,12 +152,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 424,
+                  "duration": 364,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-09T02:02:06.915Z",
+                  "startTime": "2026-09-09T02:27:33.846Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -165,13 +165,13 @@
               "status": "expected"
             }
           ],
-          "id": "14711ce388bd96479eeb-f3d423fa2e0315fa386e",
+          "id": "14711ce388bd96479eeb-581cdb85e3f10d5a3115",
           "file": "app-info.spec.ts",
-          "line": 22,
+          "line": 16,
           "column": 3
         },
         {
-          "title": "FR-29: アプリ案内の表示・実リンク操作・アクセシビリティ /playwright-home/",
+          "title": "FR-29: 検索除外ページの表示・実リンク操作・アクセシビリティ /playwright-home-privacy/",
           "ok": true,
           "tags": [],
           "tests": [
@@ -186,12 +186,12 @@
                   "workerIndex": 1,
                   "parallelIndex": 1,
                   "status": "passed",
-                  "duration": 729,
+                  "duration": 786,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-09T02:02:05.479Z",
+                  "startTime": "2026-09-09T02:27:32.414Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -199,13 +199,13 @@
               "status": "expected"
             }
           ],
-          "id": "14711ce388bd96479eeb-f221353fa708e1fcb09f",
+          "id": "14711ce388bd96479eeb-9645a0eba34f833c4fd5",
           "file": "app-info.spec.ts",
-          "line": 22,
+          "line": 16,
           "column": 3
         },
         {
-          "title": "FR-29: アプリ案内の表示・実リンク操作・アクセシビリティ /playwright-home/privacy/",
+          "title": "FR-29: 検索除外ページの表示・実リンク操作・アクセシビリティ /playwright-home/",
           "ok": true,
           "tags": [],
           "tests": [
@@ -220,12 +220,12 @@
                   "workerIndex": 1,
                   "parallelIndex": 1,
                   "status": "passed",
-                  "duration": 457,
+                  "duration": 390,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-09T02:02:06.985Z",
+                  "startTime": "2026-09-09T02:27:33.918Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -233,13 +233,13 @@
               "status": "expected"
             }
           ],
-          "id": "14711ce388bd96479eeb-439745624c4a2477a5b7",
+          "id": "14711ce388bd96479eeb-66eef40d9d018eca7132",
           "file": "app-info.spec.ts",
-          "line": 22,
+          "line": 16,
           "column": 3
         },
         {
-          "title": "FR-29: アプリ案内の表示・実リンク操作・アクセシビリティ /playwright-home/",
+          "title": "FR-29: 検索除外ページの表示・実リンク操作・アクセシビリティ /playwright-home-privacy/",
           "ok": true,
           "tags": [],
           "tests": [
@@ -254,12 +254,12 @@
                   "workerIndex": 2,
                   "parallelIndex": 2,
                   "status": "passed",
-                  "duration": 710,
+                  "duration": 816,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-09T02:02:05.483Z",
+                  "startTime": "2026-09-09T02:27:32.412Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -267,13 +267,13 @@
               "status": "expected"
             }
           ],
-          "id": "14711ce388bd96479eeb-8aa303dce7009139ffda",
+          "id": "14711ce388bd96479eeb-516e8ed9d62cac4fc7da",
           "file": "app-info.spec.ts",
-          "line": 22,
+          "line": 16,
           "column": 3
         },
         {
-          "title": "FR-29: アプリ案内の表示・実リンク操作・アクセシビリティ /playwright-home/privacy/",
+          "title": "FR-29: 検索除外ページの表示・実リンク操作・アクセシビリティ /playwright-home/",
           "ok": true,
           "tags": [],
           "tests": [
@@ -288,12 +288,12 @@
                   "workerIndex": 2,
                   "parallelIndex": 2,
                   "status": "passed",
-                  "duration": 471,
+                  "duration": 391,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-09T02:02:06.966Z",
+                  "startTime": "2026-09-09T02:27:33.950Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -301,9 +301,9 @@
               "status": "expected"
             }
           ],
-          "id": "14711ce388bd96479eeb-5dac14b28abf72ebc83d",
+          "id": "14711ce388bd96479eeb-afc5094c59a800a6f645",
           "file": "app-info.spec.ts",
-          "line": 22,
+          "line": 16,
           "column": 3
         }
       ]
@@ -311,8 +311,8 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-09-09T02:02:04.490Z",
-    "duration": 2983.433,
+    "startTime": "2026-09-09T02:27:31.438Z",
+    "duration": 2931.053,
     "expected": 6,
     "skipped": 0,
     "unexpected": 0,

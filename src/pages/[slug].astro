@@ -24,7 +24,7 @@ const { page } = Astro.props;
 const { Content } = await page.render();
 ---
 
-<Base title={page.data.title}>
+<Base title={page.data.title} noindex={page.data.noindex}>
   <article>
     <header class="page-header">
       <h1>{page.data.title}</h1>
