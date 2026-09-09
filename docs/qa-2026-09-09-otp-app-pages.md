@@ -8,6 +8,7 @@
 | 認証方式 | 「Gmail APIを本番モードへ変更」。IMAPやWorkspace移行は採用しない |
 | 公開ドメイン | `reiwa.casa`。既存my-blogリポジトリのCloudflare Pagesで使用中、DNSもCloudflare |
 | 公開説明の分量 | 「皆に見られるので超最小限の記載で」。紹介は用途の短文、ポリシーは必要なデータ取扱いだけに限定 |
+| 検索結果への露出 | 「追加した2ページはnoindexで」。`noindex` とsitemap除外をセットで適用する |
 
 ## 実装判断
 
@@ -31,14 +32,20 @@
 
 | 実行 | 結果 |
 | --- | --- |
-| `npm test`（Vitest） | 588 passed |
+| `npm test`（Vitest） | 592 passed（noindex・sitemap除外の検証4件を追加） |
 | `npm run build` | 成功。`dist/playwright-home/index.html` と `dist/playwright-home/privacy/index.html` を生成 |
 | FR-29 E2E（`evidence/2026-09-09/verify-app-info.config.ts`） | 6 passed（2ページ×PC/iPad/iPhone） |
 | `npm run test:e2e`（全体） | 442 passed / 8 skipped（定義450件）。既存テストの退行なし |
 
 - `webServer.cwd` 修正後のE2Eをこの引き継ぎで実行し、合格を確認した。
 - 証跡は `evidence/2026-09-09/screenshots/`（6枚）と `app-info-results.json`。赤枠は注釈で、合否は実クリック・Enter操作とaxeで判定する。
-- 追加した2ページはヘッダーナビ・RSSに載らず、`sitemap-0.xml` にのみ載る（Googleから参照される公開ページのため）。
+- 追加した2ページはヘッダーナビ・RSSに載らない。当初はsitemapに載せていたが、ユーザーの指示により **`noindex` ＋ sitemap除外** に変更した（`Base.astro` の `noindex` プロパティと `astro.config.mjs` の `filter`）。Googleの要件は公開アクセス可能であることで、`noindex` は同意画面の登録を妨げない。
+
+## main反映時の注意
+
+`astro.config.mjs` はブランチごとに手動管理する差分（`SITE_URL`）を持つ。staging→main のマージでは
+**`SITE_URL` は main の値（`https://reiwa.casa`）を維持し、sitemap の `filter` 変更（`/playwright-home/` 除外）は取り込む**。
+取り込み漏れがあると、noindexは効いていてもsitemapに載ったままになる。ビルドテスト（2.5.9章 #3）で検出できる。
 
 ## Google側へ登録する予定値
 

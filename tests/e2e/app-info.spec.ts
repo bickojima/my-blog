@@ -26,6 +26,8 @@ for (const { route, data } of findAppPages(pagesRoot)) {
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(data.title);
     await expect(page.locator('html')).toHaveAttribute('lang', 'ja');
     expect(await page.locator('form').count()).toBe(0);
+    // 検索結果には出さない。sitemap除外はビルドテスト側で検証する。
+    await expect(page.locator('head meta[name="robots"]')).toHaveAttribute('content', /noindex/);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
     expect(results.violations).toEqual([]);

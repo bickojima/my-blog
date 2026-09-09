@@ -16,7 +16,8 @@ export default defineConfig({
   integrations: [
     imageOptimize(),
     sitemap({
-      filter: (page) => !page.includes('/admin/'),
+      // /admin/ はCMS、/playwright-home/ はOAuth同意画面から参照する案内ページ（noindex）
+      filter: (page) => !page.includes('/admin/') && !page.includes('/playwright-home/'),
     }),
   ],
   markdown: {

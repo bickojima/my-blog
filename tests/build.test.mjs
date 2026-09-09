@@ -477,6 +477,62 @@ describe('ビルド検証', () => {
       });
     });
 
+    describe('FR-29 個人用アプリ案内ページ', () => {
+      // 対象ページはソースから動的取得する（URLをテストへハードコードしない）
+      const APP_INFO_LAYOUT = 'AppInfo.astro';
+      const appInfoRoutes = () => {
+        const root = join(process.cwd(), 'src/pages');
+        const walk = (dir) =>
+          readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+            const file = join(dir, entry.name);
+            if (entry.isDirectory()) return walk(file);
+            if (!entry.name.endsWith('.md')) return [];
+            const source = readFileSync(file, 'utf-8');
+            if (!source.includes(APP_INFO_LAYOUT)) return [];
+            return [
+              file
+                .slice(root.length)
+                .replace(/index\.md$/, '')
+                .replace(/\.md$/, '/')
+                .replaceAll('\\', '/'),
+            ];
+          });
+        return walk(root);
+      };
+
+      it('アプリ案内ページがビルドされる', () => {
+        const routes = appInfoRoutes();
+        expect(routes.length).toBeGreaterThan(0);
+        for (const route of routes) {
+          expect(existsSync(join(DIST_DIR, route.replace(/^\//, ''), 'index.html'))).toBe(true);
+        }
+      });
+
+      it('アプリ案内ページに noindex が付与される', () => {
+        for (const route of appInfoRoutes()) {
+          const html = readFileSync(join(DIST_DIR, route.replace(/^\//, ''), 'index.html'), 'utf-8');
+          expect(html).toContain('name="robots"');
+          expect(html).toContain('noindex');
+        }
+      });
+
+      it('アプリ案内ページがsitemapに含まれない', () => {
+        const files = readdirSync(DIST_DIR).filter((f) => /^sitemap-\d+\.xml$/.test(f));
+        expect(files.length).toBeGreaterThan(0);
+        for (const f of files) {
+          const content = readFileSync(join(DIST_DIR, f), 'utf-8');
+          for (const route of appInfoRoutes()) {
+            expect(content).not.toContain(route);
+          }
+        }
+      });
+
+      it('記事・固定ページには noindex が付かない', () => {
+        const html = readFileSync(join(DIST_DIR, 'index.html'), 'utf-8');
+        expect(html).not.toContain('noindex');
+      });
+    });
+
     describe('NFR-08 ダークモード対応', () => {
       it('meta color-schemeでダーク対応を宣言する', () => {
         const html = readFileSync(join(DIST_DIR, 'index.html'), 'utf-8');

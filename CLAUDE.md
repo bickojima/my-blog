@@ -237,4 +237,4 @@ DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を�
 
 ## 個人用アプリ案内（FR-29）
 
-`src/pages/playwright-home/` はOAuth同意画面から参照する最小限の公開説明。記事・CMS固定ページコレクションへ混ぜない。個人情報・金融機関名・連携サービス名・機器構成は掲載しない。原稿変更時は `tests/e2e/app-info.spec.ts` のソース連動E2E（2ページ×3デバイス）で確認する。現行テスト定義はVitest 588件、E2E 450件（旧444件＋FR-29 6件）。QAは `docs/qa-2026-09-09-otp-app-pages.md`。
+`src/pages/playwright-home/` はOAuth同意画面から参照する最小限の公開説明。記事・CMS固定ページコレクションへ混ぜない。個人情報・金融機関名・連携サービス名・機器構成は掲載しない。原稿変更時は `tests/e2e/app-info.spec.ts` のソース連動E2E（2ページ×3デバイス）で確認する。検索結果には出さない方針で、`noindex` と sitemap 除外（`astro.config.mjs` の `filter`）を必ずセットで維持する。現行テスト定義はVitest 592件、E2E 450件（旧444件＋FR-29 6件）。QAは `docs/qa-2026-09-09-otp-app-pages.md`。
