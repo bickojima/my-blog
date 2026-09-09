@@ -46,7 +46,7 @@
 | 1.38 | 2026-08-09 | Bug #45対応: 2.5.5章のrobots.txt環境別ポリシー検証をブランチ対応に変更（`astro.config.mjs`の`SITE_URL`でstaging/mainを判定）。テスト件数増減なし（Vitest 586件） |
 | 1.39 | 2026-08-11 | Issue #97完了対応: Bug #46のVitest探索範囲固定テスト、Bug #47のCMS E-28タイムアウト設定テストを追加。build.test.mjs 91→93件、Vitest合計586→588件。全444件E2Eを再実行し436 PASS・8 skip・flakyなしを確認 |
 | 1.40 | 2026-08-11 | Issue #97のstaging/main反映後結果を追記。mainのtest-and-build・Cloudflare Pages成功、本番27/27・認証済みCMS 3/3のデプロイ後再確認を記録 |
-| 1.41 | 2026-09-09 | FR-29のE-46を追加。アプリ案内の2ページをソースから動的取得し3デバイスで表示・リンク・アクセシビリティを確認。E2E定義は444→450件 |
+| 1.41 | 2026-09-09 | FR-29のE-46を追加。アプリ案内の2ページをソースから動的取得し3デバイスで表示・リンク・アクセシビリティ・noindexを確認。E2E定義は444→450件。noindex・sitemap除外のビルド検証4件を追加しVitestは588→592件 |
 
 ## テスト基盤の変更履歴
 
@@ -462,7 +462,7 @@ admin-html.test.mjs              -     ●     -     -     -     -     -     -  
 
 | No. | 基準 |
 | :--- | :--- |
-| 1 | 全テストケース（Vitest 588件 + E2E 444件 = 1032件）がPASSまたは仕様上の条件スキップであること |
+| 1 | 全テストケース（Vitest 592件 + E2E 450件 = 1042件）がPASSまたは仕様上の条件スキップであること |
 | 2 | `npm run build` が正常に完了すること |
 | 3 | 要件トレーサビリティマトリクス（docs/DOCUMENTATION.md 1.5章）において全要件が「充足」であること |
 
@@ -933,6 +933,17 @@ Bug #42: `/page/[page].astro`が`paginate()`の結果をフィルタせず生成
 | :--- | :--- | :--- | :--- |
 | 1 | Vitestの探索範囲をプロジェクトの単体・統合テストに限定する | M-02 | `vitest.config.ts`に`include: ['tests/**/*.test.mjs']`があり、別worktreeや依存パッケージのテストを収集しない |
 | 2 | OAuth・CMS初期化を含むE-28に並列負荷の余裕を設ける | M-02 | E-28 describeに60秒タイムアウトがあり、全444件並列実行時もリトライなしで完了する |
+
+### 2.5.9 個人用アプリ案内ページ検証（FR-29、4件）
+
+`AppInfo.astro` レイアウトを使うMarkdownを `src/pages/` から走査し、対象URLをテストへハードコードしない。
+
+| No. | テストケース | テスト手法 | 期待結果 |
+| :--- | :--- | :--- | :--- |
+| 1 | アプリ案内ページがビルドされる | M-01 | 対象ルートごとに `dist/<route>/index.html` が存在する |
+| 2 | アプリ案内ページに noindex が付与される | M-01 | `<meta name="robots" content="noindex">` を含む |
+| 3 | アプリ案内ページがsitemapに含まれない | M-01 | `sitemap-*.xml` が対象ルートを含まない |
+| 4 | 記事・固定ページには noindex が付かない | M-01 | トップページのHTMLに `noindex` が現れない |
 
 ### 2.5.1 セキュリティヘッダー検証（8件）
 
@@ -1405,7 +1416,7 @@ axe-coreエンジン（@axe-core/playwright）を使用してWCAG 2.1 Level AA�
 
 | No. | テストケース | 検証内容 | テスト手法 |
 | :--- | :--- | :--- | :--- |
-| E-46 | アプリ案内の表示・実リンク操作・アクセシビリティ（FR-29） | HTTP 200、title/h1一致、`lang="ja"`、フォーム不在、横スクロール非発生、axe WCAG 2.1 AA違反なし、ポリシーリンクclick遷移、紹介リンクEnter遷移 | 実操作（click / press）＋axe。2ページ×PC/iPad/iPhoneで6件 |
+| E-46 | アプリ案内の表示・実リンク操作・アクセシビリティ（FR-29） | HTTP 200、title/h1一致、`lang="ja"`、`robots` が `noindex`、フォーム不在、横スクロール非発生、axe WCAG 2.1 AA違反なし、ポリシーリンクclick遷移、紹介リンクEnter遷移 | 実操作（click / press）＋axe。2ページ×PC/iPad/iPhoneで6件 |
 
 E2E定義は450件（既存444件＋E-46の6件）。結果と画像は `evidence/2026-09-09/` に保存する。
 
@@ -1692,8 +1703,8 @@ npm run build
 | `auth-functions.test.mjs` | 17 | PASS | 33ms |
 | `fuzz-validation.test.mjs` | 215 | PASS | 40ms |
 | `content-validation.test.mjs` | 111 | PASS | 75ms |
-| `build.test.mjs` | 93 | PASS | 2286ms |
-| **合計** | **588** | **全PASS** | **2.50s** |
+| `build.test.mjs` | 97 | PASS | 2286ms |
+| **合計** | **592** | **全PASS** | **2.50s** |
 
 ### 4.3.3 E2Eテスト最新実行結果（Playwright）
 

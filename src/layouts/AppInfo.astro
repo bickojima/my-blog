@@ -1,10 +1,10 @@
 ---
 import Base from './Base.astro';
 
-const { title, description, appHome, privacy } = Astro.props.frontmatter;
+const { title, description, appHome, privacy, noindex = true } = Astro.props.frontmatter;
 ---
 
-<Base title={title} description={description}>
+<Base title={title} description={description} noindex={noindex}>
   <article class="app-info">
     <nav aria-label="アプリの案内">
       <a href={appHome}>アプリ紹介</a>
