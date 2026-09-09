@@ -41,3 +41,41 @@ for (const data of noindexPages) {
     await expect(page).toHaveURL(new RegExp(`${href!.replace(/\/$/, '')}/?$`));
   });
 }
+
+test('FR-29: noindex固定ページをメニューから除外し通常ページへ遷移できる', async ({ page }, testInfo) => {
+  const visiblePages = readdirSync(pagesDir)
+    .filter(file => file.endsWith('.md'))
+    .map(file => matter(readFileSync(path.join(pagesDir, file), 'utf8')).data)
+    .filter(data => !data.draft && !data.noindex)
+    .sort((a, b) => a.order - b.order);
+  await page.goto('/');
+  const nav = page.getByRole('navigation', { name: 'メイン', exact: true });
+  const toggle = nav.getByRole('button', { name: 'ページメニュー' });
+  if (visiblePages.length > 1) {
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    await expect(nav.locator('.nav-dropdown-menu')).toBeVisible();
+    await expect(nav.locator('.nav-dropdown-menu a')).toHaveCount(visiblePages.length);
+  } else {
+    await expect(toggle).toHaveCount(0);
+  }
+  for (const data of noindexPages) {
+    await expect(nav.locator(`a[href="/${data.slug}"], a[href="/${data.slug}/"]`)).toHaveCount(0);
+  }
+  for (const data of visiblePages) {
+    await expect(nav.locator(`a[href="/${data.slug}"]`).last()).toBeVisible();
+  }
+  // 実クリック後の表示を注釈付きで記録。DOM操作は注釈のみに限定する。
+  await nav.evaluate(element => {
+    (element as HTMLElement).style.outline = '2px solid #dc2626';
+    const label = document.createElement('span');
+    label.textContent = 'FR-29: noindex pages excluded';
+    label.style.cssText = 'position:fixed;bottom:12px;left:12px;z-index:9999;color:#dc2626;background:white;font-size:11px;pointer-events:none';
+    element.appendChild(label);
+  });
+  await page.screenshot({ path: path.join(testInfo.project.outputDir, `noindex-nav_${testInfo.project.name}.png`) });
+  if (visiblePages.length > 0) {
+    await nav.locator(`a[href="/${visiblePages[0].slug}"]`).last().click();
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(visiblePages[0].title);
+  }
+});
