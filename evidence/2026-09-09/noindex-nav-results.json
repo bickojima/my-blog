@@ -1,0 +1,45 @@
+{
+  "requirement": "FR-29: noindex固定ページをヘッダーナビから除外",
+  "environments": {
+    "local": {
+      "verifiedAt": "2026-09-09T12:07:30.308697+00:00",
+      "result": "passed",
+      "devices": [
+        "PC",
+        "iPad",
+        "iPhone"
+      ],
+      "checks": [
+        "メニューの実クリック展開",
+        "noindex固定ページの不掲載",
+        "通常固定ページの掲載・遷移",
+        "説明2ページの直接アクセス・相互リンク・noindex・axe"
+      ],
+      "screenshots": {
+        "PC": "screenshots/noindex-nav-local_PC.png",
+        "iPad": "screenshots/noindex-nav-local_iPad.png",
+        "iPhone": "screenshots/noindex-nav-local_iPhone.png"
+      }
+    },
+    "staging": {
+      "verifiedAt": "2026-09-09T12:24:19.838862+00:00",
+      "result": "passed",
+      "devices": [
+        "PC",
+        "iPad",
+        "iPhone"
+      ],
+      "checks": [
+        "メニューの実クリック展開",
+        "noindex固定ページの不掲載",
+        "通常固定ページの掲載・遷移",
+        "説明2ページの直接アクセス・相互リンク・noindex・axe"
+      ],
+      "screenshots": {
+        "PC": "screenshots/noindex-nav-staging_PC.png",
+        "iPad": "screenshots/noindex-nav-staging_iPad.png",
+        "iPhone": "screenshots/noindex-nav-staging_iPhone.png"
+      }
+    }
+  }
+}

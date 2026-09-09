@@ -18,6 +18,7 @@ const isStaging = import.meta.env.CF_PAGES_BRANCH === 'staging';
 const siteTitle = isStaging ? '[STAGING] tbiのブログ' : 'tbiのブログ';
 const navPages = (await getCollection('pages'))
   .filter(p => !p.data.draft)
+  .filter(p => !p.data.noindex)
   .sort((a, b) => a.data.order - b.data.order);
 
 const metaDescription = description ?? DEFAULT_DESCRIPTION;
