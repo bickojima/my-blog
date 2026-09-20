@@ -903,7 +903,7 @@ describe('ビルド検証', () => {
       expect(ci).not.toMatch(/npx playwright|npm run test:e2e|playwright test/);
     });
 
-    it('4.6章はローカルE2E全件をmainマージの必須条件とし、Vitest だけでは main マージ不可とする（Bug #50）', () => {
+    it('4.6章はローカルE2E全件と verify-comprehensive をmainマージの必須条件とし、Vitest だけでは main マージ不可とする（Bug #50）', () => {
       const doc = readFileSync(join(process.cwd(), 'docs/DOCUMENTATION.md'), 'utf-8');
       const sectionStart = doc.indexOf('## 4.6. ブランチマージ手順');
       const sectionEnd = doc.indexOf('## 4.7.');
@@ -911,15 +911,28 @@ describe('ビルド検証', () => {
       expect(sectionEnd).toBeGreaterThan(sectionStart);
       const section = doc.slice(sectionStart, sectionEnd);
       expect(section).toContain('npm run test:e2e');
+      expect(section).toContain('verify-comprehensive.mjs');
       expect(section).toContain('Vitest だけでは main マージ不可');
       expect(section).toContain('CI に Playwright は載せない');
       expect(section).not.toMatch(/E2E テスト PASS（可能な場合）/);
     });
 
-    it('CLAUDE.md は Vitest のみの main マージを禁止し、CI に Playwright は載せない（Bug #50）', () => {
+    it('CLAUDE.md のブランチマージ時は E2E と verify-comprehensive を必須とし、CI に Playwright は載せない（Bug #50）', () => {
       const claude = readFileSync(join(process.cwd(), 'CLAUDE.md'), 'utf-8');
-      expect(claude).toContain('Vitest だけでは main マージ不可');
-      expect(claude).toContain('CI に Playwright は載せない');
+      const start = claude.indexOf('### ブランチマージ時');
+      const end = claude.indexOf('### セキュリティ・品質チェック');
+      expect(start).toBeGreaterThan(0);
+      expect(end).toBeGreaterThan(start);
+      const section = claude.slice(start, end);
+      expect(section).toContain('Vitest だけでは main マージ不可');
+      expect(section).toContain('CI に Playwright は載せない');
+      expect(section).toContain('verify-comprehensive.mjs');
+      expect(section).toContain('npm run test:e2e');
+    });
+
+    it('verify-comprehensive 雛形はシナリオ FAIL で非ゼロ終了する（Bug #50）', () => {
+      const src = readFileSync(join(process.cwd(), 'evidence/2026-05-24/verify-comprehensive.mjs'), 'utf-8');
+      expect(src).toMatch(/if\s*\(\s*failCount\s*>\s*0\s*\)[\s\S]{0,120}process\.exit\(1\)/);
     });
   });
 

@@ -1,5 +1,6 @@
 /**
- * 包括的E2Eエビデンス取得スクリプト（2026-05-24）
+ * 包括的E2Eエビデンス取得スクリプト（2026-09-20）
+ * 雛形: evidence/2026-05-24/verify-comprehensive.mjs
  *
  * 検証項目:
  *   [サイト]  S01-S10: 公開サイト基本動作・アクセシビリティ
@@ -14,7 +15,7 @@
  *
  * 使用方法:
  *   1. npm run build
- *   2. node evidence/2026-05-24/verify-comprehensive.mjs
+ *   2. node evidence/2026-09-20/verify-comprehensive.mjs
  */
 
 import { chromium, devices } from 'playwright';
@@ -26,7 +27,7 @@ import { extname } from 'path';
 
 const PORT = 4175;
 const BASE_URL = `http://localhost:${PORT}`;
-const TODAY = '2026-05-24';
+const TODAY = '2026-09-20';
 const EVIDENCE_DIR = join(process.cwd(), 'evidence', TODAY);
 const SCREENSHOT_DIR = join(EVIDENCE_DIR, 'screenshots');
 mkdirSync(SCREENSHOT_DIR, { recursive: true });

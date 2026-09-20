@@ -26,7 +26,7 @@ Astro + Decap CMS によるブログサイト。Cloudflare Pages でホスティ
 | 1.17 | 2026-09-09 | FR-29: noindex固定ページをヘッダーナビから除外。2ページの公開URLとCMS編集は維持 |
 | 1.18 | 2026-09-20 | 未使用依存 `decap-cms-app` を削除。Astro 5.18.2 を 7.3.3 へアップ（Content Layer glob loader）。本番CMS CDNを Decap CMS `3.10.0` から `3.16.2` へ更新（SRI再計算） |
 | 1.19 | 2026-09-20 | SEC-31/SEC-32 の自動回帰テスト追加に合わせ Vitest 件数を 624→631 に更新 |
-| 1.20 | 2026-09-20 | Bug #50: 本番マージ前のローカル E2E 全件を必須化。CI に Playwright は載せない。Vitest 631→634 |
+| 1.20 | 2026-09-20 | Bug #50: 本番マージ前のローカル E2E 全件と verify-comprehensive.mjs を必須化。CI に Playwright は載せない。Vitest 631→635 |
 
 詳細なシステム変更履歴は [DOCUMENTATION.md](docs/DOCUMENTATION.md) を参照。
 
@@ -139,7 +139,7 @@ my-blog/
 | `npm run dev` | 開発サーバー起動（localhost:4321） |
 | `npm run build` | 本番ビルド（`./dist/` に出力） |
 | `npm run preview` | ビルド結果のローカルプレビュー |
-| `npm test` | 単体・統合テスト実行（Vitest / 634テスト、記事数により変動） |
+| `npm test` | 単体・統合テスト実行（Vitest / 635テスト、記事数により変動） |
 | `npm run test:watch` | ウォッチモードでテスト実行 |
 | `npm run test:e2e` | E2Eテスト実行（Playwright / PC・iPad・iPhone 453テスト: 445実行+8スキップ） |
 
@@ -239,7 +239,7 @@ main (本番)  ←── merge ── staging (テスト) ←── merge ──
 - コンテンツ同期: `main` の記事更新を `staging` に定期マージ
 - `config.yml` の `base_url` / `branch` は各ブランチで個別管理（マージ時にコンフリクト解消）
 - マージ手順の詳細は [DOCUMENTATION.md 4.6章](docs/DOCUMENTATION.md) を参照
-- **Vitest だけでは main マージ不可**。ローカル `npm run test:e2e` 全件が必須。**CI に Playwright は載せない**（Bug #50）
+- **Vitest だけでは main マージ不可**。ローカル `npm run test:e2e` 全件と `verify-comprehensive.mjs` が必須。**CI に Playwright は載せない**（Bug #50）
 
 ## 8. デプロイ
 
