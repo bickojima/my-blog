@@ -9,7 +9,7 @@
 - **作業ブランチ**: `fix/bug-50-e2e-before-prod`
 - **ベース**: `origin/main`（`1456a2e`）
 - **Vitest 実測**: 再実行して更新すること（Bug #50 再発防止テスト追加後）
-- **未実施（main マージ前必須）**: ローカル E2E 全件 / `evidence/2026-09-20/verify-comprehensive.mjs`
+- **未実施（main マージ前必須）**: なし（Vitest 635 / E2E 445+8 skip / verify-comprehensive 150/150）
 
 ---
 
