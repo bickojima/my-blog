@@ -1,6 +1,7 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
+import { unified } from '@astrojs/markdown-remark';
 import rehypeImageCaption from './src/plugins/rehype-image-caption.mjs';
 import rehypeFocusableCodeBlocks from './src/plugins/rehype-focusable-code-blocks.mjs';
 import imageOptimize from './src/integrations/image-optimize.mjs';
@@ -22,6 +23,9 @@ export default defineConfig({
     }),
   ],
   markdown: {
-    rehypePlugins: [rehypeImageCaption, rehypeFocusableCodeBlocks],
+    // Astro 7 の既定は Sätteri。既存 rehype プラグインを維持するため unified に直接渡す。
+    processor: unified({
+      rehypePlugins: [rehypeImageCaption, rehypeFocusableCodeBlocks],
+    }),
   },
 });
