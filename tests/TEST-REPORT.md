@@ -53,6 +53,7 @@
 | 1.45 | 2026-09-20 | セキュリティ監査run-2対応（Issue #114, #115, #117項目4/項目11）: 2.5章にurl-map.json下書き除外テスト2件追加（No.51〜52、SEC-29/Bug #48再発防止）でbuild.test.mjs 102→104件。2.5.1章・2.7.8章・2.7.12章の該当8件の説明を「/admin/*にオーバーライドで設定」から「/admin/*では再定義せず/*から継承」（Issue #115, Bug #49）へ書き換え。fuzz-validation.test.mjsの重複検証テスト1件（ガード条件`if (globalVal && adminVal)`により何も検証しない空のテストになっていた）を、ガード条件を撤廃し3ヘッダーとも実効的に検証する形へ書き換え（件数増減なし）。3.1章・4.3章のVitest件数を610→622→**624**（本改訂の実測値）へ更新。SEC-31（OAuthハンドシェイクのメッセージリスナー堅牢化）・SEC-32（画像正規化処理のtry/catch保護＋出力バッファ上限）はコード実装済みだが自動回帰テストが未実装であることを3.1章に明記（フォローアップ要） |
 | 1.46 | 2026-09-20 | Astro 7.3.3 へメジャーアップ（Content Layer glob loader、`render(entry)`、`page.id`）。テスト件数増減なし（Vitest 624件全PASS）。サイト系 E2E を PC で再実行: `site.spec.ts` 37 PASS / 1 skip、`app-info.spec.ts` 3 PASS。実行環境の Node 要件を 22.12.0 以上へ更新 |
 | 1.47 | 2026-09-20 | 本番CMS CDNを Decap CMS `3.10.0` から `3.16.2` へ更新。既存の admin-html 検証（SEC-03 バージョン固定、SEC-12 SRI `integrity` / `crossorigin`、CDN `<script>` 閉じタグ）で新URLを確認。テスト件数増減なし。CMS系E2E（`cms-customizations.spec.ts` / `cms-operations.spec.ts` / `cms.spec.ts`、`--project=PC`）は 77 PASS・4 skip（E-34 モバイル固有は PC 対象外） |
+| 1.48 | 2026-09-20 | SEC-31/SEC-32 の自動回帰テストを追加。`auth-functions.test.mjs` に4件（2.3.1章 #8〜#11）、`build.test.mjs` に3件（2.5.10章 #1〜#3）。3.1章の未テスト例外と1.6.2章の例外注記を削除。Vitest 624→**631**件（全PASS、`npx vitest run` 実測。内訳: auth-functions 25→29、build 104→107） |
 
 ## テスト基盤の変更履歴
 
@@ -468,9 +469,9 @@ admin-html.test.mjs              -     ●     -     -     -     -     -     -  
 
 | No. | 基準 |
 | :--- | :--- |
-| 1 | 全テストケース（Vitest 624件 + E2E 453件 = 1077件）がPASSまたは仕様上の条件スキップであること |
+| 1 | 全テストケース（Vitest 631件 + E2E 453件 = 1084件）がPASSまたは仕様上の条件スキップであること |
 | 2 | `npm run build` が正常に完了すること |
-| 3 | 要件トレーサビリティマトリクス（docs/DOCUMENTATION.md 1.5章）において全要件が「充足」であること（現状の例外: SEC-31・SEC-32はコード実装済みだが自動回帰テスト未実装のため「未テスト」。1.5.4章参照） |
+| 3 | 要件トレーサビリティマトリクス（docs/DOCUMENTATION.md 1.5章）において全要件が「充足」であること |
 
 ### 1.6.3 合否判定基準
 
@@ -741,7 +742,7 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 | 9 | 成功時にDecap CMSハンドシェイクHTMLを返す | /auth/callback | M-06, M-07 | ステータス200、HTMLにpostMessageハンドシェイクコードが含まれる |
 | 10 | GitHubへのリクエストパラメータが正しい | /auth/callback | M-07 | fetchモックに渡されたURLとbodyが仕様通りである |
 
-### 2.3.1 セキュリティ検証（7件）
+### 2.3.1 セキュリティ検証（11件）
 
 | No. | テストケース | 検証対象 | テスト手法 | 期待結果 |
 | :--- | :--- | :--- | :--- | :--- |
@@ -752,6 +753,10 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 | 5 | OAuth開始時にstateパラメータを生成している（SEC-11） | index.js | M-02 | `state`パラメータの生成（`crypto.randomUUID`）とCookie保存（`oauth_state`）が含まれる |
 | 6 | OAuthコールバックでstateパラメータを検証している（SEC-11） | callback.js | M-02 | URLの`state`パラメータとCookie内の`oauth_state`を照合し、不一致時に403を返す |
 | 7 | OAuthエラーメッセージが汎化されている（SEC-13） | callback.js | M-02, M-09 | `error_description`がクライアントに返されず、汎用メッセージ「Authentication failed」を使用 |
+| 8 | OAuthハンドシェイクのmessage listenerに { once: true } を使っていない（SEC-31） | callback.js | M-02 | `addEventListener("message"` 付近に `{ once: true }` が無い |
+| 9 | ackは event.data の完全一致で検証している（SEC-31） | callback.js | M-02 | `event.data !== "authorizing:github"`（または `===` で早期 return）。部分一致・includes 等は不合格 |
+| 10 | オリジン検証とペイロード検証の両方を通過したときだけ removeEventListener している（SEC-31） | callback.js | M-02 | `handleMessage` 内で origin / payload の早期 return より後にのみ `removeEventListener("message"` がある |
+| 11 | フェイルセーフの setTimeout（30000ms）でタイムアウト時に listener を外す（SEC-31） | callback.js | M-02 | `setTimeout(..., 30000)` があり、コールバック内で `removeEventListener("message"` する |
 
 ---
 
@@ -829,7 +834,7 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 
 ---
 
-## 2.5. ビルド検証 (`build.test.mjs`) — 104件
+## 2.5. ビルド検証 (`build.test.mjs`) — 107件
 
 `npm run build`を実行し、パイプライン全体（normalize-images → organize-posts → astro build → image-optimize）の出力を検証する。全テストケースはビルド完了後に実行される。
 
@@ -982,6 +987,14 @@ Bug #42: `/page/[page].astro`が`paginate()`の結果をフィルタせず生成
 | No. | テストケース | カテゴリ | テスト手法 | 期待結果 |
 | :--- | :--- | :--- | :--- | :--- |
 | 51 | buildスクリプトに4段階パイプラインが定義されている（FR-20） | パイプライン | M-02 | `build:raw`に`normalize-images`, `organize-posts`, `astro build`が含まれる |
+
+### 2.5.10 画像正規化処理の堅牢化（SEC-32、3件）
+
+| No. | テストケース | テスト手法 | 期待結果 |
+| :--- | :--- | :--- | :--- |
+| 1 | sharp処理が try/catch で囲まれ、catch でビルド全体を throw していない（SEC-32） | M-02 | sharp 呼び出しが try 内にあり、`Failed to normalize` の catch は `console.warn` のみで `throw` / `process.exit` しない |
+| 2 | .rotate().toBuffer() の出力 buffer.length に MAX_FILE_SIZE 上限がある（SEC-32） | M-02 | `.rotate().toBuffer()` があり、`buffer.length > MAX_FILE_SIZE` で出力側上限を検査する |
+| 3 | lstat 失敗も try/catch で保護されている（SEC-32） | M-02 | `lstat` が try/catch で囲まれ、`Failed to stat` の catch は warn して継続する |
 
 ---
 
@@ -1291,7 +1304,7 @@ Bug #27時点は`/admin/*`側で値を「オーバーライド」する設計だ
 
 要件トレーサビリティマトリクスは **docs/DOCUMENTATION.md 1.5章** に移動した。要件定義と同一ファイルで管理することで、要件追加時のトレース漏れを防止する。
 
-現在の充足状況: **FR-01〜FR-29, CMS-01〜CMS-19, NFR-01〜NFR-08, SEC-01〜SEC-30はテストで充足されている。SEC-31・SEC-32は実装済みだが自動回帰テストが未実装のため未テストとして残っている（docs/DOCUMENTATION.md 1.5.4章参照）。** Modern Web Guidanceエビデンスは `evidence/2026-06-11/` に保存する。
+現在の充足状況: **FR-01〜FR-29, CMS-01〜CMS-19, NFR-01〜NFR-08, SEC-01〜SEC-32はテストで充足されている。未テスト要件は0件（docs/DOCUMENTATION.md 1.5.4章参照）。** Modern Web Guidanceエビデンスは `evidence/2026-06-11/` に保存する。
 
 ---
 
@@ -1709,9 +1722,9 @@ npm run build
 
 | 項目 | 結果 |
 | :--- | :--- |
-| 実行日時 | 2026-09-20（Astro 7.3.3 アップ後） |
+| 実行日時 | 2026-09-20（SEC-31/SEC-32 回帰テスト追加後） |
 | Vitest バージョン | v4.1.11 |
-| 実行時間 | 3.13s |
+| 実行時間 | 2.02s |
 | 合否判定 | **合格** |
 
 ### 4.3.2 テストファイル別結果
@@ -1722,13 +1735,13 @@ npm run build
 | `admin-html.test.mjs` | 90 | PASS | 6ms |
 | `rehype-image-caption.test.mjs` | 8 | PASS | 2ms |
 | `rehype-focusable-code-blocks.test.mjs` | 2 | PASS | 1ms |
-| `auth-functions.test.mjs` | 25 | PASS | 15ms |
+| `auth-functions.test.mjs` | 29 | PASS | 15ms |
 | `fuzz-validation.test.mjs` | 215 | PASS | 25ms |
 | `content-validation.test.mjs` | 125 | PASS | 31ms |
-| `build.test.mjs` | 104 | PASS | 2310ms |
-| **合計** | **624** | **全PASS** | **3.13s（全体実行時）** |
+| `build.test.mjs` | 107 | PASS | 2310ms |
+| **合計** | **631** | **全PASS** | **2.02s（全体実行時、`npx vitest run` 実測）** |
 
-セキュリティ監査run-2対応（SEC-29〜SEC-32, Bug #48/#49）により、`build.test.mjs`へ2件追加（102→104）。`fuzz-validation.test.mjs`は該当8件の説明を新設計（`/admin/*`では再定義せず`/*`から継承）に書き換え、ガード条件により空になっていた重複検証テスト1件を実効的な検証へ書き換えた（件数は215のまま変化なし）。
+SEC-31/SEC-32 の自動回帰テスト追加により、`auth-functions.test.mjs` 25→29、`build.test.mjs` 104→107。Vitest 合計 624→**631**（全PASS）。
 
 ### 4.3.3 E2Eテスト最新実行結果（Playwright）
 

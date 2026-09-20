@@ -25,6 +25,7 @@ Astro + Decap CMS によるブログサイト。Cloudflare Pages でホスティ
 | 1.16 | 2026-09-09 | FR-29: 個人用アプリの紹介・Gmailプライバシーページを固定ページとして追加。CMSから編集でき、検索結果には出さない（noindex・sitemap除外） |
 | 1.17 | 2026-09-09 | FR-29: noindex固定ページをヘッダーナビから除外。2ページの公開URLとCMS編集は維持 |
 | 1.18 | 2026-09-20 | 未使用依存 `decap-cms-app` を削除。Astro 5.18.2 を 7.3.3 へアップ（Content Layer glob loader）。本番CMS CDNを Decap CMS `3.10.0` から `3.16.2` へ更新（SRI再計算） |
+| 1.19 | 2026-09-20 | SEC-31/SEC-32 の自動回帰テスト追加に合わせ Vitest 件数を 624→631 に更新 |
 
 詳細なシステム変更履歴は [DOCUMENTATION.md](docs/DOCUMENTATION.md) を参照。
 
@@ -137,7 +138,7 @@ my-blog/
 | `npm run dev` | 開発サーバー起動（localhost:4321） |
 | `npm run build` | 本番ビルド（`./dist/` に出力） |
 | `npm run preview` | ビルド結果のローカルプレビュー |
-| `npm test` | 単体・統合テスト実行（Vitest / 624テスト、記事数により変動） |
+| `npm test` | 単体・統合テスト実行（Vitest / 631テスト、記事数により変動） |
 | `npm run test:watch` | ウォッチモードでテスト実行 |
 | `npm run test:e2e` | E2Eテスト実行（Playwright / PC・iPad・iPhone 453テスト: 445実行+8スキップ） |
 

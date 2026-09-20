@@ -64,6 +64,7 @@
 | 1.57 | 2026-09-20 | 未使用 production 依存 `decap-cms-app` を削除（Issue #117 項目13）。ソースからの import/require は無し。当時の CMS 実行体は CDN の `decap-cms@3.10.0`。`npm audit` 31件（low 1 / moderate 21 / high 8 / critical 1）→ 3件（low 1 / high 1 / critical 1）。残件は astro 5.18.2 由来。Vitest 624件全PASS |
 | 1.58 | 2026-09-20 | Astro 5.18.2（宣言 `^5.17.1`）を 7.3.3 へメジャーアップ（Issue #117）。Content Layer の `glob` loader へ移行し、`page.slug` / `entry.render()` を `page.id` / `render(entry)` に置換。rehype プラグイン維持のため `@astrojs/markdown-remark` の `unified()` を採用。CI と Cloudflare Pages 向けに Node 22.12.0（`.nvmrc`、workflow `node-version: '22'`）。`npm audit` 3件 → 0件。Vitest 624件全PASS。サイト系 E2E（PC）`site.spec.ts` 37 PASS / 1 skip、`app-info.spec.ts` 3 PASS |
 | 1.59 | 2026-09-20 | 本番CMS CDNを Decap CMS `3.10.0` から `3.16.2` へ更新（SEC-03 バージョン固定、SEC-12 SRI再計算）。`public/admin/index.html` の unpkg URL と SHA-384 integrity を差し替え。3.16.2 dist に `.wasm` があるが、メインバンドルに `.wasm` ファイル名は無く `media_processing.enabled` 時のみ遅延読み込み。本サイトの `config.yml` では未使用のため `/admin/*` CSP は変更しない（COOP/CORP/XFO の再定義も行わない）。カスタマイズが依存する Emotion ラベル（`EditorControlBar` / `GroupHeading` / `DropdownList` 等）は 3.16.2 バンドルに残存することを確認。要件ID新設なし |
+| 1.60 | 2026-09-20 | SEC-31/SEC-32 の自動回帰テストを追加。`auth-functions.test.mjs` に4件（`{ once: true }` 不使用、ack 完全一致、両検証通過後の `removeEventListener`、30秒フェイルセーフ）、`build.test.mjs` に3件（sharp の try/catch 継続、`buffer.length` の MAX_FILE_SIZE 上限、lstat 失敗保護）。1.5.4章の SEC-31/32 を充足に更新し未テスト例外を解消。Vitest 624→**631**件（全PASS、`npx vitest run` 実測） |
 
 ## システム変更履歴
 
@@ -645,10 +646,10 @@ staging環境のrobots.txtは`Disallow: /`を維持し、mainマージ時のみ`
 | SEC-28 | 公開ページCSPメタタグ導入 | build | 2.5章（Base.astro・生成HTMLメタタグ検証） | M-02 | 充足 |
 | SEC-29 | 下書き記事のurl-map.json混入防止 | build | `下書き記事がurl-map.jsonに含まれていない（SEC-29, Bug #48 再発防止）`, `公開記事のslugが全てurl-map.jsonに含まれている（下書き除外が過剰でないことの確認）` | M-02 | 充足 |
 | SEC-30 | `/*`と`/admin/*`のヘッダー重複排除 | build, fuzz-validation | build: `X-Frame-Optionsは/admin/*で再定義されず/*から継承される（Issue #115, Bug #49）`, `COOPは/admin/*で再定義されず/*から継承され、same-origin-allow-popupsが適用される（Issue #115, Bug #49）`, `/* と /admin/* で同名ヘッダーが一切重複していない（SEC-30, Bug #49 再発防止）` / fuzz-validation: `X-Frame-Options は /admin/* で再定義されず /* から継承される（Issue #115, Bug #49）`, `Cross-Origin-Opener-Policy は /admin/* で再定義されず /* から継承される（Issue #115, Bug #49）`, `Cross-Origin-Resource-Policy は /admin/* で再定義されず /* から継承される（Issue #115, Bug #49）`, `COOP/CORP/X-Frame-Options は /admin/* で再定義されず /* から継承される（Bug #28 再発防止・Issue #115/Bug #49で設計変更）` | M-02 | 充足 |
-| SEC-31 | OAuthハンドシェイクのメッセージリスナー堅牢化 | — | 自動回帰テスト未実装 | — | **未テスト**（`auth-functions.test.mjs`には`{ once: true }`廃止・ペイロード完全一致検証・30秒フェイルセーフタイマーを直接検証するテストケースが存在しない。フォローアップで追加要） |
-| SEC-32 | 画像正規化処理のビルド堅牢化 | — | 自動回帰テスト未実装 | — | **未テスト**（`normalize-images.mjs`を検証するテストは`build.test.mjs`の`limitInputPixels`確認のみで、try/catch保護・出力バッファのMAX_FILE_SIZE上限は未カバー。フォローアップで追加要） |
+| SEC-31 | OAuthハンドシェイクのメッセージリスナー堅牢化 | auth-functions | `OAuthハンドシェイクのmessage listenerに { once: true } を使っていない（SEC-31）`, `ackは event.data の完全一致で検証している（SEC-31）`, `オリジン検証とペイロード検証の両方を通過したときだけ removeEventListener している（SEC-31）`, `フェイルセーフの setTimeout（30000ms）でタイムアウト時に listener を外す（SEC-31）` | M-02 | 充足 |
+| SEC-32 | 画像正規化処理のビルド堅牢化 | build | `sharp処理が try/catch で囲まれ、catch でビルド全体を throw していない（SEC-32）`, `.rotate().toBuffer() の出力 buffer.length に MAX_FILE_SIZE 上限がある（SEC-32）`, `lstat 失敗も try/catch で保護されている（SEC-32）` | M-02 | 充足 |
 
-**充足状況: FR-01〜FR-29, CMS-01〜CMS-19, NFR-01〜NFR-08, SEC-01〜SEC-30はテストで充足されている。SEC-31・SEC-32（Issue #117 項目4・項目11のコード修正）は実装済みだが、対応する自動回帰テストが未実装のため「未テスト」として残っている。次回対応時に`auth-functions.test.mjs`（SEC-31）・`normalize-images.mjs`用テスト（SEC-32、現状は`build.test.mjs`に部分的にしかカバーされていない）へのテスト追加をフォローアップすること。**
+**充足状況: FR-01〜FR-29, CMS-01〜CMS-19, NFR-01〜NFR-08, SEC-01〜SEC-32はテストで充足されている。未テスト要件は0件。**
 
 ---
 
@@ -768,7 +769,7 @@ my-blog/
 | 認証 | GitHub OAuth App | - | CMS管理者認証 |
 | 画像処理 | sharp | v0.35.4 | 画像圧縮・回転・リサイズ |
 | Web実装方針 | Google Modern Web Guidance | 公式ガイド準拠 | 独自実装部のモダンWeb機能・アクセシビリティ・パフォーマンス設計指針 |
-| テスト（単体・統合） | Vitest | v4.0.18 | 単体テスト・統合テスト・セキュリティ検証・基本機能保護（624テスト、記事数により変動） |
+| テスト（単体・統合） | Vitest | v4.0.18 | 単体テスト・統合テスト・セキュリティ検証・基本機能保護（631テスト、記事数により変動） |
 | テスト（E2E） | Playwright | v1.58.2 | ブラウザE2Eテスト（PC/iPad/iPhone 453テスト、うち8件はデバイス固有条件でスキップ） |
 | コンテンツ | Markdown | - | frontmatter形式 |
 
@@ -2284,13 +2285,13 @@ evidence/YYYY-MM-DD/
 
 | 指標 | 目標値 | 現状 |
 |:---|:---|:---|
-| Vitestテスト全PASS | 100% | 624/624 (100%) |
+| Vitestテスト全PASS | 100% | 631/631 (100%) |
 | Playwright E2Eテスト全PASS | 100% | 直近実行: 445 PASS・8 skip / 453件、flakyなし (100%、E2Eは今回未実測) |
 | セキュリティ検証全PASS | 100% | 10/10 (100%) |
 | ボタン重なり検出 | 0件 | 0件 |
-| 未テスト要件 | 0件 | 2件（SEC-31, SEC-32。実装済みだが自動回帰テスト未実装。1.5.4章参照） |
+| 未テスト要件 | 0件 | 0件 |
 | バグ再発 | 0件 | 0件 |
 
 ---
 
-**最終更新**: 2026年9月20日（v1.59）
+**最終更新**: 2026年9月20日（v1.60）
