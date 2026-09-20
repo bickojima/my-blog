@@ -896,6 +896,12 @@ describe('ビルド検証', () => {
       expect(e28Block).toContain('test.describe.configure({ timeout: 60000 })');
     });
 
+    it('CI ジョブは contents: read に限定する（SEC-33, Issue #117 項目2）', () => {
+      const ci = readFileSync(join(process.cwd(), '.github/workflows/ci.yml'), 'utf-8');
+      expect(ci).toMatch(/permissions:\s*\n\s+contents:\s*read/);
+      expect(ci).not.toMatch(/contents:\s*write/);
+    });
+
     it('CI は Vitest とビルドのみで Playwright E2E を必須化しない（Bug #50）', () => {
       const ci = readFileSync(join(process.cwd(), '.github/workflows/ci.yml'), 'utf-8');
       expect(ci).toContain('npm test');
@@ -933,6 +939,11 @@ describe('ビルド検証', () => {
     it('verify-comprehensive 雛形はシナリオ FAIL で非ゼロ終了する（Bug #50）', () => {
       const src = readFileSync(join(process.cwd(), 'evidence/2026-05-24/verify-comprehensive.mjs'), 'utf-8');
       expect(src).toMatch(/if\s*\(\s*failCount\s*>\s*0\s*\)[\s\S]{0,120}process\.exit\(1\)/);
+    });
+
+    it('dist に .assetsignore が存在しない（SEC-34, Issue #117 項目12）', () => {
+      expect(existsSync(join(DIST_DIR, '.assetsignore'))).toBe(false);
+      expect(existsSync(join(process.cwd(), 'public/.assetsignore'))).toBe(false);
     });
   });
 
