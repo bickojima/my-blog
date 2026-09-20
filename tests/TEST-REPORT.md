@@ -50,6 +50,7 @@
 | 1.42 | 2026-09-09 | FR-29追加QA: noindex固定ページをヘッダーナビから除外。ビルド検証を更新し、実メニュー操作E2Eを3件追加（453定義） |
 | 1.43 | 2026-09-09 | main反映後の本番実機検証（E-46の9件）を追記。E-46にメニュー除外を含めた際に更新漏れだったE2E件数（450→453件、442→445 PASS）と最新実行結果を実測値へ是正 |
 | 1.44 | 2026-09-20 | セキュリティIssue #109〜#113対応: auth-functionsテスト8件追加（SEC-27 送信先オリジン許可リスト検証、SEC-22 全レスポンスCache-Control検証）。buildテスト4件追加（SEC-25 sharp pixel limit検証、SEC-28 公開ページCSPメタタグ検証）。Vitest 610→622件（全622件PASS）へ更新 |
+| 1.45 | 2026-09-20 | セキュリティ監査run-2対応（Issue #114, #115, #117項目4/項目11）: 2.5章にurl-map.json下書き除外テスト2件追加（No.51〜52、SEC-29/Bug #48再発防止）でbuild.test.mjs 102→104件。2.5.1章・2.7.8章・2.7.12章の該当8件の説明を「/admin/*にオーバーライドで設定」から「/admin/*では再定義せず/*から継承」（Issue #115, Bug #49）へ書き換え。fuzz-validation.test.mjsの重複検証テスト1件（ガード条件`if (globalVal && adminVal)`により何も検証しない空のテストになっていた）を、ガード条件を撤廃し3ヘッダーとも実効的に検証する形へ書き換え（件数増減なし）。3.1章・4.3章のVitest件数を610→622→**624**（本改訂の実測値）へ更新。SEC-31（OAuthハンドシェイクのメッセージリスナー堅牢化）・SEC-32（画像正規化処理のtry/catch保護＋出力バッファ上限）はコード実装済みだが自動回帰テストが未実装であることを3.1章に明記（フォローアップ要） |
 
 ## テスト基盤の変更履歴
 
@@ -465,9 +466,9 @@ admin-html.test.mjs              -     ●     -     -     -     -     -     -  
 
 | No. | 基準 |
 | :--- | :--- |
-| 1 | 全テストケース（Vitest 622件 + E2E 453件 = 1075件）がPASSまたは仕様上の条件スキップであること |
+| 1 | 全テストケース（Vitest 624件 + E2E 453件 = 1077件）がPASSまたは仕様上の条件スキップであること |
 | 2 | `npm run build` が正常に完了すること |
-| 3 | 要件トレーサビリティマトリクス（docs/DOCUMENTATION.md 1.5章）において全要件が「充足」であること |
+| 3 | 要件トレーサビリティマトリクス（docs/DOCUMENTATION.md 1.5章）において全要件が「充足」であること（現状の例外: SEC-31・SEC-32はコード実装済みだが自動回帰テスト未実装のため「未テスト」。1.5.4章参照） |
 
 ### 1.6.3 合否判定基準
 
@@ -826,7 +827,7 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 
 ---
 
-## 2.5. ビルド検証 (`build.test.mjs`) — 98件
+## 2.5. ビルド検証 (`build.test.mjs`) — 104件
 
 `npm run build`を実行し、パイプライン全体（normalize-images → organize-posts → astro build → image-optimize）の出力を検証する。全テストケースはビルド完了後に実行される。
 
@@ -884,6 +885,8 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 | 48 | url-map.jsonのキーがYYYY/MM/スラグ形式である | URLマッピング | M-03, M-02 | 全キーが`/^\d{4}\/\d{2}\/.+$/`にマッチ |
 | 49 | url-map.jsonの値が/posts/YYYY/MM/スラグ形式のURLパスである | URLマッピング | M-03, M-02 | 全値が`/^\/posts\/\d{4}\/\d{2}\/.+$/`にマッチ |
 | 50 | url-map.jsonのキーと値のスラグ部分が一致している | URLマッピング | M-03, M-02 | `value === "/posts/" + key` |
+| 51 | 下書き記事がurl-map.jsonに含まれていない（SEC-29, Bug #48再発防止） | URLマッピング | M-01, M-09 | 下書き記事（`draft: true`）のslugが、url-map.jsonの全キー・全値の末尾セグメント（basename）と完全一致しない |
+| 52 | 公開記事のslugが全てurl-map.jsonに含まれている（下書き除外が過剰でないことの確認） | URLマッピング | M-01, M-03 | 公開記事（`draft`が`true`でない）の全slugが、url-map.jsonのキーのbasenameに含まれる |
 
 ### 2.5.4 Modern Web Guidanceアクセシビリティ検証（Bug #43再発防止1件を含む、3件）
 
@@ -961,8 +964,8 @@ Bug #42: `/page/[page].astro`が`paginate()`の結果をフィルタせず生成
 | 3 | _headersにPermissions-Policyが設定されている（SEC-10） | セキュリティヘッダー | M-02 | `Permissions-Policy`ディレクティブが含まれる |
 | 4 | _headersにStrict-Transport-Securityが設定されている（SEC-10） | セキュリティヘッダー | M-02 | `Strict-Transport-Security`が含まれる |
 | 5 | /admin/*にContent-Security-Policyが設定されている（SEC-10） | セキュリティヘッダー | M-02 | `Content-Security-Policy`ディレクティブが`/admin/*`セクションに含まれる |
-| 6 | /admin/*にX-Frame-Options: SAMEORIGINが設定されている（SEC-10） | セキュリティヘッダー | M-02 | `X-Frame-Options: SAMEORIGIN`が`/admin/*`セクションに含まれる |
-| 7 | /admin/*にCOOP: same-origin-allow-popupsが設定されている（SEC-10） | セキュリティヘッダー | M-02 | `Cross-Origin-Opener-Policy: same-origin-allow-popups`が`/admin/*`セクションに含まれる |
+| 6 | X-Frame-Optionsは/admin/*で再定義されず/*から継承される（SEC-10, Issue #115, Bug #49） | セキュリティヘッダー | M-02 | `/admin/*`セクションに`X-Frame-Options:`が存在せず、`/*`セクションに`X-Frame-Options: SAMEORIGIN`が含まれる |
+| 7 | COOPは/admin/*で再定義されず/*から継承され、same-origin-allow-popupsが適用される（SEC-10, Issue #115, Bug #49） | セキュリティヘッダー | M-02 | `/admin/*`セクションに`Cross-Origin-Opener-Policy:`が存在せず、`/*`セクションに`Cross-Origin-Opener-Policy: same-origin-allow-popups`が含まれる |
 | 8 | CSP connect-srcにblob:が含まれている（Bug #29再発防止） | セキュリティヘッダー | M-02 | CSPの`connect-src`ディレクティブに`blob:`が含まれる（Decap CMS画像保存時の`fetch(blobURL)`に必要） |
 
 ### 2.5.3 _headersヘッダー重複防止検証（Bug #28再発防止、2件）
@@ -1218,7 +1221,7 @@ SEC-14〜SEC-20に対応するファズテスト。ビルド時に必ず実行�
 | # | テストケース | 手法 | 備考 |
 | :--- | :--- | :--- | :--- |
 | 1 | X-Content-Type-Options: nosniff 設定確認 | M-02 | OWASP推奨 |
-| 2 | X-Frame-Options が /admin/* に設定確認 | M-02 | クリックジャッキング防止（Bug #28: /* でなく /admin/* のみに設定） |
+| 2 | X-Frame-Options は /admin/* で再定義されず /* から継承される | M-02 | クリックジャッキング防止（Issue #115, Bug #49: `/admin/*`では再定義せず`/*`の値を継承する設計に変更） |
 | 3 | Referrer-Policy が安全な値に設定 | M-02 | 情報漏洩防止 |
 | 4 | Permissions-Policy で geolocation 無効化 | M-02 | プライバシー保護 |
 | 5 | Permissions-Policy で camera/microphone 無効化 | M-02 | プライバシー保護 |
@@ -1227,9 +1230,9 @@ SEC-14〜SEC-20に対応するファズテスト。ビルド時に必ず実行�
 | 8 | HSTS: max-age≧15768000秒（6ヶ月以上） | M-02 | HSTS Preload要件 |
 | 9 | HSTS: includeSubDomains 設定確認 | M-02 | サブドメイン保護 |
 | 10 | HSTS: preload 設定確認 | M-02 | HSTS Preload List |
-| 11 | COOP: /admin/* に same-origin-allow-popups が設定 | M-02 | SEC-15（Bug #28: /* でなく /admin/* のみ） |
-| 12 | CORP: /admin/* に same-site が設定 | M-02 | SEC-15（Bug #28: /* でなく /admin/* のみ） |
-| 16 | COOP/CORP/X-Frame-Options が /* に含まれていない | M-02 | Bug #28 再発防止（重複送信防止） |
+| 11 | COOPは /admin/* で再定義されず /* から継承され same-origin-allow-popups が適用される | M-02 | SEC-15, SEC-30（Issue #115, Bug #49: `/admin/*`では再定義しない設計に変更） |
+| 12 | CORPは /admin/* で再定義されず /* から継承され same-site が適用される | M-02 | SEC-15, SEC-30（Issue #115, Bug #49: `/admin/*`では再定義しない設計に変更） |
+| 16 | COOP/CORP/X-Frame-Options は /admin/* で再定義されず /* から継承される（3ヘッダーまとめて検証） | M-02 | SEC-30, Bug #28/#49 再発防止（重複送信の原因になる`/admin/*`側の再定義がないこと、`/*`に必要な値が定義されていることの両方を検証） |
 | 13 | X-DNS-Prefetch-Control: off | M-02 | SEC-16 |
 | 14 | X-Permitted-Cross-Domain-Policies: none | M-02 | SEC-16 |
 | 15 | CSP: admin配下にdefault-src, frame-ancestors 'self' 設定 | M-02 | CSP検証（'none'→'self'にバグ#27で修正） |
@@ -1263,13 +1266,15 @@ SEC-14〜SEC-20に対応するファズテスト。ビルド時に必ず実行�
 | 2 | constructor, prototype がslugパターン通過するが安全 | M-02 | 小文字英字のみ、URL衝突なし |
 | 3 | 全プロトタイプ汚染ペイロードがorder値として拒否 | M-09 | 型チェックで防止 |
 
-#### 2.7.12 管理画面セキュリティヘッダーオーバーライド検証（バグ#27再発防止）
+#### 2.7.12 管理画面が必要とするセキュリティヘッダー要件（/* からの継承値検証、バグ#27再発防止・Issue #115/Bug #49で設計変更）
+
+Bug #27時点は`/admin/*`側で値を「オーバーライド」する設計だったが、Cloudflare PagesのAppend仕様（Bug #28/#49）によりオーバーライドは成立しないと判明したため、管理画面が必要とする値を`/*`側に直接定義し、`/admin/*`では再定義しない設計に変更した。以下は「`/admin/*`が実際に必要とする値が`/*`に定義されていること」を検証する。
 
 | # | テストケース | 手法 | 備考 |
 | :--- | :--- | :--- | :--- |
-| 1 | COOP が same-origin-allow-popups にオーバーライド | M-02 | OAuth popup許可（window.opener維持） |
-| 2 | X-Frame-Options が SAMEORIGIN にオーバーライド | M-02 | CMSプレビューiframe許可 |
-| 3 | CORP が same-site にオーバーライド | M-02 | クロスサイトリソース読み込み許可 |
+| 1 | COOPは /* で same-origin-allow-popups に設定される | M-02 | OAuth popup許可（window.opener維持）。Issue #115, Bug #49: `/admin/*`でのオーバーライドは成立しないため`/*`の値が直接適用される |
+| 2 | X-Frame-Optionsは /* で SAMEORIGIN に設定される | M-02 | CMSプレビューiframe許可。Issue #115, Bug #49: 同上 |
+| 3 | CORPは /* で same-site に設定される | M-02 | クロスサイトリソース読み込み許可。Issue #115, Bug #49: 同上 |
 | 4 | CSP frame-src に blob: 含む | M-02 | CMSプレビュー用blob URL許可 |
 | 5 | CSP connect-src に blob: 含む（Bug #29再発防止） | M-02 | Decap CMS画像保存時の`fetch(blobURL)`に必要 |
 | 6 | /* と /admin/* で同名ヘッダーが重複していない（Bug #28再発防止） | M-02 | Cloudflare Pages Append動作による重複送信防止 |
@@ -1284,7 +1289,7 @@ SEC-14〜SEC-20に対応するファズテスト。ビルド時に必ず実行�
 
 要件トレーサビリティマトリクスは **docs/DOCUMENTATION.md 1.5章** に移動した。要件定義と同一ファイルで管理することで、要件追加時のトレース漏れを防止する。
 
-現在の充足状況: **全要件（FR-01〜FR-21, CMS-01〜CMS-19, NFR-01〜NFR-07, SEC-01〜SEC-26）がテストで充足されている。未テスト要件なし。** Modern Web Guidanceエビデンスは `evidence/2026-06-11/` に保存する。
+現在の充足状況: **FR-01〜FR-29, CMS-01〜CMS-19, NFR-01〜NFR-08, SEC-01〜SEC-30はテストで充足されている。SEC-31・SEC-32は実装済みだが自動回帰テストが未実装のため未テストとして残っている（docs/DOCUMENTATION.md 1.5.4章参照）。** Modern Web Guidanceエビデンスは `evidence/2026-06-11/` に保存する。
 
 ---
 
@@ -1702,24 +1707,26 @@ npm run build
 
 | 項目 | 結果 |
 | :--- | :--- |
-| 実行日時 | 2026-09-20 |
+| 実行日時 | 2026-09-20（セキュリティ監査run-2対応後） |
 | Vitest バージョン | v4.1.11 |
-| 実行時間 | 2.50s |
+| 実行時間 | 2.05s |
 | 合否判定 | **合格** |
 
 ### 4.3.2 テストファイル別結果
 
 | テストファイル | テスト数 | 結果 | 実行時間 |
 | :--- | :--- | :--- | :--- |
-| `cms-config.test.mjs` | 55 | PASS | 9ms |
+| `cms-config.test.mjs` | 55 | PASS | 6ms |
 | `admin-html.test.mjs` | 90 | PASS | 6ms |
-| `rehype-image-caption.test.mjs` | 8 | PASS | 3ms |
-| `rehype-focusable-code-blocks.test.mjs` | 2 | PASS | 2ms |
-| `auth-functions.test.mjs` | 25 | PASS | 20ms |
-| `fuzz-validation.test.mjs` | 215 | PASS | 40ms |
-| `content-validation.test.mjs` | 125 | PASS | 75ms |
-| `build.test.mjs` | 102 | PASS | 2286ms |
-| **合計** | **622** | **全PASS** | **2.50s** |
+| `rehype-image-caption.test.mjs` | 8 | PASS | 2ms |
+| `rehype-focusable-code-blocks.test.mjs` | 2 | PASS | 1ms |
+| `auth-functions.test.mjs` | 25 | PASS | 15ms |
+| `fuzz-validation.test.mjs` | 215 | PASS | 25ms |
+| `content-validation.test.mjs` | 125 | PASS | 31ms |
+| `build.test.mjs` | 104 | PASS | 2310ms |
+| **合計** | **624** | **全PASS** | **2.05s（全体実行時）** |
+
+セキュリティ監査run-2対応（SEC-29〜SEC-32, Bug #48/#49）により、`build.test.mjs`へ2件追加（102→104）。`fuzz-validation.test.mjs`は該当8件の説明を新設計（`/admin/*`では再定義せず`/*`から継承）に書き換え、ガード条件により空になっていた重複検証テスト1件を実効的な検証へ書き換えた（件数は215のまま変化なし）。
 
 ### 4.3.3 E2Eテスト最新実行結果（Playwright）
 

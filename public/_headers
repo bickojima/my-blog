@@ -3,9 +3,9 @@
 # OWASP Secure Headers Project / Mozilla Observatory 準拠
 #
 # 重要: Cloudflare Pages は /* と /admin/* で同名ヘッダーを指定した場合、
-# オーバーライドではなく Append（重複送信）する（Bug #28, #47）。
+# オーバーライドではなく Append（重複送信）する（Bug #28, #49）。
 # COOP等のRFC 8941 Structured Headerはカンマ結合されると構文エラーでunsafe-none等にフォールバックするため、
-# /* と /admin/* で同名ヘッダーを重複指定してはならない（Issue #115, Bug #47）。
+# /* と /admin/* で同名ヘッダーを重複指定してはならない（Issue #115, Bug #49）。
 # 対策: /* で定義された共通ヘッダー（COOP, CORP, XFO等）は /admin/* で再定義せず /* の継承に任せる。
 # /admin/* には管理画面固有のヘッダー（X-Robots-Tag, Cache-Control, CSP）のみを指定する。
 # ⚠️ 注意: 将来 /* の COOP を same-origin 等に引き上げる場合は、Decap CMS の OAuth ポップアップが
