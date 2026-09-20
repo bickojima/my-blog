@@ -62,6 +62,7 @@
 | 1.55 | 2026-09-20 | セキュリティIssue #109〜#113対応（敵対的レビュー反映）: SEC-27（OAuth送信先オリジン許可リスト検証）、SEC-28（公開ページCSPメタタグ導入）追加。SEC-22（OAuth開始・エラー時Cache-Control適用拡大）、SEC-25（normalize-images.mjs回転後再取得時ピクセル上限適用整合性）更新。sharp ^0.35.4更新、npm audit fix実施。Vitest 610→622件（全622テストPASS） |
 | 1.56 | 2026-09-20 | セキュリティ監査run-2対応（Issue #114, #115, #117項目4/項目11）: SEC-29（下書き記事のurl-map.json混入防止＋gray-matterエンジン明示、Bug #48）、SEC-30（`/*`・`/admin/*`ヘッダー重複排除、Bug #49）、SEC-31（OAuthハンドシェイクのメッセージリスナー堅牢化）、SEC-32（画像正規化処理のtry/catch保護＋出力バッファ上限）を追加。1.5.4章トレーサビリティにSEC-29〜32を追記（SEC-31・SEC-32は実装済みだが自動回帰テスト未実装のためフォローアップ要として明記）。4.5章にBug #48・#49を5 Whysとともに追記し、Bug #48関連の既知の制限事項（下書き記事のアップロード画像自体は公開される仕様上の制限）を4.5.1章に追記。**改訂履歴の訂正**: 1.55の「Vitest 610→622件（全622テストPASS）」は、その後のコミット`38205a0`による`_headers`変更（`/admin/*`からのCOOP/CORP/X-Frame-Options削除）で前提が変わり、既存テスト8件（build.test.mjs 2件、fuzz-validation.test.mjs 6件）が実際にFAILする状態になっていた。加えてfuzz-validation.test.mjsの重複検証テスト1件はガード条件（`if (globalVal && adminVal)`）によりFAILはしないものの何も検証しない空のテストになっていた（テスト名は「同一値の重複は安全」という旧設計の主張のまま）。本改訂でFAILしていた8件を新設計（`/admin/*`では再定義せず`/*`から継承）に合わせて書き換え、空のテスト1件もガード条件を撤廃し実効的な検証（3ヘッダーが`/admin/*`に存在せず`/*`に管理画面の必要値で存在すること）へ書き換えた。本改訂時点の実測値はVitest 624件全PASS |
 | 1.57 | 2026-09-20 | 未使用 production 依存 `decap-cms-app` を削除（Issue #117 項目13）。ソースからの import/require は無し。CMS 実行体は CDN の `decap-cms@3.10.0` のまま。`npm audit` 31件（low 1 / moderate 21 / high 8 / critical 1）→ 3件（low 1 / high 1 / critical 1）。残件は astro 5.18.2 由来。Vitest 624件全PASS |
+| 1.58 | 2026-09-20 | Astro 5.18.2（宣言 `^5.17.1`）を 7.3.3 へメジャーアップ（Issue #117）。Content Layer の `glob` loader へ移行し、`page.slug` / `entry.render()` を `page.id` / `render(entry)` に置換。rehype プラグイン維持のため `@astrojs/markdown-remark` の `unified()` を採用。CI と Cloudflare Pages 向けに Node 22.12.0（`.nvmrc`、workflow `node-version: '22'`）。`npm audit` 3件 → 0件。Vitest 624件全PASS。サイト系 E2E（PC）`site.spec.ts` 37 PASS / 1 skip、`app-info.spec.ts` 3 PASS |
 
 ## システム変更履歴
 
@@ -760,14 +761,14 @@ my-blog/
 
 | 分類 | 技術 | バージョン | 用途 |
 | :--- | :--- | :--- | :--- |
-| SSG | Astro | v5.17.1 | 静的サイト生成 |
+| SSG | Astro | v7.3.3 | 静的サイト生成 |
 | CMS | Decap CMS | v3.10.0 | コンテンツ管理 |
 | ホスティング | Cloudflare Pages | - | 静的配信 + Functions |
 | 認証 | GitHub OAuth App | - | CMS管理者認証 |
-| 画像処理 | sharp | v0.34.5 | 画像圧縮・回転・リサイズ |
+| 画像処理 | sharp | v0.35.4 | 画像圧縮・回転・リサイズ |
 | Web実装方針 | Google Modern Web Guidance | 公式ガイド準拠 | 独自実装部のモダンWeb機能・アクセシビリティ・パフォーマンス設計指針 |
-| テスト（単体・統合） | Vitest | v4.0.18 | 単体テスト・統合テスト・セキュリティ検証・基本機能保護（588テスト、記事数により変動） |
-| テスト（E2E） | Playwright | v1.58.2 | ブラウザE2Eテスト（PC/iPad/iPhone 444テスト、うち8件はデバイス固有条件でスキップ） |
+| テスト（単体・統合） | Vitest | v4.0.18 | 単体テスト・統合テスト・セキュリティ検証・基本機能保護（624テスト、記事数により変動） |
+| テスト（E2E） | Playwright | v1.58.2 | ブラウザE2Eテスト（PC/iPad/iPhone 453テスト、うち8件はデバイス固有条件でスキップ） |
 | コンテンツ | Markdown | - | frontmatter形式 |
 
 ### 2.2.2 選定理由
@@ -1104,7 +1105,7 @@ GitHub Settings > Developer settings > OAuth Apps で環境ごとに個別のア
 | ビルドコマンド | `npm run build` |
 | 出力ディレクトリ | `dist` |
 | ルートディレクトリ | `/` |
-| Node.js バージョン | 18以上 |
+| Node.js バージョン | 22.12.0以上（`.nvmrc` で 22.12.0。Astro 7 要件。Cloudflare Pages v3 既定は 22.16.0） |
 
 #### ブランチコントロール
 
@@ -1238,7 +1239,7 @@ main (本番)  ←── merge ── staging (テスト) ←── merge ──
 
 ```typescript
 const posts = defineCollection({
-  type: 'content',
+  loader: glob({ pattern: '**/*.md', base: './src/content/posts' }),
   schema: z.object({
     title: z.string(),
     date: z.union([z.string(), z.date()]).transform((val) =>
@@ -1252,16 +1253,17 @@ const posts = defineCollection({
 });
 
 const pages = defineCollection({
-  type: 'content',
+  loader: glob({ pattern: '*.md', base: './src/content/pages' }),
   schema: z.object({
     title: z.string(),
     order: z.number().default(0),
     draft: z.boolean().optional().default(false),
+    noindex: z.boolean().default(false),
   }),
 });
 ```
 
-> **注意**: `slug`フィールドはAstroの`type: 'content'`コレクションで予約語のため、Zodスキーマには含めない。固定ページの`slug`はfrontmatterで定義されCMSとテストで使用されるが、Astro側ではファイル名からの自動推論で処理される。
+> **注意**: Astro 7 の Content Layer ではエントリ識別子は `id`（ファイルパスから拡張子を除いた値）である。固定ページの URL は `page.id` を使う。frontmatter の `slug` は CMS のファイル名テンプレート（`{{fields.slug}}`）とテスト用であり、Zod スキーマには含めない（Decap は未設定項目を保存時に落とすため、CMS 側の slug フィールドは維持する）。Markdown 本文の描画は `render(entry)`（`astro:content`）を使う。
 
 ### 3.2.3 organize-posts.mjs の処理仕様
 
@@ -2290,4 +2292,4 @@ evidence/YYYY-MM-DD/
 
 ---
 
-**最終更新**: 2026年9月20日（v1.57）
+**最終更新**: 2026年9月20日（v1.58）

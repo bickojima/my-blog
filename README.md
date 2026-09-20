@@ -24,6 +24,7 @@ Astro + Decap CMS によるブログサイト。Cloudflare Pages でホスティ
 | 1.15 | 2026-09-07 | Modern Web Guidance 日本語索引（`docs/MODERN-WEB-GUIDANCE.md`）を新規作成。全139ガイドの1行要約、人間向け閲覧手順、本ブログの適用実績と検討候補を整理。コード変更なし |
 | 1.16 | 2026-09-09 | FR-29: 個人用アプリの紹介・Gmailプライバシーページを固定ページとして追加。CMSから編集でき、検索結果には出さない（noindex・sitemap除外） |
 | 1.17 | 2026-09-09 | FR-29: noindex固定ページをヘッダーナビから除外。2ページの公開URLとCMS編集は維持 |
+| 1.18 | 2026-09-20 | Astro 5.18.2 を 7.3.3 へアップ。Content Layer（glob loader）へ移行。CI/Cloudflare は Node 22。Vitest 624件 |
 
 詳細なシステム変更履歴は [DOCUMENTATION.md](docs/DOCUMENTATION.md) を参照。
 
@@ -136,9 +137,9 @@ my-blog/
 | `npm run dev` | 開発サーバー起動（localhost:4321） |
 | `npm run build` | 本番ビルド（`./dist/` に出力） |
 | `npm run preview` | ビルド結果のローカルプレビュー |
-| `npm test` | 単体・統合テスト実行（Vitest / 610テスト、記事数により変動） |
+| `npm test` | 単体・統合テスト実行（Vitest / 624テスト、記事数により変動） |
 | `npm run test:watch` | ウォッチモードでテスト実行 |
-| `npm run test:e2e` | E2Eテスト実行（Playwright / PC・iPad・iPhone 444テスト: 436実行+8スキップ） |
+| `npm run test:e2e` | E2Eテスト実行（Playwright / PC・iPad・iPhone 453テスト: 445実行+8スキップ） |
 
 ## 5. 管理画面のUIカスタマイズ
 
