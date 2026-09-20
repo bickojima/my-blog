@@ -3,13 +3,16 @@
 # OWASP Secure Headers Project / Mozilla Observatory 準拠
 #
 # 重要: Cloudflare Pages は /* と /admin/* で同名ヘッダーを指定した場合、
-# オーバーライドではなく Append（重複送信）する（Bug #28）。
-# 対策: /* と /admin/* で同名ヘッダーを使う場合は「同一値」を指定する。
-# 同一値の重複はブラウザが正しく処理する（RFC準拠）。
-# 異なる値が必要なヘッダー（CSP等）は /admin/* のみに設定する。
+# オーバーライドではなく Append（重複送信）する（Bug #28, #47）。
+# COOP等のRFC 8941 Structured Headerはカンマ結合されると構文エラーでunsafe-none等にフォールバックするため、
+# /* と /admin/* で同名ヘッダーを重複指定してはならない（Issue #115, Bug #47）。
+# 対策: /* で定義された共通ヘッダー（COOP, CORP, XFO等）は /admin/* で再定義せず /* の継承に任せる。
+# /admin/* には管理画面固有のヘッダー（X-Robots-Tag, Cache-Control, CSP）のみを指定する。
+# ⚠️ 注意: 将来 /* の COOP を same-origin 等に引き上げる場合は、Decap CMS の OAuth ポップアップが
+# 切断されないよう、Transform Rules や Workers 等で /admin/* 側の個別分離を設計すること。
 
 # 全ページ共通セキュリティヘッダー
-# COOP, CORP, X-Frame-Options: /admin/* と同一値を設定（Append時も同一値重複で安全）
+# COOP, CORP, X-Frame-Options は /admin/* でも共通で継承される
 /*
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
@@ -21,15 +24,10 @@
   Cross-Origin-Opener-Policy: same-origin-allow-popups
   Cross-Origin-Resource-Policy: same-site
 
-# Decap CMS 管理画面: SEO除外 + CSP + OAuth popup許可 + プレビューiframe許可
-# COOP: same-origin-allow-popups = OAuth popup経由のwindow.openerを維持
-# X-Frame-Options: SAMEORIGIN = CMSプレビューiframeを許可
-# CORP: same-site = CMSが必要とするクロスサイトリソース読み込みを許可
+# Decap CMS 管理画面: SEO除外 + キャッシュ無効化 + 管理画面固有CSP
+# COOP, CORP, X-Frame-Options は /* から継承されるためここでは再定義しない（重複排除）
 # CSP: /admin/* 固有（公開ページとは異なるポリシーが必要なため /* には設定しない）
 /admin/*
   X-Robots-Tag: noindex
-  Cross-Origin-Opener-Policy: same-origin-allow-popups
-  X-Frame-Options: SAMEORIGIN
-  Cross-Origin-Resource-Policy: same-site
   Cache-Control: no-store
   Content-Security-Policy: default-src 'none'; script-src 'self' https://unpkg.com 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' blob: https://github.com https://api.github.com https://*.githubusercontent.com; img-src 'self' https: data: blob:; font-src 'self' data:; frame-src 'self' blob:; frame-ancestors 'self'; form-action 'self' https://github.com; base-uri 'self'; upgrade-insecure-requests

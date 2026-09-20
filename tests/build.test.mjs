@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { execSync } from 'child_process';
 import { existsSync, readFileSync, readdirSync } from 'fs';
-import { join, extname } from 'path';
+import { join, extname, basename } from 'path';
 import matter from 'gray-matter';
 
 const DIST_DIR = join(process.cwd(), 'dist');
@@ -747,6 +747,28 @@ describe('ビルド検証', () => {
         expect(value).toBe(`/posts/${key}`);
       }
     });
+
+    it('下書き記事がurl-map.jsonに含まれていない（SEC-27, Bug #46 再発防止）', () => {
+      const draftSlugs = readdirSync(POSTS_DIR, { recursive: true })
+        .filter((f) => String(f).endsWith('.md'))
+        .map((f) => {
+          const content = readFileSync(join(POSTS_DIR, String(f)), 'utf-8');
+          const { data } = matter(content);
+          return { data, slug: basename(String(f), '.md') };
+        })
+        .filter(({ data }) => data.draft === true)
+        .map(({ slug }) => slug);
+
+      expect(draftSlugs.length).toBeGreaterThan(0);
+      for (const slug of draftSlugs) {
+        for (const key of Object.keys(urlMap)) {
+          expect(key).not.toContain(slug);
+        }
+        for (const value of Object.values(urlMap)) {
+          expect(value).not.toContain(slug);
+        }
+      }
+    });
   });
 
   describe('rehype-image-captionプラグインの適用確認', () => {
@@ -934,21 +956,22 @@ describe('ビルド検証', () => {
       return sections;
     }
 
-    it('/* と /admin/* で同名ヘッダーが異なる値で重複していない', () => {
-      // 同一値の重複は安全（ブラウザが正しく処理する）。異なる値の重複のみ検出する。
+    it('/* と /admin/* で同名ヘッダーが一切重複していない（SEC-28, Bug #47 再発防止）', () => {
+      // Pages は同名ヘッダーを append するため、COOP等の Structured Header がカンマ結合で構文エラーになる。
+      // 共通ヘッダーは /* で定義し、/admin/* では再定義してはならない。
       const sections = parseHeadersFile(headersContent);
       const globalHeaders = sections['/*'] || [];
       const adminHeaders = sections['/admin/*'] || [];
-      const conflicts = [];
+      const duplicateNames = [];
       for (const admin of adminHeaders) {
-        const global = globalHeaders.find(g => g.name === admin.name);
-        if (global && global.value !== admin.value) {
-          conflicts.push(`${admin.name}: /*="${global.value}" vs /admin/*="${admin.value}"`);
+        const global = globalHeaders.find(g => g.name.toLowerCase() === admin.name.toLowerCase());
+        if (global) {
+          duplicateNames.push(admin.name);
         }
       }
       expect(
-        conflicts,
-        `/* と /admin/* で異なる値のヘッダー: ${conflicts.join('; ')}`
+        duplicateNames,
+        `/* と /admin/* で重複しているヘッダー名: ${duplicateNames.join(', ')}`
       ).toEqual([]);
     });
 
