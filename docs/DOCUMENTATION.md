@@ -60,6 +60,7 @@
 | 1.53 | 2026-09-09 | FR-29追加。個人用Gmailアプリの紹介・プライバシーポリシーを固定ページコレクションへ追加し、CMSで編集できるようにした。固定ページに`noindex`項目を新設し、sitemap除外と合わせて検索結果から外す。Vitest 588→610件。CMS保存時のフロントマター欠落を防ぐ検証を追加。staging先行 |
 | 1.54 | 2026-09-09 | FR-29追加QA: noindex固定ページをヘッダーナビから除外。ビルド検証を更新し、実メニュー操作E2Eを3件追加（453定義） |
 | 1.55 | 2026-09-20 | セキュリティIssue #109〜#113対応（敵対的レビュー反映）: SEC-27（OAuth送信先オリジン許可リスト検証）、SEC-28（公開ページCSPメタタグ導入）追加。SEC-22（OAuth開始・エラー時Cache-Control適用拡大）、SEC-25（normalize-images.mjs回転後再取得時ピクセル上限適用整合性）更新。sharp ^0.35.4更新、npm audit fix実施。Vitest 610→622件（全622テストPASS） |
+| 1.56 | 2026-09-20 | セキュリティ監査run-2対応（Issue #114, #115, #117項目4/項目11）: SEC-29（下書き記事のurl-map.json混入防止＋gray-matterエンジン明示、Bug #48）、SEC-30（`/*`・`/admin/*`ヘッダー重複排除、Bug #49）、SEC-31（OAuthハンドシェイクのメッセージリスナー堅牢化）、SEC-32（画像正規化処理のtry/catch保護＋出力バッファ上限）を追加。1.5.4章トレーサビリティにSEC-29〜32を追記（SEC-31・SEC-32は実装済みだが自動回帰テスト未実装のためフォローアップ要として明記）。4.5章にBug #48・#49を5 Whysとともに追記し、Bug #48関連の既知の制限事項（下書き記事のアップロード画像自体は公開される仕様上の制限）を4.5.1章に追記。**改訂履歴の訂正**: 1.55の「Vitest 610→622件（全622テストPASS）」は、その後のコミット`38205a0`による`_headers`変更（`/admin/*`からのCOOP/CORP/X-Frame-Options削除）で前提が変わり、既存テスト8件（build.test.mjs 2件、fuzz-validation.test.mjs 6件）が実際にFAILする状態になっていた。加えてfuzz-validation.test.mjsの重複検証テスト1件はガード条件（`if (globalVal && adminVal)`）によりFAILはしないものの何も検証しない空のテストになっていた（テスト名は「同一値の重複は安全」という旧設計の主張のまま）。本改訂でFAILしていた8件を新設計（`/admin/*`では再定義せず`/*`から継承）に合わせて書き換え、空のテスト1件もガード条件を撤廃し実効的な検証（3ヘッダーが`/admin/*`に存在せず`/*`に管理画面の必要値で存在すること）へ書き換えた。本改訂時点の実測値はVitest 624件全PASS |
 
 ## システム変更履歴
 
@@ -525,6 +526,10 @@ staging環境のrobots.txtは`Disallow: /`を維持し、mainマージ時のみ`
 | SEC-26 | OAuth HTTPメソッド制限: OAuth関数をonRequestからonRequestGetに変更し、POST/PUT/DELETE等の不要なHTTPメソッドを拒否する | `functions/auth/` | Cloudflare Functions のメソッド別ハンドラ |
 | SEC-27 | OAuth送信先オリジン許可リスト検証: 本番・staging・プロジェクトプレビュー（`*.my-blog-3cg.pages.dev`）・ローカル開発環境のみ許可し、不正オリジンを403拒否する | `functions/auth/` | postMessageトークン窃取・悪意のあるリダイレクト防止 |
 | SEC-28 | 公開ページCSPメタタグ導入: Base.astro の `<head>` に `<meta http-equiv="Content-Security-Policy">` を設定（default-src 'self'等）。Bug #28防止のため`_headers`の`/*`には設定せず管理画面と完全分離 | `src/layouts/Base.astro` | 公開ページの多層防御（Defense-in-Depth） |
+| SEC-29 | 下書き記事のurl-map.json混入防止: `organize-posts.mjs`で`draft: true`の記事を`public/admin/url-map.json`の生成対象から除外し、`gray-matter`に`{ language: 'yaml' }`を明示してfront-matter中の組み込みjavascriptエンジン（内部的に`eval`相当を実行しうる）を無効化する | `scripts/organize-posts.mjs` | 対応Issue: #114。下書き記事のURLマッピング漏洩防止＋frontmatter経由のコード実行防止 |
+| SEC-30 | `/*`と`/admin/*`のヘッダー重複排除: `_headers`の`/admin/*`セクションからCross-Origin-Opener-Policy / Cross-Origin-Resource-Policy / X-Frame-Optionsの再定義を削除し、`/*`からの継承に一本化する | `public/_headers` | 対応Issue: #115。Cloudflare Pagesは`/*`と`/admin/*`の同名ヘッダーをオーバーライドせずAppend（重複送信）するため、COOP等のRFC 8941 Structured Headerがカンマ結合され構文エラーとして無効化される蓋然性がある。重複を解消すれば実効値を変えずにこの懸念を無条件に除去できる（ブラウザ側の実際の解決結果までは未観測。詳細: `docs/security/audit-run2-needs-validation.md`） |
+| SEC-31 | OAuthハンドシェイクのメッセージリスナー堅牢化: `functions/auth/callback.js`のpostMessage受信リスナーで`{ once: true }`を廃止し、オリジン検証（`event.origin !== expectedOrigin`）とペイロード完全一致検証（`event.data !== "authorizing:github"`）の両方を通過した場合にのみ`removeEventListener`する。加えて30秒のフェイルセーフタイマーでハング防止する | `functions/auth/callback.js` | 対応Issue: #117 項目4。`{ once: true }`は最初に届いた無関係メッセージでリスナーを消費してしまい、正規のackを取りこぼす可能性があった |
+| SEC-32 | 画像正規化処理のビルド堅牢化: `normalize-images.mjs`のsharp処理全体をtry/catchで保護し、壊れた画像1件でビルド全体が失敗しないようにする。加えて`.rotate().toBuffer()`の出力バッファにも`MAX_FILE_SIZE`（50MB）上限を適用し、超過時は書き戻さず元ファイルを保持する | `scripts/normalize-images.mjs` | 対応Issue: #117 項目11。入力側のpixel limit・ファイルサイズ上限に加え、出力側にも上限を設けることで回転処理による意図しない肥大化を防止する |
 
 ---
 
@@ -635,8 +640,12 @@ staging環境のrobots.txtは`Disallow: /`を維持し、mainマージ時のみ`
 | SEC-26 | OAuth HTTPメソッド制限 | auth-functions | 2.3章 | M-02 | 充足 |
 | SEC-27 | OAuth送信先オリジン許可リスト検証 | auth-functions | 2.3章（オリジン許可・拒否検証） | M-02 | 充足 |
 | SEC-28 | 公開ページCSPメタタグ導入 | build | 2.5章（Base.astro・生成HTMLメタタグ検証） | M-02 | 充足 |
+| SEC-29 | 下書き記事のurl-map.json混入防止 | build | `下書き記事がurl-map.jsonに含まれていない（SEC-29, Bug #48 再発防止）`, `公開記事のslugが全てurl-map.jsonに含まれている（下書き除外が過剰でないことの確認）` | M-02 | 充足 |
+| SEC-30 | `/*`と`/admin/*`のヘッダー重複排除 | build, fuzz-validation | build: `X-Frame-Optionsは/admin/*で再定義されず/*から継承される（Issue #115, Bug #49）`, `COOPは/admin/*で再定義されず/*から継承され、same-origin-allow-popupsが適用される（Issue #115, Bug #49）`, `/* と /admin/* で同名ヘッダーが一切重複していない（SEC-30, Bug #49 再発防止）` / fuzz-validation: `X-Frame-Options は /admin/* で再定義されず /* から継承される（Issue #115, Bug #49）`, `Cross-Origin-Opener-Policy は /admin/* で再定義されず /* から継承される（Issue #115, Bug #49）`, `Cross-Origin-Resource-Policy は /admin/* で再定義されず /* から継承される（Issue #115, Bug #49）`, `COOP/CORP/X-Frame-Options は /admin/* で再定義されず /* から継承される（Bug #28 再発防止・Issue #115/Bug #49で設計変更）` | M-02 | 充足 |
+| SEC-31 | OAuthハンドシェイクのメッセージリスナー堅牢化 | — | 自動回帰テスト未実装 | — | **未テスト**（`auth-functions.test.mjs`には`{ once: true }`廃止・ペイロード完全一致検証・30秒フェイルセーフタイマーを直接検証するテストケースが存在しない。フォローアップで追加要） |
+| SEC-32 | 画像正規化処理のビルド堅牢化 | — | 自動回帰テスト未実装 | — | **未テスト**（`normalize-images.mjs`を検証するテストは`build.test.mjs`の`limitInputPixels`確認のみで、try/catch保護・出力バッファのMAX_FILE_SIZE上限は未カバー。フォローアップで追加要） |
 
-**充足状況: 全要件（FR-01〜FR-29, CMS-01〜CMS-19, NFR-01〜NFR-08, SEC-01〜SEC-28）がテストで充足されている。未テスト要件なし。**
+**充足状況: FR-01〜FR-29, CMS-01〜CMS-19, NFR-01〜NFR-08, SEC-01〜SEC-30はテストで充足されている。SEC-31・SEC-32（Issue #117 項目4・項目11のコード修正）は実装済みだが、対応する自動回帰テストが未実装のため「未テスト」として残っている。次回対応時に`auth-functions.test.mjs`（SEC-31）・`normalize-images.mjs`用テスト（SEC-32、現状は`build.test.mjs`に部分的にしかカバーされていない）へのテスト追加をフォローアップすること。**
 
 ---
 
@@ -1756,6 +1765,8 @@ GitHubリポジトリが利用可能な場合、以下の手順でシステム�
 | 45 | 2026-08-09 | Bug #41の再発防止テスト（`staging環境のrobots.txtはDisallow: /でインデックスを防止する`）がブランチ非依存で`Disallow: /`必須・`Allow: /`禁止を検証していたため、2.5.4章・4.6.4章が定めるmain側の正しい設定（`Allow: /` + `Sitemap:`行）にすると`npm test`が必ず失敗し、4.6.1章のマージ手順（手順5でmainのテストを実行）を完了できない状態になっていた。結果としてmainブランチのrobots.txtがstaging値（`Disallow: /`）のまま放置され、本番サイトが全検索エンジンからインデックス拒否される状態が継続していた（FR-25 サイトマップ・OGP等のSEO施策が無効化） | Bug #41の修正時にstaging側の期待値のみをテスト化し、環境別方針（staging=`Disallow`／main=`Allow`+`Sitemap`）の分岐を実装しなかった。`base_urlがブランチに対応するURLに設定されている`（cms-config.test.mjs）のような既存のブランチ判定パターンが横展開されていなかった | `astro.config.mjs`の`SITE_URL`からブランチを判定し、staging時は`Disallow: /`かつ`Allow: /`・`Sitemap:`なし、main時は`Allow: /`かつ`Disallow: /`なし・`Sitemap: https://reiwa.casa/sitemap-index.xml`を検証するブランチ対応テストへ修正。mainマージ時にrobots.txtを4.6.4章どおりの本番値へ切り替える | build.test.mjs（robots.txt環境別ポリシー検証） |
 | 46 | 2026-08-11 | リポジトリ内に未追跡の`.claude/worktrees/`があると、`npm run build`のVitestが別worktreeとその`node_modules`内の外部パッケージテストまで収集し、160ファイルが失敗する | `vitest.config.ts`が除外指定だけで、プロジェクトテストの包含範囲を明示していなかった。`node_modules/**`はリポジトリ直下だけを想定し、任意のネスト配下を防げなかった | `include: ['tests/**/*.test.mjs']`で単体・統合テストの探索範囲を明示し、外部worktree・依存パッケージ・Playwright specを収集不能にする | build.test.mjs（Vitest探索範囲検証） |
 | 47 | 2026-08-11 | Playwright全444件の並列実行時、E-28「新規記事画面で日付フィールドが入力可能である」が初回30秒でタイムアウトし、リトライでは21秒で成功してflaky判定になった | OAuthモック、Decap CMS初期化、新規記事エディタ遷移を含むE-28が全体既定30秒を使用しており、5 worker並列時のCDN読込・CPU負荷の余裕がなかった | E-28 describeのタイムアウトを60秒に明示し、通常所要約21秒を維持しつつ一時的な並列負荷を許容する | build.test.mjs（E-28タイムアウト設定検証）、Playwright E-28複数回実行 |
+| 48 | 2026-09-20 | 下書き記事（`draft: true`）のslugが`public/admin/url-map.json`に含まれていた: CMSエディタの「公開URLを見る」機能が参照するurl-map.jsonを`organize-posts.mjs`が全記事から生成しており、下書き記事のslugと生成予定URLも含まれていた。加えて`gray-matter`のfront-matter解析エンジンが明示指定されておらず、YAML以外のエンジン（内部的に`eval`相当を実行しうる組み込みjavascriptエンジン）が暗黙に有効化されうる状態だった（監査Issue #114、深刻度low） | organize-posts.mjs実装時にurl-map.jsonの生成対象を「公開記事のみ」に絞る要件が明文化されず、`getStaticPaths`側の`.filter(post => !post.data.draft)`（SEC-21, Bug #30）と同等のフィルタがurl-map.json生成経路に横展開されていなかった。gray-matterはデフォルトでフロントマター内`engines`指定を許容するため、呼び出し側で明示的に`{ language: 'yaml' }`を指定しない限りYAML以外のパーサーが選択されうる余地が残っていた | (1) `organize-posts.mjs`のurl-map.json生成ループに`draft: true`記事の除外フィルタを追加。(2) `matter(content, { language: 'yaml' })`を明示指定し、YAML以外のエンジン選択を遮断。再発防止: url-map.jsonに下書きslugが含まれないことを検証するテストを追加し、下書き除外が過剰でないこと（公開記事のslugが全て含まれること）も併せて検証する | build.test.mjs（`下書き記事がurl-map.jsonに含まれていない（SEC-29, Bug #48 再発防止）`, `公開記事のslugが全てurl-map.jsonに含まれている`） |
+| 49 | 2026-09-20 | `_headers`の`/*`と`/admin/*`両方にCross-Origin-Opener-Policy / Cross-Origin-Resource-Policy / X-Frame-Optionsが定義されており、Cloudflare Pagesの同名ヘッダーAppend仕様（Bug #28で判明済みの仕様）により本番`/admin/`で各ヘッダーが2回送出されることを`curl -sI https://reiwa.casa/admin/`で実測確認した（`https://reiwa.casa/`では各1回）。COOP等はRFC 8941 Structured Headerであり、重複値がカンマ結合されるとitemパースに失敗し無効な値として扱われる（＝`unsafe-none`等へのフォールバック）蓋然性が高い。ただし、ブラウザが実際にどう解決したかは未観測であり、これは「決定的事実」ではなく「リード（要検証所見）」である（詳細: `docs/security/audit-run2-needs-validation.md`）。対応Issue: #115 | Bug #28対策時に「`/*`と`/admin/*`で同一値なら重複送信されても安全」という設計判断（旧SEC-23の記述）を採用し、公開ページにも管理画面と同一値のCOOP/CORP/X-Frame-Optionsを`/*`に追加した。しかしCloudflare Pagesのヘッダー結合はオーバーライドではなく単純なAppendであるため、「同一値なら安全」という前提はCOOP/CORP等のStructured Header（カンマ結合で複数値になった時点でパース仕様上不正になりうる）には成立しなかった。この観点は`_headers`ヘッダー重複防止検証（Bug #28再発防止）の既存テストでもガード条件（`if (globalVal && adminVal)`）に隠れて長らく実効的に検証されていなかった | `/admin/*`セクションからCross-Origin-Opener-Policy / Cross-Origin-Resource-Policy / X-Frame-Optionsの再定義を削除し、`/*`からの継承一本化に設計変更した（管理画面が必要とする値は`/*`側にのみ定義する）。重複を解消することで、ブラウザの実解決結果によらず本懸念を無条件に除去できる。再発防止: (1) `/admin/*`にこれら3ヘッダーが存在しないことを検証するテストへ更新（build.test.mjs, fuzz-validation.test.mjs）。(2) 旧テストのガード条件（両方の値が存在する場合のみ検証）を撤廃し、アサーションが必ず実行される形に書き換え | build.test.mjs（`X-Frame-Optionsは/admin/*で再定義されず/*から継承される（Issue #115, Bug #49）`ほか）、fuzz-validation.test.mjs（`COOP/CORP/X-Frame-Options は /admin/* で再定義されず /* から継承される（Bug #28 再発防止・Issue #115/Bug #49で設計変更）`ほか） |
 
 **Bug #46 5 Whys:**
 
@@ -1776,6 +1787,30 @@ GitHubリポジトリが利用可能な場合、以下の手順でシステム�
 5. なぜ事前に検知できなかったか: 単独・低負荷実行では30秒未満で、444件・5 workerの全体実行時だけ余裕不足が顕在化したため。
 
 根本対策はリトライ依存ではなく、CMS初期化を含むE-28の実測に基づいて60秒の上限を明示し、複数回実行で安定性を確認することとする。
+
+**Bug #48 5 Whys:**
+
+1. なぜ下書き記事のslugがurl-map.jsonに含まれていたか: `organize-posts.mjs`のurl-map.json生成処理が、記事の`draft`フラグを見ずに全記事を対象にしていたため。
+2. なぜdraftフラグを見ていなかったか: url-map.jsonの用途（CMSエディタの「公開URLを見る」機能向け）を実装した時点で、下書き記事はそもそも表示対象外という前提を暗黙に置いており、明示的なフィルタ要件として文書化・実装しなかったため。
+3. なぜ`getStaticPaths`の`.filter(post => !post.data.draft)`（SEC-21, Bug #30）と同じ考え方が横展開されなかったか: url-map.json生成はAstroのビルドパイプラインとは別の独立スクリプト（`organize-posts.mjs`）であり、SEC-21対応時にコードレビューの対象範囲に含まれなかったため。
+4. なぜgray-matterのエンジン未指定が問題になるか: gray-matterはfront-matter内の`engines`指定によって解析エンジンを切り替え可能で、明示的に`language: 'yaml'`を指定しない場合、悪意あるfront-matterが組み込みjavascriptエンジン（内部的に`eval`相当）を選択させる余地が理論上残るため。
+5. なぜ今まで顕在化しなかったか: 記事はCMS経由（Decap CMS）でのみ作成され、直接ファイルシステムへ任意のfront-matterを書き込む経路が想定利用者に開放されていなかったため（監査は防御的多層化としてlow深刻度で指摘）。
+
+根本対策は「公開対象のみを生成する」という原則をビルドパイプライン全体（Astro側・スクリプト側の両方）で横展開することと、外部入力を解析する全箇所でパーサーのエンジン・オプションを明示指定することである。
+
+**Bug #49 5 Whys:**
+
+1. なぜCOOP/CORP/X-Frame-Optionsが本番で重複送出されたか: `_headers`の`/*`と`/admin/*`の両方に同名ヘッダーが定義されていたため（`curl -sI https://reiwa.casa/admin/`で各ヘッダー2回送出を実測確認）。
+2. なぜ`/*`にも管理画面と同一値を定義したか: Bug #28対応時に「異なる値の重複は危険だが、同一値の重複は安全」という設計判断（旧SEC-23）を採用し、公開ページにも管理画面と同一値のCOOP/CORP/X-Frame-Optionsを追加したため。
+3. なぜ「同一値なら安全」という前提が誤りだったか: Cloudflare PagesのApp仕様は値の比較を行わず単純にAppendするため、COOP等のRFC 8941 Structured Headerは同一値であってもカンマ結合されて複数値になり、item形式のパースに失敗しうるため（値が同じかどうかは仕様上考慮されない）。
+4. なぜこの問題が既存テストで検知されなかったか: 既存の重複検証テスト（Bug #28再発防止）が`if (globalVal && adminVal)`というガード条件を持ち、両方に値が存在する場合しかアサーションを実行しない実装だったため、「値が一致していれば何も検証せず通過する」空のテストになっていた。
+5. なぜガード条件付きの実装がレビューで見過ごされたか: テスト名（「同一値の重複は安全」）が当時の設計方針をそのまま表現しており、テストの中身（ガード条件が常に成立しアサーション未実行になるケース）まで検証されなかったため。
+
+根本対策はガード条件付きの検証をやめ、常にアサーションが実行される形に書き換えることと、ヘッダー設計を「重複してもよい値を選ぶ」から「重複自体をなくす（片方でのみ定義する）」に変更することである。ブラウザが実際にCOOPをどう解決していたか（`unsafe-none`へのフォールバックが発生していたか）はcurl実測の範囲を超えるため確定できないが、重複を解消したことで実効値を変えずにこの懸念を無条件に除去できる。
+
+### 4.5.1 既知の制限事項（Bug #48関連: url-map.json対策の適用範囲）
+
+SEC-29（Bug #48）の対策は`public/admin/url-map.json`から下書き記事のslugを除外するものであり、下書き記事の**アップロード画像そのもの**は対象外である。Decap CMS ＋ 静的ホスティング（Cloudflare Pages）構成では、記事本文に挿入した画像は記事の公開状態と無関係に`public/images/uploads/`へ保存され、Astroビルド時に無条件で`dist/images/uploads/`へコピーされて公開URLでアクセス可能になる。これはCMSの保存フロー（画像は先にアップロードされ、後から記事の下書き/公開状態が決まる）に起因する仕様上の制限であり、コード修正では解消できない。運用面の回避策として、**下書き記事に未公開情報を含む画像を貼らない**運用を徹底する（監査の敵対的レビューで指摘された事項）。
 
 ---
 
@@ -2245,13 +2280,13 @@ evidence/YYYY-MM-DD/
 
 | 指標 | 目標値 | 現状 |
 |:---|:---|:---|
-| Vitestテスト全PASS | 100% | 610/610 (100%) |
-| Playwright E2Eテスト全PASS | 100% | 直近実行: 445 PASS・8 skip / 453件、flakyなし (100%) |
+| Vitestテスト全PASS | 100% | 624/624 (100%) |
+| Playwright E2Eテスト全PASS | 100% | 直近実行: 445 PASS・8 skip / 453件、flakyなし (100%、E2Eは今回未実測) |
 | セキュリティ検証全PASS | 100% | 10/10 (100%) |
 | ボタン重なり検出 | 0件 | 0件 |
-| 未テスト要件 | 0件 | 0件 |
+| 未テスト要件 | 0件 | 2件（SEC-31, SEC-32。実装済みだが自動回帰テスト未実装。1.5.4章参照） |
 | バグ再発 | 0件 | 0件 |
 
 ---
 
-**最終更新**: 2026年9月9日（v1.53）
+**最終更新**: 2026年9月20日（v1.56）

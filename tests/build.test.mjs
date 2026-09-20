@@ -748,7 +748,7 @@ describe('ビルド検証', () => {
       }
     });
 
-    it('下書き記事がurl-map.jsonに含まれていない（SEC-27, Bug #46 再発防止）', () => {
+    it('下書き記事がurl-map.jsonに含まれていない（SEC-29, Bug #48 再発防止）', () => {
       const draftSlugs = readdirSync(POSTS_DIR, { recursive: true })
         .filter((f) => String(f).endsWith('.md'))
         .map((f) => {
@@ -759,14 +759,34 @@ describe('ビルド検証', () => {
         .filter(({ data }) => data.draft === true)
         .map(({ slug }) => slug);
 
-      expect(draftSlugs.length).toBeGreaterThan(0);
+      // 下書きが0件の場合は検証対象が存在しないだけなので成功扱いとする
+      // （下書き記事が常に存在する前提を置くとコンテンツ変更でテストが壊れる）
       for (const slug of draftSlugs) {
         for (const key of Object.keys(urlMap)) {
-          expect(key).not.toContain(slug);
+          // 部分一致だと公開記事のslugが下書きslugを部分文字列として含む場合に
+          // 誤検知するため、末尾セグメント（実際のslug）を完全一致で比較する
+          expect(basename(key)).not.toBe(slug);
         }
         for (const value of Object.values(urlMap)) {
-          expect(value).not.toContain(slug);
+          expect(basename(value)).not.toBe(slug);
         }
+      }
+    });
+
+    it('公開記事のslugが全てurl-map.jsonに含まれている（下書き除外が過剰でないことの確認）', () => {
+      const publishedSlugs = readdirSync(POSTS_DIR, { recursive: true })
+        .filter((f) => String(f).endsWith('.md'))
+        .map((f) => {
+          const content = readFileSync(join(POSTS_DIR, String(f)), 'utf-8');
+          const { data } = matter(content);
+          return { data, slug: basename(String(f), '.md') };
+        })
+        .filter(({ data }) => data.draft !== true)
+        .map(({ slug }) => slug);
+
+      const mapSlugs = Object.keys(urlMap).map((key) => basename(key));
+      for (const slug of publishedSlugs) {
+        expect(mapSlugs).toContain(slug);
       }
     });
   });
@@ -881,6 +901,8 @@ describe('ビルド検証', () => {
     const headersPath = join(process.cwd(), 'public/_headers');
     const headersContent = readFileSync(headersPath, 'utf-8');
     // パスルール行（行頭 /admin/*）以降を admin セクションとして抽出
+    const adminRuleIndex = headersContent.search(/^\/admin\/\*/m);
+    const globalSection = adminRuleIndex >= 0 ? headersContent.substring(0, adminRuleIndex) : headersContent;
     const adminMatch = headersContent.match(/^\/admin\/\*\r?\n([\s\S]*)$/m);
     const adminSection = adminMatch ? adminMatch[1] : '';
 
@@ -904,12 +926,16 @@ describe('ビルド検証', () => {
       expect(adminSection).toContain('Content-Security-Policy:');
     });
 
-    it('/admin/*にX-Frame-Options: SAMEORIGINが設定されている', () => {
-      expect(adminSection).toContain('X-Frame-Options: SAMEORIGIN');
+    it('X-Frame-Optionsは/admin/*で再定義されず/*から継承される（Issue #115, Bug #49）', () => {
+      // Cloudflare Pagesは/*と/admin/*で同名ヘッダーを指定するとオーバーライドではなく
+      // Append（重複送信）するため、/admin/*では再定義せず/*の値がそのまま適用される設計にした。
+      expect(adminSection).not.toMatch(/^\s*X-Frame-Options:/m);
+      expect(globalSection).toContain('X-Frame-Options: SAMEORIGIN');
     });
 
-    it('/admin/*にCOOP: same-origin-allow-popupsが設定されている', () => {
-      expect(adminSection).toContain('Cross-Origin-Opener-Policy: same-origin-allow-popups');
+    it('COOPは/admin/*で再定義されず/*から継承され、same-origin-allow-popupsが適用される（Issue #115, Bug #49）', () => {
+      expect(adminSection).not.toMatch(/^\s*Cross-Origin-Opener-Policy:/m);
+      expect(globalSection).toContain('Cross-Origin-Opener-Policy: same-origin-allow-popups');
     });
 
     it('CSP connect-src に blob: が含まれている（Bug #29: Decap CMS画像保存時の fetch(blobURL) に必要）', () => {
@@ -956,7 +982,7 @@ describe('ビルド検証', () => {
       return sections;
     }
 
-    it('/* と /admin/* で同名ヘッダーが一切重複していない（SEC-28, Bug #47 再発防止）', () => {
+    it('/* と /admin/* で同名ヘッダーが一切重複していない（SEC-30, Bug #49 再発防止）', () => {
       // Pages は同名ヘッダーを append するため、COOP等の Structured Header がカンマ結合で構文エラーになる。
       // 共通ヘッダーは /* で定義し、/admin/* では再定義してはならない。
       const sections = parseHeadersFile(headersContent);

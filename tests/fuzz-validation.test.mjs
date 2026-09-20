@@ -904,11 +904,13 @@ describe('セキュリティヘッダー構成の包括的検証', () => {
       expect(headersContent).toContain('X-Content-Type-Options: nosniff');
     });
 
-    it('X-Frame-Options が /admin/* に設定されている', () => {
-      // Bug #28: COOP/CORP/X-Frame-Optionsは /* に含めると /admin/* と重複送信される
-      // そのため /admin/* セクションのみに設定する
+    it('X-Frame-Options は /admin/* で再定義されず /* から継承される（Issue #115, Bug #49）', () => {
+      // Cloudflare Pages は /* と /admin/* で同名ヘッダーを指定するとオーバーライドではなく
+      // Append（重複送信）するため、COOP等のStructured Headerがカンマ結合され構文エラーになる。
+      // そのため /admin/* では再定義せず、/* の値がそのまま管理画面にも適用される設計に変更した。
       const adminSection = adminSectionAll;
-      expect(adminSection).toContain('X-Frame-Options: SAMEORIGIN');
+      expect(adminSection).not.toMatch(/^\s*X-Frame-Options:/m);
+      expect(globalSection).toContain('X-Frame-Options: SAMEORIGIN');
     });
 
     it('Referrer-Policy が安全な値に設定されている', () => {
@@ -970,54 +972,71 @@ describe('セキュリティヘッダー構成の包括的検証', () => {
   });
 
   describe('Cross-Originヘッダー', () => {
-    // Bug #28 再発防止: COOP/CORPは /* に含めると /admin/* と重複送信される。
-    // Cloudflare Pages は同名ヘッダーをオーバーライドせずAppendするため、
-    // ブラウザが最も厳しい値を採用し管理画面が壊れる。
-    // そのため /admin/* セクションのみに設定する。
+    // Bug #28 / Bug #49 再発防止（Issue #115）: COOP/CORPを /* と /admin/* の両方に
+    // 同名で指定すると、Cloudflare Pagesはオーバーライドではなく Append（重複送信）する。
+    // COOP等のRFC 8941 Structured Headerはカンマ結合されると構文エラーとなり、
+    // ブラウザが安全側の unsafe-none 等にフォールバックして管理画面のOAuth/プレビューが壊れる。
+    // そのため /admin/* では再定義せず、/* で定義した値がそのまま管理画面にも継承される設計にした。
 
-    it('Cross-Origin-Opener-Policy が /admin/* に設定されている', () => {
+    it('Cross-Origin-Opener-Policy は /admin/* で再定義されず /* から継承される（Issue #115, Bug #49）', () => {
       const adminSection = adminSectionAll;
-      expect(adminSection).toContain('Cross-Origin-Opener-Policy: same-origin-allow-popups');
+      expect(adminSection).not.toMatch(/^\s*Cross-Origin-Opener-Policy:/m);
+      expect(globalSection).toContain('Cross-Origin-Opener-Policy: same-origin-allow-popups');
     });
 
-    it('Cross-Origin-Resource-Policy が /admin/* に設定されている', () => {
+    it('Cross-Origin-Resource-Policy は /admin/* で再定義されず /* から継承される（Issue #115, Bug #49）', () => {
       const adminSection = adminSectionAll;
-      expect(adminSection).toContain('Cross-Origin-Resource-Policy: same-site');
+      expect(adminSection).not.toMatch(/^\s*Cross-Origin-Resource-Policy:/m);
+      expect(globalSection).toContain('Cross-Origin-Resource-Policy: same-site');
     });
 
-    it('COOP/CORP/X-Frame-Options が /* と /admin/* で同一値に統一されている（Bug #28 対策: 同一値の重複は安全）', () => {
-      // Cloudflare Pages のAppend動作対策: 異なる値は禁止、同一値は許容
+    it('COOP/CORP/X-Frame-Options は /admin/* で再定義されず /* から継承される（Bug #28 再発防止・Issue #115/Bug #49で設計変更）', () => {
+      // 旧設計（Bug #28時点）は /* と /admin/* の両方に同名ヘッダーを定義し「同一値なら重複送信は安全」
+      // という前提だった。しかし Cloudflare Pages は同名ヘッダーをオーバーライドではなく
+      // Append（重複送信）するため、COOP等のRFC 8941 Structured Headerはカンマ結合されて
+      // パース不能になり得る（Issue #115, Bug #49で判明。ブラウザの実解決結果までは未観測だが、
+      // 重複を解消すれば実効値を変えずにこの懸念を無条件に除去できる）。
+      // そのため新設計では /admin/* 側で再定義せず、/* の値のみが管理画面にも適用される。
+      // 本テストは、この3ヘッダーが /admin/* に一切存在せず、/* に管理画面が必要とする値で
+      // 存在することを検証する（アサーションが必ず実行されるようガード条件を撤廃）。
       const getHeaderValue = (section, name) => {
         const line = section.split('\n').find(l => !l.trim().startsWith('#') && l.includes(name + ':'));
         return line ? line.split(':').slice(1).join(':').trim() : null;
       };
-      const globalHeaders = globalSection;
-      const adminHeaders = adminSectionAll;
+      const expectedGlobalValues = {
+        'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
+        'Cross-Origin-Resource-Policy': 'same-site',
+        'X-Frame-Options': 'SAMEORIGIN',
+      };
       for (const header of ['Cross-Origin-Opener-Policy', 'Cross-Origin-Resource-Policy', 'X-Frame-Options']) {
-        const globalVal = getHeaderValue(globalHeaders, header);
-        const adminVal = getHeaderValue(adminHeaders, header);
-        if (globalVal && adminVal) {
-          expect(globalVal, `${header} が /* と /admin/* で異なる値`).toBe(adminVal);
-        }
+        const adminVal = getHeaderValue(adminSectionAll, header);
+        expect(adminVal, `${header} が /admin/* で再定義されている（Append重複の原因になる）`).toBeNull();
+
+        const globalVal = getHeaderValue(globalSection, header);
+        expect(globalVal, `${header} が /* に定義されていない`).toBe(expectedGlobalValues[header]);
       }
     });
   });
 
   // バグ#27再発防止: COOP same-originがOAuth popupのwindow.openerをnullにし、
   // Decap CMSのGitHub認証が失敗→記事保存時「TypeError: Load failed」が発生した
-  describe('管理画面（/admin/*）セキュリティヘッダーオーバーライド', () => {
+  // 設計変更（Issue #115, Bug #49）: Cloudflare Pages は /* と /admin/* で同名ヘッダーを
+  // Append（重複送信）するため、/admin/* 側での「オーバーライド」は成立しない。
+  // そのため管理画面が必要とする値は /* 側に直接定義し、/admin/* には再定義しない。
+  // 以下は「/admin/* が実際に必要とする値が /* に定義されていること」を検証する。
+  describe('管理画面（/admin/*）が必要とするセキュリティヘッダー要件（/* からの継承値検証）', () => {
     const adminSection = adminSectionAll;
 
-    it('COOP が same-origin-allow-popups にオーバーライドされている（OAuth popup許可）', () => {
-      expect(adminSection).toContain('Cross-Origin-Opener-Policy: same-origin-allow-popups');
+    it('COOPは /* で same-origin-allow-popups に設定され、OAuthポップアップのwindow.openerを維持できる（Issue #115, Bug #49: /admin/* でのオーバーライドはAppend挙動により成立しないため /* の値が直接適用される）', () => {
+      expect(globalSection).toContain('Cross-Origin-Opener-Policy: same-origin-allow-popups');
     });
 
-    it('X-Frame-Options が SAMEORIGIN にオーバーライドされている（CMSプレビューiframe許可）', () => {
-      expect(adminSection).toContain('X-Frame-Options: SAMEORIGIN');
+    it('X-Frame-Optionsは /* で SAMEORIGIN に設定され、CMSプレビューiframeを許可できる（DENYだと壊れる。Issue #115, Bug #49: /admin/* でのオーバーライドは成立しないため /* の値が直接適用される）', () => {
+      expect(globalSection).toContain('X-Frame-Options: SAMEORIGIN');
     });
 
-    it('CORP が same-site にオーバーライドされている', () => {
-      expect(adminSection).toContain('Cross-Origin-Resource-Policy: same-site');
+    it('CORPは /* で same-site に設定されている（Issue #115, Bug #49: /admin/* でのオーバーライドは成立しないため /* の値が直接適用される）', () => {
+      expect(globalSection).toContain('Cross-Origin-Resource-Policy: same-site');
     });
 
     it('CSP frame-src に blob: が含まれている（CMSプレビュー用）', () => {
