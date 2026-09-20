@@ -59,6 +59,7 @@
 | 1.52 | 2026-09-07 | Modern Web Guidance 日本語索引（`docs/MODERN-WEB-GUIDANCE.md`）を新規作成し、ドキュメント体系へ追加。全139ガイド（+npm未公開2本）の1行要約、人間向け閲覧手順（公式ドキュメント／GitHub／`retrieve`・`search` CLI）、本ブログの適用実績7項目と検討候補、索引の更新手順を整理。2.2.3章から索引へ導線を追加。コード変更なし |
 | 1.53 | 2026-09-09 | FR-29追加。個人用Gmailアプリの紹介・プライバシーポリシーを固定ページコレクションへ追加し、CMSで編集できるようにした。固定ページに`noindex`項目を新設し、sitemap除外と合わせて検索結果から外す。Vitest 588→610件。CMS保存時のフロントマター欠落を防ぐ検証を追加。staging先行 |
 | 1.54 | 2026-09-09 | FR-29追加QA: noindex固定ページをヘッダーナビから除外。ビルド検証を更新し、実メニュー操作E2Eを3件追加（453定義） |
+| 1.55 | 2026-09-20 | セキュリティIssue #109〜#113対応（敵対的レビュー反映）: SEC-27（OAuth送信先オリジン許可リスト検証）、SEC-28（公開ページCSPメタタグ導入）追加。SEC-22（OAuth開始・エラー時Cache-Control適用拡大）、SEC-25（normalize-images.mjs回転後再取得時ピクセル上限適用整合性）更新。sharp ^0.35.4更新、npm audit fix実施。Vitest 610→622件（全622テストPASS） |
 
 ## システム変更履歴
 
@@ -517,11 +518,13 @@ staging環境のrobots.txtは`Disallow: /`を維持し、mainマージ時のみ`
 | SEC-19 | 入力値バリデーション強化: フィールド境界値・不整合値をCMS設定・Zodスキーマ・テストの3層で防止する | `config.yml`, `content.config.ts` | order≧1、slug正規表現、型チェック |
 | SEC-20 | ファズテスト必須化: XSS/SQLi/パストラバーサル/プロトタイプ汚染等の攻撃ペイロードに対する耐性を自動テストで検証する | `fuzz-validation.test.mjs` | ビルド時にファズテスト必須実行 |
 | SEC-21 | 下書き記事静的生成防止: draft=trueの記事がgetStaticPathsから除外され、公開URLでアクセスできないことを保証する | `src/pages/posts/[year]/[month]/[slug].astro` | `.filter(post => !post.data.draft)` |
-| SEC-22 | OAuthコールバックセキュリティヘッダー: トークン応答にCache-Control: no-store, X-Content-Type-Options, X-Frame-Options, CSPを設定する | `functions/auth/callback.js` | トークン漏洩・キャッシュ防止 |
+| SEC-22 | OAuthセキュリティヘッダー: 認証開始（302）およびコールバック（200/エラー時）の全応答にCache-Control: no-store, no-cache, must-revalidate、Pragma: no-cacheを設定し、トークン応答にはX-Content-Type-Options, X-Frame-Options, CSPを設定する | `functions/auth/` | トークン漏洩・OAuth state誤キャッシュ防止 |
 | SEC-23 | 公開ページCOOP/CORP/X-Frame-Options: `/*`セクションにも管理画面と同一値のCOOP/CORP/X-Frame-Optionsを設定し、Bug #28のAppend動作で安全に重複させる | `_headers` | 同一値重複は安全（ブラウザ動作に影響なし） |
 | SEC-24 | Zodスキーマ厳格化: title max(200), date YYYY-MM-DD正規表現, tags max(50)/max(20), thumbnail startsWith('/images/'), summary max(500) | `content.config.ts` | 入力値を型＋値域の両面で制約 |
-| SEC-25 | ビルドスクリプト防御強化: シンボリックリンクスキップ、ファイルサイズ上限(50MB)、ピクセル数上限(50Mピクセル)、gray-matterエンジン無効化、パス境界チェック | `scripts/`, `src/integrations/` | ピクセルフラッド・シンボリックリンク攻撃防止 |
+| SEC-25 | ビルドスクリプト防御強化: シンボリックリンクスキップ、ファイルサイズ上限(50MB)、ピクセル数上限(50Mピクセル、回転後再取得含む全sharp呼び出し)、gray-matterエンジン無効化、パス境界チェック | `scripts/`, `src/integrations/` | ピクセルフラッド・シンボリックリンク攻撃防止 |
 | SEC-26 | OAuth HTTPメソッド制限: OAuth関数をonRequestからonRequestGetに変更し、POST/PUT/DELETE等の不要なHTTPメソッドを拒否する | `functions/auth/` | Cloudflare Functions のメソッド別ハンドラ |
+| SEC-27 | OAuth送信先オリジン許可リスト検証: 本番・staging・プロジェクトプレビュー（`*.my-blog-3cg.pages.dev`）・ローカル開発環境のみ許可し、不正オリジンを403拒否する | `functions/auth/` | postMessageトークン窃取・悪意のあるリダイレクト防止 |
+| SEC-28 | 公開ページCSPメタタグ導入: Base.astro の `<head>` に `<meta http-equiv="Content-Security-Policy">` を設定（default-src 'self'等）。Bug #28防止のため`_headers`の`/*`には設定せず管理画面と完全分離 | `src/layouts/Base.astro` | 公開ページの多層防御（Defense-in-Depth） |
 
 ---
 
@@ -625,13 +628,15 @@ staging環境のrobots.txtは`Disallow: /`を維持し、mainマージ時のみ`
 | SEC-19 | 入力値バリデーション強化 | fuzz-validation | 2.7.1〜2.7.6章 | M-02, M-09 | 充足 |
 | SEC-20 | ファズテスト必須化 | fuzz-validation | 2.7章全体 | M-09 | 充足 |
 | SEC-21 | 下書き記事静的生成防止 | build | 2.5章（draft記事が生成されないこと） | M-02 | 充足 |
-| SEC-22 | OAuthコールバックセキュリティヘッダー | auth-functions | 2.3章（レスポンスヘッダー検証） | M-02 | 充足 |
+| SEC-22 | OAuthセキュリティヘッダー | auth-functions | 2.3章（全レスポンスCache-Control検証） | M-02 | 充足 |
 | SEC-23 | 公開ページCOOP/CORP/X-Frame-Options | fuzz-validation, build | 2.7.8章, 2.5.1章 | M-02 | 充足 |
 | SEC-24 | Zodスキーマ厳格化 | fuzz-validation | 2.7.2〜2.7.6章 | M-09 | 充足 |
-| SEC-25 | ビルドスクリプト防御強化 | build | ビルドパイプライン検証 | M-02 | 充足 |
+| SEC-25 | ビルドスクリプト防御強化 | build | ビルドパイプライン検証（全sharp呼び出しpixel limit） | M-02 | 充足 |
 | SEC-26 | OAuth HTTPメソッド制限 | auth-functions | 2.3章 | M-02 | 充足 |
+| SEC-27 | OAuth送信先オリジン許可リスト検証 | auth-functions | 2.3章（オリジン許可・拒否検証） | M-02 | 充足 |
+| SEC-28 | 公開ページCSPメタタグ導入 | build | 2.5章（Base.astro・生成HTMLメタタグ検証） | M-02 | 充足 |
 
-**充足状況: 全要件（FR-01〜FR-28, CMS-01〜CMS-19, NFR-01〜NFR-08, SEC-01〜SEC-26）がテストで充足されている。未テスト要件なし。**
+**充足状況: 全要件（FR-01〜FR-29, CMS-01〜CMS-19, NFR-01〜NFR-08, SEC-01〜SEC-28）がテストで充足されている。未テスト要件なし。**
 
 ---
 
@@ -1852,7 +1857,7 @@ git push origin staging
 
 第三者セキュリティ診断（2026年2月21日実施）で検出された問題と対策を踏まえ、再発防止のための品質向上策と定期診断の運用を定める。
 
-セキュリティ要件は第1部 1.4.2章（SEC-01〜SEC-26）として定義されている。本章では運用面での品質基準、再発防止策、定期診断の手順を定める。個人情報保護については4.8章を参照。
+セキュリティ要件は第1部 1.4.2章（SEC-01〜SEC-28）として定義されている。本章では運用面での品質基準、再発防止策、定期診断の手順を定める。個人情報保護については4.8章を参照。
 
 ### 4.7.1 品質向上策
 
@@ -2184,7 +2189,7 @@ await loginButton.click();
 ### 4.10.2 定期セキュリティ検証
 
 **自動検証（エビデンス取得時に毎回実行）:**
-- `verify-security.mjs` によるセキュリティ要件（SEC-01〜SEC-26）の自動検証
+- `verify-security.mjs` によるセキュリティ要件（SEC-01〜SEC-28）の自動検証
 - XSS耐性、CSPヘッダー、OAuth scope、CDNバージョン、postMessage origin等を自動チェック
 - 検証結果はスクリーンショット付きで記録
 
