@@ -258,13 +258,13 @@ const ogImageUrl = ogImage ? new URL(ogImage, Astro.site).toString() : undefined
       <a href="/" class="site-title">{siteTitle}</a>
       <div class="nav-links">
         {navPages.length === 1 ? (
-          <a href={`/${navPages[0].slug}`}>{navPages[0].data.title}</a>
+          <a href={`/${navPages[0].id}`}>{navPages[0].data.title}</a>
         ) : navPages.length > 1 ? (
           <div class="nav-dropdown">
-            <a href={`/${navPages[0].slug}`} class="nav-dropdown-link">{navPages[0].data.title}</a><button class="nav-dropdown-toggle" type="button" aria-label="ページメニュー" aria-expanded="false" aria-controls="page-menu">▾</button>
+            <a href={`/${navPages[0].id}`} class="nav-dropdown-link">{navPages[0].data.title}</a><button class="nav-dropdown-toggle" type="button" aria-label="ページメニュー" aria-expanded="false" aria-controls="page-menu">▾</button>
             <div class="nav-dropdown-menu" id="page-menu">
               {navPages.map(page => (
-                <a href={`/${page.slug}`}>{page.data.title}</a>
+                <a href={`/${page.id}`}>{page.data.title}</a>
               ))}
             </div>
           </div>

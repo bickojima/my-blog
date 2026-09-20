@@ -1,6 +1,6 @@
 import type { CollectionEntry } from 'astro:content';
 
-// ファイル名からスラグを取得（post.id = "2026/01/あああ.md"）
+// ファイル名からスラグを取得（Content Layer の post.id = "2026/01/あああ"）
 function getFileSlug(post: CollectionEntry<'posts'>): string {
   return post.id.replace(/\.md$/, '').split('/').pop()!;
 }
