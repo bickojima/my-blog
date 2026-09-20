@@ -1052,20 +1052,52 @@ describe('セキュリティヘッダー構成の包括的検証', () => {
     });
 
     it('/* と /admin/* で同名ヘッダーが異なる値で重複していない（Bug #28 再発防止）', () => {
-      // Cloudflare Pages は同名ヘッダーをAppendする。同一値の重複は安全だが異なる値は危険
+      // Cloudflare Pages は同名ヘッダーをAppendする。同一値の重複も Bug #49 では危険。
+      // 本テストはガードで expect を飛ばさず、次を必ず検証する:
+      // 1. /admin/* 定義ヘッダーが /* にもあるなら値は完全一致
+      // 2. 同名0件でも expect が走る（重複件数 === 0 を明示）
+      // 3. COOP/CORP/XFO が /admin/* に存在しない
+      const isHeaderLine = (line) => {
+        const trimmed = line.trim();
+        return trimmed && !trimmed.startsWith('#') && !trimmed.startsWith('/') && trimmed.includes(':');
+      };
       const getHeaderValue = (section, name) => {
-        const line = section.split('\n').find(l => !l.trim().startsWith('#') && l.includes(name + ':'));
+        const line = section.split('\n').find(l => isHeaderLine(l) && l.trim().startsWith(name + ':'));
         return line ? line.split(':').slice(1).join(':').trim() : null;
       };
-      const adminHeaders = adminSection.split('\n')
-        .filter(line => line.trim() && line.includes(':') && !line.trim().startsWith('#'))
-        .map(line => line.trim().split(':')[0].trim());
+      const adminHeaders = [...new Set(
+        adminSection.split('\n')
+          .filter(isHeaderLine)
+          .map(line => line.trim().split(':')[0].trim())
+      )];
+
+      expect(adminHeaders.length, '/admin/* からヘッダー名を1件も抽出できない').toBeGreaterThan(0);
+
+      const overlapping = [];
+      const mismatches = [];
       for (const header of adminHeaders) {
-        const globalVal = getHeaderValue(globalSection, header);
         const adminVal = getHeaderValue(adminSection, header);
-        if (globalVal && adminVal) {
-          expect(globalVal, `${header} が /* と /admin/* で異なる値で重複している`).toBe(adminVal);
+        const globalVal = getHeaderValue(globalSection, header);
+        expect(adminVal, `${header} が /admin/* から値を取得できない`).not.toBeNull();
+        if (globalVal !== null) {
+          overlapping.push(header);
+          if (globalVal !== adminVal) {
+            mismatches.push({ header, globalVal, adminVal });
+          }
         }
+      }
+
+      // 1. 同名があるなら値は完全一致（expect を if で囲まない）
+      expect(mismatches, `/* と /admin/* で値が異なる同名ヘッダー: ${JSON.stringify(mismatches)}`).toEqual([]);
+      // 2. 同名が1件も無くても expect は必ず実行される
+      expect(overlapping, `/* と /admin/* で重複しているヘッダー名: ${overlapping.join(', ')}`).toEqual([]);
+
+      // 3. COOP/CORP/XFO が /admin/* に存在しないことを明示検証
+      for (const header of ['Cross-Origin-Opener-Policy', 'Cross-Origin-Resource-Policy', 'X-Frame-Options']) {
+        expect(
+          getHeaderValue(adminSection, header),
+          `${header} が /admin/* で再定義されている（Append重複の原因になる）`
+        ).toBeNull();
       }
     });
   });
