@@ -895,6 +895,32 @@ describe('ビルド検証', () => {
         .split("test.describe('E-29: 記事編集の実操作'")[0];
       expect(e28Block).toContain('test.describe.configure({ timeout: 60000 })');
     });
+
+    it('CI は Vitest とビルドのみで Playwright E2E を必須化しない（Bug #50）', () => {
+      const ci = readFileSync(join(process.cwd(), '.github/workflows/ci.yml'), 'utf-8');
+      expect(ci).toContain('npm test');
+      expect(ci).toContain('build:raw');
+      expect(ci).not.toMatch(/npx playwright|npm run test:e2e|playwright test/);
+    });
+
+    it('4.6章はローカルE2E全件をmainマージの必須条件とし、Vitest だけでは main マージ不可とする（Bug #50）', () => {
+      const doc = readFileSync(join(process.cwd(), 'docs/DOCUMENTATION.md'), 'utf-8');
+      const sectionStart = doc.indexOf('## 4.6. ブランチマージ手順');
+      const sectionEnd = doc.indexOf('## 4.7.');
+      expect(sectionStart).toBeGreaterThan(0);
+      expect(sectionEnd).toBeGreaterThan(sectionStart);
+      const section = doc.slice(sectionStart, sectionEnd);
+      expect(section).toContain('npm run test:e2e');
+      expect(section).toContain('Vitest だけでは main マージ不可');
+      expect(section).toContain('CI に Playwright は載せない');
+      expect(section).not.toMatch(/E2E テスト PASS（可能な場合）/);
+    });
+
+    it('CLAUDE.md は Vitest のみの main マージを禁止し、CI に Playwright は載せない（Bug #50）', () => {
+      const claude = readFileSync(join(process.cwd(), 'CLAUDE.md'), 'utf-8');
+      expect(claude).toContain('Vitest だけでは main マージ不可');
+      expect(claude).toContain('CI に Playwright は載せない');
+    });
   });
 
   describe('セキュリティヘッダー検証（SEC-10）', () => {
