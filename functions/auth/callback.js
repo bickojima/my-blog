@@ -148,10 +148,28 @@ export async function onRequestGet(context) {
       // Step 1: Send authorizing message（オリジン指定で送信先を制限）
       window.opener.postMessage("authorizing:github", expectedOrigin);
 
+      // SEC-31: ack を受信しないまま放置されるとハンドシェイクが無期限にハングするため、
+      // フェイルセーフタイマーでリスナーを解除しユーザーにエラーを通知する
+      const timeoutId = setTimeout(function() {
+        window.removeEventListener("message", handleMessage);
+        statusEl.textContent = "Error: Authorization timed out. Please close this window and try again.";
+      }, 30000);
+
       // Step 2: Wait for acknowledgment from parent
-      window.addEventListener("message", function(event) {
+      // SEC-31: { once: true } は「最初に届いたイベント」でリスナーを外してしまうため、
+      // オリジン検証を通過しただけの無関係なメッセージ（同一オリジンの拡張機能・別処理由来等）
+      // でも消費されてしまい、正規のackが無視される。関数を名前付きで登録し、
+      // オリジン検証とペイロード完全一致検証の両方を通過した場合にのみ明示的に解除する。
+      function handleMessage(event) {
         // オリジン検証: 想定されるオリジンからのメッセージのみ受け付ける
         if (event.origin !== expectedOrigin) return;
+
+        // ペイロード検証: Decap CMSが返すack文字列と完全一致する場合のみ受け付ける
+        // （同一オリジンの他用途postMessageを誤ってackとして扱わないため）
+        if (event.data !== "authorizing:github") return;
+
+        clearTimeout(timeoutId);
+        window.removeEventListener("message", handleMessage);
 
         statusEl.textContent = "Received acknowledgment. Sending token...";
 
@@ -167,7 +185,9 @@ export async function onRequestGet(context) {
         setTimeout(function() {
           window.close();
         }, 1000);
-      }, { once: true });
+      }
+
+      window.addEventListener("message", handleMessage);
     })();
   </script>
 </body>

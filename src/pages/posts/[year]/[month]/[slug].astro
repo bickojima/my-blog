@@ -1,5 +1,5 @@
 ---
-import { getCollection } from 'astro:content';
+import { getCollection, render } from 'astro:content';
 import Base from '../../../../layouts/Base.astro';
 import { getPostUrl, getPostUrlParts } from '../../../../lib/posts';
 
@@ -23,7 +23,7 @@ export async function getStaticPaths() {
 }
 
 const { post, prevPost, nextPost } = Astro.props;
-const { Content } = await post.render();
+const { Content } = await render(post);
 ---
 
 <Base title={post.data.title} description={post.data.summary} ogImage={post.data.thumbnail} ogType="article">
