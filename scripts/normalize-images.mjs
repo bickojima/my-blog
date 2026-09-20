@@ -34,7 +34,7 @@ for (const file of imageFiles) {
   if (meta.orientation && meta.orientation !== 1) {
     const buffer = await sharp(filePath, { limitInputPixels: PIXEL_LIMIT }).rotate().toBuffer();
     await writeFile(filePath, buffer);
-    const newMeta = await sharp(filePath).metadata();
+    const newMeta = await sharp(filePath, { limitInputPixels: PIXEL_LIMIT }).metadata();
     console.log(
       `[normalize-images] ${file}: orientation=${meta.orientation} → fixed (${newMeta.width}x${newMeta.height})`
     );
