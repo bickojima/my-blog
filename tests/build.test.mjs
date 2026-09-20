@@ -1033,6 +1033,35 @@ describe('ビルド検証', () => {
     });
   });
 
+  describe('画像正規化処理の堅牢化（SEC-32）', () => {
+    const scriptPath = join(process.cwd(), 'scripts/normalize-images.mjs');
+
+    it('sharp処理が try/catch で囲まれ、catch でビルド全体を throw していない（SEC-32）', () => {
+      const scriptContent = readFileSync(scriptPath, 'utf-8');
+      expect(scriptContent).toMatch(/try\s*\{[\s\S]*?sharp\s*\(/);
+      const normalizeCatch = scriptContent.match(/catch\s*\([^)]*\)\s*\{([^}]*Failed to normalize[\s\S]*?)\}/);
+      expect(normalizeCatch, 'sharp処理の catch（Failed to normalize）が見つからない').toBeTruthy();
+      expect(normalizeCatch[1]).toMatch(/console\.warn/);
+      expect(normalizeCatch[1]).not.toMatch(/\bthrow\b/);
+      expect(normalizeCatch[1]).not.toMatch(/\bprocess\.exit\b/);
+    });
+
+    it('.rotate().toBuffer() の出力 buffer.length に MAX_FILE_SIZE 上限がある（SEC-32）', () => {
+      const scriptContent = readFileSync(scriptPath, 'utf-8');
+      expect(scriptContent).toContain('.rotate().toBuffer()');
+      expect(scriptContent).toMatch(/buffer\.length\s*>\s*MAX_FILE_SIZE/);
+    });
+
+    it('lstat 失敗も try/catch で保護されている（SEC-32）', () => {
+      const scriptContent = readFileSync(scriptPath, 'utf-8');
+      expect(scriptContent).toMatch(/try\s*\{[\s\S]*?lstat\s*\([\s\S]*?\}\s*catch\s*\(/);
+      const lstatCatch = scriptContent.match(/catch\s*\([^)]*\)\s*\{([^}]*Failed to stat[\s\S]*?)\}/);
+      expect(lstatCatch, 'lstat 失敗時の catch（Failed to stat）が見つからない').toBeTruthy();
+      expect(lstatCatch[1]).toMatch(/console\.warn/);
+      expect(lstatCatch[1]).not.toMatch(/\bthrow\b/);
+    });
+  });
+
   describe('公開ページContent-Security-Policyメタタグ検証（SEC-28）', () => {
     it('Base.astro に CSP meta タグが設定されている', () => {
       const baseContent = readFileSync(join(process.cwd(), 'src/layouts/Base.astro'), 'utf-8');
