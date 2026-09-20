@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync } from 'fs';
 import { join } from 'path';
+import { execSync } from 'child_process';
 import yaml from 'js-yaml';
 import matter from 'gray-matter';
 
@@ -15,6 +16,55 @@ try {
 
 const docPath = join(process.cwd(), 'docs/DOCUMENTATION.md');
 const docContent = readFileSync(docPath, 'utf-8');
+
+const astroConfigPath = join(process.cwd(), 'astro.config.mjs');
+const astroConfigRaw = readFileSync(astroConfigPath, 'utf-8');
+const robotsPath = join(process.cwd(), 'public/robots.txt');
+const robotsRaw = readFileSync(robotsPath, 'utf-8');
+
+/**
+ * 現在のブランチを判定する（Bug #51再発防止）。
+ * Base.astro は本番ビルド時のみ利用可能な CF_PAGES_BRANCH のみで判定しているが、
+ * このテストはローカル・CI（GitHub Actions）双方で実行されるため、
+ * Cloudflare Pages > GitHub Actions > ローカルgit の優先順でフォールバックする。
+ * GitHub Actions の pull_request イベントでは GITHUB_REF_NAME が `<PR番号>/merge` になり
+ * main/staging と一致しないが、その場合は意図的に「ブランチ判定不能」側（内部整合のみ検証）に倒す。
+ */
+function getCurrentBranch() {
+  if (process.env.CF_PAGES_BRANCH) return process.env.CF_PAGES_BRANCH;
+  if (process.env.GITHUB_REF_NAME) return process.env.GITHUB_REF_NAME;
+  try {
+    return execSync('git rev-parse --abbrev-ref HEAD', { cwd: process.cwd() })
+      .toString()
+      .trim();
+  } catch {
+    return null;
+  }
+}
+
+const currentBranch = getCurrentBranch();
+
+function extractSiteUrl(content) {
+  const m = content.match(/const SITE_URL = '([^']+)'/);
+  return m ? m[1] : null;
+}
+
+const siteUrl = extractSiteUrl(astroConfigRaw);
+
+const ENV_EXPECTATIONS = {
+  main: {
+    base_url: 'https://reiwa.casa',
+    siteUrl: 'https://reiwa.casa',
+    robotsRequired: /Allow:\s*\//,
+    robotsForbidden: /Disallow:\s*\//,
+  },
+  staging: {
+    base_url: 'https://staging.reiwa.casa',
+    siteUrl: 'https://staging.reiwa.casa',
+    robotsRequired: /Disallow:\s*\//,
+    robotsForbidden: /Allow:\s*\//,
+  },
+};
 
 describe('CMS設定（config.yml）の検証', () => {
   describe('バックエンド設定', () => {
@@ -416,4 +466,50 @@ describe('要件トレーサビリティ検証', () => {
       expect(docContent, `コレクション "${name}" に対応する要件がDOCUMENTATION.mdに未記載`).toContain(name);
     }
   });
+});
+
+describe('環境固有ファイルの実ブランチ整合性検証（SEC-35, Bug #51再発防止）', () => {
+  // Bug #51: staging環境で config.yml(branch/base_url)・astro.config.mjs(SITE_URL)・robots.txt の
+  // 4項目が「互いに整合」していても、その揃った値がmainマージの副作用で丸ごとmain値に
+  // 上書きされたため、内部整合チェックだけでは事故を検出できなかった（staging CMSがmainブランチへ
+  // 直接コミットする状態が21分間発生）。
+  // このテストは「今チェックアウトしているブランチに対して正しい環境の値か」を検証する。
+  if (currentBranch === 'main' || currentBranch === 'staging') {
+    const expected = ENV_EXPECTATIONS[currentBranch];
+
+    it(`現在のブランチ（${currentBranch}）に対してconfig.ymlのbranchが一致する`, () => {
+      expect(config.backend.branch).toBe(currentBranch);
+    });
+
+    it(`現在のブランチ（${currentBranch}）に対してconfig.ymlのbase_urlが一致する`, () => {
+      expect(config.backend.base_url).toBe(expected.base_url);
+    });
+
+    it(`現在のブランチ（${currentBranch}）に対してastro.config.mjsのSITE_URLが一致する`, () => {
+      expect(siteUrl).toBe(expected.siteUrl);
+    });
+
+    it(`現在のブランチ（${currentBranch}）に対してpublic/robots.txtのクロール方針が一致する`, () => {
+      expect(robotsRaw).toMatch(expected.robotsRequired);
+      expect(robotsRaw).not.toMatch(expected.robotsForbidden);
+    });
+  } else {
+    // feature/* 等はmain起点・staging起点どちらもあり得るため絶対値は検証しない。
+    // ブランチが判定できない場合（CI の pull_request イベント等）も同様に扱う。
+    // 代わりに、config.yml・astro.config.mjs・robots.txt の3ファイルが
+    // 同一環境（staging寄りかmain寄りか）を指しているという内部整合のみ検証する。
+    it('ブランチをmain/stagingと判定できない場合はconfig.yml・SITE_URL・robots.txtが同一環境を指す', () => {
+      const isStagingByConfig = config.backend.branch === 'staging';
+      const isStagingBySiteUrl = siteUrl === ENV_EXPECTATIONS.staging.siteUrl;
+      const isStagingByRobots = ENV_EXPECTATIONS.staging.robotsRequired.test(robotsRaw)
+        && !ENV_EXPECTATIONS.staging.robotsForbidden.test(robotsRaw);
+
+      expect(
+        config.backend.base_url,
+        'config.ymlのbranchとbase_urlが不一致'
+      ).toBe(isStagingByConfig ? ENV_EXPECTATIONS.staging.base_url : ENV_EXPECTATIONS.main.base_url);
+      expect(isStagingBySiteUrl, 'astro.config.mjsのSITE_URLがconfig.ymlのbranchと不一致').toBe(isStagingByConfig);
+      expect(isStagingByRobots, 'robots.txtの方針がconfig.ymlのbranchと不一致').toBe(isStagingByConfig);
+    });
+  }
 });
