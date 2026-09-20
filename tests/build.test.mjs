@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { execSync } from 'child_process';
 import { existsSync, readFileSync, readdirSync } from 'fs';
-import { join, extname } from 'path';
+import { join, extname, basename } from 'path';
 import matter from 'gray-matter';
 
 const DIST_DIR = join(process.cwd(), 'dist');
@@ -747,6 +747,48 @@ describe('ビルド検証', () => {
         expect(value).toBe(`/posts/${key}`);
       }
     });
+
+    it('下書き記事がurl-map.jsonに含まれていない（SEC-29, Bug #48 再発防止）', () => {
+      const draftSlugs = readdirSync(POSTS_DIR, { recursive: true })
+        .filter((f) => String(f).endsWith('.md'))
+        .map((f) => {
+          const content = readFileSync(join(POSTS_DIR, String(f)), 'utf-8');
+          const { data } = matter(content);
+          return { data, slug: basename(String(f), '.md') };
+        })
+        .filter(({ data }) => data.draft === true)
+        .map(({ slug }) => slug);
+
+      // 下書きが0件の場合は検証対象が存在しないだけなので成功扱いとする
+      // （下書き記事が常に存在する前提を置くとコンテンツ変更でテストが壊れる）
+      for (const slug of draftSlugs) {
+        for (const key of Object.keys(urlMap)) {
+          // 部分一致だと公開記事のslugが下書きslugを部分文字列として含む場合に
+          // 誤検知するため、末尾セグメント（実際のslug）を完全一致で比較する
+          expect(basename(key)).not.toBe(slug);
+        }
+        for (const value of Object.values(urlMap)) {
+          expect(basename(value)).not.toBe(slug);
+        }
+      }
+    });
+
+    it('公開記事のslugが全てurl-map.jsonに含まれている（下書き除外が過剰でないことの確認）', () => {
+      const publishedSlugs = readdirSync(POSTS_DIR, { recursive: true })
+        .filter((f) => String(f).endsWith('.md'))
+        .map((f) => {
+          const content = readFileSync(join(POSTS_DIR, String(f)), 'utf-8');
+          const { data } = matter(content);
+          return { data, slug: basename(String(f), '.md') };
+        })
+        .filter(({ data }) => data.draft !== true)
+        .map(({ slug }) => slug);
+
+      const mapSlugs = Object.keys(urlMap).map((key) => basename(key));
+      for (const slug of publishedSlugs) {
+        expect(mapSlugs).toContain(slug);
+      }
+    });
   });
 
   describe('rehype-image-captionプラグインの適用確認', () => {
@@ -859,6 +901,8 @@ describe('ビルド検証', () => {
     const headersPath = join(process.cwd(), 'public/_headers');
     const headersContent = readFileSync(headersPath, 'utf-8');
     // パスルール行（行頭 /admin/*）以降を admin セクションとして抽出
+    const adminRuleIndex = headersContent.search(/^\/admin\/\*/m);
+    const globalSection = adminRuleIndex >= 0 ? headersContent.substring(0, adminRuleIndex) : headersContent;
     const adminMatch = headersContent.match(/^\/admin\/\*\r?\n([\s\S]*)$/m);
     const adminSection = adminMatch ? adminMatch[1] : '';
 
@@ -882,12 +926,16 @@ describe('ビルド検証', () => {
       expect(adminSection).toContain('Content-Security-Policy:');
     });
 
-    it('/admin/*にX-Frame-Options: SAMEORIGINが設定されている', () => {
-      expect(adminSection).toContain('X-Frame-Options: SAMEORIGIN');
+    it('X-Frame-Optionsは/admin/*で再定義されず/*から継承される（Issue #115, Bug #49）', () => {
+      // Cloudflare Pagesは/*と/admin/*で同名ヘッダーを指定するとオーバーライドではなく
+      // Append（重複送信）するため、/admin/*では再定義せず/*の値がそのまま適用される設計にした。
+      expect(adminSection).not.toMatch(/^\s*X-Frame-Options:/m);
+      expect(globalSection).toContain('X-Frame-Options: SAMEORIGIN');
     });
 
-    it('/admin/*にCOOP: same-origin-allow-popupsが設定されている', () => {
-      expect(adminSection).toContain('Cross-Origin-Opener-Policy: same-origin-allow-popups');
+    it('COOPは/admin/*で再定義されず/*から継承され、same-origin-allow-popupsが適用される（Issue #115, Bug #49）', () => {
+      expect(adminSection).not.toMatch(/^\s*Cross-Origin-Opener-Policy:/m);
+      expect(globalSection).toContain('Cross-Origin-Opener-Policy: same-origin-allow-popups');
     });
 
     it('CSP connect-src に blob: が含まれている（Bug #29: Decap CMS画像保存時の fetch(blobURL) に必要）', () => {
@@ -934,21 +982,22 @@ describe('ビルド検証', () => {
       return sections;
     }
 
-    it('/* と /admin/* で同名ヘッダーが異なる値で重複していない', () => {
-      // 同一値の重複は安全（ブラウザが正しく処理する）。異なる値の重複のみ検出する。
+    it('/* と /admin/* で同名ヘッダーが一切重複していない（SEC-30, Bug #49 再発防止）', () => {
+      // Pages は同名ヘッダーを append するため、COOP等の Structured Header がカンマ結合で構文エラーになる。
+      // 共通ヘッダーは /* で定義し、/admin/* では再定義してはならない。
       const sections = parseHeadersFile(headersContent);
       const globalHeaders = sections['/*'] || [];
       const adminHeaders = sections['/admin/*'] || [];
-      const conflicts = [];
+      const duplicateNames = [];
       for (const admin of adminHeaders) {
-        const global = globalHeaders.find(g => g.name === admin.name);
-        if (global && global.value !== admin.value) {
-          conflicts.push(`${admin.name}: /*="${global.value}" vs /admin/*="${admin.value}"`);
+        const global = globalHeaders.find(g => g.name.toLowerCase() === admin.name.toLowerCase());
+        if (global) {
+          duplicateNames.push(admin.name);
         }
       }
       expect(
-        conflicts,
-        `/* と /admin/* で異なる値のヘッダー: ${conflicts.join('; ')}`
+        duplicateNames,
+        `/* と /admin/* で重複しているヘッダー名: ${duplicateNames.join(', ')}`
       ).toEqual([]);
     });
 
@@ -981,6 +1030,35 @@ describe('ビルド検証', () => {
       for (const call of sharpMatches) {
         expect(call).toContain('limitInputPixels');
       }
+    });
+  });
+
+  describe('画像正規化処理の堅牢化（SEC-32）', () => {
+    const scriptPath = join(process.cwd(), 'scripts/normalize-images.mjs');
+
+    it('sharp処理が try/catch で囲まれ、catch でビルド全体を throw していない（SEC-32）', () => {
+      const scriptContent = readFileSync(scriptPath, 'utf-8');
+      expect(scriptContent).toMatch(/try\s*\{[\s\S]*?sharp\s*\(/);
+      const normalizeCatch = scriptContent.match(/catch\s*\([^)]*\)\s*\{([^}]*Failed to normalize[\s\S]*?)\}/);
+      expect(normalizeCatch, 'sharp処理の catch（Failed to normalize）が見つからない').toBeTruthy();
+      expect(normalizeCatch[1]).toMatch(/console\.warn/);
+      expect(normalizeCatch[1]).not.toMatch(/\bthrow\b/);
+      expect(normalizeCatch[1]).not.toMatch(/\bprocess\.exit\b/);
+    });
+
+    it('.rotate().toBuffer() の出力 buffer.length に MAX_FILE_SIZE 上限がある（SEC-32）', () => {
+      const scriptContent = readFileSync(scriptPath, 'utf-8');
+      expect(scriptContent).toContain('.rotate().toBuffer()');
+      expect(scriptContent).toMatch(/buffer\.length\s*>\s*MAX_FILE_SIZE/);
+    });
+
+    it('lstat 失敗も try/catch で保護されている（SEC-32）', () => {
+      const scriptContent = readFileSync(scriptPath, 'utf-8');
+      expect(scriptContent).toMatch(/try\s*\{[\s\S]*?lstat\s*\([\s\S]*?\}\s*catch\s*\(/);
+      const lstatCatch = scriptContent.match(/catch\s*\([^)]*\)\s*\{([^}]*Failed to stat[\s\S]*?)\}/);
+      expect(lstatCatch, 'lstat 失敗時の catch（Failed to stat）が見つからない').toBeTruthy();
+      expect(lstatCatch[1]).toMatch(/console\.warn/);
+      expect(lstatCatch[1]).not.toMatch(/\bthrow\b/);
     });
   });
 

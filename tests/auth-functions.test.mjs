@@ -436,4 +436,47 @@ describe('セキュリティ検証（functions/auth/）', () => {
     expect(callbackSource).toContain('Cache-Control');
     expect(callbackSource).toContain('no-store');
   });
+
+  it('OAuthハンドシェイクのmessage listenerに { once: true } を使っていない（SEC-31）', () => {
+    const addListenerMatch = callbackSource.match(/addEventListener\s*\(\s*["']message["'][\s\S]{0,120}/);
+    expect(addListenerMatch, 'addEventListener("message" が見つからない').toBeTruthy();
+    expect(addListenerMatch[0]).not.toMatch(/once\s*:\s*true/);
+    expect(callbackSource).not.toMatch(/addEventListener\s*\(\s*["']message["'][^)]*once\s*:\s*true/);
+  });
+
+  it('ackは event.data の完全一致で検証している（SEC-31）', () => {
+    const hasStrictInequality = callbackSource.includes('event.data !== "authorizing:github"');
+    const hasStrictEquality = /event\.data\s*===\s*["']authorizing:github["']/.test(callbackSource);
+    expect(
+      hasStrictInequality || hasStrictEquality,
+      'ack検証は event.data !== "authorizing:github"（または === で早期return）の完全一致であること'
+    ).toBe(true);
+    expect(callbackSource).not.toMatch(/event\.data\s*\.(includes|indexOf|startsWith|endsWith|match)\s*\(/);
+    expect(callbackSource).not.toMatch(/String\s*\(\s*event\.data\s*\)/);
+  });
+
+  it('オリジン検証とペイロード検証の両方を通過したときだけ removeEventListener している（SEC-31）', () => {
+    const handleMatch = callbackSource.match(/function handleMessage\s*\(\s*event\s*\)\s*\{([\s\S]*?)\n      \}/);
+    expect(handleMatch, 'handleMessage 関数が見つからない').toBeTruthy();
+    const body = handleMatch[1];
+
+    const originIdx = body.search(/event\.origin\s*!==\s*expectedOrigin/);
+    const payloadIdx = body.search(/event\.data\s*!==\s*["']authorizing:github["']/);
+    const removeIdx = body.search(/removeEventListener\s*\(\s*["']message["']/);
+
+    expect(originIdx, 'オリジン検証が見つからない').toBeGreaterThanOrEqual(0);
+    expect(payloadIdx, 'ペイロード完全一致検証が見つからない').toBeGreaterThanOrEqual(0);
+    expect(removeIdx, 'handleMessage 内の removeEventListener("message" が見つからない').toBeGreaterThanOrEqual(0);
+    expect(removeIdx).toBeGreaterThan(originIdx);
+    expect(removeIdx).toBeGreaterThan(payloadIdx);
+
+    expect(body.slice(originIdx, originIdx + 80)).toMatch(/\breturn\b/);
+    expect(body.slice(payloadIdx, payloadIdx + 80)).toMatch(/\breturn\b/);
+  });
+
+  it('フェイルセーフの setTimeout（30000ms）でタイムアウト時に listener を外す（SEC-31）', () => {
+    const timeoutMatch = callbackSource.match(/setTimeout\s*\(\s*(?:function\s*\(\s*\)|[\w$]+)\s*(?:\{|,)([\s\S]*?)\},\s*30000\s*\)/);
+    expect(timeoutMatch, 'setTimeout(..., 30000) のフェイルセーフが見つからない').toBeTruthy();
+    expect(timeoutMatch[1]).toMatch(/removeEventListener\s*\(\s*["']message["']/);
+  });
 });

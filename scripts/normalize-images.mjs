@@ -16,8 +16,14 @@ let fixed = 0;
 for (const file of imageFiles) {
   const filePath = join(UPLOADS_DIR, file);
 
-  // シンボリックリンク防御
-  const fileInfo = await lstat(filePath);
+  // シンボリックリンク防御（lstat自体の失敗も考慮: readdir後にファイルが削除された場合など）
+  let fileInfo;
+  try {
+    fileInfo = await lstat(filePath);
+  } catch (err) {
+    console.warn(`[normalize-images] Failed to stat ${file}:`, err.message);
+    continue;
+  }
   if (fileInfo.isSymbolicLink()) {
     console.warn(`[normalize-images] Skipping symlink: ${file}`);
     continue;
@@ -29,16 +35,30 @@ for (const file of imageFiles) {
     continue;
   }
 
-  const meta = await sharp(filePath, { limitInputPixels: PIXEL_LIMIT }).metadata();
+  // sharp処理全体をtry/catchで保護（SEC-32: 壊れた画像1件でビルド全体を落とさない）
+  try {
+    const meta = await sharp(filePath, { limitInputPixels: PIXEL_LIMIT }).metadata();
 
-  if (meta.orientation && meta.orientation !== 1) {
-    const buffer = await sharp(filePath, { limitInputPixels: PIXEL_LIMIT }).rotate().toBuffer();
-    await writeFile(filePath, buffer);
-    const newMeta = await sharp(filePath, { limitInputPixels: PIXEL_LIMIT }).metadata();
-    console.log(
-      `[normalize-images] ${file}: orientation=${meta.orientation} → fixed (${newMeta.width}x${newMeta.height})`
-    );
-    fixed++;
+    if (meta.orientation && meta.orientation !== 1) {
+      const buffer = await sharp(filePath, { limitInputPixels: PIXEL_LIMIT }).rotate().toBuffer();
+
+      // 回転後バッファのサイズ上限チェック（SEC-32: 出力側にも上限を適用し、安全側に倒して元ファイルを保持）
+      if (buffer.length > MAX_FILE_SIZE) {
+        console.warn(
+          `[normalize-images] Skipping oversized rotated output: ${file} (${(buffer.length / 1024 / 1024).toFixed(1)}MB)`
+        );
+        continue;
+      }
+
+      await writeFile(filePath, buffer);
+      const newMeta = await sharp(filePath, { limitInputPixels: PIXEL_LIMIT }).metadata();
+      console.log(
+        `[normalize-images] ${file}: orientation=${meta.orientation} → fixed (${newMeta.width}x${newMeta.height})`
+      );
+      fixed++;
+    }
+  } catch (err) {
+    console.warn(`[normalize-images] Failed to normalize ${file}:`, err.message);
   }
 }
 

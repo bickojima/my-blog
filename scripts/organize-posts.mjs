@@ -23,7 +23,7 @@ function findMdFiles(dir) {
 function extractFrontmatter(filePath) {
   const content = fs.readFileSync(filePath, 'utf-8');
   try {
-    const { data } = matter(content, { engines: {} });
+    const { data } = matter(content, { language: 'yaml' });
     if (!data.date || !data.title) return null;
     const dateStr = data.date instanceof Date
       ? data.date.toISOString().split('T')[0]
@@ -36,6 +36,7 @@ function extractFrontmatter(filePath) {
       day: dateMatch[3],
       date: `${dateMatch[1]}-${dateMatch[2]}-${dateMatch[3]}`,
       title: String(data.title),
+      draft: data.draft === true,
     };
   } catch {
     console.warn(`[organize-posts] Failed to parse frontmatter: ${filePath}`);
@@ -87,7 +88,7 @@ const allFiles = findMdFiles(POSTS_DIR);
 const urlMap = {};
 for (const filePath of allFiles) {
   const fm = extractFrontmatter(filePath);
-  if (!fm) continue;
+  if (!fm || fm.draft) continue;
   const relPath = path.relative(POSTS_DIR, filePath).replace(/\.md$/, '').replace(/\\/g, '/');
   const fileSlug = path.basename(filePath, '.md');
   urlMap[relPath] = `/posts/${fm.year}/${fm.month}/${fileSlug}`;
