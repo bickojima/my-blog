@@ -963,4 +963,52 @@ describe('ビルド検証', () => {
       }
     });
   });
+
+  describe('ビルドスクリプト防御検証（SEC-25）', () => {
+    it('normalize-images.mjs のすべての sharp 呼び出しに limitInputPixels が指定されている', () => {
+      const scriptContent = readFileSync(join(process.cwd(), 'scripts/normalize-images.mjs'), 'utf-8');
+      const sharpMatches = scriptContent.match(/sharp\([^)]*\)/g) || [];
+      expect(sharpMatches.length).toBeGreaterThan(0);
+      for (const call of sharpMatches) {
+        expect(call).toContain('limitInputPixels');
+      }
+    });
+
+    it('image-optimize.mjs のすべての sharp 呼び出しに limitInputPixels が指定されている', () => {
+      const scriptContent = readFileSync(join(process.cwd(), 'src/integrations/image-optimize.mjs'), 'utf-8');
+      const sharpMatches = scriptContent.match(/sharp\([^)]*\)/g) || [];
+      expect(sharpMatches.length).toBeGreaterThan(0);
+      for (const call of sharpMatches) {
+        expect(call).toContain('limitInputPixels');
+      }
+    });
+  });
+
+  describe('公開ページContent-Security-Policyメタタグ検証（SEC-28）', () => {
+    it('Base.astro に CSP meta タグが設定されている', () => {
+      const baseContent = readFileSync(join(process.cwd(), 'src/layouts/Base.astro'), 'utf-8');
+      expect(baseContent).toContain('<meta http-equiv="Content-Security-Policy"');
+      expect(baseContent).toContain("default-src 'self'");
+      expect(baseContent).toContain("img-src 'self' data: https:");
+      expect(baseContent).toContain("style-src 'self' 'unsafe-inline'");
+      expect(baseContent).toContain("script-src 'self' 'unsafe-inline'");
+      expect(baseContent).toContain("font-src 'self'");
+      expect(baseContent).toContain("base-uri 'self'");
+      expect(baseContent).toContain("form-action 'self'");
+    });
+
+    it('ビルド生成物（dist/index.html, dist/404.html）に CSP meta タグが含まれている', () => {
+      const distIndexPath = join(process.cwd(), 'dist/index.html');
+      const dist404Path = join(process.cwd(), 'dist/404.html');
+      if (existsSync(distIndexPath)) {
+        const indexHtml = readFileSync(distIndexPath, 'utf-8');
+        expect(indexHtml).toContain('http-equiv="Content-Security-Policy"');
+        expect(indexHtml).toContain("default-src 'self'");
+      }
+      if (existsSync(dist404Path)) {
+        const notFoundHtml = readFileSync(dist404Path, 'utf-8');
+        expect(notFoundHtml).toContain('http-equiv="Content-Security-Policy"');
+      }
+    });
+  });
 });
