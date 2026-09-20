@@ -61,6 +61,7 @@
 | 1.54 | 2026-09-09 | FR-29追加QA: noindex固定ページをヘッダーナビから除外。ビルド検証を更新し、実メニュー操作E2Eを3件追加（453定義） |
 | 1.55 | 2026-09-20 | セキュリティIssue #109〜#113対応（敵対的レビュー反映）: SEC-27（OAuth送信先オリジン許可リスト検証）、SEC-28（公開ページCSPメタタグ導入）追加。SEC-22（OAuth開始・エラー時Cache-Control適用拡大）、SEC-25（normalize-images.mjs回転後再取得時ピクセル上限適用整合性）更新。sharp ^0.35.4更新、npm audit fix実施。Vitest 610→622件（全622テストPASS） |
 | 1.56 | 2026-09-20 | セキュリティ監査run-2対応（Issue #114, #115, #117項目4/項目11）: SEC-29（下書き記事のurl-map.json混入防止＋gray-matterエンジン明示、Bug #48）、SEC-30（`/*`・`/admin/*`ヘッダー重複排除、Bug #49）、SEC-31（OAuthハンドシェイクのメッセージリスナー堅牢化）、SEC-32（画像正規化処理のtry/catch保護＋出力バッファ上限）を追加。1.5.4章トレーサビリティにSEC-29〜32を追記（SEC-31・SEC-32は実装済みだが自動回帰テスト未実装のためフォローアップ要として明記）。4.5章にBug #48・#49を5 Whysとともに追記し、Bug #48関連の既知の制限事項（下書き記事のアップロード画像自体は公開される仕様上の制限）を4.5.1章に追記。**改訂履歴の訂正**: 1.55の「Vitest 610→622件（全622テストPASS）」は、その後のコミット`38205a0`による`_headers`変更（`/admin/*`からのCOOP/CORP/X-Frame-Options削除）で前提が変わり、既存テスト8件（build.test.mjs 2件、fuzz-validation.test.mjs 6件）が実際にFAILする状態になっていた。加えてfuzz-validation.test.mjsの重複検証テスト1件はガード条件（`if (globalVal && adminVal)`）によりFAILはしないものの何も検証しない空のテストになっていた（テスト名は「同一値の重複は安全」という旧設計の主張のまま）。本改訂でFAILしていた8件を新設計（`/admin/*`では再定義せず`/*`から継承）に合わせて書き換え、空のテスト1件もガード条件を撤廃し実効的な検証（3ヘッダーが`/admin/*`に存在せず`/*`に管理画面の必要値で存在すること）へ書き換えた。本改訂時点の実測値はVitest 624件全PASS |
+| 1.57 | 2026-09-20 | 本番CMS CDNを Decap CMS `3.10.0` から `3.16.2` へ更新（SEC-03 バージョン固定、SEC-12 SRI再計算）。`public/admin/index.html` の unpkg URL と SHA-384 integrity を差し替え。3.16.2 dist に `.wasm` があるが、実行時 fetch は任意設定 `media_processing` の WebP 変換チャンク（`7405.decap-cms.js`）に限られ、本サイトの `config.yml` では未使用のため `/admin/*` CSP は変更しない（COOP/CORP/XFO の再定義も行わない）。カスタマイズが依存する Emotion ラベル（`EditorControlBar` / `GroupHeading` / `DropdownList` 等）は 3.16.2 バンドルに残存することを確認。要件ID新設なし |
 
 ## システム変更履歴
 
@@ -760,7 +761,7 @@ my-blog/
 | 分類 | 技術 | バージョン | 用途 |
 | :--- | :--- | :--- | :--- |
 | SSG | Astro | v5.17.1 | 静的サイト生成 |
-| CMS | Decap CMS | v3.10.0 | コンテンツ管理 |
+| CMS | Decap CMS | v3.16.2 | コンテンツ管理 |
 | ホスティング | Cloudflare Pages | - | 静的配信 + Functions |
 | 認証 | GitHub OAuth App | - | CMS管理者認証 |
 | 画像処理 | sharp | v0.34.5 | 画像圧縮・回転・リサイズ |
@@ -1054,7 +1055,7 @@ return new Response(`
 | postMessage のオリジン検証 | callback.js は `expectedOrigin`（サーバーサイド算出）で `postMessage` の送信先を制限し、`event.origin` で受信元を検証する。ワイルドカード `"*"` は使用しない |
 | scope の最小化 | `public_repo,read:user` のみを要求し、不要な権限は取得しない。`repo` スコープ（プライベートリポジトリ含む全アクセス）は使用しない |
 | XSS 対策 | callback.js でトークン値をHTMLに埋め込む際に `escapeForScript()` でエスケープし、スクリプト注入を防止する。admin/index.html では innerHTML を使用せず DOM API（createElement/textContent）で安全にDOM構築する |
-| CDN バージョン固定 | Decap CMS の CDN URL はキャレット範囲（`^3.10.0`）ではなく正確なバージョン（`3.10.0`）を指定し、サプライチェーン攻撃のリスクを軽減する |
+| CDN バージョン固定 | Decap CMS の CDN URL はキャレット範囲（`^3.16.2`）ではなく正確なバージョン（`3.16.2`）を指定し、SRI（`integrity`）と合わせてサプライチェーン攻撃のリスクを軽減する。3.16.2 dist の `.wasm` は任意の `media_processing` WebP 変換でのみ遅延読み込みされ、本サイトでは未使用のため管理画面 CSP に `wasm-unsafe-eval` は追加しない |
 | トークンの保管 | ブラウザの localStorage に保管される。XSS 対策として管理画面に `noindex` を設定し外部からのアクセスを制限する |
 
 ### 2.4.7 環境変数
@@ -2289,4 +2290,4 @@ evidence/YYYY-MM-DD/
 
 ---
 
-**最終更新**: 2026年9月20日（v1.56）
+**最終更新**: 2026年9月20日（v1.57）
