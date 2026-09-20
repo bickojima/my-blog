@@ -54,6 +54,7 @@
 | 1.46 | 2026-09-20 | Astro 7.3.3 へメジャーアップ（Content Layer glob loader、`render(entry)`、`page.id`）。テスト件数増減なし（Vitest 624件全PASS）。サイト系 E2E を PC で再実行: `site.spec.ts` 37 PASS / 1 skip、`app-info.spec.ts` 3 PASS。実行環境の Node 要件を 22.12.0 以上へ更新 |
 | 1.47 | 2026-09-20 | 本番CMS CDNを Decap CMS `3.10.0` から `3.16.2` へ更新。既存の admin-html 検証（SEC-03 バージョン固定、SEC-12 SRI `integrity` / `crossorigin`、CDN `<script>` 閉じタグ）で新URLを確認。テスト件数増減なし。CMS系E2E（`cms-customizations.spec.ts` / `cms-operations.spec.ts` / `cms.spec.ts`、`--project=PC`）は 77 PASS・4 skip（E-34 モバイル固有は PC 対象外） |
 | 1.48 | 2026-09-20 | SEC-31/SEC-32 の自動回帰テストを追加。`auth-functions.test.mjs` に4件（2.3.1章 #8〜#11）、`build.test.mjs` に3件（2.5.10章 #1〜#3）。3.1章の未テスト例外と1.6.2章の例外注記を削除。Vitest 624→**631**件（全PASS、`npx vitest run` 実測。内訳: auth-functions 25→29、build 104→107） |
+| 1.49 | 2026-09-20 | Bug #50: 本番マージ前のローカル E2E 全件を必須化し、「可能な場合」を廃止。**CI に Playwright は載せない**（Q23）。build.test.mjs に手順固定テスト3件を追加。Vitest 631→**634**件 |
 
 ## テスト基盤の変更履歴
 
@@ -469,9 +470,10 @@ admin-html.test.mjs              -     ●     -     -     -     -     -     -  
 
 | No. | 基準 |
 | :--- | :--- |
-| 1 | 全テストケース（Vitest 631件 + E2E 453件 = 1084件）がPASSまたは仕様上の条件スキップであること |
+| 1 | 全テストケース（Vitest 634件 + E2E 453件 = 1087件）がPASSまたは仕様上の条件スキップであること |
 | 2 | `npm run build` が正常に完了すること |
 | 3 | 要件トレーサビリティマトリクス（docs/DOCUMENTATION.md 1.5章）において全要件が「充足」であること |
+| 4 | 本番（main）マージ前にローカル `npm run test:e2e` 全件が完了していること（**CI に Playwright は載せない**。Bug #50） |
 
 ### 1.6.3 合否判定基準
 
@@ -834,7 +836,7 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 
 ---
 
-## 2.5. ビルド検証 (`build.test.mjs`) — 107件
+## 2.5. ビルド検証 (`build.test.mjs`) — 110件
 
 `npm run build`を実行し、パイプライン全体（normalize-images → organize-posts → astro build → image-optimize）の出力を検証する。全テストケースはビルド完了後に実行される。
 
@@ -982,11 +984,23 @@ Bug #42: `/page/[page].astro`が`paginate()`の結果をフィルタせず生成
 | 57 | /* と /admin/* で同名ヘッダーが重複していない | 重複防止 | M-02 | `/*`セクションと`/admin/*`セクションで同名ヘッダーが存在しない |
 | 58 | 管理画面で緩和が必要なヘッダーが /* に含まれていない | 重複防止 | M-02 | COOP/CORP/X-Frame-Optionsが`/*`セクションに含まれない |
 
-### 2.5.2 ビルドパイプライン検証（1件）
+### 2.5.2 ビルドパイプライン検証（4件）
 
 | No. | テストケース | カテゴリ | テスト手法 | 期待結果 |
 | :--- | :--- | :--- | :--- | :--- |
 | 51 | buildスクリプトに4段階パイプラインが定義されている（FR-20） | パイプライン | M-02 | `build:raw`に`normalize-images`, `organize-posts`, `astro build`が含まれる |
+| 52 | Vitestの探索範囲がtests配下の単体・統合テストに限定されている（Bug #46） | パイプライン | M-02 | `vitest.config.ts`に`include: ['tests/**/*.test.mjs']`がある |
+| 53 | CMS記事作成E2Eに並列負荷を考慮したタイムアウトがある（Bug #47） | パイプライン | M-02 | E-28 describe に `timeout: 60000` がある |
+
+### 2.5.11 本番マージ前のローカルE2E必須（Bug #50、3件）
+
+Playwright は CI に載せない。ローカル全件を main マージの必須条件とし、手順文書を Vitest で固定する。
+
+| No. | テストケース | テスト手法 | 期待結果 |
+| :--- | :--- | :--- | :--- |
+| 1 | CI は Vitest とビルドのみで Playwright E2E を必須化しない（Bug #50） | M-02 | `.github/workflows/ci.yml` に `npm test` と `build:raw` があり、`npx playwright` / `npm run test:e2e` / `playwright test` が無い |
+| 2 | 4.6章はローカルE2E全件をmainマージの必須条件とし、Vitest だけでは main マージ不可とする（Bug #50） | M-02 | DOCUMENTATION.md 4.6章に `npm run test:e2e` / `Vitest だけでは main マージ不可` / `CI に Playwright は載せない` があり、「可能な場合」が無い |
+| 3 | CLAUDE.md は Vitest のみの main マージを禁止し、CI に Playwright は載せない（Bug #50） | M-02 | CLAUDE.md に `Vitest だけでは main マージ不可` と `CI に Playwright は載せない` がある |
 
 ### 2.5.10 画像正規化処理の堅牢化（SEC-32、3件）
 
@@ -1681,7 +1695,7 @@ npx playwright test --project=iPhone
 npx playwright test -g "タップ領域"
 ```
 
-**注意**: E2Eテストはローカル開発環境でのみ実行可能である。Chromiumブラウザのバイナリが必要なため、初回は `npx playwright install chromium` でインストールすること。
+**注意**: E2Eテストはローカル開発環境でのみ実行する。**CI に Playwright は載せない**（実行時間のため。Bug #50）。本番（main）マージ前のローカル全件は必須であり、Vitest 成功では代替しない。Chromiumブラウザのバイナリが必要なため、初回は `npx playwright install chromium` でインストールすること。
 
 ### 4.2.3 包括的エビデンス検証（verify-comprehensive.mjs）
 
@@ -1722,7 +1736,7 @@ npm run build
 
 | 項目 | 結果 |
 | :--- | :--- |
-| 実行日時 | 2026-09-20（SEC-31/SEC-32 回帰テスト追加後） |
+| 実行日時 | 2026-09-20（Bug #50 再発防止テスト追加後） |
 | Vitest バージョン | v4.1.11 |
 | 実行時間 | 2.02s |
 | 合否判定 | **合格** |
@@ -1738,10 +1752,10 @@ npm run build
 | `auth-functions.test.mjs` | 29 | PASS | 15ms |
 | `fuzz-validation.test.mjs` | 215 | PASS | 25ms |
 | `content-validation.test.mjs` | 125 | PASS | 31ms |
-| `build.test.mjs` | 107 | PASS | 2310ms |
-| **合計** | **631** | **全PASS** | **2.02s（全体実行時、`npx vitest run` 実測）** |
+| `build.test.mjs` | 110 | PASS | 2310ms |
+| **合計** | **634** | **全PASS** | **2.02s（全体実行時、`npx vitest run` 実測）** |
 
-SEC-31/SEC-32 の自動回帰テスト追加により、`auth-functions.test.mjs` 25→29、`build.test.mjs` 104→107。Vitest 合計 624→**631**（全PASS）。
+Bug #50 再発防止テスト追加により、`build.test.mjs` 107→110。Vitest 合計 631→**634**（全PASS）。
 
 ### 4.3.3 E2Eテスト最新実行結果（Playwright）
 
