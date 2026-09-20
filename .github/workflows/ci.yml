@@ -23,6 +23,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Playwright E2E は実行しない（実行時間のためローカル運用。本番マージ前のローカル全件は必須。Bug #50）
       - name: Run Vitest Unit Tests
         run: npm test
 
