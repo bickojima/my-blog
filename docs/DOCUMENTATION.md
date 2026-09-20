@@ -68,6 +68,7 @@
 | 1.61 | 2026-09-20 | 4.7章・4.10.2章の要件範囲表記を SEC-01〜SEC-28 から SEC-01〜SEC-32 へ更新（現行定義との不一致を解消） |
 | 1.62 | 2026-09-20 | staging → main 本番反映（PR #118 を staging へマージ後）。ゲート5（staging CMS 実ログイン）・ゲート6（`/admin/` の COOP/CORP/XFO 重複解消を curl 実測）を確認してから main へマージ。`config.yml` は `branch: main` / `base_url: https://reiwa.casa`、`SITE_URL` は `https://reiwa.casa`、`robots.txt` は `Allow: /` + Sitemap を維持 |
 | 1.63 | 2026-09-20 | Bug #50: 本番マージを Vitest（CI含む）と staging 実ログインだけで完了し、ローカル E2E 全件を後回しにしたプロセス不備。4.6章の「E2E は可能な場合」を廃止し、ローカル `npm run test:e2e` 全件と `verify-comprehensive.mjs` を main マージ必須条件に変更。**CI に Playwright は載せない**（実行時間のためローカル運用継続）。雛形はシナリオ FAIL で非ゼロ終了。再発防止は手順文書の固定＋Vitest 4件。Vitest 631→**635**件 |
+| 1.64 | 2026-09-20 | Issue #117 項目2/12: SEC-33（CI `permissions: contents: read`）、SEC-34（無効な `public/.assetsignore` 削除）。Vitest 635→**638**件 |
 
 ## システム変更履歴
 
@@ -225,6 +226,7 @@ PR履歴に基づく主要なシステム変更の記録である。
 | Q21 | 全テスト・実操作E2E・3デバイスと認証後CMSのエビデンスが成功した場合、指定authorでコミットしstagingへプッシュしてよいか | `tbi <noreply@users.noreply.github.com>`でコミットしstagingへプッシュする | 確認済み |
 | Q22 | Issue #97の対象に任意項目F-11（レスポンシブ画像）も含めるか | F-11は対象外とし、Issue #97の必須残作業のみを完遂する。検証結果とQA履歴を含む関連ドキュメントも更新する | 確認済み（2026-08-11） |
 | Q23 | 本番マージ前の E2E を CI 必須にするか | しない。ローカル全件必須のまま。CI は Vitest + ビルドのみ。**CI に Playwright は載せない**（Bug #50） | 確認済み（2026-09-20） |
+| Q24 | Issue #117 の残り hardening のうち 2 と 12 だけ実装してよいか | よい。2 は CI `contents: read`、12 は無効な `.assetsignore` 削除。他項目はやらない。GO なら本番反映 | 確認済み（2026-09-20） |
 
 **Issue #97 残作業の完了条件（2026-08-11）:**
 
@@ -538,6 +540,8 @@ staging環境のrobots.txtは`Disallow: /`を維持し、mainマージ時のみ`
 | SEC-30 | `/*`と`/admin/*`のヘッダー重複排除: `_headers`の`/admin/*`セクションからCross-Origin-Opener-Policy / Cross-Origin-Resource-Policy / X-Frame-Optionsの再定義を削除し、`/*`からの継承に一本化する | `public/_headers` | 対応Issue: #115。Cloudflare Pagesは`/*`と`/admin/*`の同名ヘッダーをオーバーライドせずAppend（重複送信）するため、COOP等のRFC 8941 Structured Headerがカンマ結合され構文エラーとして無効化される蓋然性がある。重複を解消すれば実効値を変えずにこの懸念を無条件に除去できる（ブラウザ側の実際の解決結果までは未観測。詳細: `docs/security/audit-run2-needs-validation.md`） |
 | SEC-31 | OAuthハンドシェイクのメッセージリスナー堅牢化: `functions/auth/callback.js`のpostMessage受信リスナーで`{ once: true }`を廃止し、オリジン検証（`event.origin !== expectedOrigin`）とペイロード完全一致検証（`event.data !== "authorizing:github"`）の両方を通過した場合にのみ`removeEventListener`する。加えて30秒のフェイルセーフタイマーでハング防止する | `functions/auth/callback.js` | 対応Issue: #117 項目4。`{ once: true }`は最初に届いた無関係メッセージでリスナーを消費してしまい、正規のackを取りこぼす可能性があった |
 | SEC-32 | 画像正規化処理のビルド堅牢化: `normalize-images.mjs`のsharp処理全体をtry/catchで保護し、壊れた画像1件でビルド全体が失敗しないようにする。加えて`.rotate().toBuffer()`の出力バッファにも`MAX_FILE_SIZE`（50MB）上限を適用し、超過時は書き戻さず元ファイルを保持する | `scripts/normalize-images.mjs` | 対応Issue: #117 項目11。入力側のpixel limit・ファイルサイズ上限に加え、出力側にも上限を設けることで回転処理による意図しない肥大化を防止する |
+| SEC-33 | CIトークン最小権限: GitHub Actions の `test-and-build` ジョブは `permissions: contents: read` のみを宣言する | `.github/workflows/ci.yml` | 対応Issue: #117 項目2。fork PR は既定で読取専用だが、ソース上に明示してリポジトリ既定の将来変更から守る。**CI に Playwright は載せない**（Bug #50） |
+| SEC-34 | 無効な `.assetsignore` を置かない: Cloudflare Pages では Workers Static Assets の `.assetsignore` は効かず、`public/` に置くと公開配信される | ファイルを置かない | 対応Issue: #117 項目12。保護にならないノイズを削除する |
 
 ---
 
@@ -652,8 +656,10 @@ staging環境のrobots.txtは`Disallow: /`を維持し、mainマージ時のみ`
 | SEC-30 | `/*`と`/admin/*`のヘッダー重複排除 | build, fuzz-validation | build: `X-Frame-Optionsは/admin/*で再定義されず/*から継承される（Issue #115, Bug #49）`, `COOPは/admin/*で再定義されず/*から継承され、same-origin-allow-popupsが適用される（Issue #115, Bug #49）`, `/* と /admin/* で同名ヘッダーが一切重複していない（SEC-30, Bug #49 再発防止）` / fuzz-validation: `X-Frame-Options は /admin/* で再定義されず /* から継承される（Issue #115, Bug #49）`, `Cross-Origin-Opener-Policy は /admin/* で再定義されず /* から継承される（Issue #115, Bug #49）`, `Cross-Origin-Resource-Policy は /admin/* で再定義されず /* から継承される（Issue #115, Bug #49）`, `COOP/CORP/X-Frame-Options は /admin/* で再定義されず /* から継承される（Bug #28 再発防止・Issue #115/Bug #49で設計変更）` | M-02 | 充足 |
 | SEC-31 | OAuthハンドシェイクのメッセージリスナー堅牢化 | auth-functions | `OAuthハンドシェイクのmessage listenerに { once: true } を使っていない（SEC-31）`, `ackは event.data の完全一致で検証している（SEC-31）`, `オリジン検証とペイロード検証の両方を通過したときだけ removeEventListener している（SEC-31）`, `フェイルセーフの setTimeout（30000ms）でタイムアウト時に listener を外す（SEC-31）` | M-02 | 充足 |
 | SEC-32 | 画像正規化処理のビルド堅牢化 | build | `sharp処理が try/catch で囲まれ、catch でビルド全体を throw していない（SEC-32）`, `.rotate().toBuffer() の出力 buffer.length に MAX_FILE_SIZE 上限がある（SEC-32）`, `lstat 失敗も try/catch で保護されている（SEC-32）` | M-02 | 充足 |
+| SEC-33 | CIトークン最小権限 | build | `CI ジョブは contents: read に限定する（SEC-33, Issue #117 項目2）` | M-02 | 充足 |
+| SEC-34 | 無効な `.assetsignore` を置かない | build, fuzz-validation | `dist に .assetsignore が存在しない（SEC-34, Issue #117 項目12）`, `Cloudflare Pages で無効な public/.assetsignore が存在しない（SEC-34, Issue #117 項目12）` | M-02 | 充足 |
 
-**充足状況: FR-01〜FR-29, CMS-01〜CMS-19, NFR-01〜NFR-08, SEC-01〜SEC-32はテストで充足されている。未テスト要件は0件。**
+**充足状況: FR-01〜FR-29, CMS-01〜CMS-19, NFR-01〜NFR-08, SEC-01〜SEC-34はテストで充足されている。未テスト要件は0件。**
 
 ---
 
@@ -1926,7 +1932,7 @@ git push origin staging
 
 第三者セキュリティ診断（2026年2月21日実施）で検出された問題と対策を踏まえ、再発防止のための品質向上策と定期診断の運用を定める。
 
-セキュリティ要件は第1部 1.4.2章（SEC-01〜SEC-32）として定義されている。本章では運用面での品質基準、再発防止策、定期診断の手順を定める。個人情報保護については4.8章を参照。
+セキュリティ要件は第1部 1.4.2章（SEC-01〜SEC-34）として定義されている。本章では運用面での品質基準、再発防止策、定期診断の手順を定める。個人情報保護については4.8章を参照。
 
 ### 4.7.1 品質向上策
 
@@ -2258,7 +2264,7 @@ await loginButton.click();
 ### 4.10.2 定期セキュリティ検証
 
 **自動検証（エビデンス取得時に毎回実行）:**
-- `verify-security.mjs` によるセキュリティ要件（SEC-01〜SEC-32）の自動検証
+- `verify-security.mjs` によるセキュリティ要件（SEC-01〜SEC-34）の自動検証
 - XSS耐性、CSPヘッダー、OAuth scope、CDNバージョン、postMessage origin等を自動チェック
 - 検証結果はスクリーンショット付きで記録
 
@@ -2314,7 +2320,7 @@ evidence/YYYY-MM-DD/
 
 | 指標 | 目標値 | 現状 |
 |:---|:---|:---|
-| Vitestテスト全PASS | 100% | 635/635 (100%) |
+| Vitestテスト全PASS | 100% | 638/638 (100%) |
 | Playwright E2Eテスト全PASS | 100% | 2026-09-20 ローカル全件: 445 PASS・8 skip / 453件（16.3m）。CI では実行しない（Bug #50） |
 | セキュリティ検証全PASS | 100% | 10/10 (100%) |
 | ボタン重なり検出 | 0件 | 0件 |
@@ -2323,4 +2329,4 @@ evidence/YYYY-MM-DD/
 
 ---
 
-**最終更新**: 2026年9月20日（v1.63）
+**最終更新**: 2026年9月20日（v1.64）
