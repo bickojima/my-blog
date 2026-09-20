@@ -66,6 +66,7 @@
 | 1.59 | 2026-09-20 | 本番CMS CDNを Decap CMS `3.10.0` から `3.16.2` へ更新（SEC-03 バージョン固定、SEC-12 SRI再計算）。`public/admin/index.html` の unpkg URL と SHA-384 integrity を差し替え。3.16.2 dist に `.wasm` があるが、メインバンドルに `.wasm` ファイル名は無く `media_processing.enabled` 時のみ遅延読み込み。本サイトの `config.yml` では未使用のため `/admin/*` CSP は変更しない（COOP/CORP/XFO の再定義も行わない）。カスタマイズが依存する Emotion ラベル（`EditorControlBar` / `GroupHeading` / `DropdownList` 等）は 3.16.2 バンドルに残存することを確認。要件ID新設なし |
 | 1.60 | 2026-09-20 | SEC-31/SEC-32 の自動回帰テストを追加。`auth-functions.test.mjs` に4件（`{ once: true }` 不使用、ack 完全一致、両検証通過後の `removeEventListener`、30秒フェイルセーフ）、`build.test.mjs` に3件（sharp の try/catch 継続、`buffer.length` の MAX_FILE_SIZE 上限、lstat 失敗保護）。1.5.4章の SEC-31/32 を充足に更新し未テスト例外を解消。Vitest 624→**631**件（全PASS、`npx vitest run` 実測） |
 | 1.61 | 2026-09-20 | 4.7章・4.10.2章の要件範囲表記を SEC-01〜SEC-28 から SEC-01〜SEC-32 へ更新（現行定義との不一致を解消） |
+| 1.62 | 2026-09-20 | staging → main 本番反映（PR #118 を staging へマージ後）。ゲート5（staging CMS 実ログイン）・ゲート6（`/admin/` の COOP/CORP/XFO 重複解消を curl 実測）を確認してから main へマージ。`config.yml` は `branch: main` / `base_url: https://reiwa.casa`、`SITE_URL` は `https://reiwa.casa`、`robots.txt` は `Allow: /` + Sitemap を維持 |
 
 ## システム変更履歴
 
@@ -2295,4 +2296,4 @@ evidence/YYYY-MM-DD/
 
 ---
 
-**最終更新**: 2026年9月20日（v1.61）
+**最終更新**: 2026年9月20日（v1.62）
