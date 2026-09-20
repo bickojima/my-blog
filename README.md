@@ -24,6 +24,7 @@ Astro + Decap CMS によるブログサイト。Cloudflare Pages でホスティ
 | 1.15 | 2026-09-07 | Modern Web Guidance 日本語索引（`docs/MODERN-WEB-GUIDANCE.md`）を新規作成。全139ガイドの1行要約、人間向け閲覧手順、本ブログの適用実績と検討候補を整理。コード変更なし |
 | 1.16 | 2026-09-09 | FR-29: 個人用アプリの紹介・Gmailプライバシーページを固定ページとして追加。CMSから編集でき、検索結果には出さない（noindex・sitemap除外） |
 | 1.17 | 2026-09-09 | FR-29: noindex固定ページをヘッダーナビから除外。2ページの公開URLとCMS編集は維持 |
+| 1.18 | 2026-09-20 | 本番CMS CDNを Decap CMS `3.10.0` から `3.16.2` へ更新（SEC-03 バージョン固定、SEC-12 SRI再計算） |
 
 詳細なシステム変更履歴は [DOCUMENTATION.md](docs/DOCUMENTATION.md) を参照。
 
@@ -35,7 +36,7 @@ Astro + Decap CMS によるブログサイト。Cloudflare Pages でホスティ
 - **テストURL**: https://staging.reiwa.casa（`staging` ブランチ）
 - **管理画面**: https://reiwa.casa/admin（テスト: https://staging.reiwa.casa/admin）
 - **認証方式**: GitHub OAuth（本番・テスト各環境に専用OAuth App）
-- **CMS**: Decap CMS v3.10.0
+- **CMS**: Decap CMS v3.16.2
 
 アプリ案内（FR-29）: `/playwright-home/` と `/playwright-home-privacy/`。
 CMSの固定ページ（`src/content/pages/`）で管理する。`noindex: true` の固定ページはヘッダーナビにも表示しない。要件・Google登録値は [QA記録](docs/qa-2026-09-09-otp-app-pages.md)。
