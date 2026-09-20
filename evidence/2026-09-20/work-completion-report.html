@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>作業完了報告書 — Bug #50 (2026-09-20)</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; line-height: 1.6; color: #222; background: #f7f8fa; }
+  header { background: #1e2d4e; color: #fff; padding: 24px 32px; }
+  header h1 { font-size: 1.6rem; font-weight: 700; }
+  header p { margin-top: 4px; opacity: 0.8; }
+  main { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+  section { background: #fff; border-radius: 8px; border: 1px solid #e0e3ea; margin-bottom: 20px; overflow: hidden; }
+  section h2 { background: #f0f3fa; border-bottom: 1px solid #e0e3ea; padding: 12px 20px; font-size: 1rem; font-weight: 700; color: #1e2d4e; }
+  section .body { padding: 16px 20px; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid #eaecf0; font-size: 13px; }
+  th { background: #f8f9fc; font-weight: 600; color: #444; }
+  .pass { color: #1a7a4a; font-weight: 700; }
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+  .stat-card { background: #f8f9fc; border: 1px solid #e0e3ea; border-radius: 6px; padding: 12px 16px; text-align: center; }
+  .stat-card .num { font-size: 2rem; font-weight: 800; color: #1a7a4a; line-height: 1; }
+  .stat-card .label { font-size: 11px; color: #666; margin-top: 4px; }
+  .timeline { list-style: none; padding: 0; }
+  .timeline li { padding: 8px 0 8px 28px; position: relative; border-left: 2px solid #d0d5e0; margin-left: 10px; }
+  .timeline li::before { content: ''; position: absolute; left: -6px; top: 14px; width: 10px; height: 10px; border-radius: 50%; background: #1a7a4a; border: 2px solid #fff; }
+  code { background: #f0f3fa; padding: 1px 5px; border-radius: 3px; font-size: 12px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>作業完了報告書 — Bug #50 本番マージ前ゲート</h1>
+  <p>実施日: 2026年9月20日 | ブランチ: fix/bug-50-e2e-before-prod | CI に Playwright は載せない</p>
+</header>
+<main>
+<section>
+  <h2>実施結果サマリー</h2>
+  <div class="body">
+    <div class="stat-grid">
+      <div class="stat-card"><div class="num">635</div><div class="label">Vitest 全PASS</div></div>
+      <div class="stat-card"><div class="num">445+8</div><div class="label">Playwright E2E（16.3m）</div></div>
+      <div class="stat-card"><div class="num">150/150</div><div class="label">verify-comprehensive.mjs</div></div>
+      <div class="stat-card"><div class="num">0</div><div class="label">CI への Playwright 追加</div></div>
+    </div>
+  </div>
+</section>
+<section>
+  <h2>社内レビュー（スクリーンショット）</h2>
+  <div class="body">
+    <table>
+      <tr><th>確認</th><th>結果</th></tr>
+      <tr><td>ログイン画面のみになっていない</td><td class="pass">T07 編集画面・T10 新規作成フォームを PC/iPhone で確認。認証後 CMS</td></tr>
+      <tr><td>赤枠付き包括レポート</td><td class="pass">report.html あり。145枚</td></tr>
+      <tr><td>シナリオ FAIL で非ゼロ終了</td><td class="pass">雛形に process.exit(1)。今回 FAIL 0 で exit 0</td></tr>
+    </table>
+  </div>
+</section>
+<section>
+  <h2>実施フェーズ</h2>
+  <div class="body">
+    <ul class="timeline">
+      <li>サブエージェントレビュー初回 NO-GO（ゲート未コミット・CLAUDE テスト空振り・FAIL でも exit 0）</li>
+      <li>是正後レビュー GO（HEAD f640e64）。config.yml / SITE_URL / robots.txt は main 値のまま</li>
+      <li>Vitest 635 PASS / E2E 445 PASS 8 skip / comprehensive 150/150</li>
+      <li>main 反映（ユーザー承認済み、レビュー GO 後）</li>
+    </ul>
+    <p>詳細レポート: <a href="report.html">report.html</a></p>
+  </div>
+</section>
+</main>
+</body>
+</html>

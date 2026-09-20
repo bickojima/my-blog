@@ -1775,6 +1775,9 @@ async function main() {
     console.log('🎉 バグ候補なし');
   }
   console.log('═'.repeat(60));
+  if (failCount > 0) {
+    process.exit(1);
+  }
 }
 
 main().catch(err => { console.error('Fatal:', err); process.exit(1); });

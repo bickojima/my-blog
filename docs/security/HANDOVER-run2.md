@@ -6,20 +6,18 @@
 
 ## 状態サマリー
 
-- **作業ブランチ**: `fix/security-audit-run2`
-- **ベース**: `origin/staging`（`b5a42a3`）
-- **中断理由**: ユーザー指示による作業停止・別エージェントへの引き継ぎ
-- **Vitest 実測**: **624 passed / 0 failed（8ファイル）** ※ 2026-09-20 時点、`npx vitest run` 実行
-- **未実施**: `npm run build` / `npm run test:e2e` / エビデンス取得 / staging プッシュ / main マージ
+- **作業ブランチ**: `fix/bug-50-e2e-before-prod`
+- **ベース**: `origin/main`（`1456a2e`）
+- **Vitest 実測**: 再実行して更新すること（Bug #50 再発防止テスト追加後）
+- **未実施（main マージ前必須）**: なし（Vitest 635 / E2E 445+8 skip / verify-comprehensive 150/150）
 
 ---
 
 ## ユーザーから受けている指示（重要）
 
-1. **実作業は Sonnet 5 のサブエージェントに行わせる**こと。統括エージェントは敵対的レビューと報告に専念する。
-2. **Antigravity（前任）がやった進捗は全て疑ってかかる**こと。主張を鵜呑みにせず自分で裏を取る。
-3. **敵対的レビューで GO なら、main へマージして本番反映まで行ってよい**（承認取得済み）。NO-GO なら止めて報告する。
-4. 後述の**スコープ拡大3件（B / C / D）も今回の反映に含める**こと。
+1. Bug #50 の main 反映は、サブエージェントレビュー GO かつローカル E2E 全件と `verify-comprehensive.mjs` 完了後に限る。
+2. **CI に Playwright は載せない**。
+3. 認証情報はエージェントが入力しない。
 
 ---
 
@@ -104,38 +102,21 @@
 - `AGENTS.md` は `CLAUDE.md` へのシンボリックリンクのため、片方の更新で整合
 - `tests/TEST-REPORT.md` の現行件数は既に 624 のため件数欄は未変更
 
-### 3. 【未着手】スコープ拡大3件（ユーザー承認済み。今回の反映に含める）
+### 3. 【完了】スコープ拡大3件（B 未使用依存削除 / C CDN 3.16.2 / D Astro 7.3.3）
 
-いずれも**別トラックとして個別に検証可能な構成**にすること（1つが GO を出せなくても他は出荷できるように）。`package.json` / lockfile を共有する B と D は同一エージェント、C は別エージェント、**独立した git worktree で隔離して並列実行**する設計だった。
+本番反映済み。詳細は DOCUMENTATION.md 改訂履歴 1.57〜1.59。
 
-| トラック | 内容 | 根拠・注意点 |
-|---|---|---|
-| **B** | 未使用依存 `decap-cms-app` の削除 | `package.json:19` に production 依存として宣言（実解決 3.16.2）だが**どこからも import されていない**（Issue #117 項目13）。本番は CDN の `decap-cms@3.10.0` を読むため node_modules は出荷されない。`npm audit` の decap-cms 系警告の発生源。**削除前に必ず自分で全リポジトリを grep して未参照を確認すること**。安価・低リスク |
-| **C** | 本番 decap-cms `3.10.0` → `3.16.2` | `public/admin/index.html:451` の CDN タグ。**SRI ハッシュ（`integrity="sha384-..."`）の再計算が必須**。`admin/index.html` は約1020行にわたり Decap の内部 DOM を直接操作するカスタマイズの塊で、**6マイナー分の更新で壊れる可能性が高い**。フル CMS E2E ＋ 3デバイスのエビデンスが必須 |
-| **D** | Astro `5.18.2` → `7.3.3` | **2メジャー分**。`npm audit` で critical 1件（AVIF 経由 RCE / GHSA-26w7-cxv4-gfx2）、high 2件（Host header SSRF / slot name XSS）。ただし本サイトは `IMAGE_EXTENSIONS` を `.jpg/.jpeg/.png/.webp` に限定し **AVIF を受け付けない**ため critical の即時危険性は低い。Content Collections API / Integration API（`astro:build:done`）/ rehype プラグイン / `astro.config.mjs` の sitemap `filter`（FR-29 依存）/ ルーティング / Node 要件（CI・Cloudflare Pages）に破壊的変更が及ぶ。**現実的でなければ無理に進めず、Astro 6 までの到達可否と作業量見積りを報告して中断すること** |
+### 4. 【完了】GO 判定ゲート → staging → main → 本番
 
-補足: `sharp` は 0.35.4 が最新で、high 2件（libvips / libheif 継承脆弱性）は**上流に修正版が存在しない**。更新では解消できない。
+本番反映済み（PR #118 → staging → main）。ただし **ローカル E2E 全件は本番マージ時点で未完了だった（Bug #50）**。再発防止として 4.6章を必須化し、**CI に Playwright は載せない**。
 
-### 4. 【未着手】GO 判定ゲート → staging → main → 本番
+ゲート1〜3・5〜7はマージ前に実施済み。ゲート4（`npm run test:e2e` 3デバイス全件）はマージ後の事後実行。
 
-ユーザーからは「敵対的レビューで GO なら main へマージして本番反映」の承認を得ている。ただし **CLAUDE.md の staging 先行フローは省略できない**（ゲート6・7 は staging デプロイ後でないと測定不能）。
+### 5. 【進行中】エビデンス取得 + ローカル E2E 全件
 
-| # | ゲート | NO-GO 条件 |
-|---|---|---|
-| 1 | `npx vitest run` 全件 | FAIL が1件でもある |
-| 2 | `npm run build` 完走 | ビルド失敗、または `public/images/uploads/` に意図しない差分 |
-| 3 | ドキュメント整合 | 存在しないテスト名・要件IDが書かれている／トレーサビリティに未テストが残る |
-| 4 | `npm run test:e2e`（3デバイス） | FAIL がある |
-| 5 | **CMS 実ログインの実操作 E2E** | OAuth ハンドシェイク変更後にログインが通らない |
-| 6 | staging 実測 | `curl -sI https://staging.reiwa.casa/admin/` で COOP/CORP/XFO の**重複が解消**し、値が `same-origin-allow-popups` / `same-site` / `SAMEORIGIN` のまま**変化していない** |
-| 7 | PII 混入 | 差分に氏名・メール・ローカル絶対パスがある |
+`evidence/2026-09-20/` へスクリーンショット付き HTML レポートを作成する。雛形は `evidence/2026-05-24/verify-comprehensive.mjs`。**main マージ後の事後実行であり、本来はマージ前必須（Bug #50）**。
 
-**ゲート5 が最大リスク**: `functions/auth/callback.js` は Cloudflare Functions 上でしか動かず、ローカルのモック E2E は「モックが正しい前提」を検証しているにすぎない。ack 実値は上流ソースで確定させたが、検証に使った `decap-cms-app` は 3.16.2、本番 CDN は `decap-cms@3.10.0` で**バージョンが異なる**。**staging.reiwa.casa で実際に GitHub ログインを通すところまでやらないと安全性は保証できない**（認証情報の入力はユーザーに依頼すること。エージェントが認証情報を入力してはならない）。
-
-### 5. 【未着手】エビデンス取得
-CLAUDE.md の定めにより、staging 検証時・main マージ前に `evidence/2026-09-20/` へスクリーンショット付き HTML レポートを作成する。**OAuth ハンドシェイク変更は CMS 関連のため、実操作 E2E ＋ 認証後 CMS 画面のスクリーンショット（3デバイス）が必須**。雛形は `evidence/2026-05-24/verify-comprehensive.mjs` を優先使用する。
-
-### 6. 【未着手】Issue の処理
+### 6. 【一部完了】Issue の処理
 | Issue | 状態 | 対応 |
 |---|---|---|
 | #114 | open | SEC-29 / Bug #48 で修正済み。本番反映後にクローズ |

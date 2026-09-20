@@ -67,6 +67,7 @@
 | 1.60 | 2026-09-20 | SEC-31/SEC-32 の自動回帰テストを追加。`auth-functions.test.mjs` に4件（`{ once: true }` 不使用、ack 完全一致、両検証通過後の `removeEventListener`、30秒フェイルセーフ）、`build.test.mjs` に3件（sharp の try/catch 継続、`buffer.length` の MAX_FILE_SIZE 上限、lstat 失敗保護）。1.5.4章の SEC-31/32 を充足に更新し未テスト例外を解消。Vitest 624→**631**件（全PASS、`npx vitest run` 実測） |
 | 1.61 | 2026-09-20 | 4.7章・4.10.2章の要件範囲表記を SEC-01〜SEC-28 から SEC-01〜SEC-32 へ更新（現行定義との不一致を解消） |
 | 1.62 | 2026-09-20 | staging → main 本番反映（PR #118 を staging へマージ後）。ゲート5（staging CMS 実ログイン）・ゲート6（`/admin/` の COOP/CORP/XFO 重複解消を curl 実測）を確認してから main へマージ。`config.yml` は `branch: main` / `base_url: https://reiwa.casa`、`SITE_URL` は `https://reiwa.casa`、`robots.txt` は `Allow: /` + Sitemap を維持 |
+| 1.63 | 2026-09-20 | Bug #50: 本番マージを Vitest（CI含む）と staging 実ログインだけで完了し、ローカル E2E 全件を後回しにしたプロセス不備。4.6章の「E2E は可能な場合」を廃止し、ローカル `npm run test:e2e` 全件と `verify-comprehensive.mjs` を main マージ必須条件に変更。**CI に Playwright は載せない**（実行時間のためローカル運用継続）。雛形はシナリオ FAIL で非ゼロ終了。再発防止は手順文書の固定＋Vitest 4件。Vitest 631→**635**件 |
 
 ## システム変更履歴
 
@@ -223,6 +224,7 @@ PR履歴に基づく主要なシステム変更の記録である。
 | Q20 | 要件IDは既存IDを優先し、不足時のみ既存採番規則で追加してよいか | 既存IDを再利用し、必要な場合だけ新規追加する | 確認済み |
 | Q21 | 全テスト・実操作E2E・3デバイスと認証後CMSのエビデンスが成功した場合、指定authorでコミットしstagingへプッシュしてよいか | `tbi <noreply@users.noreply.github.com>`でコミットしstagingへプッシュする | 確認済み |
 | Q22 | Issue #97の対象に任意項目F-11（レスポンシブ画像）も含めるか | F-11は対象外とし、Issue #97の必須残作業のみを完遂する。検証結果とQA履歴を含む関連ドキュメントも更新する | 確認済み（2026-08-11） |
+| Q23 | 本番マージ前の E2E を CI 必須にするか | しない。ローカル全件必須のまま。CI は Vitest + ビルドのみ。**CI に Playwright は載せない**（Bug #50） | 確認済み（2026-09-20） |
 
 **Issue #97 残作業の完了条件（2026-08-11）:**
 
@@ -771,7 +773,7 @@ my-blog/
 | 認証 | GitHub OAuth App | - | CMS管理者認証 |
 | 画像処理 | sharp | v0.35.4 | 画像圧縮・回転・リサイズ |
 | Web実装方針 | Google Modern Web Guidance | 公式ガイド準拠 | 独自実装部のモダンWeb機能・アクセシビリティ・パフォーマンス設計指針 |
-| テスト（単体・統合） | Vitest | v4.0.18 | 単体テスト・統合テスト・セキュリティ検証・基本機能保護（631テスト、記事数により変動） |
+| テスト（単体・統合） | Vitest | v4.0.18 | 単体テスト・統合テスト・セキュリティ検証・基本機能保護（635テスト、記事数により変動） |
 | テスト（E2E） | Playwright | v1.58.2 | ブラウザE2Eテスト（PC/iPad/iPhone 453テスト、うち8件はデバイス固有条件でスキップ） |
 | コンテンツ | Markdown | - | frontmatter形式 |
 
@@ -1774,6 +1776,7 @@ GitHubリポジトリが利用可能な場合、以下の手順でシステム�
 | 47 | 2026-08-11 | Playwright全444件の並列実行時、E-28「新規記事画面で日付フィールドが入力可能である」が初回30秒でタイムアウトし、リトライでは21秒で成功してflaky判定になった | OAuthモック、Decap CMS初期化、新規記事エディタ遷移を含むE-28が全体既定30秒を使用しており、5 worker並列時のCDN読込・CPU負荷の余裕がなかった | E-28 describeのタイムアウトを60秒に明示し、通常所要約21秒を維持しつつ一時的な並列負荷を許容する | build.test.mjs（E-28タイムアウト設定検証）、Playwright E-28複数回実行 |
 | 48 | 2026-09-20 | 下書き記事（`draft: true`）のslugが`public/admin/url-map.json`に含まれていた: CMSエディタの「公開URLを見る」機能が参照するurl-map.jsonを`organize-posts.mjs`が全記事から生成しており、下書き記事のslugと生成予定URLも含まれていた。加えて`gray-matter`のfront-matter解析エンジンが明示指定されておらず、YAML以外のエンジン（内部的に`eval`相当を実行しうる組み込みjavascriptエンジン）が暗黙に有効化されうる状態だった（監査Issue #114、深刻度low） | organize-posts.mjs実装時にurl-map.jsonの生成対象を「公開記事のみ」に絞る要件が明文化されず、`getStaticPaths`側の`.filter(post => !post.data.draft)`（SEC-21, Bug #30）と同等のフィルタがurl-map.json生成経路に横展開されていなかった。gray-matterはデフォルトでフロントマター内`engines`指定を許容するため、呼び出し側で明示的に`{ language: 'yaml' }`を指定しない限りYAML以外のパーサーが選択されうる余地が残っていた | (1) `organize-posts.mjs`のurl-map.json生成ループに`draft: true`記事の除外フィルタを追加。(2) `matter(content, { language: 'yaml' })`を明示指定し、YAML以外のエンジン選択を遮断。再発防止: url-map.jsonに下書きslugが含まれないことを検証するテストを追加し、下書き除外が過剰でないこと（公開記事のslugが全て含まれること）も併せて検証する | build.test.mjs（`下書き記事がurl-map.jsonに含まれていない（SEC-29, Bug #48 再発防止）`, `公開記事のslugが全てurl-map.jsonに含まれている`） |
 | 49 | 2026-09-20 | `_headers`の`/*`と`/admin/*`両方にCross-Origin-Opener-Policy / Cross-Origin-Resource-Policy / X-Frame-Optionsが定義されており、Cloudflare Pagesの同名ヘッダーAppend仕様（Bug #28で判明済みの仕様）により本番`/admin/`で各ヘッダーが2回送出されることを`curl -sI https://reiwa.casa/admin/`で実測確認した（`https://reiwa.casa/`では各1回）。COOP等はRFC 8941 Structured Headerであり、重複値がカンマ結合されるとitemパースに失敗し無効な値として扱われる（＝`unsafe-none`等へのフォールバック）蓋然性が高い。ただし、ブラウザが実際にどう解決したかは未観測であり、これは「決定的事実」ではなく「リード（要検証所見）」である（詳細: `docs/security/audit-run2-needs-validation.md`）。対応Issue: #115 | Bug #28対策時に「`/*`と`/admin/*`で同一値なら重複送信されても安全」という設計判断（旧SEC-23の記述）を採用し、公開ページにも管理画面と同一値のCOOP/CORP/X-Frame-Optionsを`/*`に追加した。しかしCloudflare Pagesのヘッダー結合はオーバーライドではなく単純なAppendであるため、「同一値なら安全」という前提はCOOP/CORP等のStructured Header（カンマ結合で複数値になった時点でパース仕様上不正になりうる）には成立しなかった。この観点は`_headers`ヘッダー重複防止検証（Bug #28再発防止）の既存テストでもガード条件（`if (globalVal && adminVal)`）に隠れて長らく実効的に検証されていなかった | `/admin/*`セクションからCross-Origin-Opener-Policy / Cross-Origin-Resource-Policy / X-Frame-Optionsの再定義を削除し、`/*`からの継承一本化に設計変更した（管理画面が必要とする値は`/*`側にのみ定義する）。重複を解消することで、ブラウザの実解決結果によらず本懸念を無条件に除去できる。再発防止: (1) `/admin/*`にこれら3ヘッダーが存在しないことを検証するテストへ更新（build.test.mjs, fuzz-validation.test.mjs）。(2) 旧テストのガード条件（両方の値が存在する場合のみ検証）を撤廃し、アサーションが必ず実行される形に書き換え | build.test.mjs（`X-Frame-Optionsは/admin/*で再定義されず/*から継承される（Issue #115, Bug #49）`ほか）、fuzz-validation.test.mjs（`COOP/CORP/X-Frame-Options は /admin/* で再定義されず /* から継承される（Bug #28 再発防止・Issue #115/Bug #49で設計変更）`ほか） |
+| 50 | 2026-09-20 | セキュリティ監査run-2の本番反映で、ローカル Playwright E2E 全件（3デバイス）と包括エビデンスを完了せずに main へマージした。CI の Vitest 成功と staging CMS 実ログインをもって完了扱いし、E2E を「プロセス負債」として後回しにした | 4.6.2章が E2E を「可能な場合」と任意化し、マージ後手順も `npm test`（Vitest）のみだった。Playwright は CI 未実行（実行時間のためローカル運用）であるため、「CI が緑＝テスト完了」と読み替えられた。ユーザーの staging ログイン確認と「やりきる」指示が、未完了の E2E を免除すると解釈された | 4.6章から「可能な場合」を削除し、ローカル `npm run test:e2e` 全件と `verify-comprehensive.mjs` を main マージの必須条件にする。**CI に Playwright は載せない**（Q23）。Vitest 成功・CMS 実ログイン・「後で E2E」は代替にならないと明文化。雛形スクリプトはシナリオ FAIL で `process.exit(1)` する。再発防止テストで CI ワークフローと手順文書を固定する | build.test.mjs（`CI は Vitest とビルドのみで Playwright E2E を必須化しない（Bug #50）`ほか2件） |
 
 **Bug #46 5 Whys:**
 
@@ -1815,6 +1818,16 @@ GitHubリポジトリが利用可能な場合、以下の手順でシステム�
 
 根本対策はガード条件付きの検証をやめ、常にアサーションが実行される形に書き換えることと、ヘッダー設計を「重複してもよい値を選ぶ」から「重複自体をなくす（片方でのみ定義する）」に変更することである。ブラウザが実際にCOOPをどう解決していたか（`unsafe-none`へのフォールバックが発生していたか）はcurl実測の範囲を超えるため確定できないが、重複を解消したことで実効値を変えずにこの懸念を無条件に除去できる。
 
+**Bug #50 5 Whys:**
+
+1. なぜ E2E なしで本番へ出たか: main マージを CI の Vitest 成功と staging CMS 実ログインで完了扱いし、ローカル Playwright 全件を「プロセス負債」として後回しにしたため。
+2. なぜ後回しが通ったか: 4.6.2章が E2E を「可能な場合」と任意化し、マージ後手順も `npm test`（Vitest）だけだったため。
+3. なぜ「可能な場合」と書いたか: Playwright は実行時間が長く CI に載せていない（ローカル運用）ため、CI 未実行＝省略可と読まれたため。
+4. なぜエージェントが省略したか: ユーザーの staging ログイン確認と「やりきる」指示を、未完了 E2E の免除と解釈したため。CMS 実ログインは OAuth 経路の確認であり、3デバイス全件 E2E の代替ではない。
+5. なぜ手順逸脱をテストが止めなかったか: マージ手順の必須条件を固定する回帰テストがなく、CI が緑ならゲート通過とみなせたため。
+
+根本対策は E2E を CI 必須にすることではない（Q23）。ローカル `npm run test:e2e` 全件を main マージの必須条件にし、**CI に Playwright は載せない**方針を手順と Vitest で固定する。Vitest 成功・CMS 実ログイン・「後で E2E」は代替にならない。
+
 ### 4.5.1 既知の制限事項（Bug #48関連: url-map.json対策の適用範囲）
 
 SEC-29（Bug #48）の対策は`public/admin/url-map.json`から下書き記事のslugを除外するものであり、下書き記事の**アップロード画像そのもの**は対象外である。Decap CMS ＋ 静的ホスティング（Cloudflare Pages）構成では、記事本文に挿入した画像は記事の公開状態と無関係に`public/images/uploads/`へ保存され、Astroビルド時に無条件で`dist/images/uploads/`へコピーされて公開URLでアクセス可能になる。これはCMSの保存フロー（画像は先にアップロードされ、後から記事の下書き/公開状態が決まる）に起因する仕様上の制限であり、コード修正では解消できない。運用面の回避策として、**下書き記事に未公開情報を含む画像を貼らない**運用を徹底する（監査の敵対的レビューで指摘された事項）。
@@ -1827,11 +1840,23 @@ SEC-29（Bug #48）の対策は`public/admin/url-map.json`から下書き記事�
 
 staging ブランチで開発・テスト完了後、main ブランチにマージする手順を示す。
 
+**本番マージの完了条件（Bug #50）:**
+
+- `npm test`（Vitest）全PASS。これは CI でも見る。
+- ローカル `npm run test:e2e` 全件（PC/iPad/iPhone）PASS。**CI に Playwright は載せない**（実行時間のためローカル運用を継続）。
+- 包括エビデンス `node evidence/YYYY-MM-DD/verify-comprehensive.mjs` 完了（雛形 `evidence/2026-05-24/verify-comprehensive.mjs`）。認証後 CMS 画面を含む。ログイン画面のみは不可。**CI に載せない**。
+- **Vitest だけでは main マージ不可**。部分 E2E・CMS 実ログイン確認・「後で回す／プロセス負債」は代替にならない。`npm run test:e2e` だけでは包括エビデンスの代替にならない。
+
 ```bash
-# 1. staging ブランチで全テスト PASS を確認
+# 1. staging ブランチで Vitest + ローカル E2E 全件 + 包括エビデンスを確認（main マージの必須条件）
+#    CI の Vitest 成功は E2E / verify-comprehensive の代替にならない。CI に Playwright は載せない。
 git checkout staging
 npm test
 npm run build && npm run test:e2e
+mkdir -p evidence/$(date +%Y-%m-%d)
+cp evidence/2026-05-24/verify-comprehensive.mjs evidence/$(date +%Y-%m-%d)/verify-comprehensive.mjs
+# TODAY / 出力パスを実行日に合わせてから:
+node evidence/YYYY-MM-DD/verify-comprehensive.mjs
 
 # 2. main ブランチに切り替え、最新を取得
 git checkout main
@@ -1848,7 +1873,8 @@ git merge staging
 git add public/admin/config.yml
 git commit  # マージコミット完了
 
-# 5. main ブランチでテスト実行
+# 5. main ブランチで Vitest 実行（環境別ファイル切替後の回帰）
+#    E2E は手順1で完了済み。ここで省略してよいのは手順1を完了している場合のみ。
 npm test
 
 # 6. main にプッシュ
@@ -1861,11 +1887,12 @@ git push origin main
 |:---|:---|:---|:---|
 | 1 | config.yml の `branch` が `main` | ファイル確認 | staging の値が残っていないこと |
 | 2 | config.yml の `base_url` が `https://reiwa.casa` | ファイル確認 | staging URL が残っていないこと |
-| 3 | Vitest 全テスト PASS | `npm test` | テスト件数が staging と一致すること |
+| 3 | Vitest 全テスト PASS | `npm test` | CI でも実行されるが、**Vitest だけでは main マージ不可** |
 | 4 | ビルド成功 | `npm run build` | エラーなく完了すること |
-| 5 | E2E テスト PASS（可能な場合） | `npm run test:e2e` | ローカル環境のみ |
+| 5 | ローカル E2E 全件 PASS | `npm run test:e2e` | **必須**。**CI に Playwright は載せない**（実行時間のためローカル運用）。部分実行・後回し・CMS実ログイン確認では代替しない（Bug #50） |
 | 6 | robots.txt が main 用 | ファイル確認 | staging の `Disallow: /` が混入していないこと（Bug #41再発防止） |
 | 7 | astro.config.mjs の `SITE_URL` が `https://reiwa.casa` | ファイル確認 | staging URL（`https://staging.reiwa.casa`）が残っていないこと。canonical/OGP/RSS/sitemapの絶対URLに影響する |
+| 8 | 包括エビデンス | `node evidence/YYYY-MM-DD/verify-comprehensive.mjs` | **必須**。雛形は `evidence/2026-05-24/verify-comprehensive.mjs`。認証後 CMS 画面。ログイン画面のみ不可。**CI に載せない**（Bug #50） |
 
 ### 4.6.3 main → staging コンテンツ同期
 
@@ -2287,8 +2314,8 @@ evidence/YYYY-MM-DD/
 
 | 指標 | 目標値 | 現状 |
 |:---|:---|:---|
-| Vitestテスト全PASS | 100% | 631/631 (100%) |
-| Playwright E2Eテスト全PASS | 100% | 直近実行: 445 PASS・8 skip / 453件、flakyなし (100%、E2Eは今回未実測) |
+| Vitestテスト全PASS | 100% | 635/635 (100%) |
+| Playwright E2Eテスト全PASS | 100% | 2026-09-20 ローカル全件: 445 PASS・8 skip / 453件（16.3m）。CI では実行しない（Bug #50） |
 | セキュリティ検証全PASS | 100% | 10/10 (100%) |
 | ボタン重なり検出 | 0件 | 0件 |
 | 未テスト要件 | 0件 | 0件 |
@@ -2296,4 +2323,4 @@ evidence/YYYY-MM-DD/
 
 ---
 
-**最終更新**: 2026年9月20日（v1.62）
+**最終更新**: 2026年9月20日（v1.63）
