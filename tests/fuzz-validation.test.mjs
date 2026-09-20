@@ -1209,6 +1209,10 @@ describe('情報漏洩防止テスト', () => {
     expect(existsSync(join(process.cwd(), 'public/.env'))).toBe(false);
   });
 
+  it('Cloudflare Pages で無効な public/.assetsignore が存在しない（SEC-34, Issue #117 項目12）', () => {
+    expect(existsSync(join(process.cwd(), 'public/.assetsignore'))).toBe(false);
+  });
+
   it('public配下に.gitディレクトリが存在しない', () => {
     expect(existsSync(join(process.cwd(), 'public/.git'))).toBe(false);
   });
