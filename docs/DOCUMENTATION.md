@@ -69,7 +69,7 @@
 | 1.62 | 2026-09-20 | staging → main 本番反映（PR #118 を staging へマージ後）。ゲート5（staging CMS 実ログイン）・ゲート6（`/admin/` の COOP/CORP/XFO 重複解消を curl 実測）を確認してから main へマージ。`config.yml` は `branch: main` / `base_url: https://reiwa.casa`、`SITE_URL` は `https://reiwa.casa`、`robots.txt` は `Allow: /` + Sitemap を維持 |
 | 1.63 | 2026-09-20 | Bug #50: 本番マージを Vitest（CI含む）と staging 実ログインだけで完了し、ローカル E2E 全件を後回しにしたプロセス不備。4.6章の「E2E は可能な場合」を廃止し、ローカル `npm run test:e2e` 全件と `verify-comprehensive.mjs` を main マージ必須条件に変更。**CI に Playwright は載せない**（実行時間のためローカル運用継続）。雛形はシナリオ FAIL で非ゼロ終了。再発防止は手順文書の固定＋Vitest 4件。Vitest 631→**635**件 |
 | 1.64 | 2026-09-20 | Issue #117 項目2/12: SEC-33（CI `permissions: contents: read`）、SEC-34（無効な `public/.assetsignore` 削除）。Vitest 635→**638**件 |
-| 1.65 | 2026-09-21 | Bug #51: PR #119 のマージで staging の環境固有ファイル（config.ymlのbranch/base_url、astro.config.mjsのSITE_URL、robots.txt）が丸ごとmain値へ上書きされ、staging CMSが本番mainへ直接コミットする状態が約21分間発生していた問題を4.5章に5 Whysとともに追記（復旧コミット `0a6c762`）。SEC-35（環境固有ファイルの実ブランチ整合性検証）を1.4.2章に追加し、1.5章トレーサビリティマトリクスに反映。cms-config.test.mjsに、実際にチェックアウトしているブランチ（`CF_PAGES_BRANCH` > `GITHUB_REF_NAME` > `git rev-parse`で判定）に対して4項目が正しい値かを検証する回帰テストを追加（main/staging以外は内部整合のみ検証）。4.6.2章のマージ確認観点に自動検証の項目を追加。Vitest 638→**639**件 |
+| 1.65 | 2026-09-21 | Bug #51: PR #119 のマージで staging の環境固有ファイル（config.ymlのbranch/base_url、astro.config.mjsのSITE_URL、robots.txt）が丸ごとmain値へ上書きされ、staging CMSが本番mainへ直接コミットする状態が約21分間発生していた問題を4.5章に5 Whysとともに追記（復旧コミット `0a6c762`）。SEC-35（環境固有ファイルの実ブランチ整合性検証）を1.4.2章に追加し、1.5章トレーサビリティマトリクスに反映。cms-config.test.mjsに、実際にチェックアウトしているブランチ（`CF_PAGES_BRANCH` > `GITHUB_REF_NAME` > `git rev-parse`で判定）に対して4項目が正しい値かを検証する回帰テストを追加（main/staging以外は内部整合のみ検証）。SEC-35はブランチ別にテストを登録する設計のため、Vitest合計は**featureブランチ639件／main・staging642件**になる（登録数の差3件はテストの欠落ではなくSEC-35の設計）。4.6.2章のマージ確認観点に自動検証の項目を追加 |
 
 ## システム変更履歴
 
@@ -660,7 +660,7 @@ staging環境のrobots.txtは`Disallow: /`を維持し、mainマージ時のみ`
 | SEC-32 | 画像正規化処理のビルド堅牢化 | build | `sharp処理が try/catch で囲まれ、catch でビルド全体を throw していない（SEC-32）`, `.rotate().toBuffer() の出力 buffer.length に MAX_FILE_SIZE 上限がある（SEC-32）`, `lstat 失敗も try/catch で保護されている（SEC-32）` | M-02 | 充足 |
 | SEC-33 | CIトークン最小権限 | build | `CI ジョブは contents: read に限定する（SEC-33, Issue #117 項目2）` | M-02 | 充足 |
 | SEC-34 | 無効な `.assetsignore` を置かない | build, fuzz-validation | `dist に .assetsignore が存在しない（SEC-34, Issue #117 項目12）`, `Cloudflare Pages で無効な public/.assetsignore が存在しない（SEC-34, Issue #117 項目12）` | M-02 | 充足 |
-| SEC-35 | 環境固有ファイルの実ブランチ整合性検証 | cms-config | `現在のブランチ（main/staging）に対してconfig.ymlのbranchが一致する`、`現在のブランチ（main/staging）に対してconfig.ymlのbase_urlが一致する`、`現在のブランチ（main/staging）に対してastro.config.mjsのSITE_URLが一致する`、`現在のブランチ（main/staging）に対してpublic/robots.txtのクロール方針が一致する`、`ブランチをmain/stagingと判定できない場合はconfig.yml・SITE_URL・robots.txtが同一環境を指す`（いずれも `環境固有ファイルの実ブランチ整合性検証（SEC-35, Bug #51再発防止）`） | M-02 | 充足 |
+| SEC-35 | 環境固有ファイルの実ブランチ整合性検証 | cms-config | `現在のブランチ（main/staging）に対してconfig.ymlのbranchが一致する`、`現在のブランチ（main/staging）に対してconfig.ymlのbase_urlが一致する`、`現在のブランチ（main/staging）に対してastro.config.mjsのSITE_URLが一致する`、`現在のブランチ（main/staging）に対してpublic/robots.txtのクロール方針が一致する`（`main/staging`はテンプレート表記。実行時は`it()`のタイトルにテンプレートリテラルで実ブランチ名が展開され、`現在のブランチ（main）に対して…`または`現在のブランチ（staging）に対して…`という具体的なテスト名でログ・レポートに出力される）、`ブランチをmain/stagingと判定できない場合はconfig.yml・SITE_URL・robots.txtが同一環境を指す`（いずれも `環境固有ファイルの実ブランチ整合性検証（SEC-35, Bug #51再発防止）`） | M-02 | 充足 |
 
 **充足状況: FR-01〜FR-29, CMS-01〜CMS-19, NFR-01〜NFR-08, SEC-01〜SEC-35はテストで充足されている。未テスト要件は0件。**
 
