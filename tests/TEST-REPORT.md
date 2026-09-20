@@ -55,6 +55,7 @@
 | 1.47 | 2026-09-20 | 本番CMS CDNを Decap CMS `3.10.0` から `3.16.2` へ更新。既存の admin-html 検証（SEC-03 バージョン固定、SEC-12 SRI `integrity` / `crossorigin`、CDN `<script>` 閉じタグ）で新URLを確認。テスト件数増減なし。CMS系E2E（`cms-customizations.spec.ts` / `cms-operations.spec.ts` / `cms.spec.ts`、`--project=PC`）は 77 PASS・4 skip（E-34 モバイル固有は PC 対象外） |
 | 1.48 | 2026-09-20 | SEC-31/SEC-32 の自動回帰テストを追加。`auth-functions.test.mjs` に4件（2.3.1章 #8〜#11）、`build.test.mjs` に3件（2.5.10章 #1〜#3）。3.1章の未テスト例外と1.6.2章の例外注記を削除。Vitest 624→**631**件（全PASS、`npx vitest run` 実測。内訳: auth-functions 25→29、build 104→107） |
 | 1.49 | 2026-09-20 | Bug #50: 本番マージ前のローカル E2E 全件と `verify-comprehensive.mjs` を必須化し、「可能な場合」を廃止。**CI に Playwright は載せない**（Q23）。雛形はシナリオ FAIL で非ゼロ終了。build.test.mjs に手順固定テスト4件を追加。Vitest 631→**635**件 |
+| 1.50 | 2026-09-20 | Issue #117 項目2/12: SEC-33（CI `contents: read`）、SEC-34（`.assetsignore` 削除）。build 111→113、fuzz 215→216。Vitest 635→**638**件 |
 
 ## テスト基盤の変更履歴
 
@@ -470,7 +471,7 @@ admin-html.test.mjs              -     ●     -     -     -     -     -     -  
 
 | No. | 基準 |
 | :--- | :--- |
-| 1 | 全テストケース（Vitest 635件 + E2E 453件 = 1088件）がPASSまたは仕様上の条件スキップであること |
+| 1 | 全テストケース（Vitest 638件 + E2E 453件 = 1091件）がPASSまたは仕様上の条件スキップであること |
 | 2 | `npm run build` が正常に完了すること |
 | 3 | 要件トレーサビリティマトリクス（docs/DOCUMENTATION.md 1.5章）において全要件が「充足」であること |
 | 4 | 本番（main）マージ前にローカル `npm run test:e2e` 全件と `verify-comprehensive.mjs` が完了していること（**CI に Playwright は載せない**。Bug #50） |
@@ -836,7 +837,7 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 
 ---
 
-## 2.5. ビルド検証 (`build.test.mjs`) — 111件
+## 2.5. ビルド検証 (`build.test.mjs`) — 113件
 
 `npm run build`を実行し、パイプライン全体（normalize-images → organize-posts → astro build → image-optimize）の出力を検証する。全テストケースはビルド完了後に実行される。
 
@@ -1002,6 +1003,13 @@ Playwright は CI に載せない。ローカル全件と `verify-comprehensive.
 | 2 | 4.6章はローカルE2E全件と verify-comprehensive.mjs をmainマージの必須条件とし、Vitest だけでは main マージ不可とする（Bug #50） | M-02 | DOCUMENTATION.md 4.6章に `npm run test:e2e` / `verify-comprehensive.mjs` / `Vitest だけでは main マージ不可` / `CI に Playwright は載せない` があり、「可能な場合」が無い |
 | 3 | CLAUDE.md のブランチマージ時は E2E と verify-comprehensive を必須とし、CI に Playwright は載せない（Bug #50） | M-02 | `### ブランチマージ時` 節に `Vitest だけでは main マージ不可` / `CI に Playwright は載せない` / `verify-comprehensive.mjs` / `npm run test:e2e` がある（ファイル全体の雛形言及では通さない） |
 | 4 | verify-comprehensive 雛形はシナリオ FAIL で非ゼロ終了する（Bug #50） | M-02 | `evidence/2026-05-24/verify-comprehensive.mjs` に `if (failCount > 0) process.exit(1)` がある |
+
+### 2.5.12 CI最小権限と無効ファイル排除（SEC-33/SEC-34、2件）
+
+| No. | テストケース | テスト手法 | 期待結果 |
+| :--- | :--- | :--- | :--- |
+| 1 | CI ジョブは contents: read に限定する（SEC-33, Issue #117 項目2） | M-02 | `ci.yml` の job に `permissions: contents: read` があり `contents: write` が無い |
+| 2 | dist に .assetsignore が存在しない（SEC-34, Issue #117 項目12） | M-02 | `public/.assetsignore` と `dist/.assetsignore` が無い |
 
 ### 2.5.10 画像正規化処理の堅牢化（SEC-32、3件）
 
@@ -1174,7 +1182,7 @@ Playwright は CI に載せない。ローカル全件と `verify-comprehensive.
 | :--- | :--- | :--- | :--- |
 | 8 | staging環境検知ロジックが存在する（FR-21: hostname判定） | M-02 | `hostname`文字列と`STAGING`/`staging`関連ロジックが存在する |
 
-### 2.7 ファズテスト・不整合値テスト（fuzz-validation.test.mjs: 215件）
+### 2.7 ファズテスト・不整合値テスト（fuzz-validation.test.mjs: 216件）
 
 SEC-14〜SEC-20に対応するファズテスト。ビルド時に必ず実行される必須テスト。XSS/SQLi/パストラバーサル/コマンドインジェクション/プロトタイプ汚染の攻撃ペイロードに対する耐性を検証する。
 
@@ -1287,6 +1295,7 @@ SEC-14〜SEC-20に対応するファズテスト。ビルド時に必ず実行�
 | 5 | public配下にnode_modulesが存在しない | M-02 | ソース漏洩防止 |
 | 6 | config.ymlにシークレット情報が含まれていない | M-02 | 秘密情報ハードコード検出 |
 | 7 | admin/index.htmlにシークレット/ハードコードURL含まれない | M-02 | SEC-08 |
+| 8 | Cloudflare Pages で無効な public/.assetsignore が存在しない | M-02 | SEC-34, Issue #117 項目12 |
 
 #### 2.7.11 プロトタイプ汚染攻撃テスト
 
@@ -1319,7 +1328,7 @@ Bug #27時点は`/admin/*`側で値を「オーバーライド」する設計だ
 
 要件トレーサビリティマトリクスは **docs/DOCUMENTATION.md 1.5章** に移動した。要件定義と同一ファイルで管理することで、要件追加時のトレース漏れを防止する。
 
-現在の充足状況: **FR-01〜FR-29, CMS-01〜CMS-19, NFR-01〜NFR-08, SEC-01〜SEC-32はテストで充足されている。未テスト要件は0件（docs/DOCUMENTATION.md 1.5.4章参照）。** Modern Web Guidanceエビデンスは `evidence/2026-06-11/` に保存する。
+現在の充足状況: **FR-01〜FR-29, CMS-01〜CMS-19, NFR-01〜NFR-08, SEC-01〜SEC-34はテストで充足されている。未テスト要件は0件（docs/DOCUMENTATION.md 1.5.4章参照）。** Modern Web Guidanceエビデンスは `evidence/2026-06-11/` に保存する。
 
 ---
 
@@ -1751,12 +1760,12 @@ npm run build
 | `rehype-image-caption.test.mjs` | 8 | PASS | 2ms |
 | `rehype-focusable-code-blocks.test.mjs` | 2 | PASS | 1ms |
 | `auth-functions.test.mjs` | 29 | PASS | 15ms |
-| `fuzz-validation.test.mjs` | 215 | PASS | 25ms |
+| `fuzz-validation.test.mjs` | 216 | PASS | 25ms |
 | `content-validation.test.mjs` | 125 | PASS | 31ms |
-| `build.test.mjs` | 111 | PASS | 2310ms |
-| **合計** | **635** | **全PASS** | **実測は `npx vitest run` の出力を正とする** |
+| `build.test.mjs` | 113 | PASS | 2310ms |
+| **合計** | **638** | **全PASS** | **実測は `npx vitest run` の出力を正とする** |
 
-Bug #50 再発防止テスト追加により、`build.test.mjs` 107→111。Vitest 合計 631→**635**（全PASS）。
+Issue #117 項目2/12 により `build.test.mjs` 111→113、`fuzz-validation.test.mjs` 215→216。Vitest 合計 635→**638**。
 
 ### 4.3.3 E2Eテスト最新実行結果（Playwright）
 
