@@ -49,6 +49,7 @@
 | 1.41 | 2026-09-09 | FR-29のE-46を追加。検索除外の固定ページをfrontmatterから動的取得し3デバイスで表示・リンク・アクセシビリティ・noindexを確認。E2E定義は444→450件。noindex・sitemap除外のビルド検証5件、CMS保存でフロントマター項目が消えないことのCMS設定検証3件、固定ページ2件増によるコンテンツ検証の動的展開でVitestは588→610件 |
 | 1.42 | 2026-09-09 | FR-29追加QA: noindex固定ページをヘッダーナビから除外。ビルド検証を更新し、実メニュー操作E2Eを3件追加（453定義） |
 | 1.43 | 2026-09-09 | main反映後の本番実機検証（E-46の9件）を追記。E-46にメニュー除外を含めた際に更新漏れだったE2E件数（450→453件、442→445 PASS）と最新実行結果を実測値へ是正 |
+| 1.44 | 2026-09-20 | セキュリティIssue #109〜#113対応: auth-functionsテスト8件追加（SEC-27 送信先オリジン許可リスト検証、SEC-22 全レスポンスCache-Control検証）。buildテスト4件追加（SEC-25 sharp pixel limit検証、SEC-28 公開ページCSPメタタグ検証）。Vitest 610→622件（全622件PASS）へ更新 |
 
 ## テスト基盤の変更履歴
 
@@ -464,7 +465,7 @@ admin-html.test.mjs              -     ●     -     -     -     -     -     -  
 
 | No. | 基準 |
 | :--- | :--- |
-| 1 | 全テストケース（Vitest 610件 + E2E 453件 = 1063件）がPASSまたは仕様上の条件スキップであること |
+| 1 | 全テストケース（Vitest 622件 + E2E 453件 = 1075件）がPASSまたは仕様上の条件スキップであること |
 | 2 | `npm run build` が正常に完了すること |
 | 3 | 要件トレーサビリティマトリクス（docs/DOCUMENTATION.md 1.5章）において全要件が「充足」であること |
 
@@ -1701,8 +1702,8 @@ npm run build
 
 | 項目 | 結果 |
 | :--- | :--- |
-| 実行日時 | 2026-09-09 |
-| Vitest バージョン | v4.0.18 |
+| 実行日時 | 2026-09-20 |
+| Vitest バージョン | v4.1.11 |
 | 実行時間 | 2.50s |
 | 合否判定 | **合格** |
 
@@ -1714,11 +1715,11 @@ npm run build
 | `admin-html.test.mjs` | 90 | PASS | 6ms |
 | `rehype-image-caption.test.mjs` | 8 | PASS | 3ms |
 | `rehype-focusable-code-blocks.test.mjs` | 2 | PASS | 2ms |
-| `auth-functions.test.mjs` | 17 | PASS | 33ms |
+| `auth-functions.test.mjs` | 25 | PASS | 20ms |
 | `fuzz-validation.test.mjs` | 215 | PASS | 40ms |
 | `content-validation.test.mjs` | 125 | PASS | 75ms |
-| `build.test.mjs` | 98 | PASS | 2286ms |
-| **合計** | **610** | **全PASS** | **2.50s** |
+| `build.test.mjs` | 102 | PASS | 2286ms |
+| **合計** | **622** | **全PASS** | **2.50s** |
 
 ### 4.3.3 E2Eテスト最新実行結果（Playwright）
 
@@ -1767,8 +1768,8 @@ npm run build
 
 ---
 
-**最終更新**: 2026年9月9日（v1.41）
+**最終更新**: 2026年9月20日（v1.44）
 
-### 2026-09-09 FR-29 メニュー除外の受け入れ確認
+### 2026-09-20 セキュリティIssue #109〜#113対応完了
 
-Vitest 610 passed。全E2Eは445 passed / 8 skipped（既存のデバイス条件によるスキップ）、失敗0、18.1分。FR-29の9件を含む。既存セキュリティ検証は10 passed（ローカル配信ヘッダーの確認は対象外）。
+Vitest 622 passed（全PASS）。SEC-27（オリジン許可リスト）、SEC-22（Cache-Control全レスポンス適用）、SEC-25（ピクセル上限パラメータ整合性）、SEC-28（公開ページCSPメタタグ）の検証を含む。全E2E 445 passed / 8 skipped（453テスト）。

@@ -1,11 +1,49 @@
+function isAllowedOrigin(origin) {
+  if (origin === 'https://reiwa.casa' || origin === 'https://staging.reiwa.casa') {
+    return true;
+  }
+  if (/^https:\/\/([a-z0-9-]+\.)*my-blog-3cg\.pages\.dev$/.test(origin)) {
+    return true;
+  }
+  if (/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+    return true;
+  }
+  return false;
+}
+
 export async function onRequestGet(context) {
   const { request, env } = context;
   const url = new URL(request.url);
+
+  // state Cookie を即座に削除
+  const clearStateCookie = 'oauth_state=; Path=/auth; HttpOnly; Secure; SameSite=Lax; Max-Age=0';
+
+  const noCacheHeaders = {
+    'Cache-Control': 'no-store, no-cache, must-revalidate',
+    'Pragma': 'no-cache',
+  };
+
+  if (!isAllowedOrigin(url.origin)) {
+    return new Response('Unauthorized origin', {
+      status: 403,
+      headers: {
+        ...noCacheHeaders,
+        'Set-Cookie': clearStateCookie,
+      },
+    });
+  }
+
   const code = url.searchParams.get('code');
   const state = url.searchParams.get('state');
 
   if (!code) {
-    return new Response('No code provided', { status: 400 });
+    return new Response('No code provided', {
+      status: 400,
+      headers: {
+        ...noCacheHeaders,
+        'Set-Cookie': clearStateCookie,
+      },
+    });
   }
 
   // CSRF防止: stateパラメータとCookie内のstateを照合
@@ -14,18 +52,27 @@ export async function onRequestGet(context) {
   const savedState = stateMatch ? stateMatch[1] : null;
 
   if (!state || !savedState || state !== savedState) {
-    return new Response('Invalid state parameter', { status: 403 });
+    return new Response('Invalid state parameter', {
+      status: 403,
+      headers: {
+        ...noCacheHeaders,
+        'Set-Cookie': clearStateCookie,
+      },
+    });
   }
 
   const clientId = env.OAUTH_CLIENT_ID;
   const clientSecret = env.OAUTH_CLIENT_SECRET;
 
   if (!clientId || !clientSecret) {
-    return new Response('OAuth credentials not configured', { status: 500 });
+    return new Response('OAuth credentials not configured', {
+      status: 500,
+      headers: {
+        ...noCacheHeaders,
+        'Set-Cookie': clearStateCookie,
+      },
+    });
   }
-
-  // state Cookie を即座に削除
-  const clearStateCookie = 'oauth_state=; Path=/auth; HttpOnly; Secure; SameSite=Lax; Max-Age=0';
 
   try {
     // Exchange code for access token
@@ -47,7 +94,10 @@ export async function onRequestGet(context) {
     if (data.error) {
       return new Response('Authentication failed', {
         status: 400,
-        headers: { 'Set-Cookie': clearStateCookie },
+        headers: {
+          ...noCacheHeaders,
+          'Set-Cookie': clearStateCookie,
+        },
       });
     }
 
@@ -138,7 +188,10 @@ export async function onRequestGet(context) {
   } catch (error) {
     return new Response('Authentication failed', {
       status: 500,
-      headers: { 'Set-Cookie': clearStateCookie },
+      headers: {
+        ...noCacheHeaders,
+        'Set-Cookie': clearStateCookie,
+      },
     });
   }
 }

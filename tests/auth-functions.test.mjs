@@ -78,6 +78,59 @@ describe('OAuth認証: /auth/index.js（認証開始）', () => {
       'http://localhost:4321/auth/callback'
     );
   });
+
+  it('レスポンスにCache-Control: no-storeヘッダーが含まれる（SEC-22）', async () => {
+    const context = createContext({
+      url: 'https://reiwa.casa/auth',
+      env: { OAUTH_CLIENT_ID: 'test-client-id' },
+    });
+
+    const response = await authIndex(context);
+    expect(response.headers.get('cache-control')).toBe('no-store, no-cache, must-revalidate');
+    expect(response.headers.get('pragma')).toBe('no-cache');
+  });
+
+  it('許可されたオリジン（本番・ステージング・プレビュー・ローカル）からのリクエストを受け付ける（SEC-27）', async () => {
+    const allowedUrls = [
+      'https://reiwa.casa/auth',
+      'https://staging.reiwa.casa/auth',
+      'https://my-blog-3cg.pages.dev/auth',
+      'https://feature-test.my-blog-3cg.pages.dev/auth',
+      'http://localhost:4321/auth',
+      'http://localhost:4173/auth',
+      'http://127.0.0.1:4173/auth',
+    ];
+
+    for (const testUrl of allowedUrls) {
+      const context = createContext({
+        url: testUrl,
+        env: { OAUTH_CLIENT_ID: 'test-client-id' },
+      });
+      const response = await authIndex(context);
+      expect(response.status, `Failed for allowed url: ${testUrl}`).toBe(302);
+    }
+  });
+
+  it('不正なオリジン（外部ドメイン・無関係なpages.dev等）からのリクエストを403で拒否する（SEC-27）', async () => {
+    const rejectedUrls = [
+      'https://evil.com/auth',
+      'https://attacker.pages.dev/auth',
+      'https://reiwa.casa.attacker.com/auth',
+      'http://evil-localhost:4321/auth',
+    ];
+
+    for (const testUrl of rejectedUrls) {
+      const context = createContext({
+        url: testUrl,
+        env: { OAUTH_CLIENT_ID: 'test-client-id' },
+      });
+      const response = await authIndex(context);
+      expect(response.status, `Should reject url: ${testUrl}`).toBe(403);
+      expect(response.headers.get('cache-control')).toContain('no-store');
+      const text = await response.text();
+      expect(text).toContain('Unauthorized origin');
+    }
+  });
 });
 
 describe('OAuth認証: /auth/callback.js（コールバック処理）', () => {
@@ -225,6 +278,83 @@ describe('OAuth認証: /auth/callback.js（コールバック処理）', () => {
       globalThis.fetch = originalFetch;
     }
   });
+
+  it('許可されたオリジンからのコールバックを受け付ける（SEC-27）', async () => {
+    const allowedUrls = [
+      `https://reiwa.casa/auth/callback?code=test-code&state=${TEST_STATE}`,
+      `https://staging.reiwa.casa/auth/callback?code=test-code&state=${TEST_STATE}`,
+      `https://my-blog-3cg.pages.dev/auth/callback?code=test-code&state=${TEST_STATE}`,
+      `https://pr-1.my-blog-3cg.pages.dev/auth/callback?code=test-code&state=${TEST_STATE}`,
+      `http://localhost:4321/auth/callback?code=test-code&state=${TEST_STATE}`,
+      `http://localhost:4173/auth/callback?code=test-code&state=${TEST_STATE}`,
+      `http://127.0.0.1:4173/auth/callback?code=test-code&state=${TEST_STATE}`,
+    ];
+
+    for (const testUrl of allowedUrls) {
+      const context = createContext({
+        url: testUrl,
+        env: { OAUTH_CLIENT_ID: 'test-id', OAUTH_CLIENT_SECRET: 'test-secret' },
+        headers: { Cookie: `oauth_state=${TEST_STATE}` },
+      });
+      // GitHub fetch mock
+      const origFetch = globalThis.fetch;
+      globalThis.fetch = vi.fn().mockResolvedValue({
+        json: async () => ({ access_token: 'test-token', token_type: 'bearer' }),
+      });
+      try {
+        const response = await authCallback(context);
+        expect(response.status, `Allowed URL failed: ${testUrl}`).toBe(200);
+      } finally {
+        globalThis.fetch = origFetch;
+      }
+    }
+  });
+
+  it('不正なオリジンからのコールバックを403で拒否する（SEC-27）', async () => {
+    const rejectedUrls = [
+      `https://evil.com/auth/callback?code=test-code&state=${TEST_STATE}`,
+      `https://attacker.pages.dev/auth/callback?code=test-code&state=${TEST_STATE}`,
+      `https://reiwa.casa.attacker.com/auth/callback?code=test-code&state=${TEST_STATE}`,
+    ];
+
+    for (const testUrl of rejectedUrls) {
+      const context = createContext({
+        url: testUrl,
+        env: { OAUTH_CLIENT_ID: 'test-id', OAUTH_CLIENT_SECRET: 'test-secret' },
+        headers: { Cookie: `oauth_state=${TEST_STATE}` },
+      });
+      const response = await authCallback(context);
+      expect(response.status, `Should reject: ${testUrl}`).toBe(403);
+      expect(response.headers.get('cache-control')).toContain('no-store');
+      const text = await response.text();
+      expect(text).toContain('Unauthorized origin');
+    }
+  });
+
+  it('全エラー応答にCache-Control: no-storeヘッダーが含まれる（SEC-22）', async () => {
+    // 400 No code
+    const res400 = await authCallback(createContext({
+      url: 'https://reiwa.casa/auth/callback',
+      env: { OAUTH_CLIENT_ID: 'id', OAUTH_CLIENT_SECRET: 'sec' },
+    }));
+    expect(res400.headers.get('cache-control')).toContain('no-store');
+
+    // 403 Invalid state
+    const res403 = await authCallback(createContext({
+      url: `https://reiwa.casa/auth/callback?code=code&state=invalid`,
+      env: { OAUTH_CLIENT_ID: 'id', OAUTH_CLIENT_SECRET: 'sec' },
+      headers: { Cookie: `oauth_state=expected` },
+    }));
+    expect(res403.headers.get('cache-control')).toContain('no-store');
+
+    // 500 No credentials
+    const res500 = await authCallback(createContext({
+      url: `https://reiwa.casa/auth/callback?code=code&state=${TEST_STATE}`,
+      env: {},
+      headers: { Cookie: `oauth_state=${TEST_STATE}` },
+    }));
+    expect(res500.headers.get('cache-control')).toContain('no-store');
+  });
 });
 
 describe('セキュリティ検証（functions/auth/）', () => {
@@ -289,5 +419,21 @@ describe('セキュリティ検証（functions/auth/）', () => {
     expect(callbackSource).not.toContain('error_description');
     // 汎用メッセージを使用していること
     expect(callbackSource).toContain('Authentication failed');
+  });
+
+  it('OAuth開始・コールバックで送信先オリジン許可リスト判定関数を実装している（SEC-27）', () => {
+    expect(indexSource).toContain('function isAllowedOrigin');
+    expect(callbackSource).toContain('function isAllowedOrigin');
+    expect(indexSource).toContain('!isAllowedOrigin(url.origin)');
+    expect(callbackSource).toContain('!isAllowedOrigin(url.origin)');
+    expect(indexSource).toContain('my-blog-3cg');
+    expect(callbackSource).toContain('my-blog-3cg');
+  });
+
+  it('OAuth開始・コールバックのレスポンスにCache-Control: no-storeを設定している（SEC-22）', () => {
+    expect(indexSource).toContain('Cache-Control');
+    expect(indexSource).toContain('no-store');
+    expect(callbackSource).toContain('Cache-Control');
+    expect(callbackSource).toContain('no-store');
   });
 });
