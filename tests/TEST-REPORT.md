@@ -56,7 +56,7 @@
 | 1.48 | 2026-09-20 | SEC-31/SEC-32 の自動回帰テストを追加。`auth-functions.test.mjs` に4件（2.3.1章 #8〜#11）、`build.test.mjs` に3件（2.5.10章 #1〜#3）。3.1章の未テスト例外と1.6.2章の例外注記を削除。Vitest 624→**631**件（全PASS、`npx vitest run` 実測。内訳: auth-functions 25→29、build 104→107） |
 | 1.49 | 2026-09-20 | Bug #50: 本番マージ前のローカル E2E 全件と `verify-comprehensive.mjs` を必須化し、「可能な場合」を廃止。**CI に Playwright は載せない**（Q23）。雛形はシナリオ FAIL で非ゼロ終了。build.test.mjs に手順固定テスト4件を追加。Vitest 631→**635**件 |
 | 1.50 | 2026-09-20 | Issue #117 項目2/12: SEC-33（CI `contents: read`）、SEC-34（`.assetsignore` 削除）。build 111→113、fuzz 215→216。Vitest 635→**638**件 |
-| 1.51 | 2026-09-21 | Bug #51再発防止: `cms-config.test.mjs`にSEC-35（環境固有ファイルの実ブランチ整合性検証）テストを1件追加（2.4.3章）。cms-config 55→56。Vitest 638→**639**件 |
+| 1.51 | 2026-09-21 | Bug #51再発防止: `cms-config.test.mjs`にSEC-35（環境固有ファイルの実ブランチ整合性検証）テストを追加（2.4.3章）。SEC-35はブランチ判定結果によって登録するテスト数が変わるため、Vitest合計は**featureブランチ639件／main・staging642件**になる（cms-config: feature 56件／main・staging 59件）。4.3.1・4.3.2章に両文脈の実測を追記 |
 
 ## テスト基盤の変更履歴
 
@@ -472,7 +472,7 @@ admin-html.test.mjs              -     ●     -     -     -     -     -     -  
 
 | No. | 基準 |
 | :--- | :--- |
-| 1 | 全テストケース（Vitest 639件 + E2E 453件 = 1092件）がPASSまたは仕様上の条件スキップであること |
+| 1 | 全テストケース（Vitest 639件〔featureブランチ〕／642件〔main・staging。SEC-35のブランチ別テスト登録により+3件〕 + E2E 453件 = 1092件／1095件）がPASSまたは仕様上の条件スキップであること |
 | 2 | `npm run build` が正常に完了すること |
 | 3 | 要件トレーサビリティマトリクス（docs/DOCUMENTATION.md 1.5章）において全要件が「充足」であること |
 | 4 | 本番（main）マージ前にローカル `npm run test:e2e` 全件と `verify-comprehensive.mjs` が完了していること（**CI に Playwright は載せない**。Bug #50） |
@@ -836,11 +836,13 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 | 49 | postsのdateフィールドがデフォルトで降順ソートに設定されている（CMS-17） | posts | M-03 | `{field: date, default_sort: desc}` |
 | 50 | postsのview_groupsに年月グルーピングのみが設定されている（CMS-18） | posts | M-03 | `view_groups`に「年月」（`\d{4}-\d{2}`）の1グループ |
 
-### 2.4.3 環境固有ファイルの実ブランチ整合性検証（SEC-35, Bug #51再発防止、1件）
+### 2.4.3 環境固有ファイルの実ブランチ整合性検証（SEC-35, Bug #51再発防止、1件〔feature〕／4件〔main・staging〕）
 
 `config.yml`（branch/base_url）・`astro.config.mjs`（SITE_URL）・`public/robots.txt`の3ファイル・4項目が、内部的に「互いに整合している」だけでは、Bug #51（staging環境がmainマージの副作用で丸ごとmain値に上書きされ、内部整合は保たれたまま検知できなかった事故）を再現・検知できない。そこで「現在実際にチェックアウトしているブランチに対して正しい値か」を検証する。ブランチは`CF_PAGES_BRANCH`（Cloudflare Pagesビルド時、`src/layouts/Base.astro`と同じ判定方式）→`GITHUB_REF_NAME`（GitHub Actions）→`git rev-parse --abbrev-ref HEAD`（ローカル）の優先順で判定する。
 
-| No. | テストケース | カテゴリ | テスト手法 | 期待結果 |
+`it()`のタイトルはテンプレートリテラルで、実行時には判定された実ブランチ名がそのまま展開される。以下の表の「現在のブランチ（main/staging）に対して…」はテンプレート表記であり、**実際のテスト名・実行ログには`現在のブランチ（main）に対して…`または`現在のブランチ（staging）に対して…`という具体的なブランチ名が出力される**（`main/staging`という文字列がテスト名にそのまま出ることはない）。
+
+| No. | テストケース（テンプレート表記） | カテゴリ | テスト手法 | 期待結果 |
 | :--- | :--- | :--- | :--- | :--- |
 | 51 | 現在のブランチ（main/staging）に対してconfig.ymlのbranchが一致する | 環境整合 | M-03 | 判定できたブランチがmain/stagingの場合、`config.backend.branch`が一致する |
 | 52 | 現在のブランチ（main/staging）に対してconfig.ymlのbase_urlが一致する | 環境整合 | M-03 | 同上ブランチに対応する`base_url`と一致する |
@@ -848,7 +850,7 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 | 54 | 現在のブランチ（main/staging）に対してpublic/robots.txtのクロール方針が一致する | 環境整合 | M-02 | main時は`Allow: /`かつ`Disallow: /`なし、staging時は`Disallow: /`かつ`Allow: /`なし |
 | 55 | ブランチをmain/stagingと判定できない場合はconfig.yml・SITE_URL・robots.txtが同一環境を指す | 環境整合 | M-03 | feature/*ブランチ等、絶対値ではなく3ファイル4項目が同一環境（main寄り/staging寄り）を指すことのみ検証 |
 
-実行するブランチによって上記5件のうち実際に評価される`it`は1件（判定不能時）または4件（main/staging判定時）であり、テストファイル全体の合計件数はその時点のブランチに依存する（本表の件数は判定不能ブランチでの実測値）。
+実行するブランチによって上記5件のうち実際に登録・評価される`it`は1件（判定不能時、No.55）または4件（main/staging判定時、No.51〜54）であり、**この登録差3件がテストファイル全体の合計件数（feature 639件／main・staging 642件）の差の原因**である（両方とも`npx vitest run`で実測済み。詳細は4.3.1・4.3.2章）。
 
 ---
 
@@ -1763,10 +1765,14 @@ npm run build
 | :--- | :--- |
 | 実行日時 | 2026-09-21（Bug #51 再発防止テスト追加後） |
 | Vitest バージョン | v4.1.11 |
-| 実行時間 | 2.60s |
-| 合否判定 | **合格** |
+| 実行時間 | 2.60s（featureブランチ, `npx vitest run`）／1.98s（main・staging想定, `CF_PAGES_BRANCH=staging npx vitest run`で実測） |
+| 合否判定 | **合格**（両文脈とも実測: feature系 639 passed、main/staging系 642 passed） |
+
+**Vitest総件数はブランチによって変わる**: SEC-35（`cms-config.test.mjs`の環境固有ファイル実ブランチ整合性検証）は、判定されたブランチがmain/stagingの場合に厳密チェック4件を登録し、それ以外（feature/*等の判定不能時）は内部整合チェック1件のみを登録する設計であるため。CIはmain/stagingへのpushで走るため、**CIログ上の件数は642件**になる。
 
 ### 4.3.2 テストファイル別結果
+
+feature ブランチ（`fix/bug-51-env-guard`）での実測:
 
 | テストファイル | テスト数 | 結果 | 実行時間 |
 | :--- | :--- | :--- | :--- |
@@ -1778,9 +1784,17 @@ npm run build
 | `fuzz-validation.test.mjs` | 216 | PASS | 25ms |
 | `content-validation.test.mjs` | 125 | PASS | 31ms |
 | `build.test.mjs` | 113 | PASS | 2310ms |
-| **合計** | **639** | **全PASS** | **実測は `npx vitest run` の出力を正とする**（`fix/bug-51-env-guard`ブランチでの実測。`cms-config.test.mjs`の環境整合テストはブランチ判定不能時1件のみ評価されるため、main/staging上での実行では56件から増減しうる） |
+| **合計** | **639** | **全PASS** | **実測は `npx vitest run` の出力を正とする** |
 
-Issue #117 項目2/12 により `build.test.mjs` 111→113、`fuzz-validation.test.mjs` 215→216。Vitest 合計 635→638。Bug #51再発防止（SEC-35、`cms-config.test.mjs`に環境固有ファイルの実ブランチ整合性検証を1件追加）によりVitest合計 638→**639**。
+main / staging での実測（`CF_PAGES_BRANCH=staging npx vitest run` で確認。`cms-config.test.mjs`のみ 56→59 に変動し他ファイルは同一）:
+
+| テストファイル | テスト数 | 結果 |
+| :--- | :--- | :--- |
+| `cms-config.test.mjs` | 59 | PASS |
+| その他7ファイル | 583 | PASS（feature時と同一） |
+| **合計** | **642** | **全PASS** |
+
+Issue #117 項目2/12 により `build.test.mjs` 111→113、`fuzz-validation.test.mjs` 215→216。Vitest 合計 635→638。Bug #51再発防止（SEC-35、`cms-config.test.mjs`に環境固有ファイルの実ブランチ整合性検証を追加）によりVitest合計は **feature ブランチ 639件／main・staging 642件**（差の3件はSEC-35のブランチ別テスト登録による。既存テストへの影響はない）。
 
 ### 4.3.3 E2Eテスト最新実行結果（Playwright）
 

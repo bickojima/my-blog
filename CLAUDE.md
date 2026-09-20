@@ -23,7 +23,7 @@
 npm run dev          # 開発サーバー起動（前処理含む）
 npm run build        # テスト必須ビルド（vitest run → normalize-images → organize-posts → astro build → image-optimize）
 npm run build:raw    # テストなしビルド（build.test.mjs内部で使用、Cloudflare Pages用）
-npm test             # Vitest 全テスト実行（639テスト、記事数により変動）
+npm test             # Vitest 全テスト実行（639テスト・main/stagingブランチでは642テスト、記事数により変動。SEC-35がブランチ別にテストを登録するため件数が変わる）
 npm run test:watch   # Vitest ウォッチモード
 npm run test:e2e     # Playwright E2Eテスト（要: npm run build 済み、453テスト：445実行+8スキップ）
 ```
@@ -108,7 +108,7 @@ tests/
 
 ## テスト
 
-- **Vitest**: 設定検証、コンテンツ検証、単体テスト、ビルド統合テスト、セキュリティ検証、ファズテスト、基本機能保護テスト（639テスト、記事数により変動）。`.github/workflows/ci.yml` によりmain/staging/feature/*へのpush・PRで自動実行される（Playwright は含めない）
+- **Vitest**: 設定検証、コンテンツ検証、単体テスト、ビルド統合テスト、セキュリティ検証、ファズテスト、基本機能保護テスト（639テスト・main/stagingブランチでは642テスト、記事数により変動）。`.github/workflows/ci.yml` によりmain/staging/feature/*へのpush・PRで自動実行される（Playwright は含めない）。CIはmain/stagingへのpushで走るため、CIログ上は642件になる（SEC-35のブランチ別テスト登録によりfeatureブランチとmain/stagingで件数が異なる。詳細はCLAUDE.md「ブランチマージ時」参照）
 - **Playwright**: PC/iPad/iPhone 3デバイスで453テスト（445実行+8スキップ、ローカルのみ）。**CI に Playwright は載せない**（実行時間のためローカル運用を継続）。本番（main）マージ前のローカル全件は必須（Bug #50）
 - コンテンツ検証テストは記事数・ページ数に応じて動的展開される
 - テスト実行後、失敗がある場合は原因を調査し修正する（テストを削除・スキップしない）
@@ -204,7 +204,7 @@ DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を�
 1. コード変更は必ず `staging` ブランチで先に実装・テスト・プッシュする
 2. staging.reiwa.casa で動作確認を行い、問題がないことを確認する
 3. ユーザーの明示的な承認を得てから `staging` → `main` にマージする（勝手にマージしない）
-4. マージ後、`config.yml` の `branch` / `base_url`、`astro.config.mjs` の `SITE_URL`、`public/robots.txt` のクロール方針が main の値（`branch: main` / `base_url: https://reiwa.casa` / `SITE_URL: https://reiwa.casa` / `Allow: /` + Sitemap）であることを確認する。**PRマージ等の機械的な差分採用でこれら4項目がマージ方向の副作用で丸ごと相手ブランチの値に上書きされることがある**（Bug #51: staging CMSが本番mainへ直接コミットする状態が21分間発生）。互いに整合しているだけでは検知できないため、`npm test`（`cms-config.test.mjs` のSEC-35テストが実際のブランチに対する値を自動検証する）を必ず実行する
+4. マージ後、`config.yml` の `branch` / `base_url`、`astro.config.mjs` の `SITE_URL`、`public/robots.txt` のクロール方針が main の値（`branch: main` / `base_url: https://reiwa.casa` / `SITE_URL: https://reiwa.casa` / `Allow: /` + Sitemap）であることを確認する。**PRマージ等の機械的な差分採用でこれら4項目がマージ方向の副作用で丸ごと相手ブランチの値に上書きされることがある**（Bug #51: staging CMSが本番mainへ直接コミットする状態が21分間発生）。互いに整合しているだけでは検知できないため、`npm test`（`cms-config.test.mjs` のSEC-35テストが実際のブランチに対する値を自動検証する）を必ず実行する。**SEC-35はブランチ別にテストを登録する**ため、main/stagingでは厳密チェック4件が有効になり、feature/*等の判定不能ブランチでは内部整合チェック1件のみになる（Vitest合計はfeatureブランチ639件、main/staging642件）。件数差はこの登録差によるものであり、テストの欠落や壊れではない
 5. **コンテンツ（記事・固定ページ・画像）は main と staging で常に同一に保つ**: マージ時に `src/content/`・`public/images/uploads/`・`public/admin/url-map.json` の差分がないことを確認し、差分があれば同期する
 6. main ブランチでテストを実行し、全PASS を確認してからプッシュする
 7. **Vitest だけでは main マージ不可**。ローカル `npm run test:e2e`（3デバイス全件）と `node evidence/YYYY-MM-DD/verify-comprehensive.mjs`（雛形 `evidence/2026-05-24/verify-comprehensive.mjs`）の完了が必須。CI の Vitest 成功・staging CMS 実ログイン確認・「後で E2E」は代替にならない（Bug #50）
@@ -248,4 +248,4 @@ DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を�
 - sitemap除外は `astro.config.mjs` の `filter` で行う。**frontmatterとfilterのずれは `build.test.mjs`（FR-29）が検出する**ので、slugを変えたらfilterも直す。
 - 原稿変更時は `tests/e2e/app-info.spec.ts` のソース連動E2E（2ページ×3デバイス）で確認する。
 - **CMSに項目を足さずにフロントマターを増やさない**。Decap CMSは設定にない項目を保存時に落とす。`cms-config.test.mjs` が固定ページの全フロントマター項目とZodスキーマ項目をCMS設定と突き合わせて検出する。
-- 現行テスト定義はVitest 639件、E2E 453件（旧444件＋FR-29 9件、445実行+8スキップ）。QAは `docs/qa-2026-09-09-otp-app-pages.md`。
+- 現行テスト定義はVitest 639件（feature ブランチ）／642件（main・staging。SEC-35のブランチ別テスト登録により+3件）、E2E 453件（旧444件＋FR-29 9件、445実行+8スキップ）。QAは `docs/qa-2026-09-09-otp-app-pages.md`。
