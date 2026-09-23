@@ -3,7 +3,7 @@ import { readFileSync, readdirSync } from 'fs';
 import { join } from 'path';
 import { execSync } from 'child_process';
 import yaml from 'js-yaml';
-import matter from 'gray-matter';
+import { parseFrontmatter } from '../scripts/lib/safe-frontmatter.mjs'; // Bug #52: gray-matter を直接呼ばない
 
 const configPath = join(process.cwd(), 'public/admin/config.yml');
 const configRaw = readFileSync(configPath, 'utf-8');
@@ -227,7 +227,7 @@ describe('CMS設定（config.yml）の検証', () => {
           const files = readdirSync(pagesDir).filter(f => f.endsWith('.md'));
           expect(files.length).toBeGreaterThan(0);
           for (const file of files) {
-            const { data } = matter(readFileSync(join(pagesDir, file), 'utf-8'));
+            const { data } = parseFrontmatter(readFileSync(join(pagesDir, file), 'utf-8'));
             for (const key of Object.keys(data)) {
               expect(fieldNames, `${file} の "${key}" がCMS設定に無い（保存時に消える）`).toContain(key);
             }

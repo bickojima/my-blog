@@ -1,0 +1,118 @@
+{
+  "issue": 128,
+  "date": "2026-09-23",
+  "command": "npm run build",
+  "tempFileRemoved": true,
+  "results": [
+    {
+      "id": "C1",
+      "name": "通常ビルド（Vitest全PASS）",
+      "env": {},
+      "exitCode": 0,
+      "distExists": true,
+      "distIndexHtml": true,
+      "astroBuildLogSeen": true,
+      "vitestSummary": [
+        "Test Files  8 passed (8)",
+        "Tests  554 passed (554)"
+      ],
+      "durationSec": 3,
+      "expected": {
+        "exitZero": true,
+        "distExists": true
+      },
+      "pass": true,
+      "lastLines": [
+        "14:36:27   ├─ /profile/index.html (+0ms) ",
+        "14:36:27   ├─ /index.html (+1ms) ",
+        "14:36:27 ✓ Completed in 41ms.",
+        "",
+        "14:36:27 [build] ✓ Completed in 244ms.",
+        "[image-optimize] Optimizing 5 images...",
+        "  img_4642.jpg: 6.0MB → 0.2MB (-96%) [4284px → 1200px]",
+        "  img_4687.jpeg: 5.0MB → 0.2MB (-96%) [4284px → 1200px]",
+        "  img_4736.jpeg: 4.1MB → 0.2MB (-96%) [4284px → 1200px]",
+        "  img_4741.jpeg: 2.1MB → 0.2MB (-92%) [3024px → 1200px]",
+        "  img_4784.jpeg: 4.5MB → 0.2MB (-97%) [5712px → 1200px]",
+        "[image-optimize] Done.",
+        "14:36:28 [@astrojs/sitemap] `sitemap-index.xml` created at `dist`",
+        "14:36:28 [build] 20 page(s) built in 1.19s",
+        "14:36:28 [build] Complete!"
+      ]
+    },
+    {
+      "id": "C2",
+      "name": "Vitest意図的失敗",
+      "env": {},
+      "exitCode": 1,
+      "distExists": false,
+      "distIndexHtml": false,
+      "astroBuildLogSeen": false,
+      "vitestSummary": [
+        "Test Files  1 failed | 8 passed (9)",
+        "Tests  1 failed | 554 passed (555)"
+      ],
+      "durationSec": 1,
+      "expected": {
+        "exitZero": false,
+        "distExists": false
+      },
+      "pass": true,
+      "lastLines": [
+        "AssertionError: expected 1 to be 2 // Object.is equality",
+        "",
+        "- Expected",
+        "+ Received",
+        "",
+        "- 2",
+        "+ 1",
+        "",
+        " ❯ tests/zz-intentional-fail.test.mjs:2:50",
+        "      1| import { it, expect } from 'vitest';",
+        "      2| it('Issue #128 意図的失敗（一時ファイル）', () => { expect(1).toBe(2); });",
+        "       |                                                  ^",
+        "      3|",
+        "",
+        "⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯"
+      ]
+    },
+    {
+      "id": "C3",
+      "name": "Vitest意図的失敗 + CF_PAGES_BRANCH=staging",
+      "env": {
+        "CF_PAGES_BRANCH": "staging"
+      },
+      "exitCode": 1,
+      "distExists": false,
+      "distIndexHtml": false,
+      "astroBuildLogSeen": false,
+      "vitestSummary": [
+        "Test Files  1 failed | 8 passed (9)",
+        "Tests  1 failed | 557 passed (558)"
+      ],
+      "durationSec": 1,
+      "expected": {
+        "exitZero": false,
+        "distExists": false
+      },
+      "pass": true,
+      "lastLines": [
+        "AssertionError: expected 1 to be 2 // Object.is equality",
+        "",
+        "- Expected",
+        "+ Received",
+        "",
+        "- 2",
+        "+ 1",
+        "",
+        " ❯ tests/zz-intentional-fail.test.mjs:2:50",
+        "      1| import { it, expect } from 'vitest';",
+        "      2| it('Issue #128 意図的失敗（一時ファイル）', () => { expect(1).toBe(2); });",
+        "       |                                                  ^",
+        "      3|",
+        "",
+        "⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯"
+      ]
+    }
+  ]
+}

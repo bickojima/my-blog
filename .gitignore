@@ -38,3 +38,6 @@ evidence/tmp/
 # Claude Code（個人環境の許可設定。settings.json はプロジェクト共通のためコミット対象）
 .claude/settings.local.json
 
+
+# npm管理外依存チェックの出力（SEC-40。evidence/ に保存するときだけコミット）
+reports/

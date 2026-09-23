@@ -1,0 +1,4 @@
+$ bash evidence/2026-09-23/issue132/notify-dry-run.sh evidence/2026-09-23/issue132/fixture-alert/latest.md
+existing open issue: none
+DRY-RUN: gh issue create --title [dependency-freshness] npm管理外依存に要対応（alert）があります --body-file body.md
+body.md:       33 lines, first line: # npm管理外依存 鮮度・EOL チェック結果
