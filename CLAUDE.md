@@ -158,7 +158,7 @@ DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を�
 - **保存先**: `evidence/YYYY-MM-DD/` フォルダ（日付ごとに整理）
 - **レポート形式**: `report.html`（画像埋め込み、PC/iPad/iPhone 3デバイス横並び表示）
 - **スクリーンショット**: `screenshots/`, `site-interactive/`, `cms-interactive/` サブフォルダに整理
-- **検証スクリプト**: `verify-staging.mjs`（基本動作確認）、`verify-site-interactive.mjs`（サイト操作性、10シナリオ×3デバイス）、`verify-cms-interactive.mjs`（CMS操作性、16シナリオ×3デバイス）、`verify-cms-crud.mjs`（CMS CRUD操作、16シナリオ×3デバイス）、`verify-security.mjs`（セキュリティ検証、10項目）
+- **検証スクリプト**: `verify-staging.mjs`（基本動作確認）、`verify-site-interactive.mjs`（サイト操作性、10シナリオ×3デバイス）、`verify-cms-interactive.mjs`（CMS操作性、16シナリオ×3デバイス）、`verify-cms-crud.mjs`（CMS CRUD操作、16シナリオ×3デバイス）、`evidence/YYYY-MM-DD/verify-security.mjs`（SEC01〜SEC10の証跡確認、10項目）
 - **過去手法の優先**: 新しいE2Eエビデンスを作る場合も、既存スクリプトの構成（スタンドアロンPlaywright、赤枠アノテーション、HTMLレポート、結果JSON）を踏襲する。**雛形として `evidence/2026-05-24/verify-comprehensive.mjs` を優先使用する**（150シナリオ×3デバイス対応の最新包括版）。旧スクリプト: `verify-site-interactive.mjs` / `verify-cms-interactive.mjs` / `verify-cms-crud.mjs` / `verify-cms19-grouping.mjs`
 - **CMS OAuthモック必須**: CMSエビデンスは実GitHub認証に依存させず、OAuth 3ステップハンドシェイクとGitHub APIモックで擬似ログインする。認証後のCMS独自カスタマイズ画面を撮影すること
 - **赤枠アノテーション**: 全スクリーンショットの注目箇所に赤枠とラベルを必ず付与する（ボタン・メニュー・重なり検出箇所・バグ再発防止確認箇所）
@@ -190,7 +190,7 @@ DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を�
 
 ### 継続的品質・セキュリティ改善方針
 - **バグ駆動テストケース生成**: バグ一覧（DOCUMENTATION.md 4.5章）の全バグに対して再発防止テストを必ず作成する。過去バグ由来の検証マトリクスをエビデンスにも反映する
-- **定期セキュリティ検証**: コード変更時に `verify-security.mjs` でSEC要件の充足を自動検証する。新SEC要件追加時はスクリプトも更新する
+- **セキュリティ検証の責務**: SEC要件全体のテスト網羅性は `docs/DOCUMENTATION.md` 1.5.4章と各要件のテストを正本とする。`evidence/YYYY-MM-DD/verify-security.mjs` は4.9.8章に列挙したSEC01〜SEC10の証跡取得用であり、全SEC要件の検査器ではない。SEC要件を追加・変更する際は対応するテストとトレーサビリティを更新し、エビデンススクリプトが必要な項目だけ同スクリプトへ追加する
 - **CMS CRUD操作検証**: CMS関連変更時に `verify-cms-crud.mjs` で記事CRUD・画像アップロード・メディアライブラリ等の操作を検証する
 - **品質指標**: テストカバレッジ100%（要件対テストケース）、エビデンス取得率100%（主要機能）、バグ再発防止テスト実装率100%を目標とする
 - 詳細は DOCUMENTATION.md 4.10章を参照
