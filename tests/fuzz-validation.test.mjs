@@ -1100,6 +1100,41 @@ describe('セキュリティヘッダー構成の包括的検証', () => {
     });
   });
 
+  // Issue #130: Cloudflare Web Analytics ビーコン（static.cloudflareinsights.com）は
+  // /admin/* の CSP で意図的に遮断する。CSP を緩めてビーコンを通す変更を検知する。
+  describe('管理画面CSPで外部解析ビーコンを許可しない（SEC-41, Issue #130）', () => {
+    const cspLine = adminSectionAll.split('\n')
+      .find(l => /^\s*Content-Security-Policy:/.test(l));
+    const adminCsp = cspLine ? cspLine.replace(/^\s*Content-Security-Policy:/, '').trim() : '';
+    const directive = (name) => {
+      const found = adminCsp.split(';').map(s => s.trim()).find(s => s.split(/\s+/)[0] === name);
+      return found ? found.split(/\s+/).slice(1) : null;
+    };
+
+    it('/admin/* の CSP に cloudflareinsights が含まれていない（SEC-41, Issue #130）', () => {
+      expect(adminCsp, '/admin/* の CSP が見つからない').not.toBe('');
+      expect(adminCsp.toLowerCase()).not.toContain('cloudflareinsights');
+    });
+
+    it('/admin/* の script-src / connect-src に任意ホストを許すワイルドカード・スキームソースがない（SEC-41, Issue #130）', () => {
+      for (const name of ['script-src', 'connect-src']) {
+        const sources = directive(name);
+        expect(sources, `${name} が見つからない`).toBeTruthy();
+        for (const src of sources) {
+          expect(['*', 'https:', 'http:'], `${name} に ${src} がある`).not.toContain(src);
+          expect(src.startsWith('https://*.') && !src.endsWith('githubusercontent.com'),
+            `${name} に想定外のワイルドカードホスト ${src} がある`).toBe(false);
+        }
+      }
+    });
+
+    it('_headers に Cloudflare Insights を意図的に遮断している旨のコメントがある（SEC-41, Issue #130）', () => {
+      const commentLines = headersContent.split('\n').filter(l => l.trim().startsWith('#')).join('\n');
+      expect(commentLines).toContain('Issue #130');
+      expect(commentLines).toContain('cloudflareinsights');
+    });
+  });
+
   describe('追加セキュリティヘッダー', () => {
     it('X-DNS-Prefetch-Control: off が設定されている', () => {
       expect(headersContent).toContain('X-DNS-Prefetch-Control: off');
