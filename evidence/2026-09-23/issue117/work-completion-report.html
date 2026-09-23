@@ -36,9 +36,9 @@ code{background:#f3f4f6;padding:0 4px}
 <h2>2. 検証結果</h2>
 <table>
 <tr><th>検証</th><th>結果</th></tr>
-<tr><td>Vitest（<code>npx vitest run</code>）</td><td>666 / 666 PASS（feature）。<code>CF_PAGES_BRANCH=staging</code> で 669 / 669 PASS。変更前 639 / 642 から +27（security-hardening 26、build 1）。削除・スキップなし</td></tr>
+<tr><td>Vitest（<code>npx vitest run</code>）</td><td>668 / 668 PASS（feature）。<code>CF_PAGES_BRANCH=staging</code> で 671 / 671 PASS。変更前 639 / 642 から +29（security-hardening 28、build 1）。削除・スキップなし</td></tr>
 <tr><td>実ブラウザ E2E（<code>verify-oauth-hardening.mjs</code>）</td><td>15 / 15 PASS（PC / iPad / iPhone × H01〜H05）。<a href="report.html">report.html</a></td></tr>
-<tr><td>Bug #52 の実測</td><td>変更前の organize-posts.mjs は <code>---js</code> 記事のペイロードを実行、変更後は実行しない</td></tr>
+<tr><td>Bug #52 の実測</td><td>変更前は organize-posts.mjs と <code>npx vitest run tests/content-validation.test.mjs</code>（<code>npm run build</code> が organize-posts より先に実行する経路）の両方で <code>---js</code> 記事のペイロードが実行された。変更後はどちらも実行されない（テストは例外で失敗＝fail-closed）。Astro 本体のローダーは js-yaml/TOML のみで eval しない（<code>npx astro build</code> が YAML エラーで停止、ペイロード非実行）</td></tr>
 <tr><td>Pages Functions バンドル</td><td><code>wrangler pages functions build</code> で生成ルートは <code>/auth</code>・<code>/auth/callback</code> のみ（共有モジュールはルート化されない）</td></tr>
 <tr><td><code>npm run build:raw</code></td><td>成功。<code>public/admin/url-map.json</code> に差分なし</td></tr>
 </table>

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync, existsSync } from 'fs';
 import { join, extname, relative, basename } from 'path';
-import matter from 'gray-matter';
+import { parseFrontmatter } from '../scripts/lib/safe-frontmatter.mjs'; // Bug #52: gray-matter を直接呼ばない
 
 const POSTS_DIR = join(process.cwd(), 'src/content/posts');
 const PAGES_DIR = join(process.cwd(), 'src/content/pages');
@@ -35,7 +35,7 @@ describe('コンテンツ（Markdownファイル）の検証', () => {
     markdownFiles.map((f) => [relative(process.cwd(), f).replace(/\\/g, '/'), f])
   )('%s', (_relativePath, filePath) => {
     const raw = readFileSync(filePath, 'utf-8');
-    const { data: frontmatter, content } = matter(raw);
+    const { data: frontmatter, content } = parseFrontmatter(raw);
 
     it('フロントマターが正しくパースできる', () => {
       expect(frontmatter).toBeDefined();
@@ -124,7 +124,7 @@ describe('固定ページ（pages）コンテンツの検証', () => {
     pageFiles.map(f => [relative(process.cwd(), f).replace(/\\/g, '/'), f])
   )('%s', (_relativePath, filePath) => {
     const raw = readFileSync(filePath, 'utf-8');
-    const { data: frontmatter, content } = matter(raw);
+    const { data: frontmatter, content } = parseFrontmatter(raw);
 
     it('titleが文字列で存在する', () => {
       expect(frontmatter.title).toBeDefined();
@@ -269,7 +269,7 @@ describe('固定ページフィールドの境界値・一意性検証', () => {
 
   const allPages = pageFiles.map(f => {
     const raw = readFileSync(f, 'utf-8');
-    const { data } = matter(raw);
+    const { data } = parseFrontmatter(raw);
     return { file: basename(f), ...data };
   });
 

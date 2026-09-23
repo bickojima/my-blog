@@ -28,7 +28,7 @@ Astro + Decap CMS によるブログサイト。Cloudflare Pages でホスティ
 | 1.19 | 2026-09-20 | SEC-31/SEC-32 の自動回帰テスト追加に合わせ Vitest 件数を 624→631 に更新 |
 | 1.20 | 2026-09-20 | Bug #50: 本番マージ前のローカル E2E 全件と verify-comprehensive.mjs を必須化。CI に Playwright は載せない。Vitest 631→635 |
 | 1.21 | 2026-09-20 | Issue #117 項目2/12: CI `contents: read`、無効な `.assetsignore` 削除。Vitest 635→638 |
-| 1.22 | 2026-09-23 | Issue #117 hardening: frontmatter を YAML のみに限定（Bug #52）、Actions の SHA 固定（SEC-36）、OAuth 許可リスト単一化（SEC-37）、コールバック CSP 自己完結（SEC-38）、埋め込み値の JSON.stringify リテラル化（SEC-39）。Vitest 639→666（main・staging 669） |
+| 1.22 | 2026-09-23 | Issue #117 hardening: frontmatter を YAML のみに限定（Bug #52）、Actions の SHA 固定（SEC-36）、OAuth 許可リスト単一化（SEC-37）、コールバック CSP 自己完結（SEC-38）、埋め込み値の JSON.stringify リテラル化（SEC-39）。Vitest 639→668（main・staging 671） |
 
 詳細なシステム変更履歴は [DOCUMENTATION.md](docs/DOCUMENTATION.md) を参照。
 
@@ -144,7 +144,7 @@ my-blog/
 | `npm run dev` | 開発サーバー起動（localhost:4321） |
 | `npm run build` | 本番ビルド（`./dist/` に出力） |
 | `npm run preview` | ビルド結果のローカルプレビュー |
-| `npm test` | 単体・統合テスト実行（Vitest / 666テスト〔main・staging では669〕、記事数により変動） |
+| `npm test` | 単体・統合テスト実行（Vitest / 668テスト〔main・staging では671〕、記事数により変動） |
 | `npm run test:watch` | ウォッチモードでテスト実行 |
 | `npm run test:e2e` | E2Eテスト実行（Playwright / PC・iPad・iPhone 453テスト: 445実行+8スキップ） |
 
