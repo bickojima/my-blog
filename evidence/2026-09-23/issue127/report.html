@@ -1,0 +1,197 @@
+<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><title>Issue #127 CMS 書き込み先ブランチ E2E</title>
+<style>body{font-family:sans-serif;margin:16px}table{border-collapse:collapse;width:100%}th,td{border:1px solid #ccc;padding:6px;vertical-align:top}th{width:16%;text-align:left}td img{max-width:100%;border:1px solid #ddd}.ok{color:#fff;background:#1a7f37;display:inline-block;padding:2px 6px}.ng{color:#fff;background:#cf222e;display:inline-block;padding:2px 6px}pre{white-space:pre-wrap;font-size:11px;max-height:200px;overflow:auto}</style></head>
+<body><h1>Issue #127: CMS 書き込み先ブランチ・base_url の実行時導出 E2E（2026-09-23）</h1>
+<p>Decap CMS 3.16.2（CDN 実物）＋ dist の admin/index.html・cms-env.js・config.yml（branch/base_url なし）。_headers の CSP を付与。OAuth は3ステップハンドシェイクのスタブ、GitHub API は全面モック。本番・staging・プレビューのホスト名はローカル dist で応答（実サーバー通信なし）。config.yml の base_url 一時書き換えは行っていない。結果: <b>24/24 PASS</b></p>
+<table><tr><th>シナリオ</th><th>PC</th><th>iPad</th><th>iPhone</th></tr><tr><th>B01 localhost<br><small>http://localhost:4276<br>期待: staging<br>ログイン後一覧・ポップアップ URL</small></th><td><div class="ok">PASS</div><a href="screenshots/b01-list-localhost-PC.png"><img src="screenshots/b01-list-localhost-PC.png" loading="lazy"></a><pre>{
+ &quot;popupUrl&quot;: &quot;http://localhost:4276/auth?provider=github&amp;site_id=demo.decapcms.org&amp;scope=repo&quot;
+}</pre></td><td><div class="ok">PASS</div><a href="screenshots/b01-list-localhost-iPad.png"><img src="screenshots/b01-list-localhost-iPad.png" loading="lazy"></a><pre>{
+ &quot;popupUrl&quot;: &quot;http://localhost:4276/auth?provider=github&amp;site_id=demo.decapcms.org&amp;scope=repo&quot;
+}</pre></td><td><div class="ok">PASS</div><a href="screenshots/b01-list-localhost-iPhone.png"><img src="screenshots/b01-list-localhost-iPhone.png" loading="lazy"></a><pre>{
+ &quot;popupUrl&quot;: &quot;http://localhost:4276/auth?provider=github&amp;site_id=demo.decapcms.org&amp;scope=repo&quot;
+}</pre></td></tr><tr><th>B02 localhost<br><small>http://localhost:4276<br>期待: staging<br>実操作保存 → 書き込み先 ref</small></th><td><div class="ok">PASS</div><a href="screenshots/b02-saved-localhost-PC.png"><img src="screenshots/b02-saved-localhost-PC.png" loading="lazy"></a><pre>{
+ &quot;measuredRefPatches&quot;: [
+  &quot;/repos/bickojima/my-blog/git/refs/heads/staging&quot;
+ ],
+ &quot;branchesTouched&quot;: [
+  &quot;staging&quot;
+ ],
+ &quot;publishOp&quot;: &quot;click&quot;,
+ &quot;writes&quot;: [
+  &quot;POST /repos/bickojima/my-blog/git/blobs&quot;,
+  &quot;POST /repos/bickojima/my-blog/git/trees&quot;,
+  &quot;POST /repos/bickojima/my-blog/git/commits&quot;,
+  &quot;PATCH /repos/bickojima/my-blog/git/refs/heads/staging&quot;
+ ]
+}</pre></td><td><div class="ok">PASS</div><a href="screenshots/b02-saved-localhost-iPad.png"><img src="screenshots/b02-saved-localhost-iPad.png" loading="lazy"></a><pre>{
+ &quot;measuredRefPatches&quot;: [
+  &quot;/repos/bickojima/my-blog/git/refs/heads/staging&quot;
+ ],
+ &quot;branchesTouched&quot;: [
+  &quot;staging&quot;
+ ],
+ &quot;publishOp&quot;: &quot;click&quot;,
+ &quot;writes&quot;: [
+  &quot;POST /repos/bickojima/my-blog/git/blobs&quot;,
+  &quot;POST /repos/bickojima/my-blog/git/trees&quot;,
+  &quot;POST /repos/bickojima/my-blog/git/commits&quot;,
+  &quot;PATCH /repos/bickojima/my-blog/git/refs/heads/staging&quot;
+ ]
+}</pre></td><td><div class="ok">PASS</div><a href="screenshots/b02-saved-localhost-iPhone.png"><img src="screenshots/b02-saved-localhost-iPhone.png" loading="lazy"></a><pre>{
+ &quot;measuredRefPatches&quot;: [
+  &quot;/repos/bickojima/my-blog/git/refs/heads/staging&quot;
+ ],
+ &quot;branchesTouched&quot;: [
+  &quot;staging&quot;
+ ],
+ &quot;publishOp&quot;: &quot;keyboard Enter（iPhone でメニューが表示領域外。既存事象）&quot;,
+ &quot;writes&quot;: [
+  &quot;POST /repos/bickojima/my-blog/git/blobs&quot;,
+  &quot;POST /repos/bickojima/my-blog/git/trees&quot;,
+  &quot;POST /repos/bickojima/my-blog/git/commits&quot;,
+  &quot;PATCH /repos/bickojima/my-blog/git/refs/heads/staging&quot;
+ ]
+}</pre></td></tr><tr><th>B01 production<br><small>https://reiwa.casa<br>期待: main<br>ログイン後一覧・ポップアップ URL</small></th><td><div class="ok">PASS</div><a href="screenshots/b01-list-production-PC.png"><img src="screenshots/b01-list-production-PC.png" loading="lazy"></a><pre>{
+ &quot;popupUrl&quot;: &quot;https://reiwa.casa/auth?provider=github&amp;site_id=reiwa.casa&amp;scope=repo&quot;
+}</pre></td><td><div class="ok">PASS</div><a href="screenshots/b01-list-production-iPad.png"><img src="screenshots/b01-list-production-iPad.png" loading="lazy"></a><pre>{
+ &quot;popupUrl&quot;: &quot;https://reiwa.casa/auth?provider=github&amp;site_id=reiwa.casa&amp;scope=repo&quot;
+}</pre></td><td><div class="ok">PASS</div><a href="screenshots/b01-list-production-iPhone.png"><img src="screenshots/b01-list-production-iPhone.png" loading="lazy"></a><pre>{
+ &quot;popupUrl&quot;: &quot;https://reiwa.casa/auth?provider=github&amp;site_id=reiwa.casa&amp;scope=repo&quot;
+}</pre></td></tr><tr><th>B02 production<br><small>https://reiwa.casa<br>期待: main<br>実操作保存 → 書き込み先 ref</small></th><td><div class="ok">PASS</div><a href="screenshots/b02-saved-production-PC.png"><img src="screenshots/b02-saved-production-PC.png" loading="lazy"></a><pre>{
+ &quot;measuredRefPatches&quot;: [
+  &quot;/repos/bickojima/my-blog/git/refs/heads/main&quot;
+ ],
+ &quot;branchesTouched&quot;: [
+  &quot;main&quot;
+ ],
+ &quot;publishOp&quot;: &quot;click&quot;,
+ &quot;writes&quot;: [
+  &quot;POST /repos/bickojima/my-blog/git/blobs&quot;,
+  &quot;POST /repos/bickojima/my-blog/git/trees&quot;,
+  &quot;POST /repos/bickojima/my-blog/git/commits&quot;,
+  &quot;PATCH /repos/bickojima/my-blog/git/refs/heads/main&quot;
+ ]
+}</pre></td><td><div class="ok">PASS</div><a href="screenshots/b02-saved-production-iPad.png"><img src="screenshots/b02-saved-production-iPad.png" loading="lazy"></a><pre>{
+ &quot;measuredRefPatches&quot;: [
+  &quot;/repos/bickojima/my-blog/git/refs/heads/main&quot;
+ ],
+ &quot;branchesTouched&quot;: [
+  &quot;main&quot;
+ ],
+ &quot;publishOp&quot;: &quot;click&quot;,
+ &quot;writes&quot;: [
+  &quot;POST /repos/bickojima/my-blog/git/blobs&quot;,
+  &quot;POST /repos/bickojima/my-blog/git/trees&quot;,
+  &quot;POST /repos/bickojima/my-blog/git/commits&quot;,
+  &quot;PATCH /repos/bickojima/my-blog/git/refs/heads/main&quot;
+ ]
+}</pre></td><td><div class="ok">PASS</div><a href="screenshots/b02-saved-production-iPhone.png"><img src="screenshots/b02-saved-production-iPhone.png" loading="lazy"></a><pre>{
+ &quot;measuredRefPatches&quot;: [
+  &quot;/repos/bickojima/my-blog/git/refs/heads/main&quot;
+ ],
+ &quot;branchesTouched&quot;: [
+  &quot;main&quot;
+ ],
+ &quot;publishOp&quot;: &quot;keyboard Enter（iPhone でメニューが表示領域外。既存事象）&quot;,
+ &quot;writes&quot;: [
+  &quot;POST /repos/bickojima/my-blog/git/blobs&quot;,
+  &quot;POST /repos/bickojima/my-blog/git/trees&quot;,
+  &quot;POST /repos/bickojima/my-blog/git/commits&quot;,
+  &quot;PATCH /repos/bickojima/my-blog/git/refs/heads/main&quot;
+ ]
+}</pre></td></tr><tr><th>B01 staging<br><small>https://staging.reiwa.casa<br>期待: staging<br>ログイン後一覧・ポップアップ URL</small></th><td><div class="ok">PASS</div><a href="screenshots/b01-list-staging-PC.png"><img src="screenshots/b01-list-staging-PC.png" loading="lazy"></a><pre>{
+ &quot;popupUrl&quot;: &quot;https://staging.reiwa.casa/auth?provider=github&amp;site_id=staging.reiwa.casa&amp;scope=repo&quot;
+}</pre></td><td><div class="ok">PASS</div><a href="screenshots/b01-list-staging-iPad.png"><img src="screenshots/b01-list-staging-iPad.png" loading="lazy"></a><pre>{
+ &quot;popupUrl&quot;: &quot;https://staging.reiwa.casa/auth?provider=github&amp;site_id=staging.reiwa.casa&amp;scope=repo&quot;
+}</pre></td><td><div class="ok">PASS</div><a href="screenshots/b01-list-staging-iPhone.png"><img src="screenshots/b01-list-staging-iPhone.png" loading="lazy"></a><pre>{
+ &quot;popupUrl&quot;: &quot;https://staging.reiwa.casa/auth?provider=github&amp;site_id=staging.reiwa.casa&amp;scope=repo&quot;
+}</pre></td></tr><tr><th>B02 staging<br><small>https://staging.reiwa.casa<br>期待: staging<br>実操作保存 → 書き込み先 ref</small></th><td><div class="ok">PASS</div><a href="screenshots/b02-saved-staging-PC.png"><img src="screenshots/b02-saved-staging-PC.png" loading="lazy"></a><pre>{
+ &quot;measuredRefPatches&quot;: [
+  &quot;/repos/bickojima/my-blog/git/refs/heads/staging&quot;
+ ],
+ &quot;branchesTouched&quot;: [
+  &quot;staging&quot;
+ ],
+ &quot;publishOp&quot;: &quot;click&quot;,
+ &quot;writes&quot;: [
+  &quot;POST /repos/bickojima/my-blog/git/blobs&quot;,
+  &quot;POST /repos/bickojima/my-blog/git/trees&quot;,
+  &quot;POST /repos/bickojima/my-blog/git/commits&quot;,
+  &quot;PATCH /repos/bickojima/my-blog/git/refs/heads/staging&quot;
+ ]
+}</pre></td><td><div class="ok">PASS</div><a href="screenshots/b02-saved-staging-iPad.png"><img src="screenshots/b02-saved-staging-iPad.png" loading="lazy"></a><pre>{
+ &quot;measuredRefPatches&quot;: [
+  &quot;/repos/bickojima/my-blog/git/refs/heads/staging&quot;
+ ],
+ &quot;branchesTouched&quot;: [
+  &quot;staging&quot;
+ ],
+ &quot;publishOp&quot;: &quot;click&quot;,
+ &quot;writes&quot;: [
+  &quot;POST /repos/bickojima/my-blog/git/blobs&quot;,
+  &quot;POST /repos/bickojima/my-blog/git/trees&quot;,
+  &quot;POST /repos/bickojima/my-blog/git/commits&quot;,
+  &quot;PATCH /repos/bickojima/my-blog/git/refs/heads/staging&quot;
+ ]
+}</pre></td><td><div class="ok">PASS</div><a href="screenshots/b02-saved-staging-iPhone.png"><img src="screenshots/b02-saved-staging-iPhone.png" loading="lazy"></a><pre>{
+ &quot;measuredRefPatches&quot;: [
+  &quot;/repos/bickojima/my-blog/git/refs/heads/staging&quot;
+ ],
+ &quot;branchesTouched&quot;: [
+  &quot;staging&quot;
+ ],
+ &quot;publishOp&quot;: &quot;keyboard Enter（iPhone でメニューが表示領域外。既存事象）&quot;,
+ &quot;writes&quot;: [
+  &quot;POST /repos/bickojima/my-blog/git/blobs&quot;,
+  &quot;POST /repos/bickojima/my-blog/git/trees&quot;,
+  &quot;POST /repos/bickojima/my-blog/git/commits&quot;,
+  &quot;PATCH /repos/bickojima/my-blog/git/refs/heads/staging&quot;
+ ]
+}</pre></td></tr><tr><th>B01 pages-preview<br><small>https://abc123.my-blog-3cg.pages.dev<br>期待: staging<br>ログイン後一覧・ポップアップ URL</small></th><td><div class="ok">PASS</div><a href="screenshots/b01-list-pages-preview-PC.png"><img src="screenshots/b01-list-pages-preview-PC.png" loading="lazy"></a><pre>{
+ &quot;popupUrl&quot;: &quot;https://abc123.my-blog-3cg.pages.dev/auth?provider=github&amp;site_id=abc123.my-blog-3cg.pages.dev&amp;scope=repo&quot;
+}</pre></td><td><div class="ok">PASS</div><a href="screenshots/b01-list-pages-preview-iPad.png"><img src="screenshots/b01-list-pages-preview-iPad.png" loading="lazy"></a><pre>{
+ &quot;popupUrl&quot;: &quot;https://abc123.my-blog-3cg.pages.dev/auth?provider=github&amp;site_id=abc123.my-blog-3cg.pages.dev&amp;scope=repo&quot;
+}</pre></td><td><div class="ok">PASS</div><a href="screenshots/b01-list-pages-preview-iPhone.png"><img src="screenshots/b01-list-pages-preview-iPhone.png" loading="lazy"></a><pre>{
+ &quot;popupUrl&quot;: &quot;https://abc123.my-blog-3cg.pages.dev/auth?provider=github&amp;site_id=abc123.my-blog-3cg.pages.dev&amp;scope=repo&quot;
+}</pre></td></tr><tr><th>B02 pages-preview<br><small>https://abc123.my-blog-3cg.pages.dev<br>期待: staging<br>実操作保存 → 書き込み先 ref</small></th><td><div class="ok">PASS</div><a href="screenshots/b02-saved-pages-preview-PC.png"><img src="screenshots/b02-saved-pages-preview-PC.png" loading="lazy"></a><pre>{
+ &quot;measuredRefPatches&quot;: [
+  &quot;/repos/bickojima/my-blog/git/refs/heads/staging&quot;
+ ],
+ &quot;branchesTouched&quot;: [
+  &quot;staging&quot;
+ ],
+ &quot;publishOp&quot;: &quot;click&quot;,
+ &quot;writes&quot;: [
+  &quot;POST /repos/bickojima/my-blog/git/blobs&quot;,
+  &quot;POST /repos/bickojima/my-blog/git/trees&quot;,
+  &quot;POST /repos/bickojima/my-blog/git/commits&quot;,
+  &quot;PATCH /repos/bickojima/my-blog/git/refs/heads/staging&quot;
+ ]
+}</pre></td><td><div class="ok">PASS</div><a href="screenshots/b02-saved-pages-preview-iPad.png"><img src="screenshots/b02-saved-pages-preview-iPad.png" loading="lazy"></a><pre>{
+ &quot;measuredRefPatches&quot;: [
+  &quot;/repos/bickojima/my-blog/git/refs/heads/staging&quot;
+ ],
+ &quot;branchesTouched&quot;: [
+  &quot;staging&quot;
+ ],
+ &quot;publishOp&quot;: &quot;click&quot;,
+ &quot;writes&quot;: [
+  &quot;POST /repos/bickojima/my-blog/git/blobs&quot;,
+  &quot;POST /repos/bickojima/my-blog/git/trees&quot;,
+  &quot;POST /repos/bickojima/my-blog/git/commits&quot;,
+  &quot;PATCH /repos/bickojima/my-blog/git/refs/heads/staging&quot;
+ ]
+}</pre></td><td><div class="ok">PASS</div><a href="screenshots/b02-saved-pages-preview-iPhone.png"><img src="screenshots/b02-saved-pages-preview-iPhone.png" loading="lazy"></a><pre>{
+ &quot;measuredRefPatches&quot;: [
+  &quot;/repos/bickojima/my-blog/git/refs/heads/staging&quot;
+ ],
+ &quot;branchesTouched&quot;: [
+  &quot;staging&quot;
+ ],
+ &quot;publishOp&quot;: &quot;keyboard Enter（iPhone でメニューが表示領域外。既存事象）&quot;,
+ &quot;writes&quot;: [
+  &quot;POST /repos/bickojima/my-blog/git/blobs&quot;,
+  &quot;POST /repos/bickojima/my-blog/git/trees&quot;,
+  &quot;POST /repos/bickojima/my-blog/git/commits&quot;,
+  &quot;PATCH /repos/bickojima/my-blog/git/refs/heads/staging&quot;
+ ]
+}</pre></td></tr></table></body></html>
