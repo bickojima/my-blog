@@ -8,6 +8,7 @@
 
 - **本セキュリティ監査run-2対応（SEC-29〜34, Bug #48〜#50）は本番（main）へ反映済み**。Issue #114 / #115 / #116 はクローズ済み、#117 は残項目ありのため open のまま。
 - **2026-09-21時点の最新実測**: `npx vitest run` **639 passed / 0 failed**（Bug #51再発防止テスト追加後、`fix/bug-51-env-guard` ブランチでの実測）。E2E は 445 PASS + 8 skip / 453件、verify-comprehensive 150/150（いずれもBug #50対応時点の実測を維持）。
+- **2026-09-23 追記**: Issue #117 の残り hardening 項目は `docs/security/issue-117-hardening-decisions.md` で全件判定した。本メモ26行目の「`language: 'yaml'` を明示（javascript エンジンの遮断）」は**効いていなかった**（`---js` の言語宣言が優先される。Bug #52）ため、同判定表のとおり是正済み。
 - 本ファイルは run-2対応の作業当時（2026-09-20）の引き継ぎメモであり、以下は歴史的経緯として残す。現在の最新状態は `docs/DOCUMENTATION.md` 4.5章（バグ一覧）・改訂履歴を参照すること。
 
 ---

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { readFileSync, existsSync, readdirSync } from 'fs';
 import { join, extname } from 'path';
-import matter from 'gray-matter';
+import { parseFrontmatter } from '../scripts/lib/safe-frontmatter.mjs'; // Bug #52: gray-matter を直接呼ばない
 import { z } from 'astro/zod';
 import yaml from 'js-yaml';
 
@@ -280,7 +280,7 @@ describe('固定ページ order フィールドのファズテスト', () => {
 
     it('全固定ページのorderが正の整数（1以上）', () => {
       for (const file of pageFiles) {
-        const { data } = matter(readFileSync(file, 'utf-8'));
+        const { data } = parseFrontmatter(readFileSync(file, 'utf-8'));
         expect(
           Number.isInteger(data.order) && data.order >= 1,
           `${file.split('/').pop()}: order=${data.order} は不正値`
@@ -290,7 +290,7 @@ describe('固定ページ order フィールドのファズテスト', () => {
 
     it('全固定ページのorderがNumber.MAX_SAFE_INTEGER以下', () => {
       for (const file of pageFiles) {
-        const { data } = matter(readFileSync(file, 'utf-8'));
+        const { data } = parseFrontmatter(readFileSync(file, 'utf-8'));
         expect(
           data.order <= Number.MAX_SAFE_INTEGER,
           `${file.split('/').pop()}: order=${data.order} がMAX_SAFE_INTEGERを超過`
@@ -376,7 +376,7 @@ describe('固定ページ slug フィールドのファズテスト', () => {
 
     it('既存ページに予約語slugが使われていない', () => {
       for (const file of pageFiles) {
-        const { data } = matter(readFileSync(file, 'utf-8'));
+        const { data } = parseFrontmatter(readFileSync(file, 'utf-8'));
         expect(
           !reservedSlugs.includes(data.slug),
           `${file.split('/').pop()}: slug="${data.slug}" は予約語`
@@ -841,12 +841,10 @@ describe('OAuth認証エンドポイントのファズテスト', () => {
         });
         const response = await authCallback(context);
         const html = await response.text();
-        // バックスラッシュがエスケープされ、文字列リテラルから脱出できないこと
-        // \\\" → JS文字列内で \" として解釈される（文字列からのブレイクアウトを防止）
-        // escapeForScriptが正しく動作していることをソースレベルで検証
-        const callbackSrc = readFileSync('functions/auth/callback.js', 'utf-8');
-        expect(callbackSrc).toContain('.replace(/\\\\/g');
-        expect(callbackSrc).toContain('.replace(/"/g');
+        // バックスラッシュ・ダブルクオートがエスケープされ、文字列リテラルから脱出できないこと
+        // （SEC-39: 生成されたリテラルを評価すると元のトークンと完全一致する＝ブレイクアウトしていない）
+        const literal = html.match(/const token = (.*);\n/)[1];
+        expect(new Function(`return ${literal};`)()).toBe('token\\";alert(1);//');
         // HTMLが正常生成されること（クラッシュしないこと）
         expect(response.status).toBe(200);
         expect(html).toContain('postMessage');
@@ -859,7 +857,7 @@ describe('OAuth認証エンドポイントのファズテスト', () => {
       const originalFetch = globalThis.fetch;
       globalThis.fetch = vi.fn().mockResolvedValue({
         json: async () => ({
-          access_token: 'safe_token_value',
+          access_token: 'line1\nline2\r\u2028\u2029end',
           token_type: 'bearer',
         }),
       });
@@ -875,10 +873,10 @@ describe('OAuth認証エンドポイントのファズテスト', () => {
         });
         const response = await authCallback(context);
         const html = await response.text();
-        // escapeForScript関数が存在し改行エスケープ処理がソースにあることを検証
-        const callbackSrc = readFileSync('functions/auth/callback.js', 'utf-8');
-        expect(callbackSrc).toContain('.replace(/\\n/g');
-        expect(callbackSrc).toContain('.replace(/\\r/g');
+        // 改行・行終端子（U+2028/U+2029）が生のままスクリプトに出ず、リテラルが1行に収まること（SEC-39）
+        const literal = html.match(/const token = (.*);\n/)[1];
+        expect(literal).not.toMatch(/[\n\r\u2028\u2029]/);
+        expect(new Function(`return ${literal};`)()).toBe('line1\nline2\r\u2028\u2029end');
         // レスポンスHTMLが正常に生成されること
         expect(html).toContain('authorization:github:success');
       } finally {
