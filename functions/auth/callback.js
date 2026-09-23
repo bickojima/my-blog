@@ -1,15 +1,4 @@
-function isAllowedOrigin(origin) {
-  if (origin === 'https://reiwa.casa' || origin === 'https://staging.reiwa.casa') {
-    return true;
-  }
-  if (/^https:\/\/([a-z0-9-]+\.)*my-blog-3cg\.pages\.dev$/.test(origin)) {
-    return true;
-  }
-  if (/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
-    return true;
-  }
-  return false;
-}
+import { isAllowedOrigin } from '../_shared/allowed-origin.js';
 
 export async function onRequestGet(context) {
   const { request, env } = context;
@@ -101,26 +90,29 @@ export async function onRequestGet(context) {
       });
     }
 
-    // HTMLに安全に埋め込むためのエスケープ関数
-    // <script>タグ内でのXSSを防止: </script>脱出、バックスラッシュ、改行を処理
-    function escapeForScript(str) {
-      return String(str)
-        .replace(/\\/g, '\\\\')
-        .replace(/"/g, '\\"')
-        .replace(/'/g, "\\'")
-        .replace(/</g, '\\x3c')
-        .replace(/>/g, '\\x3e')
-        .replace(/\n/g, '\\n')
-        .replace(/\r/g, '\\r');
+    // SEC-02 / SEC-39（Issue #117 項目10）: <script> 内へ埋め込む値は JSON.stringify で
+    // 「引用符込みの JS 文字列リテラル」に変換する。手書きの置換列（旧 escapeForScript）は
+    // U+2028/U+2029・バッククオート・`${` を扱わず、置換の順序にも依存していた。
+    // JSON.stringify はバックスラッシュ・ダブルクオート・制御文字を常に正しくエスケープし、
+    // 生成物がリテラルそのものなので、埋め込み先の引用符の種類に依存しない。
+    // 追加で HTML パーサに解釈されうる < > & と、旧エンジンで行終端子になる U+2028/U+2029 を \uXXXX 化する。
+    function toScriptStringLiteral(value) {
+      return JSON.stringify(String(value))
+        .replace(/</g, '\\u003c')
+        .replace(/>/g, '\\u003e')
+        .replace(/&/g, '\\u0026')
+        .replace(/\u2028/g, '\\u2028')
+        .replace(/\u2029/g, '\\u2029');
     }
 
-    const token = data.access_token ? escapeForScript(data.access_token) : '';
-    const escapedOrigin = escapeForScript(url.origin);
+    const tokenLiteral = toScriptStringLiteral(data.access_token || '');
+    const originLiteral = toScriptStringLiteral(url.origin);
 
     const html = `
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="utf-8">
   <title>Authorizing...</title>
 </head>
 <body>
@@ -128,9 +120,9 @@ export async function onRequestGet(context) {
   <p id="status">Processing...</p>
   <script>
     (function() {
-      const token = "${token}";
+      const token = ${tokenLiteral};
       const provider = "github";
-      const expectedOrigin = "${escapedOrigin}";
+      const expectedOrigin = ${originLiteral};
       const statusEl = document.getElementById('status');
 
       if (!token) {
@@ -196,13 +188,16 @@ export async function onRequestGet(context) {
 
     return new Response(html, {
       headers: {
-        'Content-Type': 'text/html',
+        // SEC-38（Issue #117 項目9）: charset を明示し、CSP を自己完結させる。
+        // frame-ancestors / form-action / base-uri は default-src にフォールバックしないため個別に指定する。
+        // Functions のレスポンスには public/_headers が適用されないため、この応答自身で完結させる。
+        'Content-Type': 'text/html; charset=utf-8',
         'Set-Cookie': clearStateCookie,
         'Cache-Control': 'no-store, no-cache, must-revalidate',
         'Pragma': 'no-cache',
         'X-Content-Type-Options': 'nosniff',
         'X-Frame-Options': 'DENY',
-        'Content-Security-Policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'",
+        'Content-Security-Policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; frame-ancestors 'none'; form-action 'none'; base-uri 'none'",
       },
     });
   } catch (error) {

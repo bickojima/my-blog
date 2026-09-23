@@ -902,6 +902,27 @@ describe('ビルド検証', () => {
       expect(ci).not.toMatch(/contents:\s*write/);
     });
 
+    it('CI の全 action 参照は40桁の commit SHA で固定し、版をコメントで併記する（SEC-36, Issue #117 項目3）', () => {
+      const workflowDir = join(process.cwd(), '.github/workflows');
+      const files = readdirSync(workflowDir).filter(f => /\.ya?ml$/.test(f));
+      expect(files.length).toBeGreaterThan(0);
+      let usesCount = 0;
+      for (const file of files) {
+        const src = readFileSync(join(workflowDir, file), 'utf-8');
+        for (const line of src.split('\n')) {
+          const m = line.match(/^\s*-?\s*uses:\s*(\S+)(.*)$/);
+          if (!m) continue;
+          usesCount++;
+          const ref = m[1];
+          // ローカル action（./）と docker:// は対象外。それ以外は owner/repo@<40桁SHA>
+          if (ref.startsWith('./') || ref.startsWith('docker://')) continue;
+          expect(ref, `${file}: タグ/ブランチ参照の action: ${ref}`).toMatch(/^[\w.-]+\/[\w./-]+@[0-9a-f]{40}$/);
+          expect(m[2], `${file}: ${ref} に版コメント（# vX.Y.Z）がない`).toMatch(/#\s*v\d+\.\d+\.\d+/);
+        }
+      }
+      expect(usesCount).toBeGreaterThan(0);
+    });
+
     it('CI は Vitest とビルドのみで Playwright E2E を必須化しない（Bug #50）', () => {
       const ci = readFileSync(join(process.cwd(), '.github/workflows/ci.yml'), 'utf-8');
       expect(ci).toContain('npm test');

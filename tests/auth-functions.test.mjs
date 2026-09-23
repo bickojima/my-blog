@@ -228,7 +228,7 @@ describe('OAuth認証: /auth/callback.js（コールバック処理）', () => {
       const response = await authCallback(context);
 
       expect(response.status).toBe(200);
-      expect(response.headers.get('content-type')).toBe('text/html');
+      expect(response.headers.get('content-type')).toBe('text/html; charset=utf-8'); // SEC-38
 
       const html = await response.text();
       // Decap CMS ハンドシェイクプロトコルの確認
@@ -361,11 +361,11 @@ describe('セキュリティ検証（functions/auth/）', () => {
   const callbackSource = readFileSync('functions/auth/callback.js', 'utf-8');
   const indexSource = readFileSync('functions/auth/index.js', 'utf-8');
 
-  it('escapeForScript関数でテンプレート変数をエスケープしている（SEC-02）', () => {
-    expect(callbackSource).toContain('function escapeForScript');
+  it('テンプレート変数をJSON.stringifyベースのリテラル変換でエスケープしている（SEC-02, SEC-39）', () => {
+    expect(callbackSource).toContain('function toScriptStringLiteral');
     // access_tokenとoriginの両方がエスケープされていること
-    expect(callbackSource).toContain('escapeForScript(data.access_token)');
-    expect(callbackSource).toContain('escapeForScript(url.origin)');
+    expect(callbackSource).toContain("toScriptStringLiteral(data.access_token || '')");
+    expect(callbackSource).toContain('toScriptStringLiteral(url.origin)');
   });
 
   it('postMessageの送信先がワイルドカード"*"でない（SEC-06）', () => {
@@ -421,13 +421,15 @@ describe('セキュリティ検証（functions/auth/）', () => {
     expect(callbackSource).toContain('Authentication failed');
   });
 
-  it('OAuth開始・コールバックで送信先オリジン許可リスト判定関数を実装している（SEC-27）', () => {
-    expect(indexSource).toContain('function isAllowedOrigin');
-    expect(callbackSource).toContain('function isAllowedOrigin');
+  it('OAuth開始・コールバックで送信先オリジン許可リスト判定関数を実装している（SEC-27, SEC-37）', () => {
+    // SEC-37: 判定関数は functions/_shared/allowed-origin.js に1か所だけ定義し、両エンドポイントが import する
+    const sharedSource = readFileSync('functions/_shared/allowed-origin.js', 'utf-8');
+    expect(sharedSource).toContain('export function isAllowedOrigin');
+    expect(sharedSource).toContain('my-blog-3cg');
+    expect(indexSource).toContain("import { isAllowedOrigin } from '../_shared/allowed-origin.js'");
+    expect(callbackSource).toContain("import { isAllowedOrigin } from '../_shared/allowed-origin.js'");
     expect(indexSource).toContain('!isAllowedOrigin(url.origin)');
     expect(callbackSource).toContain('!isAllowedOrigin(url.origin)');
-    expect(indexSource).toContain('my-blog-3cg');
-    expect(callbackSource).toContain('my-blog-3cg');
   });
 
   it('OAuth開始・コールバックのレスポンスにCache-Control: no-storeを設定している（SEC-22）', () => {
