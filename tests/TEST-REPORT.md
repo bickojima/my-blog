@@ -60,6 +60,8 @@
 | 1.52 | 2026-09-23 | Issue #129: `verify-security.mjs` はSEC01〜SEC10の証跡取得・確認を行うと明記し、SEC-01〜SEC-35全体の検査責務をDOCUMENTATION 1.5.4章のトレーサビリティへ集約。SEC-33〜35の対応するVitestを記載。テスト件数変更なし |
 | 1.53 | 2026-09-23 | Issue #117 hardening 対応（判定表: `docs/security/issue-117-hardening-decisions.md`）: 新規 `security-hardening.test.mjs`（2.8章、28件: Bug #52/SEC-29 frontmatter YAML限定 10件〔うち2件は tests/・scripts/ の gray-matter 直接読み込み禁止の静的検証〕、SEC-37 許可リスト単一化 4件、SEC-38 コールバックCSP 2件、SEC-39 JSON.stringifyリテラル 12件）、`build.test.mjs` に SEC-36（Actions SHA 固定）1件（113→114）。既存テストの更新: auth-functions 2.3.1章 #1（escapeForScript→toScriptStringLiteral）、SEC-27 テスト（共有モジュール import を検証）、成功時 Content-Type（`text/html; charset=utf-8`）、fuzz 2.7章 #9/#10（ソース文字列一致→生成リテラルを評価して元トークンと完全一致する挙動検証へ強化、改行テストは実際に改行・U+2028/U+2029 を含むトークンで検証）。件数は増減なし（削除・スキップなし）。Bug #52 の第2経路（`npm run build` が先に実行する Vitest/E2E のテストも gray-matter で `src/content` を直接解析）に対応し、content-validation / cms-config / fuzz-validation / build / e2e app-info の frontmatter 解析を `parseFrontmatter` に置換（テストケースの内容・件数は不変）。Vitest featureブランチ 639→**668**件／main・staging 642→**671**件。実ブラウザE2Eエビデンス `evidence/2026-09-23/issue117/`（OAuth Functions 実コード経由、15/15 PASS） |
 | 1.54 | 2026-09-23 | Issue #132: SEC-40（npm管理外依存の鮮度・EOL監視）の判定ロジック・棚卸し・週次ワークフロー設定を検証する `dependency-freshness.test.mjs` 27件を追加（2.9章）。ネットワーク取得はフィクスチャで置換し、`fetch` が呼ばれたら失敗させて `npm test` のオフライン決定性を担保。Vitest **feature 668→695件／main・staging 671→698件** |
+| 1.55 | 2026-09-23 | Issue #127（環境値の自動導出）: 環境固有の4項目をファイルから削除し導出する構造に変えたため、SEC-35 のテストを「導出結果の正しさ」の検証へ作り替え。新規 `env-derivation.test.mjs`（2.10章、37件: ビルド時導出16件・CMS 実行時導出14件・main/staging 差分ゼロの静的ガード7件）、`build.test.mjs` に `CF_PAGES_BRANCH 別ビルドの環境値` 15件（main/staging/未設定の3ビルド×5項目、114→129）、`cms-config.test.mjs` の SEC-35 を5件に改訂（旧: feature 1件／main・staging 4件のブランチ別登録 → 全ブランチ共通5件、56→60）。**書き換えた既存テスト（削除・スキップなし）**: cms-config 2.4章 No.3・No.5・No.45（config.yml から branch/base_url を削除したため、config.yml と実行時導出値を deepmerge した実効設定で同じ性質を検証）、2.4.3章 No.51〜55（ブランチ判定＋内部整合 → ホスト別の実効 backend 4件＋config.yml 単体に値が無いこと1件。旧テストは対象の値がファイルから消えたため成立しない）、build 2.5.5章 No.1（SITE_URL リテラルからの環境推定 → ビルド時 CF_PAGES_BRANCH による判定）。E2E E-39「固定ページのorderフィールドはmin=1の数値フィールドである」（本変更で spec の認証が実際に成立するようになり、未認証時用の `body.isVisible()` フォールバックが認証後画面で false になって3デバイスで失敗。数値フィールドの表示・min≥1・編集可を必須とする形に強化。DOCUMENTATION 4.5章 Bug #P127-2）。Vitest feature 695／main・staging 698 → **全ブランチ 751件**。E2E に `cms-env-branch.spec.ts`（E-47、4ホスト×3デバイス=12件、実操作保存で書き込み先 ref を実測）を追加し 453→**465件**。エビデンス `evidence/2026-09-23/issue127/` |
+| 1.56 | 2026-09-23 | Issue #130（SEC-41）: admin CSP で Cloudflare Insights beacon を許可せず、CSPポリシーは緩和せず、`public/_headers` の方針コメントとCMS実操作E2Eで検証。`fuzz-validation.test.mjs` にadmin CSP・重複ヘッダー防止35件を追加。production/staging 実ホストへPlaywrightで接続し、OAuth/GitHub APIは全面モックして実書込を遮断。PC/iPad/iPhoneで編集・入力・preview・保存要求branchを確認し54/54 PASS（production/staging各3端末の操作、ローカルPC操作、実ホストreadonly）。非Insights CSP違反・機能エラーなし。ローカルiPad/iPhoneは従前証跡 `evidence/2026-09-23/issue130/` を別保存。Vitest 754件、ローカルE2E全465件。証跡 `evidence/2026-09-23/issue130-review/` |
 
 ## テスト基盤の変更履歴
 
@@ -74,7 +76,7 @@
 | 2026-02-21 | **コードリファクタリング・テスト追加**: 固定ページ番号バッジフォーマットテスト1件追加（admin-html 67→68件）。image-optimize.mjs writeFile整理、テスト変数重複排除。計243 Vitest + 237 E2E = 480テスト | - |
 | 2026-02-21 | **固定ページ一覧改善・品質向上**: 下書きバッジテスト更新、sortable_fields互換性テスト追加（#40）、orderデフォルトソート昇順テスト追加（#41）、config.ymlスキーマエラー検知E2Eテスト追加（E-07）、要件トレーサビリティ検証テスト追加（#42,#43）。CMS-16要件追加。計247 Vitest + 240 E2E = 487テスト | - |
 | 2026-02-21 | **セキュリティ検証テスト追加**: admin-html セキュリティ検証9件（2.6.12章: SEC-01, SEC-03〜SEC-05, SEC-08, SEC-09, Q-01, Q-02）、auth-functions セキュリティ検証4件（2.3.1章: SEC-02, SEC-06, SEC-07）追加。計260 Vitest + 240 E2E = 500テスト | - |
-| 2026-02-21 | **バグ#27再発防止テスト追加**: admin-html CDNスクリプト閉じタグ検証2件（2.6.1章）、fuzz-validation 管理画面ヘッダーオーバーライド検証5件（2.7.12章: COOP/X-Frame-Options/CORP/frame-src/COOP緩和度）、frame-ancestorsテスト更新。計484 Vitest + 240 E2E = 724テスト | - |
+| 2026-02-21 | **バグ#27再発防止テスト追加**: admin-html CDNスクリプト閉じタグ検証2件（2.6.1章）、fuzz-validation 管理画面ヘッダーオーバーライド検証5件（2.7.12章: COOP/X-Frame-Options/CORP/frame-src/COOP緩和度）、frame-ancestorsテスト更新。計484 Vitest + 240 E2E = 751テスト | - |
 | 2026-02-21 | **機能観点の要件定義・基本機能保護テスト追加**: cms-config基本機能保護5件（2.4.1章: Backend完全性/削除許可/Markdown編集/メディアライブラリ）、buildパイプライン検証1件（2.5.2章）、admin-html環境分離検証1件（2.6.13章）。FR-15〜FR-21/NFR-05対応。計491 Vitest + 240 E2E = 731テスト | - |
 | 2026-02-21 | **バグ#28修正・ヘッダー重複防止テスト追加**: Cloudflare Pages `_headers`重複送信問題修正。build.test.mjsセキュリティヘッダー検証を再構成（5→7件＋重複防止2件）、fuzz-validationヘッダーテスト修正＋1件追加。計496 Vitest + 240 E2E = 736テスト | - |
 | 2026-02-21 | **バグ#29修正・CSP connect-src blob:テスト追加**: CSP `connect-src`に`blob:`不足による画像付き記事保存失敗を修正。build.test.mjs CSP connect-src blob:検証1件追加、fuzz-validation connect-src blob:検証1件追加。計498 Vitest + 240 E2E = 738テスト | - |
@@ -192,7 +194,9 @@ tests/
 ├── admin-html.test.mjs           # 管理画面HTML検証
 ├── fuzz-validation.test.mjs      # ファズテスト
 ├── security-hardening.test.mjs   # Issue #117 hardening 再発防止（Bug #52, SEC-36〜39 のうち SEC-37〜39）
-└── dependency-freshness.test.mjs # npm管理外依存の鮮度・EOL判定（SEC-40、フィクスチャのみ・ネットワーク不使用）
+├── dependency-freshness.test.mjs # npm管理外依存の鮮度・EOL判定（SEC-40、フィクスチャのみ・ネットワーク不使用）
+├── env-derivation.test.mjs       # Issue #127 環境値の導出（SEC-35 改訂 / SEC-127A 仮ID）
+└── lib/cms-env-loader.mjs        # テスト用ヘルパ（public/admin/cms-env.js を vm で評価。テスト対象外）
 ```
 
 ---
@@ -479,7 +483,7 @@ admin-html.test.mjs              -     ●     -     -     -     -     -     -  
 
 | No. | 基準 |
 | :--- | :--- |
-| 1 | 全テストケース（Vitest 695件〔featureブランチ〕／698件〔main・staging。SEC-35のブランチ別テスト登録により+3件〕 + E2E 453件 = 1148件／1151件）がPASSまたは仕様上の条件スキップであること |
+| 1 | 全テストケース（Vitest 754件〔全ブランチ共通。Issue #127 で SEC-35 のブランチ別登録を廃止〕 + E2E 465件 = 1219件）がPASSまたは仕様上の条件スキップであること |
 | 2 | `npm run build` が正常に完了すること |
 | 3 | 要件トレーサビリティマトリクス（docs/DOCUMENTATION.md 1.5章）において全要件が「充足」であること |
 | 4 | 本番（main）マージ前にローカル `npm run test:e2e` 全件と `verify-comprehensive.mjs` が完了していること（**CI に Playwright は載せない**。Bug #50） |
@@ -773,7 +777,7 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 
 ---
 
-## 2.4. CMS設定検証 (`cms-config.test.mjs`) — 56件
+## 2.4. CMS設定検証 (`cms-config.test.mjs`) — 60件
 
 `public/admin/config.yml`をパースし、設定値の正当性を検証する。
 
@@ -781,9 +785,9 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 | :--- | :--- | :--- | :--- | :--- |
 | 1 | GitHubバックエンドが設定されている | バックエンド | M-03 | `backend.name === "github"` |
 | 2 | リポジトリが正しく設定されている | バックエンド | M-03 | `backend.repo === "bickojima/my-blog"` |
-| 3 | ブランチがmainに設定されている | バックエンド | M-03 | `backend.branch === "main"` |
+| 3 | ブランチが有効な値に設定されている（実行時導出の実効値が main/staging のいずれか） | バックエンド | M-03 | 4ホスト（本番・staging・プレビュー・localhost）で config.yml と `resolveCmsBackend(location)` を deepmerge した `branch` が `main`/`staging` のいずれか（Issue #127 で書き換え: config.yml から branch を削除したため） |
 | 4 | 認証エンドポイントが設定されている | バックエンド | M-03 | `backend.auth_endpoint` が定義されている |
-| 5 | base_urlが本番URLに設定されている | バックエンド | M-03 | `backend.base_url === "https://reiwa.casa"` |
+| 5 | base_urlがブランチに対応するURLに設定されている（本番ホスト=main+本番URL、stagingホスト=staging+staging URL） | バックエンド | M-03 | 実効設定で本番ホストは `branch: main`・`base_url: https://reiwa.casa`、staging ホストは `branch: staging`・`base_url: https://staging.reiwa.casa`（Issue #127 で書き換え） |
 | 6 | メディアフォルダがpublic配下に設定されている | メディア | M-03 | `media_folder`に`public`が含まれる |
 | 7 | 公開フォルダパスが正しい | メディア | M-03 | `public_folder === "/images/uploads"` |
 | 8 | 日本語ロケールが設定されている | ロケール | M-03 | `locale === "ja"` |
@@ -831,7 +835,7 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 
 | No. | テストケース | カテゴリ | テスト手法 | 期待結果 |
 | :--- | :--- | :--- | :--- | :--- |
-| 45 | backend設定に保存に必要な全フィールドが存在する（FR-15） | 基本機能 | M-03 | `name`, `repo`, `branch`, `base_url`, `auth_endpoint`が全て定義されている |
+| 45 | backend設定に保存に必要な全フィールドが存在する（FR-15） | 基本機能 | M-03 | 4ホストそれぞれの実効設定（config.yml + 実行時導出値）で `name`, `repo`, `branch`, `base_url`, `auth_endpoint`が全て定義されている（Issue #127 で書き換え） |
 | 46 | 全コレクションでdeleteが明示的に無効化されていない（FR-16） | 基本機能 | M-03 | `delete !== false`（デフォルト有効） |
 | 26b | postsのbodyフィールドがmarkdownウィジェットである（FR-17） | 基本機能 | M-03 | `widget === "markdown"` |
 | 33b | pagesのbodyフィールドがmarkdownウィジェットである（FR-17） | 基本機能 | M-03 | `widget === "markdown"` |
@@ -845,25 +849,23 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 | 49 | postsのdateフィールドがデフォルトで降順ソートに設定されている（CMS-17） | posts | M-03 | `{field: date, default_sort: desc}` |
 | 50 | postsのview_groupsに年月グルーピングのみが設定されている（CMS-18） | posts | M-03 | `view_groups`に「年月」（`\d{4}-\d{2}`）の1グループ |
 
-### 2.4.3 環境固有ファイルの実ブランチ整合性検証（SEC-35, Bug #51再発防止、1件〔feature〕／4件〔main・staging〕）
+### 2.4.3 環境固有値の導出整合性検証（SEC-35 改訂, Bug #51再発防止, Issue #127、5件・全ブランチ共通）
 
-`config.yml`（branch/base_url）・`astro.config.mjs`（SITE_URL）・`public/robots.txt`の3ファイル・4項目が、内部的に「互いに整合している」だけでは、Bug #51（staging環境がmainマージの副作用で丸ごとmain値に上書きされ、内部整合は保たれたまま検知できなかった事故）を再現・検知できない。そこで「現在実際にチェックアウトしているブランチに対して正しい値か」を検証する。ブランチは`CF_PAGES_BRANCH`（Cloudflare Pagesビルド時、`src/layouts/Base.astro`と同じ判定方式）→`GITHUB_REF_NAME`（GitHub Actions）→`git rev-parse --abbrev-ref HEAD`（ローカル）の優先順で判定する。
+Issue #127 で、環境固有の4項目（config.yml の branch/base_url、astro.config.mjs の SITE_URL、robots.txt）をファイルから削除し、ビルド時（`CF_PAGES_BRANCH`）・実行時（`location`）に導出する構造へ変えた。旧 SEC-35（No.51〜55: チェックアウト中のブランチを `CF_PAGES_BRANCH` > `GITHUB_REF_NAME` > `git rev-parse` で判定し、main/staging なら4項目の絶対値、判定不能なら内部整合だけを見る）は、検証対象の値がファイルから消えたため成立しない。同じ目的（「今の環境で CMS がどこへ書き込み、サイトがどの URL を名乗るか」が正しいこと）を、導出結果に対して検証するテストへ書き換えた。削除・スキップはしていない（旧5件→新5件）。**テスト集合はブランチに依存しない**ため、feature と main/staging で件数差は出ない。
 
-`it()`のタイトルはテンプレートリテラルで、実行時には判定された実ブランチ名がそのまま展開される。以下の表の「現在のブランチ（main/staging）に対して…」はテンプレート表記であり、**実際のテスト名・実行ログには`現在のブランチ（main）に対して…`または`現在のブランチ（staging）に対して…`という具体的なブランチ名が出力される**（`main/staging`という文字列がテスト名にそのまま出ることはない）。
-
-| No. | テストケース（テンプレート表記） | カテゴリ | テスト手法 | 期待結果 |
+| No. | テストケース | カテゴリ | テスト手法 | 期待結果 |
 | :--- | :--- | :--- | :--- | :--- |
-| 51 | 現在のブランチ（main/staging）に対してconfig.ymlのbranchが一致する | 環境整合 | M-03 | 判定できたブランチがmain/stagingの場合、`config.backend.branch`が一致する |
-| 52 | 現在のブランチ（main/staging）に対してconfig.ymlのbase_urlが一致する | 環境整合 | M-03 | 同上ブランチに対応する`base_url`と一致する |
-| 53 | 現在のブランチ（main/staging）に対してastro.config.mjsのSITE_URLが一致する | 環境整合 | M-03 | `astro.config.mjs`の`SITE_URL`が同上ブランチの値と一致する |
-| 54 | 現在のブランチ（main/staging）に対してpublic/robots.txtのクロール方針が一致する | 環境整合 | M-02 | main時は`Allow: /`かつ`Disallow: /`なし、staging時は`Disallow: /`かつ`Allow: /`なし |
-| 55 | ブランチをmain/stagingと判定できない場合はconfig.yml・SITE_URL・robots.txtが同一環境を指す | 環境整合 | M-03 | feature/*ブランチ等、絶対値ではなく3ファイル4項目が同一環境（main寄り/staging寄り）を指すことのみ検証 |
+| 51 | reiwa.casa で開いた CMS の実効 backend は branch=main・base_url=配信オリジン | 環境整合 | M-03 | config.yml と `resolveCmsBackend(location)` の deepmerge 結果が `main` / `https://reiwa.casa` |
+| 52 | staging.reiwa.casa で開いた CMS の実効 backend は branch=staging・base_url=配信オリジン | 環境整合 | M-03 | `staging` / `https://staging.reiwa.casa` |
+| 53 | my-blog-3cg.pages.dev で開いた CMS の実効 backend は branch=staging・base_url=配信オリジン | 環境整合 | M-03 | main の Pages エイリアスでも本番へは書き込まない |
+| 54 | localhost:4321 で開いた CMS の実効 backend は branch=staging・base_url=配信オリジン | 環境整合 | M-03 | ローカルは staging。base_url がローカルオリジンなので OAuth モックが config.yml の書き換えなしで動く |
+| 55 | config.yml 単体には branch / base_url が無い（マージで持ち込まれる環境値を置かない） | 環境整合 | M-03 | `backend.branch` / `backend.base_url` が undefined |
 
-実行するブランチによって上記5件のうち実際に登録・評価される`it`は1件（判定不能時、No.55）または4件（main/staging判定時、No.51〜54）であり、**この登録差3件がテストファイル全体の合計件数（feature 639件／main・staging 642件）の差の原因**である（両方とも`npx vitest run`で実測済み。詳細は4.3.1・4.3.2章）。
+生成物（dist）の検証は 2.5.13章、導出関数の単体テストと静的ガードは 2.10章、CMS の実操作は 4.1.3章 E-47。
 
 ---
 
-## 2.5. ビルド検証 (`build.test.mjs`) — 114件
+## 2.5. ビルド検証 (`build.test.mjs`) — 129件
 
 `npm run build`を実行し、パイプライン全体（normalize-images → organize-posts → astro build → image-optimize）の出力を検証する。全テストケースはビルド完了後に実行される。
 
@@ -936,7 +938,7 @@ Cloudflare Functions の認証エンドポイントに対し、モックリク�
 
 | No. | テストケース | テスト手法 | 期待結果 |
 | :--- | :--- | :--- | :--- |
-| 1 | robots.txtがブランチに対応するクロール方針になっている | M-01 | `astro.config.mjs`の`SITE_URL`からブランチを判定し、staging時は`Disallow: /`かつ`Allow: /`・`Sitemap:`なし、main時は`Allow: /`かつ`Disallow: /`なし・`Sitemap: https://reiwa.casa/sitemap-index.xml`を含む（Bug #45再発防止、DOCUMENTATION.md 4.6.4章） |
+| 1 | robots.txtがブランチに対応するクロール方針になっている | M-01 | ビルド時の `CF_PAGES_BRANCH`（`isProductionBranch()`）で期待値を決め、main以外は`Disallow: /`かつ`Allow: /`・`Sitemap:`なし、main時は`Allow: /`かつ`Disallow: /`なし・`Sitemap: https://reiwa.casa/sitemap-index.xml`を含む（Bug #45再発防止。Issue #127 で書き換え: 旧版は astro.config.mjs の SITE_URL リテラルから環境を推定していたが、SITE_URL が導出式になったため） |
 | 2 | robots.txtのSitemap行はreiwa.casaドメインを指す | M-01 | Sitemap行が存在する場合、`https://(staging.)?reiwa.casa/`にマッチする |
 
 ### 2.5.6 個人ブログ化ロードマップ機能検証（FR-22〜FR-28, NFR-08、記事数により動的スキップ、15件）
@@ -1037,6 +1039,18 @@ Playwright は CI に載せない。ローカル全件と `verify-comprehensive.
 | 1 | CI ジョブは contents: read に限定する（SEC-33, Issue #117 項目2） | M-02 | `ci.yml` の job に `permissions: contents: read` があり `contents: write` が無い |
 | 2 | dist に .assetsignore が存在しない（SEC-34, Issue #117 項目12） | M-02 | `public/.assetsignore` と `dist/.assetsignore` が無い |
 | 3 | CI の全 action 参照は40桁の commit SHA で固定し、版をコメントで併記する（SEC-36, Issue #117 項目3） | M-02 | `.github/workflows/*.yml` の全 `uses:`（ローカル action 除く）が `owner/repo@<40桁hex>` で、行末に `# vX.Y.Z` がある |
+
+### 2.5.13 CF_PAGES_BRANCH 別ビルドの環境値（SEC-35 改訂, Issue #127、15件）
+
+同一ソースを `CF_PAGES_BRANCH=main` / `staging` / 未設定の3通りで `astro build --outDir <一時ディレクトリ>` し、生成物を検証する（「ビルド検証」の後に同一ファイル内で直列実行。並列ビルドを避ける）。
+
+| No. | テストケース（各ビルドで1件ずつ、計3×5） | テスト手法 | 期待結果 |
+| :--- | :--- | :--- | :--- |
+| 1 | robots.txt のクロール方針 | M-01 | main: `Allow: /`・本番 Sitemap・Disallow なし／staging・未設定: `Disallow: /`・Allow なし・Sitemap なし |
+| 2 | トップと記事ページの canonical | M-01 | main: `https://reiwa.casa`、staging・未設定: `https://staging.reiwa.casa`（記事はソースから動的取得した先頭記事） |
+| 3 | sitemap-index.xml と sitemap-0.xml の全 URL のオリジン | M-01 | 同上のオリジンのみ |
+| 4 | RSS の全 `<link>` のオリジン | M-01 | 同上のオリジンのみ |
+| 5 | admin/config.yml は全ビルド同一で branch / base_url を含まない | M-01, M-03 | `public/admin/config.yml` と完全一致 |
 
 ### 2.5.10 画像正規化処理の堅牢化（SEC-32、3件）
 
@@ -1345,6 +1359,16 @@ Bug #27時点は`/admin/*`側で値を「オーバーライド」する設計だ
 | 5 | CSP connect-src に blob: 含む（Bug #29再発防止） | M-02 | Decap CMS画像保存時の`fetch(blobURL)`に必要 |
 | 6 | /* と /admin/* で同名ヘッダーが重複していない（Bug #28再発防止） | M-02 | Cloudflare Pages Append動作による重複送信防止 |
 
+#### 2.7.13 管理画面CSPで外部解析ビーコンを許可しない（SEC-41, Issue #130）
+
+| # | テストケース | 手法 | 期待結果 |
+| :--- | :--- | :--- | :--- |
+| 1 | `/admin/*` CSP に `cloudflareinsights` が含まれない | M-02 | Insights beacon は遮断されたまま |
+| 2 | `script-src` / `connect-src` に任意ホスト向け wildcard / scheme-source がない | M-02 | beacon許可のためにCSPを緩めない |
+| 3 | `_headers` に遮断方針を記録する | M-02 | 意図しない将来の許可変更を検出 |
+
+実ホスト操作確認は `evidence/2026-09-23/issue130-review/` に保存する。production/staging のPC/iPad/iPhoneでCMS編集・入力・preview・保存を操作した。OAuth/GitHub APIはモックして実書込を遮断し、検証した操作範囲でInsights以外のCSP違反と機能エラーが無いことを確認する。これは実GitHub保存や全CMS機能の無影響を証明するものではない。
+
 ### 2.8 Issue #117 hardening 再発防止（security-hardening.test.mjs: 28件）
 
 判定表: `docs/security/issue-117-hardening-decisions.md`。
@@ -1412,13 +1436,40 @@ SEC-40（Issue #132）。`scripts/check-dependency-freshness.mjs` の純関数�
 
 # 第3部 要件トレーサビリティ
 
+
+### 2.10 環境値の導出（env-derivation.test.mjs: 37件, Issue #127・SEC-35 改訂・SEC-127A 仮ID）
+
+| No. | テストケース | テスト手法 | 期待結果 |
+| :--- | :--- | :--- | :--- |
+| 1 | 本番ブランチ名は main、本番/非本番のサイトURLは reiwa.casa の本番・staging ホスト | M-03 | 定数の値 |
+| 2 | CF_PAGES_BRANCH が文字列 "main" と完全一致したときだけ本番と判定する | M-03 | `isProductionBranch('main') === true` |
+| 3〜13 | 非本番値（staging、undefined、null、空文字、`Main`、` main`、`main `、`refs/heads/main`、feature ブランチ名、`123/merge`、数値）は本番と判定しない（11件） | M-03, M-07 | `false`、サイトURLは staging、robots は `Disallow: /` のみ |
+| 14 | main のサイトURLは本番URL | M-03 | `https://reiwa.casa` |
+| 15 | main の robots.txt は Allow: / と本番 Sitemap 行のみ | M-03 | 本文完全一致・Disallow なし |
+| 16 | 本番以外の robots.txt に Sitemap 行を出さない（Bug #41） | M-03 | Sitemap・Allow なし |
+| 17〜25 | CMS の実行時導出（9ホスト）: 本番→main、staging・`my-blog-3cg.pages.dev`・`*.my-blog-3cg.pages.dev`・localhost・127.0.0.1・`reiwa.casa.example.com`・`evilreiwa.casa`・`www.reiwa.casa`→staging。base_url は常に location.origin | M-03, M-07 | `{ branch, base_url: origin }` |
+| 26 | 末尾ドット・大文字・`constructor`/`__proto__`/`toString`・空文字のホスト名は staging | M-07 | プロトタイプ由来のキーで main に倒れない |
+| 27 | location を渡せない場合は例外（CMS.init が走らない） | M-07 | throw |
+| 28 | 戻り値は凍結されている | M-03 | `Object.isFrozen` |
+| 29 | config.yml と deepmerge した実効設定がホストごとに正しい | M-03 | name/repo/auth_endpoint 保持＋branch/base_url |
+| 30 | ビルド側の本番URLと CMS 側の本番ホスト名が一致 | M-02 | `HOSTNAME_TO_BRANCH` が `[['reiwa.casa','main']]` の1件のみ |
+| 31 | config.yml に backend.branch / base_url を書かない | M-02 | キー・行が存在しない |
+| 32 | config.yml に環境URLを書かない | M-02 | `https://…reiwa.casa` なし |
+| 33 | public/robots.txt を置かず、src/pages/robots.txt.ts が buildRobotsTxt(CF_PAGES_BRANCH) で生成する | M-02 | ファイル不在・本文リテラル/URL をエンドポイントに書かない |
+| 34 | astro.config.mjs の SITE_URL はリテラルではなく resolveSiteUrl(process.env.CF_PAGES_BRANCH) | M-02 | リテラル URL なし |
+| 35 | admin/index.html は Decap 読み込み前に CMS_MANUAL_INIT と /admin/cms-env.js を読み込む | M-02 | 出現順 |
+| 36 | admin/index.html は registerPreviewStyle の後に CMS.init を1回だけ呼ぶ | M-02 | `CMS.init(` が1回・順序 |
+| 37 | cms-env.js は URL を持たず、use strict・const/let のみで innerHTML を使わない | M-02 | 静的検査 |
+
+No.31〜37 は「main と staging で環境固有ファイルに差分を置かない」ことを守る静的ガード（SEC-127A）。これらが通る限り、どちら向きのマージでも環境値は持ち込まれない（両方向マージの実証は `evidence/2026-09-23/issue127/merge-demo.md`）。
+
 ---
 
 ## 3.1. 要件トレーサビリティマトリクス
 
 要件トレーサビリティマトリクスは **docs/DOCUMENTATION.md 1.5章** に移動した。要件定義と同一ファイルで管理することで、要件追加時のトレース漏れを防止する。
 
-現在の充足状況: **FR-01〜FR-29, CMS-01〜CMS-19, NFR-01〜NFR-08, SEC-01〜SEC-40はテストで充足されている。未テスト要件は0件（docs/DOCUMENTATION.md 1.5.4章参照）。** Modern Web Guidanceエビデンスは `evidence/2026-06-11/` に保存する。
+現在の充足状況: **FR-01〜FR-29, CMS-01〜CMS-19, NFR-01〜NFR-08, SEC-01〜SEC-41, SEC-127A（仮ID）はテストで充足されている。SEC-41は実ホストで検証した操作範囲を対象とする。未テスト要件は0件（docs/DOCUMENTATION.md 1.5.4章参照）。** Modern Web Guidanceエビデンスは `evidence/2026-06-11/` に保存する。
 
 ---
 
@@ -1559,7 +1610,7 @@ axe-coreエンジン（@axe-core/playwright）を使用してWCAG 2.1 Level AA�
 | :--- | :--- | :--- | :--- |
 | E-46 | 検索除外ページの表示・実リンク操作・アクセシビリティ（FR-29） | HTTP 200、title/h1一致、`lang="ja"`、`robots` が `noindex`、フォーム不在、横スクロール非発生、axe WCAG 2.1 AA違反なし、本文リンクのclick遷移 | 実操作（click）＋axe。2ページ×PC/iPad/iPhoneで6件＋ナビの展開・表示対象・リンク遷移を3デバイスで確認（計9件） |
 
-E2E定義は453件（既存444件＋E-46の9件）。ローカルdist・staging実機・本番実機で実行し、結果と画像を `evidence/2026-09-09/` に保存する。
+E2E定義は453件（既存444件＋E-46の9件）。Issue #127 で E-47 の12件を追加し **465件**（下表）。ローカルdist・staging実機・本番実機で実行し、結果と画像を `evidence/2026-09-09/` に保存する。
 
 | 実行環境 | 結果 | 証跡 |
 | :--- | :--- | :--- |
@@ -1568,6 +1619,12 @@ E2E定義は453件（既存444件＋E-46の9件）。ローカルdist・staging�
 | 本番実機（https://reiwa.casa） | 9 passed（E-46の全件を1回で実行） | `app-info-results-production.json` / `noindex-nav-results.json`（production）/ `screenshots-production/` |
 
 ローカル・stagingはメニュー除外の追加前後で2回に分けて取得したため証跡が2ファイルに分かれる。本番は追加後の定義9件をまとめて実行した。
+
+#### E-47 CMS 書き込み先ブランチの実行時導出（Issue #127、`cms-env-branch.spec.ts`）
+
+| No. | テストケース | 検証内容 | テスト手法 |
+| :--- | :--- | :--- | :--- |
+| E-47 | {localhost, reiwa.casa, staging.reiwa.casa, abc123.my-blog-3cg.pages.dev} から記事を保存すると {staging, main, staging, staging} ブランチへ書き込む | ログインボタン click → window.open に渡された URL が `origin + /auth`（base_url 導出）→ 一覧の記事を click → タイトルを fill → 「公開」→「公開する」→ GitHub API モックが受けた `PATCH git/refs/heads/<branch>` が期待ブランチのみ、反対側ブランチへの参照・書き込みが0件 | 実操作（click/fill）。本番・staging・プレビューのホスト名は `page.route()` でローカル dist から応答（実サーバー通信なし）。認証は window.open モンキーパッチ（4.1.5章）。4ホスト×PC/iPad/iPhone=12件。iPhone は「公開する」がレイアウト上表示領域外に描画される既存事象（DOCUMENTATION 4.5章 Bug #P127-1）のため、そのデバイスだけメニュー項目をキーボード Enter で選ぶ |
 
 ### 4.1.4 デバイス別テスト
 
@@ -1836,40 +1893,35 @@ npm run build
 
 | 項目 | 結果 |
 | :--- | :--- |
-| 実行日時 | 2026-09-23（Issue #117 hardening 対応後。ブランチ `fix/issue-117-hardening`） |
+| 実行日時 | 2026-09-23（Issue #127 対応後。ブランチ `feat/issue-127-derive-env-values`、staging 9c58398 に rebase 済み） |
 | Vitest バージョン | v4.1.11 |
-| 実行時間 | 2.50s（featureブランチ, `npx vitest run`）／main・staging想定は `CF_PAGES_BRANCH=staging npx vitest run` で実測 |
-| 合否判定 | **合格**（両文脈とも実測: feature系 695 passed、main/staging系 698 passed） |
+| 実行時間 | 約8s（`npx vitest run`。CF_PAGES_BRANCH 別の3ビルドを含む）。`CF_PAGES_BRANCH=main` / `staging` でも同件数で実測 |
+| 合否判定 | **合格**（未設定・main・staging の3文脈とも 754 passed） |
 
-**Vitest総件数はブランチによって変わる**: SEC-35（`cms-config.test.mjs`の環境固有ファイル実ブランチ整合性検証）は、判定されたブランチがmain/stagingの場合に厳密チェック4件を登録し、それ以外（feature/*等の判定不能時）は内部整合チェック1件のみを登録する設計であるため。CIはmain/stagingへのpushで走るため、**CIログ上の件数は698件**になる。
+**Vitest総件数はブランチに依存しない（Issue #127 以降）**: 旧 SEC-35 は判定ブランチによって登録数が変わった（feature 695／main・staging 698）が、導出結果を検証する形に改訂したため、feature・main・staging・CI のどこでも同じ754件になる。
 
 ### 4.3.2 テストファイル別結果
 
-feature ブランチ（`fix/issue-117-hardening`）での実測:
+Issue #127 対応後の実測（全ブランチ共通）:
 
 | テストファイル | テスト数 | 結果 | 実行時間 |
 | :--- | :--- | :--- | :--- |
-| `cms-config.test.mjs` | 56 | PASS | 8ms |
+| `cms-config.test.mjs` | 60 | PASS | 8ms |
 | `admin-html.test.mjs` | 90 | PASS | 6ms |
 | `rehype-image-caption.test.mjs` | 8 | PASS | 2ms |
 | `rehype-focusable-code-blocks.test.mjs` | 2 | PASS | 1ms |
 | `auth-functions.test.mjs` | 29 | PASS | 15ms |
 | `fuzz-validation.test.mjs` | 216 | PASS | 25ms |
 | `content-validation.test.mjs` | 125 | PASS | 31ms |
-| `build.test.mjs` | 114 | PASS | — |
+| `build.test.mjs` | 129 | PASS | — |
 | `security-hardening.test.mjs` | 28 | PASS | — |
 | `dependency-freshness.test.mjs` | 27 | PASS | — |
-| **合計** | **695** | **全PASS** | **実測は `npx vitest run` の出力を正とする** |
+| `env-derivation.test.mjs` | 37 | PASS | — |
+| **合計** | **754** | **全PASS** | **実測は `npx vitest run` の出力を正とする** |
 
-main / staging での実測（`CF_PAGES_BRANCH=staging npx vitest run` で確認。`cms-config.test.mjs`のみ 56→59 に変動し他ファイルは同一）:
+`CF_PAGES_BRANCH=main npx vitest run` / `CF_PAGES_BRANCH=staging npx vitest run` でも同じ 754 passed（旧版の main・staging 別表は Issue #127 で不要になった）。
 
-| テストファイル | テスト数 | 結果 |
-| :--- | :--- | :--- |
-| `cms-config.test.mjs` | 59 | PASS |
-| その他9ファイル | 639 | PASS（feature時と同一） |
-| **合計** | **698** | **全PASS** |
-
-Issue #117 項目2/12 により `build.test.mjs` 111→113、`fuzz-validation.test.mjs` 215→216。Vitest 合計 635→638。Bug #51再発防止（SEC-35、`cms-config.test.mjs`に環境固有ファイルの実ブランチ整合性検証を追加）によりVitest合計は **feature ブランチ 639件／main・staging 642件**（差の3件はSEC-35のブランチ別テスト登録による。既存テストへの影響はない）。Issue #117 hardening 対応で `security-hardening.test.mjs` 28件と `build.test.mjs` 1件（SEC-36）を追加し、**feature ブランチ 668件／main・staging 671件**。Issue #132（SEC-40）で `dependency-freshness.test.mjs` 27件を追加し **feature ブランチ 695件／main・staging 698件**。
+Issue #117 項目2/12 により `build.test.mjs` 111→113、`fuzz-validation.test.mjs` 215→216。Vitest 合計 635→638。Bug #51再発防止（SEC-35、`cms-config.test.mjs`に環境固有ファイルの実ブランチ整合性検証を追加）によりVitest合計は **feature ブランチ 639件／main・staging 642件**（差の3件はSEC-35のブランチ別テスト登録による。既存テストへの影響はない）。Issue #117 hardening 対応で `security-hardening.test.mjs` 28件と `build.test.mjs` 1件（SEC-36）を追加し、**feature ブランチ 668件／main・staging 671件**。Issue #132（SEC-40）で `dependency-freshness.test.mjs` 27件を追加し **feature ブランチ 695件／main・staging 698件**。Issue #127 で `env-derivation.test.mjs` 37件、`build.test.mjs` 15件（114→129）を追加し、`cms-config.test.mjs` の SEC-35 を 1件（feature）／4件（main・staging）から全ブランチ共通5件へ改訂（56→60）。**全ブランチ 751件**。
 
 ### 4.3.3 E2Eテスト最新実行結果（Playwright）
 
@@ -1918,7 +1970,7 @@ Issue #117 項目2/12 により `build.test.mjs` 111→113、`fuzz-validation.te
 
 ---
 
-**最終更新**: 2026年9月23日（v1.54）
+**最終更新**: 2026年9月23日（v1.56）
 
 ### 2026-09-20 セキュリティIssue #109〜#113対応完了
 

@@ -27,6 +27,11 @@
 # Decap CMS 管理画面: SEO除外 + キャッシュ無効化 + 管理画面固有CSP
 # COOP, CORP, X-Frame-Options は /* から継承されるためここでは再定義しない（重複排除）
 # CSP: /admin/* 固有（公開ページとは異なるポリシーが必要なため /* には設定しない）
+# Cloudflare Web Analytics（Insights）のビーコンは意図的に遮断している（Issue #130, SEC-41）。
+#   実ホストで static.cloudflareinsights.com の beacon.min.js が script-src 違反として
+#   ブロックされることを確認した。CMS編集・入力・preview・モック保存操作では他のCSP違反や機能エラーは観測しなかった。
+#   管理画面から外部解析サービスへの送信口を開けないため、script-src / connect-src に
+#   cloudflareinsights を追加してはならない（エラーを消したい場合は Cloudflare 側で /admin/* を計測対象外にする）。
 /admin/*
   X-Robots-Tag: noindex
   Cache-Control: no-store

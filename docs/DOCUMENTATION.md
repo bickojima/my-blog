@@ -74,6 +74,8 @@
 | 1.67 | 2026-09-23 | Issue #117 hardening 項目の全件判定（判定表: `docs/security/issue-117-hardening-decisions.md`）。**Bug #52**（SEC-29 の実装不備: gray-matter は `language: 'yaml'` 指定時も `---js` の言語宣言を優先し javascript エンジン＝eval が動く。Issue #117 項目1の「完了」判定は誤りだった。organize-posts に加え、`npm run build` が organize-posts より先に実行する Vitest（と E2E）のテストも同じ経路だった）を4.5章に5 Whysとともに追記し、`scripts/lib/safe-frontmatter.mjs` で YAML 以外のエンジンを拒否、`src/content` を読む全テストもラッパー経由に置換。SEC-36（Actions の commit SHA 固定、項目3）、SEC-37（OAuth オリジン許可リストの単一化 `functions/_shared/allowed-origin.js`、項目5）、SEC-38（OAuth コールバック応答の CSP 自己完結＋charset 明示、項目9）、SEC-39（`<script>` 埋め込み値の JSON.stringify リテラル化、項目10）を1.4.2章・1.5.4章に追加。項目6・7・8・14は対応不要（根拠・残余リスクは判定表）、項目15は #127 へ移管。2.4.5章・2.4.6章・3.2.3章を更新。Vitest featureブランチ 639→**668**件／main・staging 642→**671**件 |
 | 1.68 | 2026-09-23 | Issue #128: Cloudflare Pages のビルドコマンドが `npm run build` であることを 2026-09-23 にダッシュボードで確認した。Vitest が失敗すると `astro build` まで進まずデプロイされない（テストゲート）ことも確認した。この内容を2.5.1章に明記した。あわせて、`build:raw` を「Cloudflare Pages用」としていた誤記を訂正した（実際の用途は build.test.mjs の内部と CI）。build.test.mjs がゲート対象外で CI でのみ実行されるという残余リスクと、SEC-35 が `CF_PAGES_BRANCH` により Pages 上の最終防壁になることも記載した。ローカル実証のエビデンスは `evidence/2026-09-23/issue128/` にある |
 | 1.69 | 2026-09-23 | Issue #132: npm管理外依存（CDN の Decap CMS、GitHub Actions、Node.js 宣言、Cloudflare Pages ビルド環境）の棚卸し・鮮度・EOL・SRI を週次で機械判定する SEC-40 を追加。`scripts/check-dependency-freshness.mjs`（結果 JSON / Markdown、ok・warning・alert・error）、`.github/workflows/dependency-freshness.yml`（週次、alert で Issue 起票＋ジョブ失敗）、`.github/dependabot.yml`（github-actions を staging 向け週次更新。SEC-36 の SHA 固定と版コメントを同時更新）を追加し、4.11章に棚卸し表・判定ルール・通知経路・Decap 更新/SRI 再計算/E2E 手順・Dependabot との分担・四半期の手動確認を記載。Cloudflare Pages の手動確認（2026-09-23、ビルドイメージと NODE_VERSION は未確認）を記録。Vitest feature 668→**695**件／main・staging 671→**698**件 |
+| 1.70 | 2026-09-23 | Issue #127: 環境固有の4項目（`astro.config.mjs` の SITE_URL、`public/admin/config.yml` の backend.branch / base_url、`public/robots.txt`）をファイルから削除し、ビルド時（`CF_PAGES_BRANCH`）・実行時（`location.hostname` / `origin`）に導出する構造へ変更（ユーザー決定「環境値の自動導出」方式）。導出点は `src/lib/site-env.mjs`（SITE_URL・robots、`src/pages/robots.txt.ts` で生成）と `public/admin/cms-env.js`（CMS の branch・base_url。admin/index.html が `CMS_MANUAL_INIT` + `CMS.init` で deepmerge）。安全側の既定: 本番値は `CF_PAGES_BRANCH === 'main'`／ホスト名 `reiwa.casa` 完全一致のときだけ、それ以外は staging 値。main と staging の環境差分はゼロになり、Bug #51 の構造的原因を解消。SEC-35 を「導出結果の正しさ」の検証へ改訂し、SEC-127A（仮ID・マージ時採番調整）を1.4.2章・1.5.4章に追加。2.1.1・2.5.4・3.3.2・4.3.1・4.6（マージ手順・環境別値・main 移行手順 4.6.5・本番読み取り確認 4.6.6）・4.7.2・4.9.9・4.10.3章を更新。Bug #P127-1（仮番号: iPhone エミュレーションで「公開」メニューが表示領域外。変更前から発生・未修正）を4.5章に記録。Bug #P127-2（仮番号: CMS 系 E2E spec が base_url とのオリジン差で未認証のまま実行され、弱い分岐で PASS していた。本変更で認証が成立し E-39 の失敗で発覚。E-39 を書き換え）を4.5章に記録。Vitest 695件（feature）／698件（main・staging）→ **全ブランチ共通 751件**（ブランチ別登録を廃止）、E2E 453→**465件**（`cms-env-branch.spec.ts` 4ホスト×3デバイス） |
+| 1.71 | 2026-09-23 | Issue #130: Cloudflare Insights beacon を `/admin/*` のCSPで遮断し、検証した操作中に他のCSP違反・機能エラーがないことを確認する SEC-41 を追加.`_headers` のCSPポリシーは維持し、遮断方針コメントと実操作回帰テストを追加。production/staging 実ホストでOAuth・GitHub APIをモックし実書込を遮断した上で、PC/iPad/iPhoneの編集・入力・preview・保存要求branchを検証（54/54 PASS: production/stagingの操作各3端末、ローカルPC操作、実ホストreadonly。非Insights CSP違反0、機能エラー0）。Vitest 754件、E2E 465件。証跡 `evidence/2026-09-23/issue130-review/` |
 
 ## システム変更履歴
 
@@ -438,13 +440,17 @@ staging/production環境が独立した設定で動作する:
 |:---|:---|:---|
 | URL | `https://reiwa.casa` | `https://staging.reiwa.casa` |
 | ブランチ | `main` | `staging` |
-| config.yml base_url | `https://reiwa.casa` | `https://staging.reiwa.casa` |
-| config.yml branch | `main` | `staging` |
+| CMS base_url（実行時導出。常に `location.origin`） | `https://reiwa.casa` | `https://staging.reiwa.casa` |
+| CMS 書き込み先 branch（実行時導出。ホスト名 `reiwa.casa` のときだけ main） | `main` | `staging` |
+| site / canonical / sitemap（ビルド時導出。`CF_PAGES_BRANCH === 'main'` のときだけ本番URL） | `https://reiwa.casa` | `https://staging.reiwa.casa` |
+| robots.txt（ビルド時生成） | `Allow: /` + 本番 Sitemap | `Disallow: /` |
 | OAuth App | My Blog CMS | tbiのブログ CMS (staging) |
 | [STAGING]ラベル | 非表示 | 表示 |
 
+これらの環境値はファイルに書かず、同一のソースからビルド環境変数・配信ホスト名で導出する（Issue #127、SEC-127A。main と staging のファイル差分はゼロ）。導出規則は4.6.4章。
+
 staging環境の検知:
-- `Base.astro`: 環境変数`CF_PAGES_BRANCH`が`main`以外の場合に[STAGING]表示
+- `Base.astro`: 環境変数`CF_PAGES_BRANCH`が`staging`の場合に[STAGING]表示
 - `admin/index.html`: `hostname`が`reiwa.casa`以外の場合に[STAGING]表示
 
 #### FR-22〜FR-28 個人ブログ化ロードマップ（2026-07-04）
@@ -453,7 +459,7 @@ staging環境の検知:
 
 | 要件 | 環境別の値・挙動 |
 |:---|:---|
-| FR-22 site/canonical | `astro.config.mjs`の`site`はconfig.ymlの`base_url`/`branch`と同じくブランチ別手動管理（staging: `https://staging.reiwa.casa`、main: `https://reiwa.casa`）。マージ時の確認観点は4.6.2章参照 |
+| FR-22 site/canonical | `astro.config.mjs`の`site`は `resolveSiteUrl(process.env.CF_PAGES_BRANCH)`（`src/lib/site-env.mjs`）でビルド時に導出する（main: `https://reiwa.casa`、それ以外: `https://staging.reiwa.casa`。Issue #127）。旧: ブランチ別手動管理 |
 | FR-23 OGP | 記事ページは`summary`→description、`thumbnail`→og:image（絶対URL化）。画像がない場合は`twitter:card`を`summary`にフォールバックする（プレースホルダ画像は生成しない） |
 | FR-24 RSS | `/rss.xml`、draft記事除外、date降順。`<link rel="alternate" type="application/rss+xml">`で自動検出対応 |
 | FR-25 サイトマップ | `/sitemap-index.xml` + `/sitemap-0.xml`、`filter`で`/admin/`配下を除外 |
@@ -461,7 +467,7 @@ staging環境の検知:
 | FR-27 前後記事ナビ | 記事詳細フッターに前/次記事リンク（タイトル付き）。最古・最新記事では片側のみ表示 |
 | FR-28 ページネーション | `pageSize: 10`。1ページに収まる記事数の間は`/page/`配下のルートは生成されない |
 
-staging環境のrobots.txtは`Disallow: /`を維持し、mainマージ時のみ`Allow: /` + `Sitemap:`行に切り替える（2.5.4章、4.6.2章参照。Bug #41再発防止）。
+robots.txtは`src/pages/robots.txt.ts`がビルド時に生成し、`CF_PAGES_BRANCH === 'main'`のときだけ`Allow: /` + `Sitemap:`行、それ以外は`Disallow: /`にする（2.5.4章、4.6.4章参照。Bug #41再発防止、Issue #127で手動切替を廃止）。
 
 ---
 
@@ -548,12 +554,14 @@ staging環境のrobots.txtは`Disallow: /`を維持し、mainマージ時のみ`
 | SEC-32 | 画像正規化処理のビルド堅牢化: `normalize-images.mjs`のsharp処理全体をtry/catchで保護し、壊れた画像1件でビルド全体が失敗しないようにする。加えて`.rotate().toBuffer()`の出力バッファにも`MAX_FILE_SIZE`（50MB）上限を適用し、超過時は書き戻さず元ファイルを保持する | `scripts/normalize-images.mjs` | 対応Issue: #117 項目11。入力側のpixel limit・ファイルサイズ上限に加え、出力側にも上限を設けることで回転処理による意図しない肥大化を防止する |
 | SEC-33 | CIトークン最小権限: GitHub Actions の `test-and-build` ジョブは `permissions: contents: read` のみを宣言する | `.github/workflows/ci.yml` | 対応Issue: #117 項目2。fork PR は既定で読取専用だが、ソース上に明示してリポジトリ既定の将来変更から守る。**CI に Playwright は載せない**（Bug #50） |
 | SEC-34 | 無効な `.assetsignore` を置かない: Cloudflare Pages では Workers Static Assets の `.assetsignore` は効かず、`public/` に置くと公開配信される | ファイルを置かない | 対応Issue: #117 項目12。保護にならないノイズを削除する |
-| SEC-35 | 環境固有ファイルの実ブランチ整合性検証: `public/admin/config.yml`（branch/base_url）・`astro.config.mjs`（SITE_URL）・`public/robots.txt`（クロール方針）の4項目が、現在チェックアウトしているブランチ（`CF_PAGES_BRANCH` > `GITHUB_REF_NAME` > `git rev-parse --abbrev-ref HEAD` の優先順で判定）に対応した値になっていることを検証する。ブランチがmain/staging以外またはCIのpull_requestイベント等で判定できない場合は、4項目が同一環境（main寄り/staging寄り）を指しているという内部整合のみを検証する | `tests/cms-config.test.mjs` | Bug #51再発防止。互いに整合していても揃って誤った環境値に上書きされるケース（内部整合チェックだけでは検出できない）を検知する |
+| SEC-35 | 環境固有値の導出整合性検証（Issue #127 で改訂）: ビルド時導出（`CF_PAGES_BRANCH` → SITE_URL・robots.txt）と実行時導出（`location.hostname` / `origin` → CMS の書き込み先 branch・base_url）が、ブランチ・ホストごとに正しい値を返すことを、導出関数の単体テスト・`CF_PAGES_BRANCH=main`/`staging`/未設定での実ビルド生成物（robots.txt・canonical・sitemap・RSS）・config.yml との deepmerge 後の実効設定で検証する。テスト集合はチェックアウト中のブランチに依存しない（旧版の「実ブランチ判定＋判定不能時は内部整合のみ」は廃止） | `tests/cms-config.test.mjs`, `tests/env-derivation.test.mjs`, `tests/build.test.mjs`, `tests/e2e/cms-env-branch.spec.ts` | Bug #51再発防止。旧版は検知のみで、CI の pull_request では `GITHUB_REF_NAME` が `NNN/merge` になり判定不能側に倒れていた |
 | SEC-36 | GitHub Actions の action 参照は40桁の commit SHA で固定し、行末に対応する版（`# vX.Y.Z`）を併記する | `.github/workflows/*.yml` | 対応Issue: #117 項目3。タグは上流で付け替え可能なため。固定先は従来の `@v4` と同一 commit（checkout / setup-node とも v4.4.0）。SHA の更新検知は #132 の依存監視で扱う |
 | SEC-37 | OAuth オリジン許可リストの単一化: `isAllowedOrigin` は `functions/_shared/allowed-origin.js` にのみ定義し、`/auth`・`/auth/callback` の両方が import する。共有モジュールは `onRequest*` を export せず Pages のルートにならない | `functions/_shared/allowed-origin.js`, `functions/auth/*.js` | 対応Issue: #117 項目5。許可リストの写しが独立に変更され、開始とコールバックで判定が食い違う（ログイン不能等）ことを構造的に防ぐ。許可範囲は SEC-27 と同一 |
 | SEC-38 | OAuth コールバック応答の CSP 自己完結: `Content-Security-Policy` に `default-src 'none'` に加えて `frame-ancestors 'none'; form-action 'none'; base-uri 'none'` を明示し、`Content-Type: text/html; charset=utf-8` と `<meta charset="utf-8">` を付ける | `functions/auth/callback.js` | 対応Issue: #117 項目9。これらのディレクティブは `default-src` にフォールバックせず、Functions の応答には `public/_headers` が適用されないため応答自身で完結させる |
 | SEC-39 | `<script>` 埋め込み値の安全なリテラル化: コールバック HTML に埋め込むトークン・オリジンは `JSON.stringify` で引用符込みの JS 文字列リテラルにし、`<` `>` `&` と U+2028/U+2029 を `\uXXXX` へ変換してから埋め込む | `functions/auth/callback.js` | 対応Issue: #117 項目10。手書きの置換列（旧 `escapeForScript`）は U+2028/U+2029・バッククオート・`${` を扱わず置換順序にも依存していた。埋め込み先の引用符の種類に依存しない方式にする |
 | SEC-40 | npm管理外依存の鮮度・EOL監視: npm audit / Dependabot の対象外である依存（CDN の `<script>`、GitHub Actions、Node.js のバージョン宣言、Cloudflare Pages ビルド環境）を棚卸しし、最新版との差・EOL・SRI 実体一致・既知脆弱性を週次で機械判定して結果 JSON に記録する。alert は Issue 起票とジョブ失敗で通知し、判定ロジックはネットワーク非依存のテストで検証する | `scripts/check-dependency-freshness.mjs`, `scripts/dependency-freshness.config.json`, `.github/workflows/dependency-freshness.yml`, `.github/dependabot.yml` | 対応Issue: #132。Decap CMS が 3.10.0 のまま 6 マイナー遅れていたことに監査まで気づけなかった再発防止。運用手順は 4.11章 |
+| SEC-41 | 管理画面CSPで Cloudflare Insights beacon を許可しない: `/admin/*` の `script-src` / `connect-src` に外部解析ホストを追加せず、実ホストのCMS操作で他のCSP違反・機能エラーが観測されないことを確認する | `public/_headers`, `tests/fuzz-validation.test.mjs`, `evidence/2026-09-23/issue130-review/` | 対応Issue: #130。実ホスト証跡はproduction/staging・PC/iPad/iPhone、OAuth/GitHub APIモック、保存要求branchの確認を含む。検証対象操作の範囲を超える一般的無影響の主張はしない |
+| SEC-127A（仮ID・マージ時採番調整） | 環境固有値をファイルに置かない: main / staging で値が異なる設定（SITE_URL、robots.txt、CMS の backend.branch / base_url）をリポジトリのファイルに書かず、ビルド時は `src/lib/site-env.mjs`、実行時は `public/admin/cms-env.js` の1か所から導出する。本番値になるのは `CF_PAGES_BRANCH === 'main'`（ビルド）／ホスト名 `reiwa.casa` 完全一致（CMS）のときだけで、未設定・未知の値はすべて staging 値（検索除外・staging への書き込み）に倒す。config.yml に branch / base_url、`public/robots.txt`、SITE_URL のリテラルを置かないことを静的テストで固定する | `src/lib/site-env.mjs`, `src/pages/robots.txt.ts`, `astro.config.mjs`, `public/admin/cms-env.js`, `public/admin/index.html`, `public/admin/config.yml` | 対応Issue: #127（#117 項目15 と同根）。どちら向きのマージでも相手の値が持ち込まれない（差分がそもそも存在しない）。Decap は config.yml の上に `CMS.init({config})` を deepmerge し init 側が優先（3.16.2 配布物で確認） |
 
 ---
 
@@ -670,14 +678,16 @@ staging環境のrobots.txtは`Disallow: /`を維持し、mainマージ時のみ`
 | SEC-32 | 画像正規化処理のビルド堅牢化 | build | `sharp処理が try/catch で囲まれ、catch でビルド全体を throw していない（SEC-32）`, `.rotate().toBuffer() の出力 buffer.length に MAX_FILE_SIZE 上限がある（SEC-32）`, `lstat 失敗も try/catch で保護されている（SEC-32）` | M-02 | 充足 |
 | SEC-33 | CIトークン最小権限 | build | `CI ジョブは contents: read に限定する（SEC-33, Issue #117 項目2）` | M-02 | 充足 |
 | SEC-34 | 無効な `.assetsignore` を置かない | build, fuzz-validation | `dist に .assetsignore が存在しない（SEC-34, Issue #117 項目12）`, `Cloudflare Pages で無効な public/.assetsignore が存在しない（SEC-34, Issue #117 項目12）` | M-02 | 充足 |
-| SEC-35 | 環境固有ファイルの実ブランチ整合性検証 | cms-config | `現在のブランチ（main/staging）に対してconfig.ymlのbranchが一致する`、`現在のブランチ（main/staging）に対してconfig.ymlのbase_urlが一致する`、`現在のブランチ（main/staging）に対してastro.config.mjsのSITE_URLが一致する`、`現在のブランチ（main/staging）に対してpublic/robots.txtのクロール方針が一致する`（`main/staging`はテンプレート表記。実行時は`it()`のタイトルにテンプレートリテラルで実ブランチ名が展開され、`現在のブランチ（main）に対して…`または`現在のブランチ（staging）に対して…`という具体的なテスト名でログ・レポートに出力される）、`ブランチをmain/stagingと判定できない場合はconfig.yml・SITE_URL・robots.txtが同一環境を指す`（いずれも `環境固有ファイルの実ブランチ整合性検証（SEC-35, Bug #51再発防止）`） | M-02 | 充足 |
+| SEC-35 | 環境固有値の導出整合性検証（Issue #127 改訂） | cms-config, env-derivation, build, E2E | cms-config `環境固有値の導出整合性検証（SEC-35 改訂, Bug #51再発防止, Issue #127）`（5件: 4ホストの実効 backend、config.yml 単体に branch/base_url なし）、env-derivation `ビルド時の環境値導出`（16件）・`CMS の書き込み先ブランチ・base_url の実行時導出`（14件）、build `CF_PAGES_BRANCH 別ビルドの環境値（SEC-35 改訂, Issue #127）`（15件: main/staging/未設定×robots・canonical・sitemap・RSS・config.yml）、E2E `cms-env-branch.spec.ts`（4ホスト×3デバイス: 実操作保存で PATCH `git/refs/heads/<branch>` を実測）、エビデンス `evidence/2026-09-23/issue127/` | M-01, M-02, M-03 | 充足 |
 | SEC-36 | Actions の commit SHA 固定 | build | `CI の全 action 参照は40桁の commit SHA で固定し、版をコメントで併記する（SEC-36, Issue #117 項目3）` | M-02 | 充足 |
 | SEC-37 | OAuth オリジン許可リストの単一化 | security-hardening, auth-functions | `OAuth オリジン許可リストは1か所で定義する（SEC-37, Issue #117 項目5）`（4件）、`OAuth開始・コールバックで送信先オリジン許可リスト判定関数を実装している（SEC-27, SEC-37）`、E2E エビデンス `evidence/2026-09-23/issue117/` H01 | M-02 | 充足 |
 | SEC-38 | OAuth コールバック応答の CSP 自己完結 | security-hardening, auth-functions | `OAuth コールバック応答の CSP を自己完結させる（SEC-38, Issue #117 項目9）`（2件）、`GitHubが成功した場合、トークンを含むHTMLが返される`（Content-Type）、E2E エビデンス H02/H04/H05 | M-02 | 充足 |
 | SEC-39 | `<script>` 埋め込み値の JSON.stringify リテラル化 | security-hardening, fuzz-validation, auth-functions | `<script> 埋め込み値は JSON.stringify リテラルで出力する（SEC-39, Issue #117 項目10）`（12件）、fuzz-validation `トークンのエスケープ検証`（挙動検証へ強化）、E2E エビデンス H03 | M-02 | 充足 |
 | SEC-40 | npm管理外依存の鮮度・EOL監視 | dependency-freshness | TEST-REPORT 2.9章 #1〜#27（判定ロジックはフィクスチャ、実ファイル棚卸し、週次ワークフローの権限・SHA 固定・通知分岐、Dependabot 設定）。ネットワーク実行と alert/error 経路の dry-run は `evidence/2026-09-23/issue132/` | M-02, M-07, M-08, M-12 | 充足 |
+| SEC-41 | 管理画面CSPで外部解析ビーコンを許可しない | fuzz-validation, E2E evidence | fuzz-validationのSEC-41検証3件、実ホストE2E `evidence/2026-09-23/issue130-review/`（production/staging×3端末、ユーザー操作、mock保存branch） | M-02, M-03 | 対象操作の範囲で充足 |
+| SEC-127A（仮ID） | 環境固有値をファイルに置かない | env-derivation | `main / staging で環境固有ファイルに差分を置かない静的ガード（SEC-35 改訂, Bug #51・Issue #127）`（7件: config.yml に branch/base_url・環境URLなし、public/robots.txt なし・エンドポイント生成、SITE_URL 非リテラル、CMS_MANUAL_INIT と cms-env.js の読込順、CMS.init 1回、cms-env.js の URL 非保持・strict）、両方向マージ実証 `evidence/2026-09-23/issue127/merge-demo.md` | M-02, M-03 | 充足 |
 
-**充足状況: FR-01〜FR-29, CMS-01〜CMS-19, NFR-01〜NFR-08, SEC-01〜SEC-40はテストで充足されている。未テスト要件は0件。**
+**充足状況: FR-01〜FR-29, CMS-01〜CMS-19, NFR-01〜NFR-08, SEC-01〜SEC-41, SEC-127A（仮ID）はテストで充足されている。SEC-41は実ホストで検証した操作範囲を対象とする。未テスト要件は0件。**
 
 ---
 
@@ -703,8 +713,8 @@ my-blog/
 │   │   └── config.yml                  # CMS設定定義
 │   ├── images/uploads/                 # アップロード画像（Git管理）
 │   ├── _headers                        # HTTPレスポンスヘッダー
-│   ├── _redirects                      # URLリダイレクト規則
-│   └── robots.txt                      # クローラー制御
+│   └── _redirects                      # URLリダイレクト規則
+│   （robots.txt は置かない。src/pages/robots.txt.ts がビルド時に生成。Issue #127）
 ├── scripts/                            # ビルド前処理スクリプト
 │   ├── normalize-images.mjs            # EXIF回転正規化
 │   └── organize-posts.mjs             # 記事ファイル配置整理
@@ -1201,9 +1211,11 @@ Cloudflare DNS（`reiwa.casa` ゾーン）で以下のレコードを管理し�
 | Cloudflare Pages | Production deployment | Preview deployment（カスタムドメイン） |
 | GitHub OAuth App | 本番用 | テスト用（別アプリ） |
 | OAUTH_CLIENT_ID | Production環境変数 | Preview環境変数 |
-| robots.txt | `Allow: /` | `Disallow: /`（インデックス防止） |
-| CMS config.yml base_url | `https://reiwa.casa` | `https://staging.reiwa.casa` |
-| CMS config.yml branch | `main` | `staging` |
+| robots.txt（ビルド時生成） | `Allow: /` + 本番 Sitemap | `Disallow: /`（インデックス防止） |
+| CMS base_url（実行時導出） | `https://reiwa.casa` | `https://staging.reiwa.casa` |
+| CMS 書き込み先 branch（実行時導出） | `main` | `staging` |
+
+上記の環境値はリポジトリのファイルでは区別しない（main と staging でファイル内容は同一）。導出規則は4.6.4章（Issue #127）。
 
 #### 2.5.4.1 ブランチ運用
 
@@ -1215,11 +1227,11 @@ main (本番)  ←── merge ── staging (テスト) ←── merge ──
 
 - 新機能: `feature/*` → `staging` へPR → テスト → `staging` → `main` へPR
 - コンテンツ同期: `main` の記事更新を `staging` に定期マージ
-- `config.yml` の `base_url` / `branch` は各ブランチで手動管理。staging → main マージ時は main の値を維持する。
+- 環境固有値（SITE_URL・robots.txt・CMS の `branch` / `base_url`）はファイルに持たず導出するため、どちら向きのマージでも手動での値の戻しは不要（Issue #127。旧運用: `config.yml` 等を各ブランチで手動管理）。
 
 #### 2.5.4.2 サイトURL動的化
 
-`public/admin/index.html` 内のサイトURL参照（`addSiteLink`、`showPublicUrl`）は `window.location.origin` で動的取得する。これにより、本番（`reiwa.casa`）・テスト（`staging.reiwa.casa`）・ローカル開発（`localhost`）のいずれの環境でも正しいURLが表示される。
+`public/admin/index.html` 内のサイトURL参照（`addSiteLink`、`showPublicUrl`）と CMS の `base_url`（Issue #127、`/admin/cms-env.js`）は `window.location.origin` で動的取得する。これにより、本番（`reiwa.casa`）・テスト（`staging.reiwa.casa`）・ローカル開発（`localhost`）のいずれの環境でも正しいURLが表示される。
 
 #### 2.5.4.3 [STAGING]ラベル表示
 
@@ -1338,12 +1350,22 @@ const pages = defineCollection({
 backend:
   name: github
   repo: bickojima/my-blog
-  branch: main
-  base_url: https://reiwa.casa
+  # branch / base_url はここに書かない（Issue #127・Bug #51）
   auth_endpoint: /auth
 ```
 
-`base_url`にはOAuth認証サーバーのURLを指定する。`auth_endpoint`はCloudflare Functionsの認証エンドポイントである。
+`auth_endpoint`はCloudflare Functionsの認証エンドポイントである。`branch`（書き込み先）と`base_url`（OAuth ポップアップを開くオリジン）は、`public/admin/index.html` が実行時に決めて渡す（Issue #127）:
+
+1. Decap 読み込み前に `window.CMS_MANUAL_INIT = true` を設定し、`/admin/cms-env.js` を読み込む（`resolveCmsBackend(location)` を定義）。
+2. `CMS.registerPreviewStyle()` の後で `CMS.init({ config: { backend: window.resolveCmsBackend(window.location) } })` を1回呼ぶ。
+3. Decap は config.yml を読み込み、その上に init の config を deepmerge する（init 側が優先。3.16.2 配布物の `deepmerge(loadedYaml, manualConfig)` を確認済み）。
+
+| 配信ホスト名 | branch | base_url |
+|:---|:---|:---|
+| `reiwa.casa`（完全一致） | `main` | `location.origin`（`https://reiwa.casa`） |
+| それ以外（`staging.reiwa.casa`、`*.pages.dev`、`localhost`、未知のホスト） | `staging` | `location.origin` |
+
+ホスト名→ブランチの対応は `cms-env.js` の `HOSTNAME_TO_BRANCH`（本番1件だけの許可リスト）に置き、admin/index.html には URL・ホスト名を書かない（CLAUDE.md の「admin/index.html に URL をハードコードしない」方針を維持。ホスト名は比較用の定数で、画面・通信に使う URL はすべて `location.origin` から作る）。`cms-env.js` が読めない場合は `CMS.init` が例外になり CMS は起動しない（誤ったブランチへは書き込まない）。`cms-env.js` は同一オリジンの `/admin/` 配下にあり、`/admin/*` の CSP `script-src 'self'` で許可される。
 
 ### 3.3.3 メディア設定
 
@@ -1702,9 +1724,9 @@ GitHubリポジトリが利用可能な場合、以下の手順でシステム�
 | No. | ファイル | 変更箇所 | 現在値 | 説明 |
 | :--- | :--- | :--- | :--- | :--- |
 | 1 | `public/admin/config.yml` | `backend.repo` | `bickojima/my-blog` | GitHubリポジトリ名 |
-| 2 | `public/admin/config.yml` | `backend.base_url` | `https://reiwa.casa` | 本番ドメイン |
+| 2 | `public/admin/cms-env.js` / `src/lib/site-env.mjs` | 本番ホスト名 `HOSTNAME_TO_BRANCH` / `PRODUCTION_SITE_URL`・`STAGING_SITE_URL` | `reiwa.casa` / `https://reiwa.casa`・`https://staging.reiwa.casa` | 本番ドメイン（両ファイルの一致は env-derivation テストが検証。config.yml の base_url は廃止） |
 | 3 | `src/layouts/Base.astro` | サイトタイトル | `tbiのブログ` | ヘッダー・フッターに表示される |
-| 4 | `public/robots.txt` | Sitemap URL | `https://reiwa.casa/sitemap.xml` | サイトマップURL |
+| 4 | `src/lib/site-env.mjs` | robots.txt の Sitemap URL（`buildRobotsTxt`） | `https://reiwa.casa/sitemap-index.xml` | サイトマップURL（`public/robots.txt` は廃止） |
 | 5 | `public/admin/index.html` | 公開URL表示のドメイン | `window.location.origin`（動的） | 変更不要（環境自動検出） |
 | 6 | Cloudflare環境変数 | `OAUTH_CLIENT_ID` / `SECRET` | - | 新サイト用のOAuth App |
 | 7 | GitHub OAuth App | Callback URL | `https://reiwa.casa/auth/callback` | 新ドメインに変更 |
@@ -1819,8 +1841,10 @@ GitHubリポジトリが利用可能な場合、以下の手順でシステム�
 | 48 | 2026-09-20 | 下書き記事（`draft: true`）のslugが`public/admin/url-map.json`に含まれていた: CMSエディタの「公開URLを見る」機能が参照するurl-map.jsonを`organize-posts.mjs`が全記事から生成しており、下書き記事のslugと生成予定URLも含まれていた。加えて`gray-matter`のfront-matter解析エンジンが明示指定されておらず、YAML以外のエンジン（内部的に`eval`相当を実行しうる組み込みjavascriptエンジン）が暗黙に有効化されうる状態だった（監査Issue #114、深刻度low） | organize-posts.mjs実装時にurl-map.jsonの生成対象を「公開記事のみ」に絞る要件が明文化されず、`getStaticPaths`側の`.filter(post => !post.data.draft)`（SEC-21, Bug #30）と同等のフィルタがurl-map.json生成経路に横展開されていなかった。gray-matterはデフォルトでフロントマター内`engines`指定を許容するため、呼び出し側で明示的に`{ language: 'yaml' }`を指定しない限りYAML以外のパーサーが選択されうる余地が残っていた | (1) `organize-posts.mjs`のurl-map.json生成ループに`draft: true`記事の除外フィルタを追加。(2) `matter(content, { language: 'yaml' })`を明示指定し、YAML以外のエンジン選択を遮断。再発防止: url-map.jsonに下書きslugが含まれないことを検証するテストを追加し、下書き除外が過剰でないこと（公開記事のslugが全て含まれること）も併せて検証する | build.test.mjs（`下書き記事がurl-map.jsonに含まれていない（SEC-29, Bug #48 再発防止）`, `公開記事のslugが全てurl-map.jsonに含まれている`） |
 | 49 | 2026-09-20 | `_headers`の`/*`と`/admin/*`両方にCross-Origin-Opener-Policy / Cross-Origin-Resource-Policy / X-Frame-Optionsが定義されており、Cloudflare Pagesの同名ヘッダーAppend仕様（Bug #28で判明済みの仕様）により本番`/admin/`で各ヘッダーが2回送出されることを`curl -sI https://reiwa.casa/admin/`で実測確認した（`https://reiwa.casa/`では各1回）。COOP等はRFC 8941 Structured Headerであり、重複値がカンマ結合されるとitemパースに失敗し無効な値として扱われる（＝`unsafe-none`等へのフォールバック）蓋然性が高い。ただし、ブラウザが実際にどう解決したかは未観測であり、これは「決定的事実」ではなく「リード（要検証所見）」である（詳細: `docs/security/audit-run2-needs-validation.md`）。対応Issue: #115 | Bug #28対策時に「`/*`と`/admin/*`で同一値なら重複送信されても安全」という設計判断（旧SEC-23の記述）を採用し、公開ページにも管理画面と同一値のCOOP/CORP/X-Frame-Optionsを`/*`に追加した。しかしCloudflare Pagesのヘッダー結合はオーバーライドではなく単純なAppendであるため、「同一値なら安全」という前提はCOOP/CORP等のStructured Header（カンマ結合で複数値になった時点でパース仕様上不正になりうる）には成立しなかった。この観点は`_headers`ヘッダー重複防止検証（Bug #28再発防止）の既存テストでもガード条件（`if (globalVal && adminVal)`）に隠れて長らく実効的に検証されていなかった | `/admin/*`セクションからCross-Origin-Opener-Policy / Cross-Origin-Resource-Policy / X-Frame-Optionsの再定義を削除し、`/*`からの継承一本化に設計変更した（管理画面が必要とする値は`/*`側にのみ定義する）。重複を解消することで、ブラウザの実解決結果によらず本懸念を無条件に除去できる。再発防止: (1) `/admin/*`にこれら3ヘッダーが存在しないことを検証するテストへ更新（build.test.mjs, fuzz-validation.test.mjs）。(2) 旧テストのガード条件（両方の値が存在する場合のみ検証）を撤廃し、アサーションが必ず実行される形に書き換え | build.test.mjs（`X-Frame-Optionsは/admin/*で再定義されず/*から継承される（Issue #115, Bug #49）`ほか）、fuzz-validation.test.mjs（`COOP/CORP/X-Frame-Options は /admin/* で再定義されず /* から継承される（Bug #28 再発防止・Issue #115/Bug #49で設計変更）`ほか） |
 | 50 | 2026-09-20 | セキュリティ監査run-2の本番反映で、ローカル Playwright E2E 全件（3デバイス）と包括エビデンスを完了せずに main へマージした。CI の Vitest 成功と staging CMS 実ログインをもって完了扱いし、E2E を「プロセス負債」として後回しにした | 4.6.2章が E2E を「可能な場合」と任意化し、マージ後手順も `npm test`（Vitest）のみだった。Playwright は CI 未実行（実行時間のためローカル運用）であるため、「CI が緑＝テスト完了」と読み替えられた。ユーザーの staging ログイン確認と「やりきる」指示が、未完了の E2E を免除すると解釈された | 4.6章から「可能な場合」を削除し、ローカル `npm run test:e2e` 全件と `verify-comprehensive.mjs` を main マージの必須条件にする。**CI に Playwright は載せない**（Q23）。Vitest 成功・CMS 実ログイン・「後で E2E」は代替にならないと明文化。雛形スクリプトはシナリオ FAIL で `process.exit(1)` する。再発防止テストで CI ワークフローと手順文書を固定する | build.test.mjs（`CI は Vitest とビルドのみで Playwright E2E を必須化しない（Bug #50）`ほか2件） |
-| 51 | 2026-09-20 | PR #119 のマージにより staging ブランチの環境固有ファイルが main の値で丸ごと上書きされた: `public/admin/config.yml` の `branch`（`staging`→`main`）・`base_url`（`https://staging.reiwa.casa`→`https://reiwa.casa`）、`astro.config.mjs` の `SITE_URL`（`https://staging.reiwa.casa`→`https://reiwa.casa`）、`public/robots.txt`（`Disallow: /`→`Allow: /` + 本番sitemap行）の4項目が同時に main 値へ変わった。結果として staging の CMS 管理画面で記事を保存すると本番 main ブランチへ直接コミットされる状態になり、staging の `robots.txt` も検索インデックス可能になった。上書きは22:26:18のマージで発生し、22:47:40の復旧コミット `0a6c762` まで約21分間継続した。実害の報告はない | マージ作業がPRのマージ方向（マージ元→マージ先のファイル差分をそのまま採用する操作）の副作用で環境固有ファイルを巻き込んだ。上書き後の4項目（config.ymlのbranch/base_url、SITE_URL、robots.txt）はすべてmain値で揃っており内部的には完全に整合していたため、当時存在した「4項目が互いに整合しているか」だけを見る既存テスト（cms-config.test.mjsのbase_url検証等）では検知できなかった。実際にチェックアウトしているブランチに対して値が正しいかを検証する仕組みが存在しなかった | staging ブランチが実際にチェックアウトされているブランチに対して4項目が正しい環境の値になっているかを検証する回帰テストを追加する。4項目が「互いに整合している」ことだけを見るチェックでは、揃って誤った環境値に上書きされた今回のケースを検出できないため、ブランチ判定を起点にした検証に設計する | cms-config.test.mjs（`環境固有ファイルの実ブランチ整合性検証（SEC-35, Bug #51再発防止）`） |
+| 51 | 2026-09-20 | PR #119 のマージにより staging ブランチの環境固有ファイルが main の値で丸ごと上書きされた: `public/admin/config.yml` の `branch`（`staging`→`main`）・`base_url`（`https://staging.reiwa.casa`→`https://reiwa.casa`）、`astro.config.mjs` の `SITE_URL`（`https://staging.reiwa.casa`→`https://reiwa.casa`）、`public/robots.txt`（`Disallow: /`→`Allow: /` + 本番sitemap行）の4項目が同時に main 値へ変わった。結果として staging の CMS 管理画面で記事を保存すると本番 main ブランチへ直接コミットされる状態になり、staging の `robots.txt` も検索インデックス可能になった。上書きは22:26:18のマージで発生し、22:47:40の復旧コミット `0a6c762` まで約21分間継続した。実害の報告はない | マージ作業がPRのマージ方向（マージ元→マージ先のファイル差分をそのまま採用する操作）の副作用で環境固有ファイルを巻き込んだ。上書き後の4項目（config.ymlのbranch/base_url、SITE_URL、robots.txt）はすべてmain値で揃っており内部的には完全に整合していたため、当時存在した「4項目が互いに整合しているか」だけを見る既存テスト（cms-config.test.mjsのbase_url検証等）では検知できなかった。実際にチェックアウトしているブランチに対して値が正しいかを検証する仕組みが存在しなかった | （初期対策 2026-09-21）実際にチェックアウトしているブランチに対して4項目が正しい値かを検証する回帰テスト（旧 SEC-35）を追加。（恒久対策 2026-09-23, Issue #127）4項目をファイルから削除し、ビルド時は `CF_PAGES_BRANCH`、CMS は配信ホスト名から導出する構造に変更。main と staging のファイル差分がゼロになり、マージで持ち込まれる値そのものが存在しない。旧 SEC-35 は検知のみで CI の pull_request では判定不能側に倒れていたため、導出結果の正しさを検証するテストへ改訂（SEC-35 改訂、SEC-127A 仮ID） | cms-config.test.mjs（`環境固有値の導出整合性検証（SEC-35 改訂, Bug #51再発防止, Issue #127）`）、env-derivation.test.mjs、build.test.mjs（`CF_PAGES_BRANCH 別ビルドの環境値`）、E2E cms-env-branch.spec.ts |
 | 52 | 2026-09-23 | SEC-29（Bug #48 対策）で「gray-matter の javascript エンジンを無効化する」として入れた `matter(content, { language: 'yaml' })` が効いていなかった: frontmatter が `---js`（`---javascript`/`---JS` も同様）で始まる記事を `organize-posts.mjs` が処理すると、gray-matter の javascript エンジン（`eval`）でペイロードが実行される。旧版で実行・新版で非実行を実測。Issue #117 項目1は「完了」と記録されていたが誤りだった。**第2の経路（レビュー差し戻しで判明）**: Cloudflare Pages のビルドコマンド `npm run build` は organize-posts より前に `vitest run --exclude tests/build.test.mjs` を実行し、`content-validation`・`cms-config`・`fuzz-validation`・`build`（CI のみ）の各テストと E2E `app-info.spec.ts` が全記事・固定ページを gray-matter の `matter()` で直接解析していた。このため `---js` 記事は Pages のビルド環境と CI で organize-posts より先に eval される（修正前、一時的な `---js` 記事を置いて `npx vitest run tests/content-validation.test.mjs` を実行し、ペイロードがマーカーファイルを作ることを実測）。Astro 本体のコンテンツローダー（`@astrojs/internal-helpers/frontmatter`）は `---`/`+++` を js-yaml の `load`／TOML でのみ解析するため `---js` は YAML エラーになり eval されない（実測: ビルド失敗・マーカー非作成）。能力の増加は無い（到達主体は既にリポジトリ書込権限または CI 上の任意コード実行を持つ）ため脆弱性ではなく hardening の実装不備 | gray-matter は `language` オプションより開始区切り直後の言語宣言を優先し（`index.js` parseMatter）、`engines` は置換ではなくマージされる（`lib/defaults.js`）。修正時にオプションの字面だけで効果を判断し、`---js` を実際に投入する挙動テストを書かなかった。さらに修正範囲を organize-posts に限定し、同じライブラリで同じ入力（`src/content`）を読む他の呼び出し元（テスト群）を洗い出さなかった | `scripts/lib/safe-frontmatter.mjs` で javascript/json エンジンを「必ず例外を投げるエンジン」で上書きし、`organize-posts.mjs` と、`src/content` を読む全テスト（`content-validation`・`cms-config`・`fuzz-validation`・`build`・E2E `app-info.spec.ts`）をこのラッパー経由に置換。tests/ と scripts/ ではラッパー以外の gray-matter 読み込みを禁止する。例外は既存の catch で当該記事を対象外にして継続 | security-hardening.test.mjs（`frontmatter は YAML のみを解析する（SEC-29, Bug #52 再発防止, Issue #117 項目1）` 10件。うち1件は一時ディレクトリで organize-posts.mjs を実行しペイロード非実行を確認、2件は tests/・scripts/ の gray-matter 直接読み込み禁止と `src/content` 読み取り箇所のラッパー経由を静的検証） |
+| P127-1（仮番号・マージ時採番調整） | 2026-09-23 | iPhone 14 エミュレーション（Playwright Chromium）で記事編集画面の「公開」ボタンを押すと、メニュー（公開する／公開して新規作成／公開して複製する）がレイアウト幅 800px・表示領域外（y≈1238、表示領域の高さ 664）に描画され、タップ（クリック）が届かない。Issue #127 の E2E 実装中に発見。**変更前の staging（fc4fb3b）のビルドでも同じ位置に描画されることを確認済み**で、Issue #127 の変更による退行ではない。実機 iOS Safari では未確認 | 未調査（推測: モバイル向けボトムシート CSS〔`position: fixed; bottom: 0`〕が、transform 等で包含ブロックが変わる祖先要素の中で効き、表示領域ではなくエディタ要素基準で配置されている可能性） | **未修正**（1セッション1系統のため別 Issue で扱う）。Issue #127 の E2E・エビデンスでは iPhone のみメニュー項目をキーボード（Enter）で選択し、その旨を結果に記録している | （未作成。別 Issue で再現テストを追加する） |
+| P127-2（仮番号・マージ時採番調整） | 2026-09-23 | CMS 系 E2E スペック（window.open モンキーパッチ方式）の多くが、実際には**ログイン未完了のまま**実行されていた。モンキーパッチは `window.location.origin`（localhost）から postMessage するが、Decap は config.yml の `base_url`（staging/本番の URL）のオリジンからのメッセージしか受け付けないため、認証が成立しない。各テストは「要素が無ければ別の弱い条件で PASS」の分岐を持つため失敗として表に出なかった。Issue #127 で base_url が `location.origin` になり認証が実際に成立した結果、E-39「固定ページのorderフィールドはmin=1の数値フィールドである」が3デバイスで失敗して発覚した（認証後のエディタ画面では `body` の高さが0になり、フォールバック分岐の `body.isVisible()` が false）。変更前の staging（fc4fb3b）のビルドで、同じモンキーパッチでは記事一覧まで到達しないことを確認済み | (1) テスト側の認証方式が config.yml の base_url と localhost のオリジン差に依存していた（スタンドアロン証跡スクリプトは config.yml を一時書き換えて回避していたが、spec 側は回避していなかった）。(2) 認証が成立したことを必須条件にせず、未認証でも PASS する分岐を持たせていた。(3) 「認証後の画面が撮れているか」の社内レビュー規定は証跡スクリプト向けで、spec の合否には効いていなかった | Issue #127 で base_url が配信オリジンから導出され、spec でも認証が成立するようになった（構造的に解消）。E-39 は数値フィールドの表示・min=1・編集可を必須で検証する形に書き換えた。**他の CMS spec に残る「未認証でも PASS する分岐」の見直しは未着手**（別 Issue で扱う。Issue #127 の範囲では、認証が成立した状態で全件 PASS することを確認） | cms-exploratory.spec.ts E-39（書き換え）、cms-env-branch.spec.ts E-47（ログイン後の一覧表示を必須で待つ） |
 
 **Bug #46 5 Whys:**
 
@@ -1880,7 +1904,11 @@ GitHubリポジトリが利用可能な場合、以下の手順でシステム�
 4. なぜ内部整合チェックだけでは不十分だったか: 「4項目が互いに整合している」ことと「4項目が今チェックアウトしているブランチに対して正しい」ことは別の性質であり、後者を検証するには「実際のブランチが何か」という外部情報（git状態やビルド環境変数）との突き合わせが必須だが、そのような検証軸を持つテストが存在しなかったため。
 5. なぜ21分間で発見できたか（逆に、なぜ即座に発見されなかったか）: 復旧はコミットメッセージのみに痕跡が残っており、CLAUDE.mdが定める「バグ発生時の対応フロー」（バグ一覧への記録・再発防止テストの実装）が実施されないまま次の作業（Bug #50対応）に進んでいたため、根本原因分析と恒久対策が先送りになっていた。
 
-根本対策は、環境固有ファイルの検証を「ファイル間の相互整合性」から「実際にチェックアウトしているブランチに対する正しさ」に設計変更することである。ブランチは `CF_PAGES_BRANCH`（Cloudflare Pagesビルド時。Base.astroの既存判定方式を踏襲）→ `GITHUB_REF_NAME`（GitHub Actions）→ `git rev-parse --abbrev-ref HEAD`（ローカル）の優先順で判定し、main/staging と判定できた場合のみ絶対値を検証、それ以外（feature/*ブランチやCIのpull_requestイベント等）は誤検知を避けるため内部整合のみを検証する。加えて、今回のようにバグ一覧への記録が漏れる再発を防ぐため、CLAUDE.mdの「バグ発生時の対応フロー」を都度確実に履行する。
+（2026-09-21 時点の対策）環境固有ファイルの検証を「ファイル間の相互整合性」から「実際にチェックアウトしているブランチに対する正しさ」に設計変更した。ブランチは `CF_PAGES_BRANCH`（Cloudflare Pagesビルド時。Base.astroの既存判定方式を踏襲）→ `GITHUB_REF_NAME`（GitHub Actions）→ `git rev-parse --abbrev-ref HEAD`（ローカル）の優先順で判定し、main/staging と判定できた場合のみ絶対値を検証、それ以外（feature/*ブランチやCIのpull_requestイベント等）は誤検知を避けるため内部整合のみを検証する。加えて、今回のようにバグ一覧への記録が漏れる再発を防ぐため、CLAUDE.mdの「バグ発生時の対応フロー」を都度確実に履行する。
+
+6. なぜ検知テストを入れても構造的に再発しうるか（Issue #127 で追加）: 検知は修正しないうえ、CI の pull_request イベントでは `GITHUB_REF_NAME` が `NNN/merge` になって判定不能側（内部整合のみ）に倒れ、Cloudflare Pages のビルドは CI と独立に走るため、PR マージ直後の誤った値のデプロイを止められない。原因は「main と staging でファイルの中身が違う」こと自体にある。
+
+**恒久対策（Issue #127）**: 4項目をファイルから消し、同じソースからビルド時は `CF_PAGES_BRANCH`、CMS は配信ホスト名で導出する（4.6.4章）。ファイル差分が無いのでどちら向きのマージでも持ち込まれる値が存在しない。SEC-35 は「導出結果がブランチ・ホストごとに正しいか」を、ブランチに依存しない同一のテスト集合で検証する形に改訂した。`.gitattributes` の `merge=ours` は事前の実験で失敗したため候補から外した（Issue #127 事前調査）。
 
 **Bug #52 5 Whys:**
 
@@ -1929,36 +1957,37 @@ git pull origin main
 
 # 3. staging をマージ
 git merge staging
+#    Issue #127 以降、環境固有値はファイルに無い（4.6.4章）。config.yml / astro.config.mjs / robots.txt の
+#    「main の値へ戻す」手作業は不要。次のコマンドで環境関連ファイルが staging と同一であることだけ確認する:
+git diff staging -- astro.config.mjs public/admin/config.yml public/admin/cms-env.js src/lib/site-env.mjs src/pages/robots.txt.ts
+#    （出力が空であること。public/robots.txt が存在しないこと）
+#    ※ 初回（Issue #127 を main に初めて反映するとき）だけは 4.6.5章の移行手順に従う。
 
-# 4. config.yml のコンフリクト解消（必須）
-#    staging の値 → main の値に修正:
-#    - branch: staging → branch: main
-#    - base_url: https://staging.reiwa.casa → base_url: https://reiwa.casa
-#    手動で確認・修正後:
-git add public/admin/config.yml
-git commit  # マージコミット完了
+# 4. （旧手順「config.yml のコンフリクト解消」は Issue #127 で廃止）
 
-# 5. main ブランチで Vitest 実行（環境別ファイル切替後の回帰）
+# 5. main ブランチで Vitest 実行（SEC-35 改訂テストが導出結果を検証する）
 #    E2E は手順1で完了済み。ここで省略してよいのは手順1を完了している場合のみ。
 npm test
 
 # 6. main にプッシュ
 git push origin main
+
+# 7. 本番デプロイ後、4.6.6章の読み取りのみの確認を行う
 ```
 
 ### 4.6.2 マージ時の確認観点
 
 | No. | 確認項目 | 確認方法 | 備考 |
 |:---|:---|:---|:---|
-| 1 | config.yml の `branch` が `main` | ファイル確認 | staging の値が残っていないこと |
-| 2 | config.yml の `base_url` が `https://reiwa.casa` | ファイル確認 | staging URL が残っていないこと |
+| 1 | config.yml に `branch` が無い | ファイル確認・`npm test`（env-derivation 静的ガード） | Issue #127: 書き込み先はホスト名から実行時導出。値が書かれていたら誤り |
+| 2 | config.yml に `base_url` が無い | 同上 | Issue #127: 常に `location.origin` |
 | 3 | Vitest 全テスト PASS | `npm test` | CI でも実行されるが、**Vitest だけでは main マージ不可** |
 | 4 | ビルド成功 | `npm run build` | エラーなく完了すること |
 | 5 | ローカル E2E 全件 PASS | `npm run test:e2e` | **必須**。**CI に Playwright は載せない**（実行時間のためローカル運用）。部分実行・後回し・CMS実ログイン確認では代替しない（Bug #50） |
-| 6 | robots.txt が main 用 | ファイル確認 | staging の `Disallow: /` が混入していないこと（Bug #41再発防止） |
-| 7 | astro.config.mjs の `SITE_URL` が `https://reiwa.casa` | ファイル確認 | staging URL（`https://staging.reiwa.casa`）が残っていないこと。canonical/OGP/RSS/sitemapの絶対URLに影響する |
+| 6 | `public/robots.txt` が存在しない（`src/pages/robots.txt.ts` が生成） | ファイル確認・`npm test` | Issue #127: 本番の `Allow: /` は `CF_PAGES_BRANCH=main` のビルドでのみ生成。デプロイ後は4.6.6章で本番の実物を読み取り確認（Bug #41再発防止） |
+| 7 | astro.config.mjs の `SITE_URL` が `resolveSiteUrl(process.env.CF_PAGES_BRANCH)` | ファイル確認・`npm test` | Issue #127: リテラル URL を書かない。canonical/OGP/RSS/sitemap の絶対URLは main ビルドでのみ本番URL |
 | 8 | 包括エビデンス | `node evidence/YYYY-MM-DD/verify-comprehensive.mjs` | **必須**。雛形は `evidence/2026-05-24/verify-comprehensive.mjs`。認証後 CMS 画面。ログイン画面のみ不可。**CI に載せない**（Bug #50） |
-| 9 | 環境固有ファイル4項目（branch/base_url/SITE_URL/robots.txt）がマージ方向の副作用で混ざっていない | `npm test`（`cms-config.test.mjs` の SEC-35 テストが自動検証） | Bug #51再発防止。手動のNo.1・2・6・7確認に加えて、PRマージ等の機械的な差分採用でも「実際にチェックアウトしているブランチに対して正しい値か」を自動検知する。手動確認の代替ではなく併用する |
+| 9 | 環境固有値の導出が正しい（ブランチ・ホスト別） | `npm test`（SEC-35 改訂: cms-config / env-derivation / build の CF_PAGES_BRANCH 別ビルド）＋ 4.6.6章の本番読み取り確認 | Bug #51再発防止。Issue #127 以降はファイル差分が無いので「混ざる」値が存在しない。テスト件数はブランチに依存しない（754件） |
 
 ### 4.6.3 main → staging コンテンツ同期
 
@@ -1967,24 +1996,76 @@ git push origin main
 ```bash
 git checkout staging
 git merge main
-# config.yml のコンフリクト解消: staging の値を維持
-#    - branch: staging
-#    - base_url: https://staging.reiwa.casa
-git add public/admin/config.yml
-git commit
+# Issue #127 以降、環境固有値はファイルに無いため「staging の値を維持する」コンフリクト解消は不要。
+# 環境関連ファイルが main と同一であることを確認（出力が空）:
+git diff main -- astro.config.mjs public/admin/config.yml public/admin/cms-env.js src/lib/site-env.mjs src/pages/robots.txt.ts
+npm test
 git push origin staging
 ```
 
-### 4.6.4 config.yml / astro.config.mjs / robots.txt の環境別値
+### 4.6.4 環境別値の導出規則（Issue #127）
 
-| 項目 | main（本番） | staging（テスト） |
-|:---|:---|:---|
-| `backend.branch`（config.yml） | `main` | `staging` |
-| `backend.base_url`（config.yml） | `https://reiwa.casa` | `https://staging.reiwa.casa` |
-| `SITE_URL`（astro.config.mjs） | `https://reiwa.casa` | `https://staging.reiwa.casa` |
-| `robots.txt` | `Allow: /` + `Sitemap: https://reiwa.casa/sitemap-index.xml` | `Disallow: /`（インデックス防止。Sitemap行なし） |
+環境固有値はファイルに書かず、次の規則で導出する。**main と staging でこれらのファイルの内容は同一**であり、マージで値を戻す作業は存在しない。
 
-**注意**: これらの値はブランチ固有であり、マージ時に必ず対象ブランチの値に修正すること。マージツールの自動解決に任せず、手動で確認する（Bug #41再発防止）。
+| 項目 | 導出点 | 入力 | main（本番） | それ以外（staging・プレビュー・ローカル・CI・未設定） |
+|:---|:---|:---|:---|:---|
+| `site`（canonical/OGP/RSS/sitemap の絶対URL） | `astro.config.mjs` → `resolveSiteUrl()`（`src/lib/site-env.mjs`） | ビルド時 `process.env.CF_PAGES_BRANCH` | `'main'` 完全一致で `https://reiwa.casa` | `https://staging.reiwa.casa` |
+| `robots.txt` | `src/pages/robots.txt.ts` → `buildRobotsTxt()` | ビルド時 `import.meta.env.CF_PAGES_BRANCH` | `Allow: /` + `Sitemap: https://reiwa.casa/sitemap-index.xml` | `Disallow: /`（Sitemap行なし） |
+| CMS `backend.branch` | `/admin/cms-env.js` → `resolveCmsBackend()` | 実行時 `location.hostname` | ホスト名 `reiwa.casa` 完全一致で `main` | `staging` |
+| CMS `backend.base_url` | 同上 | 実行時 `location.origin` | `https://reiwa.casa` | 配信オリジン（例 `https://staging.reiwa.casa`、`http://localhost:4173`） |
+
+- **安全側の既定**: 本番値になるのは「本番と判定できたとき」だけ。空文字・大文字違い・前後空白・`refs/heads/main`・`NNN/merge`・未知のホストはすべて staging 側に倒す（env-derivation テストで固定）。
+- ビルド側（ブランチ名）と CMS 側（ホスト名）で入力が異なる。`*.pages.dev`（main の Pages エイリアスを含む）で開いた CMS は staging に書き込む。本番ブランチへ書き込めるのは `https://reiwa.casa/admin/` からだけ。
+- 本番ホスト名は `cms-env.js` の `HOSTNAME_TO_BRANCH` と `site-env.mjs` の `PRODUCTION_SITE_URL` の2か所にあり、一致は env-derivation テストが検証する。
+- 旧運用（〜Issue #127）: config.yml の `branch`/`base_url`、astro.config.mjs の `SITE_URL`、`public/robots.txt` を各ブランチで手動管理し、マージのたびに戻していた（Bug #41・#45・#51）。
+
+### 4.6.5 main への初回反映（移行手順, Issue #127）
+
+Issue #127 を staging に取り込んだ後、初めて staging → main をマージするときだけ、main 側の旧ファイル（main 値）と staging 側の新構造がぶつかる。**main 側も staging と同じ内容（新構造）にする**のが正解で、main の旧値を残してはならない。
+
+```bash
+git checkout main && git pull origin main
+git merge staging
+# コンフリクトが出た場合は、次の4ファイルをすべて staging（新構造）側に揃える:
+#   astro.config.mjs        … const SITE_URL = resolveSiteUrl(process.env.CF_PAGES_BRANCH);
+#   public/admin/config.yml … backend に branch / base_url を書かない
+#   public/robots.txt       … 削除（src/pages/robots.txt.ts が生成）
+#   public/admin/index.html … CMS_MANUAL_INIT + /admin/cms-env.js + CMS.init
+git checkout --theirs astro.config.mjs public/admin/config.yml public/admin/index.html
+git rm -f --ignore-unmatch public/robots.txt
+git add astro.config.mjs public/admin/config.yml public/admin/index.html
+# 確認: 環境関連ファイルが staging と完全一致すること（出力が空）
+git diff staging -- astro.config.mjs public/admin/config.yml public/admin/index.html public/admin/cms-env.js src/lib/site-env.mjs src/pages/robots.txt.ts
+test ! -e public/robots.txt
+npm test                                   # SEC-35 改訂テスト含め全PASS
+CF_PAGES_BRANCH=main npm run build:raw     # 本番ビルドの生成物を確認
+cat dist/robots.txt                        # Allow: / と Sitemap: https://reiwa.casa/sitemap-index.xml
+grep -o '<link rel="canonical"[^>]*>' dist/index.html   # https://reiwa.casa/
+git commit
+```
+
+移行後は 4.6.1章・4.6.3章の通常手順（環境値の手動修正なし）に戻る。移行の実証記録は `evidence/2026-09-23/issue127/merge-demo.md`。
+
+### 4.6.6 本番反映後の読み取り確認（Issue #127）
+
+staging → main マージと Cloudflare Pages の本番デプロイ完了後、**読み取りのみ**で次を確認する（本番で保存・書き込みは試さない。CLAUDE.md 共通ルール12・15）。
+
+```bash
+# 1. robots.txt が本番値（Allow + 本番 Sitemap、Disallow なし）
+curl -fsS https://reiwa.casa/robots.txt
+# 2. canonical・sitemap が本番URL
+curl -fsS https://reiwa.casa/ | grep -o '<link rel="canonical"[^>]*>'
+curl -fsS https://reiwa.casa/sitemap-index.xml | grep -o '<loc>[^<]*</loc>'
+# 3. CMS 設定: config.yml に branch / base_url が無く、cms-env.js が配信され本番ホストだけ main に対応づけている
+curl -fsS https://reiwa.casa/admin/config.yml | grep -nE '^\s*(branch|base_url):' ; echo "exit=$? (1 なら該当行なし)"
+curl -fsS https://reiwa.casa/admin/cms-env.js | grep -n "HOSTNAME_TO_BRANCH\|\['reiwa.casa', 'main'\]"
+curl -fsS https://reiwa.casa/admin/ | grep -n 'CMS_MANUAL_INIT\|/admin/cms-env.js\|CMS.init('
+# 4. staging 側も同様に読み取り（Disallow・staging canonical）
+curl -fsS https://staging.reiwa.casa/robots.txt
+curl -fsS https://staging.reiwa.casa/ | grep -o '<link rel="canonical"[^>]*>'
+```
+
+5. ブラウザで `https://reiwa.casa/admin/` を開きログインまで行い（保存はしない）、開発者ツールの Network で `git/trees/main:` のように **main** を読みに行っていることを確認する。staging（`https://staging.reiwa.casa/admin/`）では `staging:` を読むこと。書き込み先の実測は `tests/e2e/cms-env-branch.spec.ts` と `evidence/2026-09-23/issue127/` のモック環境で行う。
 
 ---
 
@@ -1992,7 +2073,7 @@ git push origin staging
 
 第三者セキュリティ診断（2026年2月21日実施）で検出された問題と対策を踏まえ、再発防止のための品質向上策と定期診断の運用を定める。
 
-セキュリティ要件は第1部 1.4.2章（SEC-01〜SEC-40）として定義されている。本章では運用面での品質基準、再発防止策、定期診断の手順を定める。個人情報保護については4.8章を参照。
+セキュリティ要件は第1部 1.4.2章（SEC-01〜SEC-41）として定義されている。本章では運用面での品質基準、再発防止策、定期診断の手順を定める。個人情報保護については4.8章を参照。
 
 ### 4.7.1 品質向上策
 
@@ -2042,7 +2123,8 @@ git push origin staging
 |:---|:---|:---|
 | `_headers`（セキュリティヘッダー） | **高** | COOP: OAuth popupをブロックしないか。X-Frame-Options/CSP frame-ancestors: プレビューiframeをブロックしないか。CSP connect-src: GitHub APIアクセスを許可するか。**CSP connect-src に `blob:` を含むか（Decap CMS画像保存に必須、Bug #29）**。**Cloudflare Pages制約: `/*`と`/admin/*`で同名ヘッダーを設定するとAppend（重複送信）される。管理画面で異なる値が必要なヘッダー（COOP/CORP/X-Frame-Options）は`/*`に含めない**（Bug #28） |
 | `admin/index.html`（HTML構造） | **高** | `<script>`タグの閉じタグが正しいか。CDNスクリプトが後続ブロックを飲み込まないか |
-| `config.yml`（CMS設定） | **中** | backend設定（name, repo, branch, base_url, auth_endpoint）が正しいか。コレクション設定が有効か |
+| `config.yml`（CMS設定） | **中** | backend設定（name, repo, auth_endpoint）が正しいか。branch / base_url を書いていないか（Issue #127: `cms-env.js` から実行時導出）。コレクション設定が有効か |
+| `cms-env.js` / CMS 初期化（`CMS_MANUAL_INIT`・`CMS.init`） | **高** | 本番ホストだけ main・それ以外 staging になるか。`CMS_MANUAL_INIT` と cms-env.js が Decap より前に読まれるか。`CMS.init` が registerPreviewStyle の後に1回だけ呼ばれるか（env-derivation・E2E cms-env-branch） |
 | `functions/auth/`（OAuth） | **高** | 認証フロー全体が正常に動作するか。postMessageハンドシェイクが成功するか |
 | CDN外部スクリプト更新 | **高** | SRIハッシュが正しいか。`</script>`閉じタグが維持されているか |
 
@@ -2227,7 +2309,7 @@ CMS CRUDエビデンス（verify-cms-crud.mjs）では、Decap CMS OAuth認証�
 | `page.route()`はポップアップウィンドウのナビゲーションをインターセプトできない | `context.route()`（ブラウザコンテキストレベル）を使用 |
 | glob `**/auth`はクエリパラメータ付きURL（`/auth?provider=github&...`）にマッチしない | 関数マッチャー（`url => url.pathname === '/auth'`）を使用 |
 | Playwrightのルートはデフォルトでマッチ順がLIFO（後登録が先にチェック） | catch-allルートを最初に登録（最後にチェック）、具体ルートを後から登録（先にチェック） |
-| config.ymlの`base_url`がリモートURLだとlocalhost上のpostMessageがクロスオリジン拒否される | エビデンス収集時はconfig.ymlの`base_url`をlocalhostに一時変更（コミット前に復元必須） |
+| config.ymlの`base_url`がリモートURLだとlocalhost上のpostMessageがクロスオリジン拒否される | （旧）エビデンス収集時はconfig.ymlの`base_url`をlocalhostに一時変更していた。**Issue #127 以降は base_url が常に `location.origin` なので一時変更は不要**（`evidence/2026-09-23/issue127/` で書き換えなしにログインできることを確認）。旧スクリプト（2026-05-24 版 verify-comprehensive 等）の一時書き換え処理は、置換対象行が無いため何もしない |
 
 ### 4.9.10 E2Eスペックテストにおける認証方式の知見（引き継ぎノート）
 
@@ -2324,7 +2406,7 @@ await loginButton.click();
 ### 4.10.2 定期セキュリティ検証
 
 **エビデンス検証（エビデンス取得時に実行）:**
-- `evidence/YYYY-MM-DD/verify-security.mjs` は、4.9.8章のSEC01〜SEC10に記載した項目をスクリーンショット付きで確認するエビデンス用スクリプトであり、SEC-01〜SEC-40全体の完全な自動検証器ではない。ローカル実行環境の制約により一部確認は表示・ソース確認に限られる。
+- `evidence/YYYY-MM-DD/verify-security.mjs` は、4.9.8章のSEC01〜SEC10に記載した項目をスクリーンショット付きで確認するエビデンス用スクリプトであり、SEC-01〜SEC-41全体の完全な自動検証器ではない。ローカル実行環境の制約により一部確認は表示・ソース確認に限られる。
 - SEC要件全体のテスト網羅性は1.5.4章のトレーサビリティマトリクスを正本とする。設定・コードの回帰検査はVitest、公開環境の応答・操作は必要に応じてE2E/実測で担保する。
 - SEC-33は `tests/build.test.mjs`（CIの `permissions: contents: read`）、SEC-34は `tests/build.test.mjs` / `tests/fuzz-validation.test.mjs`（`.assetsignore`の不在）、SEC-35は `tests/cms-config.test.mjs`（現在のブランチと環境固有値の整合）、SEC-40は `tests/dependency-freshness.test.mjs`（判定ロジック・週次ワークフロー設定）と週次ジョブ `dependency-freshness.yml` で検証する。これらを `verify-security.mjs` へ重複実装しない。
 - 結果の保存方法とスクリーンショットは4.9章のエビデンス方針に従う。
@@ -2374,14 +2456,13 @@ evidence/YYYY-MM-DD/
 
 **CMS CRUDエビデンス取得時の特記事項:**
 - verify-cms-crud.mjsはDecap CMS OAuth 3ステップハンドシェイクをシミュレートする（詳細は4.9.9章参照）
-- 実行前にconfig.ymlの`base_url`をlocalhost（テストサーバーURL）に一時変更する必要がある
-- 実行後は必ず`base_url`を本来の値（`https://staging.reiwa.casa` or `https://reiwa.casa`）に復元してからコミットする
+- （旧）実行前にconfig.ymlの`base_url`をlocalhostに一時変更し、実行後に復元していた。Issue #127 以降は config.yml に `base_url` が無く `location.origin` を使うため、この操作は不要
 
 ### 4.10.4 品質指標
 
 | 指標 | 目標値 | 現状 |
 |:---|:---|:---|
-| Vitestテスト全PASS | 100% | 695/695 (100%)（featureブランチ、2026-09-23 Issue #132 対応時。main・staging は 698/698） |
+| Vitestテスト全PASS | 100% | 754/754 (100%)（2026-09-23 Issue #130対応後。Issue #127 以降は全ブランチ共通件数） |
 | Playwright E2Eテスト全PASS | 100% | 2026-09-20 ローカル全件: 445 PASS・8 skip / 453件（16.3m）。CI では実行しない（Bug #50） |
 | セキュリティ検証全PASS | 100% | 10/10 (100%) |
 | ボタン重なり検出 | 0件 | 0件 |
@@ -2468,4 +2549,4 @@ Actions のメジャー遅れを alert にしないのは、Dependabot が更新
 
 ---
 
-**最終更新**: 2026年9月23日（v1.69）
+**最終更新**: 2026年9月23日（v1.71）
