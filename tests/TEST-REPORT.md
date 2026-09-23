@@ -59,6 +59,7 @@
 | 1.51 | 2026-09-21 | Bug #51再発防止: `cms-config.test.mjs`にSEC-35（環境固有ファイルの実ブランチ整合性検証）テストを追加（2.4.3章）。SEC-35はブランチ判定結果によって登録するテスト数が変わるため、Vitest合計は**featureブランチ639件／main・staging642件**になる（cms-config: feature 56件／main・staging 59件）。4.3.1・4.3.2章に両文脈の実測を追記 |
 | 1.52 | 2026-09-23 | Issue #129: `verify-security.mjs` はSEC01〜SEC10の証跡取得・確認を行うと明記し、SEC-01〜SEC-35全体の検査責務をDOCUMENTATION 1.5.4章のトレーサビリティへ集約。SEC-33〜35の対応するVitestを記載。テスト件数変更なし |
 | 1.53 | 2026-09-23 | Issue #117 hardening 対応（判定表: `docs/security/issue-117-hardening-decisions.md`）: 新規 `security-hardening.test.mjs`（2.8章、28件: Bug #52/SEC-29 frontmatter YAML限定 10件〔うち2件は tests/・scripts/ の gray-matter 直接読み込み禁止の静的検証〕、SEC-37 許可リスト単一化 4件、SEC-38 コールバックCSP 2件、SEC-39 JSON.stringifyリテラル 12件）、`build.test.mjs` に SEC-36（Actions SHA 固定）1件（113→114）。既存テストの更新: auth-functions 2.3.1章 #1（escapeForScript→toScriptStringLiteral）、SEC-27 テスト（共有モジュール import を検証）、成功時 Content-Type（`text/html; charset=utf-8`）、fuzz 2.7章 #9/#10（ソース文字列一致→生成リテラルを評価して元トークンと完全一致する挙動検証へ強化、改行テストは実際に改行・U+2028/U+2029 を含むトークンで検証）。件数は増減なし（削除・スキップなし）。Bug #52 の第2経路（`npm run build` が先に実行する Vitest/E2E のテストも gray-matter で `src/content` を直接解析）に対応し、content-validation / cms-config / fuzz-validation / build / e2e app-info の frontmatter 解析を `parseFrontmatter` に置換（テストケースの内容・件数は不変）。Vitest featureブランチ 639→**668**件／main・staging 642→**671**件。実ブラウザE2Eエビデンス `evidence/2026-09-23/issue117/`（OAuth Functions 実コード経由、15/15 PASS） |
+| 1.54 | 2026-09-23 | Issue #132: SEC-40（npm管理外依存の鮮度・EOL監視）の判定ロジック・棚卸し・週次ワークフロー設定を検証する `dependency-freshness.test.mjs` 27件を追加（2.9章）。ネットワーク取得はフィクスチャで置換し、`fetch` が呼ばれたら失敗させて `npm test` のオフライン決定性を担保。Vitest **feature 668→695件／main・staging 671→698件** |
 
 ## テスト基盤の変更履歴
 
@@ -102,6 +103,7 @@
 2.4. [CMS設定検証](#24-cms設定検証)
 2.5. [ビルド検証](#25-ビルド検証)
 2.6. [管理画面HTML検証](#26-管理画面html検証)
+2.9. [npm管理外依存の鮮度・EOL監視](#29-npm管理外依存の鮮度eol監視-dependency-freshnesstestmjs--27件)
 
 ### 第3部 要件トレーサビリティ
 
@@ -189,7 +191,8 @@ tests/
 ├── build.test.mjs                # 統合テスト（ビルド実行後）
 ├── admin-html.test.mjs           # 管理画面HTML検証
 ├── fuzz-validation.test.mjs      # ファズテスト
-└── security-hardening.test.mjs   # Issue #117 hardening 再発防止（Bug #52, SEC-36〜39 のうち SEC-37〜39）
+├── security-hardening.test.mjs   # Issue #117 hardening 再発防止（Bug #52, SEC-36〜39 のうち SEC-37〜39）
+└── dependency-freshness.test.mjs # npm管理外依存の鮮度・EOL判定（SEC-40、フィクスチャのみ・ネットワーク不使用）
 ```
 
 ---
@@ -476,7 +479,7 @@ admin-html.test.mjs              -     ●     -     -     -     -     -     -  
 
 | No. | 基準 |
 | :--- | :--- |
-| 1 | 全テストケース（Vitest 668件〔featureブランチ〕／671件〔main・staging。SEC-35のブランチ別テスト登録により+3件〕 + E2E 453件 = 1121件／1124件）がPASSまたは仕様上の条件スキップであること |
+| 1 | 全テストケース（Vitest 695件〔featureブランチ〕／698件〔main・staging。SEC-35のブランチ別テスト登録により+3件〕 + E2E 453件 = 1148件／1151件）がPASSまたは仕様上の条件スキップであること |
 | 2 | `npm run build` が正常に完了すること |
 | 3 | 要件トレーサビリティマトリクス（docs/DOCUMENTATION.md 1.5章）において全要件が「充足」であること |
 | 4 | 本番（main）マージ前にローカル `npm run test:e2e` 全件と `verify-comprehensive.mjs` が完了していること（**CI に Playwright は載せない**。Bug #50） |
@@ -1368,6 +1371,43 @@ Bug #27時点は`/admin/*`側で値を「オーバーライド」する設計だ
 
 実ブラウザでの確認は `evidence/2026-09-23/issue117/verify-oauth-hardening.mjs`（OAuth Functions の実コードで `/auth`・`/auth/callback` を応答させ、実クリックでログイン。PC/iPad/iPhone × H01〜H05、15/15 PASS）。
 
+
+### 2.9 npm管理外依存の鮮度・EOL監視 (`dependency-freshness.test.mjs`) — 27件
+
+SEC-40（Issue #132）。`scripts/check-dependency-freshness.mjs` の純関数と、リポジトリ実ファイルの棚卸し、週次ワークフロー・Dependabot 設定を検証する。リモート応答は `tests/fixtures/dependency-freshness/`（`remote-ok.json` / `remote-alert.json` / `remote-unreachable.json`）で与え、`globalThis.fetch` は呼ばれたら例外を投げるスタブに置換し、`afterAll` で未呼び出しを確認する（`npm test` をネットワーク非依存に保つ）。コンテンツ・Decap のバージョン値は判定ロジックのテストでは合成インベントリを使い、実リポジトリのテストでは `public/admin/index.html` から動的に取得する。
+
+| No. | テストケース | テスト手法 | 期待結果 |
+| :--- | :--- | :--- | :--- |
+| 1 | 正確な x.y.z だけを固定バージョンとして解釈する | M-02 | `^3.16.2` / `3.16` は null |
+| 2 | 固定版と最新版の差を major / minor / patch / same に分類する | M-02 | 3.10.0→3.16.2 は minor 6 遅れ |
+| 3 | integrity 属性を分解し最も強いアルゴリズムで照合する | M-02 | sha256/384/512 混在時は sha512 を採用 |
+| 4 | computeSri は openssl dgst -sha384 -binary \| base64 と同じ値を返す | M-02 | `abc` の既知ダイジェストと一致 |
+| 5 | EOL は 90日前 warning / 30日前 alert / 経過で alert | M-02 | 境界日付で ok→warning→alert |
+| 6 | CDN URL から npm パッケージ名とバージョンを取り出す | M-02 | unpkg / jsDelivr（scoped）/ 未対応 CDN を判別 |
+| 7 | 外部 script / stylesheet だけを抽出し、相対パスや preconnect は除外する | M-02 | 外部 2 件のみ、行番号・integrity を保持 |
+| 8 | workflow の uses: を SHA 固定・タグ固定・ローカル action に分類する | M-02 | `./` は除外、SHA とバージョンコメントを抽出 |
+| 9 | 全項目が最新・SHA 固定・SRI 一致・確認済みなら ok（exit 0） | M-07 | status=ok、exit 0 |
+| 10 | SRI 不一致・メジャー遅れ・deprecated・high 脆弱性・EOL 30日以内は alert（exit 2） | M-07 | 各 alert コードが出て exit 2（`--fail-on never` は 0） |
+| 11 | Issue #132 の実例（3.10.0 で 6 マイナー遅れ）は alert、2 マイナー遅れは warning | M-07 | `CDN_MINOR_DRIFT` / `CDN_UPDATE_AVAILABLE` |
+| 12 | integrity 欠落・範囲指定バージョンは alert（SEC-03 / SEC-12 の退行検知） | M-08 | `SRI_MISSING` / `CDN_VERSION_NOT_EXACT` |
+| 13 | タグ固定の action・未記録／期限超過の手動確認・Node メジャー不一致は warning | M-07 | 総合 warning |
+| 14 | 手動確認が期限内でも未確認項目が残れば warning、全て確認済みなら manual | M-07 | `MANUAL_PARTIAL`（Pages のビルドイメージ・NODE_VERSION 未確認の記録に対応） |
+| 15 | リモート照会が全て失敗したら ok ではなく error（exit 1） | M-08 | status=error、success=false |
+| 16 | 結果 JSON は schemaVersion・status・counts・items・problems を持ち、Markdown はセル内の \| をエスケープする | M-02 | JSON 契約と Markdown 表の安全性 |
+| 17 | CLI 引数を検証する | M-08 | 不正な `--fail-on` / 未知引数は例外 |
+| 18 | public/ と src/ の外部 CDN スクリプトを全て検出し、正確なバージョンと integrity を持つ | M-01 | 実ファイルから動的に列挙し全件固定済み |
+| 19 | Node.js のバージョン宣言（.nvmrc・engines・CI）を収集し、メジャーが一致している | M-01 | メジャーが 1 種類 |
+| 20 | 手動確認項目に Cloudflare Pages ビルド環境が登録されている | M-03 | config に `cloudflare-pages-build-image` |
+| 21 | CLI はフィクスチャ指定時にネットワークへ出ず、結果 JSON と Markdown を書き出す | M-12 | `remoteSource: fixture`、exit 1（unreachable フィクスチャ） |
+| 22 | 週次スケジュールと手動実行を持つ | M-02 | `schedule` cron と `workflow_dispatch`、`pull_request_target` 無し |
+| 23 | 全ての action を commit SHA とバージョンコメントで固定する | M-02 | `dependency-freshness.yml` の全 `uses:` が 40 桁 SHA + `# vX` |
+| 24 | 権限は既定なし、判定ジョブ contents: read、通知ジョブ issues: write のみ | M-02 | `permissions: {}` と 2 権限のみ |
+| 25 | run スクリプトに ${{ }} 式を直接埋め込まない（スクリプトインジェクション防止） | M-02 | 値は `env:` 経由 |
+| 26 | alert で Issue 起票（既存はコメント）とジョブ失敗、error でジョブ失敗する | M-02 | 通知経路の分岐が定義されている |
+| 27 | Dependabot は github-actions を staging 向けに週次更新する | M-03 | `.github/dependabot.yml` |
+
+ネットワーク実行の結果と alert / error 経路の dry-run は `evidence/2026-09-23/issue132/` に保存する（`network/` 実照会、`fixture-alert/` alert 経路、`fixture-unreachable/` error 経路、`notify-dry-run.log` Issue 起票手順の dry-run）。
+
 ---
 
 # 第3部 要件トレーサビリティ
@@ -1378,7 +1418,7 @@ Bug #27時点は`/admin/*`側で値を「オーバーライド」する設計だ
 
 要件トレーサビリティマトリクスは **docs/DOCUMENTATION.md 1.5章** に移動した。要件定義と同一ファイルで管理することで、要件追加時のトレース漏れを防止する。
 
-現在の充足状況: **FR-01〜FR-29, CMS-01〜CMS-19, NFR-01〜NFR-08, SEC-01〜SEC-39はテストで充足されている。未テスト要件は0件（docs/DOCUMENTATION.md 1.5.4章参照）。** Modern Web Guidanceエビデンスは `evidence/2026-06-11/` に保存する。
+現在の充足状況: **FR-01〜FR-29, CMS-01〜CMS-19, NFR-01〜NFR-08, SEC-01〜SEC-40はテストで充足されている。未テスト要件は0件（docs/DOCUMENTATION.md 1.5.4章参照）。** Modern Web Guidanceエビデンスは `evidence/2026-06-11/` に保存する。
 
 ---
 
@@ -1799,9 +1839,9 @@ npm run build
 | 実行日時 | 2026-09-23（Issue #117 hardening 対応後。ブランチ `fix/issue-117-hardening`） |
 | Vitest バージョン | v4.1.11 |
 | 実行時間 | 2.50s（featureブランチ, `npx vitest run`）／main・staging想定は `CF_PAGES_BRANCH=staging npx vitest run` で実測 |
-| 合否判定 | **合格**（両文脈とも実測: feature系 668 passed、main/staging系 671 passed） |
+| 合否判定 | **合格**（両文脈とも実測: feature系 695 passed、main/staging系 698 passed） |
 
-**Vitest総件数はブランチによって変わる**: SEC-35（`cms-config.test.mjs`の環境固有ファイル実ブランチ整合性検証）は、判定されたブランチがmain/stagingの場合に厳密チェック4件を登録し、それ以外（feature/*等の判定不能時）は内部整合チェック1件のみを登録する設計であるため。CIはmain/stagingへのpushで走るため、**CIログ上の件数は671件**になる。
+**Vitest総件数はブランチによって変わる**: SEC-35（`cms-config.test.mjs`の環境固有ファイル実ブランチ整合性検証）は、判定されたブランチがmain/stagingの場合に厳密チェック4件を登録し、それ以外（feature/*等の判定不能時）は内部整合チェック1件のみを登録する設計であるため。CIはmain/stagingへのpushで走るため、**CIログ上の件数は698件**になる。
 
 ### 4.3.2 テストファイル別結果
 
@@ -1818,17 +1858,18 @@ feature ブランチ（`fix/issue-117-hardening`）での実測:
 | `content-validation.test.mjs` | 125 | PASS | 31ms |
 | `build.test.mjs` | 114 | PASS | — |
 | `security-hardening.test.mjs` | 28 | PASS | — |
-| **合計** | **668** | **全PASS** | **実測は `npx vitest run` の出力を正とする** |
+| `dependency-freshness.test.mjs` | 27 | PASS | — |
+| **合計** | **695** | **全PASS** | **実測は `npx vitest run` の出力を正とする** |
 
 main / staging での実測（`CF_PAGES_BRANCH=staging npx vitest run` で確認。`cms-config.test.mjs`のみ 56→59 に変動し他ファイルは同一）:
 
 | テストファイル | テスト数 | 結果 |
 | :--- | :--- | :--- |
 | `cms-config.test.mjs` | 59 | PASS |
-| その他8ファイル | 612 | PASS（feature時と同一） |
-| **合計** | **671** | **全PASS** |
+| その他9ファイル | 639 | PASS（feature時と同一） |
+| **合計** | **698** | **全PASS** |
 
-Issue #117 項目2/12 により `build.test.mjs` 111→113、`fuzz-validation.test.mjs` 215→216。Vitest 合計 635→638。Bug #51再発防止（SEC-35、`cms-config.test.mjs`に環境固有ファイルの実ブランチ整合性検証を追加）によりVitest合計は **feature ブランチ 639件／main・staging 642件**（差の3件はSEC-35のブランチ別テスト登録による。既存テストへの影響はない）。Issue #117 hardening 対応で `security-hardening.test.mjs` 28件と `build.test.mjs` 1件（SEC-36）を追加し、**feature ブランチ 668件／main・staging 671件**。
+Issue #117 項目2/12 により `build.test.mjs` 111→113、`fuzz-validation.test.mjs` 215→216。Vitest 合計 635→638。Bug #51再発防止（SEC-35、`cms-config.test.mjs`に環境固有ファイルの実ブランチ整合性検証を追加）によりVitest合計は **feature ブランチ 639件／main・staging 642件**（差の3件はSEC-35のブランチ別テスト登録による。既存テストへの影響はない）。Issue #117 hardening 対応で `security-hardening.test.mjs` 28件と `build.test.mjs` 1件（SEC-36）を追加し、**feature ブランチ 668件／main・staging 671件**。Issue #132（SEC-40）で `dependency-freshness.test.mjs` 27件を追加し **feature ブランチ 695件／main・staging 698件**。
 
 ### 4.3.3 E2Eテスト最新実行結果（Playwright）
 
@@ -1877,7 +1918,7 @@ Issue #117 項目2/12 により `build.test.mjs` 111→113、`fuzz-validation.te
 
 ---
 
-**最終更新**: 2026年9月23日（v1.52）
+**最終更新**: 2026年9月23日（v1.54）
 
 ### 2026-09-20 セキュリティIssue #109〜#113対応完了
 

@@ -73,6 +73,7 @@
 | 1.66 | 2026-09-23 | Issue #129: verify-security.mjsの守備範囲を4.9.8章のSEC01〜SEC10のエビデンス確認に限定し、SEC-01〜SEC-35全体の検査器との誤認を解消。全要件の検証責務は1.5.4章を正本とし、SEC-33〜35をbuild/cms-configのVitestへ対応づける |
 | 1.67 | 2026-09-23 | Issue #117 hardening 項目の全件判定（判定表: `docs/security/issue-117-hardening-decisions.md`）。**Bug #52**（SEC-29 の実装不備: gray-matter は `language: 'yaml'` 指定時も `---js` の言語宣言を優先し javascript エンジン＝eval が動く。Issue #117 項目1の「完了」判定は誤りだった。organize-posts に加え、`npm run build` が organize-posts より先に実行する Vitest（と E2E）のテストも同じ経路だった）を4.5章に5 Whysとともに追記し、`scripts/lib/safe-frontmatter.mjs` で YAML 以外のエンジンを拒否、`src/content` を読む全テストもラッパー経由に置換。SEC-36（Actions の commit SHA 固定、項目3）、SEC-37（OAuth オリジン許可リストの単一化 `functions/_shared/allowed-origin.js`、項目5）、SEC-38（OAuth コールバック応答の CSP 自己完結＋charset 明示、項目9）、SEC-39（`<script>` 埋め込み値の JSON.stringify リテラル化、項目10）を1.4.2章・1.5.4章に追加。項目6・7・8・14は対応不要（根拠・残余リスクは判定表）、項目15は #127 へ移管。2.4.5章・2.4.6章・3.2.3章を更新。Vitest featureブランチ 639→**668**件／main・staging 642→**671**件 |
 | 1.68 | 2026-09-23 | Issue #128: Cloudflare Pages のビルドコマンドが `npm run build` であることを 2026-09-23 にダッシュボードで確認した。Vitest が失敗すると `astro build` まで進まずデプロイされない（テストゲート）ことも確認した。この内容を2.5.1章に明記した。あわせて、`build:raw` を「Cloudflare Pages用」としていた誤記を訂正した（実際の用途は build.test.mjs の内部と CI）。build.test.mjs がゲート対象外で CI でのみ実行されるという残余リスクと、SEC-35 が `CF_PAGES_BRANCH` により Pages 上の最終防壁になることも記載した。ローカル実証のエビデンスは `evidence/2026-09-23/issue128/` にある |
+| 1.69 | 2026-09-23 | Issue #132: npm管理外依存（CDN の Decap CMS、GitHub Actions、Node.js 宣言、Cloudflare Pages ビルド環境）の棚卸し・鮮度・EOL・SRI を週次で機械判定する SEC-40 を追加。`scripts/check-dependency-freshness.mjs`（結果 JSON / Markdown、ok・warning・alert・error）、`.github/workflows/dependency-freshness.yml`（週次、alert で Issue 起票＋ジョブ失敗）、`.github/dependabot.yml`（github-actions を staging 向け週次更新。SEC-36 の SHA 固定と版コメントを同時更新）を追加し、4.11章に棚卸し表・判定ルール・通知経路・Decap 更新/SRI 再計算/E2E 手順・Dependabot との分担・四半期の手動確認を記載。Cloudflare Pages の手動確認（2026-09-23、ビルドイメージと NODE_VERSION は未確認）を記録。Vitest feature 668→**695**件／main・staging 671→**698**件 |
 
 ## システム変更履歴
 
@@ -156,6 +157,7 @@ PR履歴に基づく主要なシステム変更の記録である。
 4.8. [個人情報保護](#48-個人情報保護)
 4.9. [動作確認エビデンス取得](#49-動作確認エビデンス取得)
 4.10. [継続的品質・セキュリティ改善フレームワーク](#410-継続的品質セキュリティ改善フレームワーク)
+4.11. [npm管理外依存の鮮度・EOL管理](#411-npm管理外依存の鮮度eol管理)
 
 ---
 
@@ -551,6 +553,7 @@ staging環境のrobots.txtは`Disallow: /`を維持し、mainマージ時のみ`
 | SEC-37 | OAuth オリジン許可リストの単一化: `isAllowedOrigin` は `functions/_shared/allowed-origin.js` にのみ定義し、`/auth`・`/auth/callback` の両方が import する。共有モジュールは `onRequest*` を export せず Pages のルートにならない | `functions/_shared/allowed-origin.js`, `functions/auth/*.js` | 対応Issue: #117 項目5。許可リストの写しが独立に変更され、開始とコールバックで判定が食い違う（ログイン不能等）ことを構造的に防ぐ。許可範囲は SEC-27 と同一 |
 | SEC-38 | OAuth コールバック応答の CSP 自己完結: `Content-Security-Policy` に `default-src 'none'` に加えて `frame-ancestors 'none'; form-action 'none'; base-uri 'none'` を明示し、`Content-Type: text/html; charset=utf-8` と `<meta charset="utf-8">` を付ける | `functions/auth/callback.js` | 対応Issue: #117 項目9。これらのディレクティブは `default-src` にフォールバックせず、Functions の応答には `public/_headers` が適用されないため応答自身で完結させる |
 | SEC-39 | `<script>` 埋め込み値の安全なリテラル化: コールバック HTML に埋め込むトークン・オリジンは `JSON.stringify` で引用符込みの JS 文字列リテラルにし、`<` `>` `&` と U+2028/U+2029 を `\uXXXX` へ変換してから埋め込む | `functions/auth/callback.js` | 対応Issue: #117 項目10。手書きの置換列（旧 `escapeForScript`）は U+2028/U+2029・バッククオート・`${` を扱わず置換順序にも依存していた。埋め込み先の引用符の種類に依存しない方式にする |
+| SEC-40 | npm管理外依存の鮮度・EOL監視: npm audit / Dependabot の対象外である依存（CDN の `<script>`、GitHub Actions、Node.js のバージョン宣言、Cloudflare Pages ビルド環境）を棚卸しし、最新版との差・EOL・SRI 実体一致・既知脆弱性を週次で機械判定して結果 JSON に記録する。alert は Issue 起票とジョブ失敗で通知し、判定ロジックはネットワーク非依存のテストで検証する | `scripts/check-dependency-freshness.mjs`, `scripts/dependency-freshness.config.json`, `.github/workflows/dependency-freshness.yml`, `.github/dependabot.yml` | 対応Issue: #132。Decap CMS が 3.10.0 のまま 6 マイナー遅れていたことに監査まで気づけなかった再発防止。運用手順は 4.11章 |
 
 ---
 
@@ -672,8 +675,9 @@ staging環境のrobots.txtは`Disallow: /`を維持し、mainマージ時のみ`
 | SEC-37 | OAuth オリジン許可リストの単一化 | security-hardening, auth-functions | `OAuth オリジン許可リストは1か所で定義する（SEC-37, Issue #117 項目5）`（4件）、`OAuth開始・コールバックで送信先オリジン許可リスト判定関数を実装している（SEC-27, SEC-37）`、E2E エビデンス `evidence/2026-09-23/issue117/` H01 | M-02 | 充足 |
 | SEC-38 | OAuth コールバック応答の CSP 自己完結 | security-hardening, auth-functions | `OAuth コールバック応答の CSP を自己完結させる（SEC-38, Issue #117 項目9）`（2件）、`GitHubが成功した場合、トークンを含むHTMLが返される`（Content-Type）、E2E エビデンス H02/H04/H05 | M-02 | 充足 |
 | SEC-39 | `<script>` 埋め込み値の JSON.stringify リテラル化 | security-hardening, fuzz-validation, auth-functions | `<script> 埋め込み値は JSON.stringify リテラルで出力する（SEC-39, Issue #117 項目10）`（12件）、fuzz-validation `トークンのエスケープ検証`（挙動検証へ強化）、E2E エビデンス H03 | M-02 | 充足 |
+| SEC-40 | npm管理外依存の鮮度・EOL監視 | dependency-freshness | TEST-REPORT 2.9章 #1〜#27（判定ロジックはフィクスチャ、実ファイル棚卸し、週次ワークフローの権限・SHA 固定・通知分岐、Dependabot 設定）。ネットワーク実行と alert/error 経路の dry-run は `evidence/2026-09-23/issue132/` | M-02, M-07, M-08, M-12 | 充足 |
 
-**充足状況: FR-01〜FR-29, CMS-01〜CMS-19, NFR-01〜NFR-08, SEC-01〜SEC-39はテストで充足されている。未テスト要件は0件。**
+**充足状況: FR-01〜FR-29, CMS-01〜CMS-19, NFR-01〜NFR-08, SEC-01〜SEC-40はテストで充足されている。未テスト要件は0件。**
 
 ---
 
@@ -793,7 +797,7 @@ my-blog/
 | 認証 | GitHub OAuth App | - | CMS管理者認証 |
 | 画像処理 | sharp | v0.35.4 | 画像圧縮・回転・リサイズ |
 | Web実装方針 | Google Modern Web Guidance | 公式ガイド準拠 | 独自実装部のモダンWeb機能・アクセシビリティ・パフォーマンス設計指針 |
-| テスト（単体・統合） | Vitest | v4.0.18 | 単体テスト・統合テスト・セキュリティ検証・基本機能保護（635テスト、記事数により変動） |
+| テスト（単体・統合） | Vitest | v4.0.18 | 単体テスト・統合テスト・セキュリティ検証・基本機能保護（featureブランチ695テスト／main・staging 698テスト、記事数により変動） |
 | テスト（E2E） | Playwright | v1.58.2 | ブラウザE2Eテスト（PC/iPad/iPhone 453テスト、うち8件はデバイス固有条件でスキップ） |
 | コンテンツ | Markdown | - | frontmatter形式 |
 
@@ -1140,7 +1144,7 @@ GitHub Settings > Developer settings > OAuth Apps で環境ごとに個別のア
 | ビルドコマンド | `npm run build` |
 | 出力ディレクトリ | `dist` |
 | ルートディレクトリ | `/` |
-| Node.js バージョン | 22.12.0以上（`.nvmrc` で 22.12.0。Astro 7 要件。Cloudflare Pages v3 既定は 22.16.0） |
+| Node.js バージョン | 22.12.0以上（`.nvmrc` で 22.12.0。Astro 7 要件。Cloudflare Pages v3 既定は 22.16.0）。ビルドイメージ・`NODE_VERSION` の実設定はダッシュボード管理で、2026-09-23 時点では未確認（4.11章の四半期手動確認で記録） |
 
 #### テストゲート（Issue #128）
 
@@ -1988,7 +1992,7 @@ git push origin staging
 
 第三者セキュリティ診断（2026年2月21日実施）で検出された問題と対策を踏まえ、再発防止のための品質向上策と定期診断の運用を定める。
 
-セキュリティ要件は第1部 1.4.2章（SEC-01〜SEC-39）として定義されている。本章では運用面での品質基準、再発防止策、定期診断の手順を定める。個人情報保護については4.8章を参照。
+セキュリティ要件は第1部 1.4.2章（SEC-01〜SEC-40）として定義されている。本章では運用面での品質基準、再発防止策、定期診断の手順を定める。個人情報保護については4.8章を参照。
 
 ### 4.7.1 品質向上策
 
@@ -2067,7 +2071,7 @@ git push origin staging
 | 項目 | 内容 |
 |:---|:---|
 | 実施頻度 | 機能追加時、および四半期に1回 |
-| 対象範囲 | フロントエンド（admin/index.html）、サーバーサイド（functions/auth/）、外部依存関係（CDN、npm） |
+| 対象範囲 | フロントエンド（admin/index.html）、サーバーサイド（functions/auth/）、外部依存関係（CDN、npm）。npm管理外依存の鮮度・EOL は 4.11章の週次ジョブ（SEC-40）で常時監視する |
 | 診断手法 | コードレビュー、OWASP Top 10チェック、依存関係の脆弱性スキャン |
 | 記録方法 | 検出事項はバグ一覧（4.5章）に追記し、対策と再発防止テストを実施する |
 
@@ -2320,16 +2324,16 @@ await loginButton.click();
 ### 4.10.2 定期セキュリティ検証
 
 **エビデンス検証（エビデンス取得時に実行）:**
-- `evidence/YYYY-MM-DD/verify-security.mjs` は、4.9.8章のSEC01〜SEC10に記載した項目をスクリーンショット付きで確認するエビデンス用スクリプトであり、SEC-01〜SEC-35全体の完全な自動検証器ではない。ローカル実行環境の制約により一部確認は表示・ソース確認に限られる。
+- `evidence/YYYY-MM-DD/verify-security.mjs` は、4.9.8章のSEC01〜SEC10に記載した項目をスクリーンショット付きで確認するエビデンス用スクリプトであり、SEC-01〜SEC-40全体の完全な自動検証器ではない。ローカル実行環境の制約により一部確認は表示・ソース確認に限られる。
 - SEC要件全体のテスト網羅性は1.5.4章のトレーサビリティマトリクスを正本とする。設定・コードの回帰検査はVitest、公開環境の応答・操作は必要に応じてE2E/実測で担保する。
-- SEC-33は `tests/build.test.mjs`（CIの `permissions: contents: read`）、SEC-34は `tests/build.test.mjs` / `tests/fuzz-validation.test.mjs`（`.assetsignore`の不在）、SEC-35は `tests/cms-config.test.mjs`（現在のブランチと環境固有値の整合）で検証する。これらを `verify-security.mjs` へ重複実装しない。
+- SEC-33は `tests/build.test.mjs`（CIの `permissions: contents: read`）、SEC-34は `tests/build.test.mjs` / `tests/fuzz-validation.test.mjs`（`.assetsignore`の不在）、SEC-35は `tests/cms-config.test.mjs`（現在のブランチと環境固有値の整合）、SEC-40は `tests/dependency-freshness.test.mjs`（判定ロジック・週次ワークフロー設定）と週次ジョブ `dependency-freshness.yml` で検証する。これらを `verify-security.mjs` へ重複実装しない。
 - 結果の保存方法とスクリーンショットは4.9章のエビデンス方針に従う。
 
 **追加の手動レビュー（機能追加時）:**
 - admin/index.html 変更時: innerHTML不使用、var不使用、use strict確認
 - _headers 変更時: Bug #28（ヘッダー重複）の回避確認
 - OAuth関連変更時: scope最小化、stateパラメータ確認
-- CDN変更時: バージョン固定、integrity属性確認
+- CDN変更時: バージョン固定、integrity属性確認、4.11.4章の Decap CMS 更新手順（SRI 再計算・E2E）
 
 ### 4.10.3 エビデンス取得の継続運用
 
@@ -2377,7 +2381,7 @@ evidence/YYYY-MM-DD/
 
 | 指標 | 目標値 | 現状 |
 |:---|:---|:---|
-| Vitestテスト全PASS | 100% | 668/668 (100%)（featureブランチ、2026-09-23 Issue #117 対応時） |
+| Vitestテスト全PASS | 100% | 695/695 (100%)（featureブランチ、2026-09-23 Issue #132 対応時。main・staging は 698/698） |
 | Playwright E2Eテスト全PASS | 100% | 2026-09-20 ローカル全件: 445 PASS・8 skip / 453件（16.3m）。CI では実行しない（Bug #50） |
 | セキュリティ検証全PASS | 100% | 10/10 (100%) |
 | ボタン重なり検出 | 0件 | 0件 |
@@ -2386,4 +2390,82 @@ evidence/YYYY-MM-DD/
 
 ---
 
-**最終更新**: 2026年9月23日（v1.68）
+## 4.11. npm管理外依存の鮮度・EOL管理
+
+SEC-40（Issue #132）。`npm audit` と Dependabot は npm 依存グラフと GitHub Actions しか見ないため、CDN から読み込む Decap CMS や Node.js のバージョン宣言、Cloudflare Pages のビルド環境は誰も自動で見ていなかった（Decap CMS は 3.10.0 のまま 6 マイナー遅れていたことに監査 run-2 まで気づけなかった）。これらを一覧として追跡し、週次で機械判定する。運用モデルは個人の自動化基盤で使っている「週次ジョブ・機械可読な最新結果・正常と劣化状態の分離・既存経路での通知」を踏襲し、対象は本リポジトリに実在する依存に限定する（2026-09-23 の open issue 一括QA Q10 で決定）。
+
+### 4.11.1 棚卸し（2026-09-23 時点）
+
+| 名称 | 現在バージョン | 固定方法（箇所） | 最新確認方法 | EOL・サポート情報源 | 更新手順 | 自動判定 |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| Decap CMS（unpkg CDN） | 3.16.2 | 正確なバージョン＋SRI sha384＋`crossorigin="anonymous"`（`public/admin/index.html`） | npm registry `decap-cms` の `dist-tags.latest`、`/-/npm/v1/security/advisories/bulk`、CDN 実体の sha384 | 明文化された EOL ポリシーなし（コミュニティメンテの Netlify CMS フォーク）。上流の最終リリースからの経過日数を代替指標にする（`decaporg/decap-cms` Releases） | 4.11.4章 | 週次 |
+| GitHub Actions `actions/checkout` | v4.4.0（`ci.yml`）／v7.0.1（`dependency-freshness.yml`） | commit SHA＋`# vX.Y.Z` コメント（`ci.yml` は SEC-36 / Issue #117 項目3 で固定済み） | GitHub API `releases/latest` | 各リポジトリの Releases。実行ランタイム（Node）の非推奨告知は GitHub Changelog | Dependabot PR（staging 向け）をレビューしてマージ（SHA とバージョンコメントを同時に更新） | 週次＋Dependabot |
+| GitHub Actions `actions/setup-node` | v4.4.0（`ci.yml`）／v7.0.0（`dependency-freshness.yml`） | 同上 | 同上 | 同上 | 同上 | 週次＋Dependabot |
+| GitHub Actions `actions/upload-artifact` / `actions/download-artifact` | v7.0.1 / v8.0.1 | commit SHA＋バージョンコメント（`dependency-freshness.yml`） | 同上 | 同上 | 同上 | 週次＋Dependabot |
+| Node.js | 22 系（`.nvmrc` 22.12.0、`engines` `>=22.12.0`、CI `node-version: '22'`、週次ジョブは `.nvmrc`） | `.nvmrc`（Cloudflare Pages とローカル）・`package.json` engines・CI | endoflife.date `api/v1/products/nodejs` の該当サイクル `latest` | endoflife.date（Node.js 公式リリーススケジュール）。22 系は 2027-04-30 EOL | 4.11.5章 | 週次 |
+| Cloudflare Pages ビルドイメージ・`NODE_VERSION` | 2026-09-23 ダッシュボード確認: Build command `npm run build`、Build output `dist`、Production branch `main`。**ビルドイメージのバージョンと `NODE_VERSION` は未確認**（2.5.1章の記載値は v3） | ダッシュボード設定（API 未連携） | Cloudflare ダッシュボード Settings > Build、デプロイログ | Cloudflare Pages Build image ドキュメント（旧イメージの廃止告知） | 4.11.5章。確認後に `scripts/dependency-freshness.config.json` の `lastReviewed`・`reviewed`・`unverified` を更新 | 四半期の手動確認（期限超過・未記録・`unverified` 残存で warning） |
+
+対象外: `https://github.com` / `api.github.com`（OAuth・API のエンドポイントであり依存ライブラリではない）、`wrangler.toml` の `compatibility_date`（Workers の互換性日付で EOL の概念がない）、`skills-lock.json`（開発補助のエージェントスキル。配信物・ビルドに含まれない）、npm パッケージと Playwright ブラウザ（npm 依存として `npm audit` / Dependabot alerts の対象）。
+
+### 4.11.2 判定ルール
+
+`scripts/check-dependency-freshness.mjs` が次のとおり分類し、項目ごとの最悪値、全体は全項目の最悪値を `status` にする。閾値は `scripts/dependency-freshness.config.json` で管理する。
+
+| 状態 | 条件 | 対応 |
+| :--- | :--- | :--- |
+| alert | CDN: SRI 実体不一致／integrity 欠落／バージョン範囲指定／固定版が npm で deprecated／high・critical の既知脆弱性／メジャー遅れ／3 マイナー以上の遅れ。Node.js: 宣言メジャーの EOL まで 30 日以内または経過 | Issue 起票とジョブ失敗で通知。1 週間以内に staging で対処 |
+| warning | CDN: patch または 1〜2 マイナー遅れ／low・moderate の既知脆弱性／上流の最終リリースから 365 日超。Actions: タグ固定／SHA 固定でバージョンコメントなし／メジャー遅れ。Node.js: EOL まで 90 日以内／固定パッチがサイクル最新より古い／宣言箇所のメジャー不一致。手動確認: 未記録・92 日超・未確認項目（`unverified`）の残存 | 結果 JSON とジョブサマリーに記録。四半期レビューまでに解消するか理由を記録 |
+| unknown | 個別のリモート照会の失敗（warning 相当として集計） | 翌週の結果で再確認。連続する場合は原因を調査 |
+| error | リモート照会がすべて失敗し判定できない | ジョブ失敗で通知 |
+| ok / manual | 上記に該当しない／手動確認が期限内 | なし |
+
+Actions のメジャー遅れを alert にしないのは、Dependabot が更新 PR を作る一次経路であり、本ジョブは記録用とするため。Decap CMS は EOL ポリシーがないため、バージョン差・deprecated・advisory・上流停滞の 4 指標で代替する。EOL の 90 日／30 日閾値は個人の自動化基盤の既存運用と揃えた。
+
+### 4.11.3 実行・結果・通知
+
+| 項目 | 内容 |
+| :--- | :--- |
+| 定期実行 | `.github/workflows/dependency-freshness.yml`。毎週月曜 00:00 UTC（09:00 JST）＋ `workflow_dispatch`。スケジュール実行は GitHub の仕様上デフォルトブランチ（main）のワークフローのみ動くため、main 反映後に有効になる |
+| 権限 | ワークフロー既定 `permissions: {}`。判定ジョブ `contents: read`、通知ジョブ `issues: write` のみ。全 action を commit SHA 固定。`run:` には `${{ }}` を埋め込まず `env:` 経由 |
+| 結果 | `latest.json`（`schemaVersion`、`status`、`counts`、`items[].findings[]`、`problems`、`exitCode`）と `latest.md` を artifact `dependency-freshness`（90 日保持）に保存し、Markdown をジョブサマリーに出す |
+| 通知 | alert: タイトル `[dependency-freshness] npm管理外依存に要対応（alert）があります` の Issue を 1 件だけ起票（未クローズの同名 Issue があればコメント追記）し、ジョブを失敗させて GitHub Actions の失敗通知も送る。error: 判定ジョブを失敗させる。warning: 通知せず記録のみ |
+| ローカル実行 | `node scripts/check-dependency-freshness.mjs [--out-dir DIR] [--fail-on alert\|warning\|never]`（既定の出力先 `reports/dependency-freshness/` は `.gitignore` 済み）。終了コード 0=ok/warning、2=alert、1=error。Node 組み込みモジュールのみで動き `npm ci` 不要 |
+| dry-run | `--remote-fixture tests/fixtures/dependency-freshness/remote-alert.json --now 2027-04-10T00:00:00Z` でネットワークに出ず alert 経路を再現できる。Issue 起票手順は `evidence/2026-09-23/issue132/notify-dry-run.sh`（`gh issue list` のみ実行し create/comment は表示だけ）で確認する |
+| テスト | `tests/dependency-freshness.test.mjs`。判定はフィクスチャのみで行い `fetch` を禁止する。`npm test` と CI はネットワーク非依存のまま |
+
+### 4.11.4 Decap CMS 更新手順（SRI 再計算必須）
+
+`public/admin/index.html` は Decap の内部 DOM を直接操作しているため、パッチ更新でもフル CMS E2E と 3 デバイスのエビデンス取得を必須とする。
+
+1. `feature/*` ブランチを staging から作成し、上流の CHANGELOG / Releases で破壊的変更と修正内容を確認する
+2. `public/admin/index.html` の `<script src="https://unpkg.com/decap-cms@X.Y.Z/dist/decap-cms.js">` を正確なバージョンに書き換える（`^` / `~` / 省略は禁止。SEC-03）
+3. SRI を再計算して `integrity` を更新する: `curl -sL https://unpkg.com/decap-cms@X.Y.Z/dist/decap-cms.js | openssl dgst -sha384 -binary | openssl base64 -A`（`sha384-` を前置。`crossorigin="anonymous"` は維持。SEC-12）。ハッシュを誤ると管理画面が起動しない
+4. `node scripts/check-dependency-freshness.mjs` を実行し、`SRI_MATCH` と `CDN_LATEST`（または意図した版）になることを確認する
+5. `npm test`（admin-html の SEC-03/SEC-12 と SEC-40 のテスト）を全 PASS させる
+6. `npm run build` 後に `npm run test:e2e` を全件実行する。E2E は unpkg をインターセプトしないため実 CDN バンドルに対して検証される。加えて `evidence/2026-05-24/verify-comprehensive.mjs` を雛形に 3 デバイスの認証後 CMS 画面エビデンスを取得する（4.9章）
+7. 2.2.1章の採用技術一覧・4.11.1章の棚卸し表・改訂履歴を更新し、staging へ PR。staging.reiwa.casa で実ログイン確認後、ユーザー承認を得て main へ反映する
+
+### 4.11.5 Node.js・Cloudflare Pages ビルド環境の更新手順
+
+- **パッチ更新**（例: `.nvmrc` 22.12.0 → 22 系最新）: `.nvmrc` を更新し、`npm test`・`npm run build`・`npm run test:e2e` を実行して staging へ。Cloudflare Pages は `.nvmrc` を読むため、デプロイログの Node バージョン表示で反映を確認する
+- **メジャー更新**（EOL の 90 日前 warning を起点に計画）: `.nvmrc`、`package.json` の `engines`、`ci.yml` の `node-version` を同時に揃え、Cloudflare Pages の環境変数 `NODE_VERSION`（設定している場合）とビルドイメージの対応バージョンも確認する。宣言箇所の不一致は週次ジョブが `NODE_MAJOR_MISMATCH` として warning にする
+- **ビルドイメージ**: Cloudflare が旧イメージの廃止を告知した場合、または四半期の手動確認時に、ダッシュボードで Build system version を確認・更新し、`scripts/dependency-freshness.config.json` の `current`・`lastReviewed`・`reviewed`・`unverified` を更新する。確認できなかった項目は `unverified` に残し、warning として表示し続ける
+- **手動確認記録**: 2026-09-23 にダッシュボードで Build command `npm run build`・Build output `dist`・Production branch `main` を確認（`lastReviewed: 2026-09-23`）。ビルドイメージのバージョンと `NODE_VERSION` は未確認のため `unverified` に登録し、次回確認まで warning（`MANUAL_PARTIAL`）
+
+### 4.11.6 Dependabot・npm audit との役割分担
+
+| 対象 | 検知 | 更新 |
+| :--- | :--- | :--- |
+| GitHub Actions | Dependabot（`.github/dependabot.yml`、`github-actions`、毎週月曜 JST、`target-branch: staging`）＋週次ジョブの記録 | Dependabot PR を staging でレビュー・マージ（SHA 固定の場合は SHA とコメントを同時更新） |
+| npm 依存 | `npm audit` と GitHub の Dependabot alerts（リポジトリ設定） | 手動で staging に更新 PR（Dependabot の npm バージョン更新 PR は現状使わない） |
+| CDN（Decap CMS） | 週次ジョブ（Dependabot は `<script src>` を扱えない） | 4.11.4章 |
+| Node.js・Cloudflare Pages | 週次ジョブ（EOL・パッチ遅れ・不一致・手動確認期限） | 4.11.5章 |
+
+### 4.11.7 定期レビュー
+
+- **週次**（自動）: 上記ジョブ。alert は起票された Issue で追跡し、対処後にクローズする
+- **四半期**（1・4・7・10 月の第 1 週、手動）: 直近の `latest.json`（artifact）で warning を棚卸しし、解消するか残す理由を Issue に記録する。Cloudflare Pages ビルド環境を確認して `lastReviewed` を更新する。棚卸し表（4.11.1章）に新しい npm 管理外依存が増えていないかを確認する（新しい CDN スクリプトは `public/`・`src/` を走査して自動で対象になる）
+
+---
+
+**最終更新**: 2026年9月23日（v1.69）

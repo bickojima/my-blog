@@ -1,0 +1,13 @@
+{
+  "fetchedAt": "2026-09-23T00:00:00.000Z",
+  "npm": { "decap-cms": { "error": "fixture: getaddrinfo ENOTFOUND" } },
+  "advisories": { "decap-cms@3.16.2": { "error": "fixture: getaddrinfo ENOTFOUND" } },
+  "sri": { "https://unpkg.com/decap-cms@3.16.2/dist/decap-cms.js": { "error": "fixture: getaddrinfo ENOTFOUND" } },
+  "githubReleases": {
+    "actions/checkout": { "error": "fixture: HTTP 403" },
+    "actions/setup-node": { "error": "fixture: HTTP 403" },
+    "actions/upload-artifact": { "error": "fixture: HTTP 403" },
+    "actions/download-artifact": { "error": "fixture: HTTP 403" }
+  },
+  "endoflife": { "nodejs": { "error": "fixture: getaddrinfo ENOTFOUND" } }
+}
