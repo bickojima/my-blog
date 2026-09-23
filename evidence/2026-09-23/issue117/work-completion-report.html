@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>Issue #117 作業完了報告</title>
+<style>
+body{font-family:sans-serif;margin:16px;line-height:1.6;max-width:1100px}
+table{border-collapse:collapse;width:100%;margin:8px 0 16px}
+th,td{border:1px solid #ccc;padding:6px;vertical-align:top;text-align:left}
+th{background:#f3f4f6}
+code{background:#f3f4f6;padding:0 4px}
+</style>
+</head>
+<body>
+<h1>Issue #117 hardening 項目 作業完了報告（2026-09-23）</h1>
+<p>ブランチ: <code>fix/issue-117-hardening</code>（<code>origin/staging</code> 起点）。判定表の正本: <code>docs/security/issue-117-hardening-decisions.md</code>。いずれの項目も脆弱性ではなく hardening。</p>
+
+<h2>1. 項目別判定</h2>
+<table>
+<tr><th>項目</th><th>判定</th><th>要件ID</th></tr>
+<tr><td>1 gray-matter の <code>---js</code></td><td>実装（Issue 上の「完了」は誤りで実際は未解決だった）</td><td>Bug #52 / SEC-29</td></tr>
+<tr><td>2 CI <code>contents: read</code></td><td>対応済み（確認のみ）</td><td>SEC-33</td></tr>
+<tr><td>3 actions の SHA 固定</td><td>実装</td><td>SEC-36</td></tr>
+<tr><td>4 <code>{ once: true }</code></td><td>対応済み（確認のみ）</td><td>SEC-31</td></tr>
+<tr><td>5 <code>isAllowedOrigin</code> の重複</td><td>実装</td><td>SEC-37</td></tr>
+<tr><td>6 <code>redirect_uri</code> の定数化</td><td>対応不要</td><td>—</td></tr>
+<tr><td>7 プレビューのワイルドカード</td><td>対応不要</td><td>—</td></tr>
+<tr><td>8 <code>http://localhost</code> 分岐</td><td>対応不要</td><td>—</td></tr>
+<tr><td>9 callback の CSP / charset</td><td>実装</td><td>SEC-38</td></tr>
+<tr><td>10 <code>escapeForScript</code></td><td>実装</td><td>SEC-39</td></tr>
+<tr><td>11 / 12 / 13</td><td>対応済み（確認のみ）</td><td>SEC-32 / SEC-34 / 依存削除</td></tr>
+<tr><td>14 公開ページのヘッダー CSP</td><td>対応不要（現時点。再検討の契機を記録）</td><td>—</td></tr>
+<tr><td>15 ブランチ束縛</td><td>#127 へ移管</td><td>—</td></tr>
+</table>
+
+<h2>2. 検証結果</h2>
+<table>
+<tr><th>検証</th><th>結果</th></tr>
+<tr><td>Vitest（<code>npx vitest run</code>）</td><td>666 / 666 PASS（feature）。<code>CF_PAGES_BRANCH=staging</code> で 669 / 669 PASS。変更前 639 / 642 から +27（security-hardening 26、build 1）。削除・スキップなし</td></tr>
+<tr><td>実ブラウザ E2E（<code>verify-oauth-hardening.mjs</code>）</td><td>15 / 15 PASS（PC / iPad / iPhone × H01〜H05）。<a href="report.html">report.html</a></td></tr>
+<tr><td>Bug #52 の実測</td><td>変更前の organize-posts.mjs は <code>---js</code> 記事のペイロードを実行、変更後は実行しない</td></tr>
+<tr><td>Pages Functions バンドル</td><td><code>wrangler pages functions build</code> で生成ルートは <code>/auth</code>・<code>/auth/callback</code> のみ（共有モジュールはルート化されない）</td></tr>
+<tr><td><code>npm run build:raw</code></td><td>成功。<code>public/admin/url-map.json</code> に差分なし</td></tr>
+</table>
+
+<h2>3. 社内レビュー</h2>
+<p>スクリーンショット 18 枚を全数確認した。H01/H03 は認証後の CMS コレクション画面（ログイン画面のみではない）、コールバックポップアップは「Token sent! Closing window...」、H04 は iframe が空白（ブラウザが <code>frame-ancestors 'none'</code> 違反として遮断）、H05 は「Error: No parent window found」を表示していた。全画像に赤枠とラベルあり。</p>
+
+<h2>4. 未実施・残作業</h2>
+<ul>
+<li>Playwright E2E 全件（453件）と <code>verify-comprehensive.mjs</code> は未実行。main マージ前に必須（Bug #50）。今回は公開ページと管理画面の配信物（<code>public/</code>・<code>src/</code>）を変更していない</li>
+<li>staging マージ後に実環境で GitHub ログインが完了することの確認（認証情報の入力は本人）</li>
+</ul>
+</body>
+</html>
