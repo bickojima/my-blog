@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>Issue #132 作業完了報告</title>
+<style>
+body{font-family:sans-serif;margin:16px;line-height:1.6;max-width:1100px}
+table{border-collapse:collapse;width:100%;margin:8px 0 16px}
+th,td{border:1px solid #ccc;padding:6px;vertical-align:top;text-align:left}
+th{background:#f3f4f6}
+code{background:#f3f4f6;padding:0 4px}
+</style>
+</head>
+<body>
+<h1>Issue #132 npm管理外依存の鮮度・EOL管理 作業完了報告（2026-09-23）</h1>
+<p>ブランチ: <code>feat/issue-132-dependency-freshness</code>（PR #134、<code>origin/staging</code> の PR #135 マージ後に rebase）。要件ID: <strong>SEC-40</strong>（SEC-36〜39 は Issue #117 で使用済み）。</p>
+
+<h2>1. システム要件の変更</h2>
+<table>
+<tr><th>区分</th><th>内容</th></tr>
+<tr><td>要件追加</td><td>SEC-40 npm管理外依存の鮮度・EOL監視（DOCUMENTATION.md 1.4.2章・1.5.4章・4.11章）</td></tr>
+<tr><td>追加ファイル</td><td><code>scripts/check-dependency-freshness.mjs</code>、<code>scripts/dependency-freshness.config.json</code>、<code>.github/workflows/dependency-freshness.yml</code>、<code>.github/dependabot.yml</code>、<code>tests/dependency-freshness.test.mjs</code>、<code>tests/fixtures/dependency-freshness/*.json</code></td></tr>
+<tr><td>配信物への影響</td><td>なし（<code>public/</code>・<code>src/</code>・<code>functions/</code> は変更していない）</td></tr>
+<tr><td>ドキュメント</td><td>DOCUMENTATION.md v1.69、TEST-REPORT.md v1.54（2.9章）、CLAUDE.md、README.md v1.23</td></tr>
+</table>
+
+<h2>2. 検証結果</h2>
+<table>
+<tr><th>検証</th><th>結果</th></tr>
+<tr><td>Vitest（<code>npm test</code>）</td><td>695 / 695 PASS（feature）。<code>CF_PAGES_BRANCH=staging</code> で 698 / 698 PASS。変更前 668 / 671 から +27（<code>dependency-freshness.test.mjs</code>）。削除・スキップなし。テストはフィクスチャのみで <code>fetch</code> を禁止</td></tr>
+<tr><td>実照会</td><td><strong>WARNING</strong>（alert 0、exit 0）。SRI 一致、Decap の既知脆弱性なし、Node 22 EOL まで 219 日。warning 5 件（下表）</td></tr>
+<tr><td>alert 経路</td><td>フィクスチャで ALERT（exit 2）: SRI 不一致・メジャー遅れ・deprecated・high advisory・Node EOL 20 日</td></tr>
+<tr><td>error 経路</td><td>フィクスチャで ERROR（exit 1）: 全リモート照会失敗</td></tr>
+<tr><td>Issue 起票手順</td><td>dry-run で既存 Issue なし → create 分岐を確認（実 Issue は作成していない）</td></tr>
+<tr><td>ci.yml の SHA 固定（Issue #117 / SEC-36）</td><td>rebase 後の実照会でタグ固定の warning（<code>ACTION_TAG_PINNED</code>）が消えたことを確認。SHA は <code>v4.4.0</code> タグの commit と一致し、Dependabot が SHA とコメントを同時更新できる</td></tr>
+</table>
+
+<h2>3. 実照会の warning（2026-09-23）</h2>
+<table>
+<tr><th>対象</th><th>内容</th><th>対応方針</th></tr>
+<tr><td>Decap CMS</td><td>3.16.2 → 3.16.3（2026-09-22 公開）</td><td>4.11.4章の手順（SRI 再計算・E2E 全件）で別途更新</td></tr>
+<tr><td>actions/checkout・setup-node（ci.yml）</td><td>v4.4.0 → 最新 v7 系（SHA 固定済み）</td><td>Dependabot PR（staging 向け）で追従</td></tr>
+<tr><td>Node.js</td><td><code>.nvmrc</code> 22.12.0 &lt; 22 系最新 22.23.2</td><td>パッチ更新を別途検討（4.11.5章）</td></tr>
+<tr><td>Cloudflare Pages</td><td>2026-09-23 に Build command <code>npm run build</code>・output <code>dist</code>・Production branch <code>main</code> を確認。<strong>ビルドイメージのバージョンと NODE_VERSION は未確認</strong></td><td><code>unverified</code> に登録し warning（<code>MANUAL_PARTIAL</code>）を継続</td></tr>
+</table>
+
+<h2>4. 社内レビュー</h2>
+<p>3 つの結果 JSON・Markdown と <a href="report.html">report.html</a> を全数確認した。個人情報・絶対パス・トークンは含まれない。alert フィクスチャの値は架空（not real と明記）。スクリーンショットは UI 変更がないため取得していない。</p>
+
+<h2>5. 未実施・残作業</h2>
+<ul>
+<li>週次スケジュールは GitHub の仕様上 main のワークフローでのみ動く。main 反映後に <code>workflow_dispatch</code> で初回実行を確認する</li>
+<li>actionlint は未実行（YAML 構文は js-yaml で確認、権限・SHA 固定・<code>${{ }}</code> 非埋め込みは Vitest で検証）</li>
+<li>Playwright E2E 全件は未実行（配信物の変更なし）。main マージ前の必須手順（Bug #50）は別途</li>
+</ul>
+</body>
+</html>

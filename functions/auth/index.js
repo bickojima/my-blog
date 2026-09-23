@@ -1,15 +1,4 @@
-function isAllowedOrigin(origin) {
-  if (origin === 'https://reiwa.casa' || origin === 'https://staging.reiwa.casa') {
-    return true;
-  }
-  if (/^https:\/\/([a-z0-9-]+\.)*my-blog-3cg\.pages\.dev$/.test(origin)) {
-    return true;
-  }
-  if (/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
-    return true;
-  }
-  return false;
-}
+import { isAllowedOrigin } from '../_shared/allowed-origin.js';
 
 export async function onRequestGet(context) {
   const { request, env } = context;
