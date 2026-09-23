@@ -12,7 +12,7 @@
 | テスト | https://staging.reiwa.casa | `staging` | 新機能テスト・動作確認 |
 
 - `admin/index.html` のサイトURL参照は `window.location.origin` で動的取得（環境非依存）
-- `config.yml` の `base_url` / `branch` は各ブランチで手動管理
+- **環境固有値はファイルに書かない（Issue #127）**: `SITE_URL`・`robots.txt` はビルド時の `CF_PAGES_BRANCH` から `src/lib/site-env.mjs` で導出（`'main'` 完全一致のときだけ本番値、それ以外は staging 値。robots は `src/pages/robots.txt.ts` が生成し `public/robots.txt` は置かない）。CMS の `branch` / `base_url` は `public/admin/cms-env.js` がホスト名から導出（`reiwa.casa` 完全一致のときだけ main、それ以外は staging。base_url は常に `location.origin`）し、admin/index.html が `CMS_MANUAL_INIT` + `CMS.init({ config: { backend } })` で config.yml に deepmerge する。config.yml に `branch` / `base_url` を書き戻さない（`env-derivation.test.mjs` が検出）
 - staging環境では [STAGING] ラベルを表示（Base.astro: `CF_PAGES_BRANCH`、admin/index.html: hostname判定）
 - テスト環境ドメインはDNS CNAME（`staging` → `staging.my-blog-3cg.pages.dev`）で接続
 - 新機能: `feature/*` → `staging` PR → テスト → `main` PR
@@ -23,10 +23,10 @@
 npm run dev          # 開発サーバー起動（前処理含む）
 npm run build        # テスト必須ビルド（vitest run → normalize-images → organize-posts → astro build → image-optimize）
 npm run build:raw    # テストなしビルド（build.test.mjs内部とGitHub Actions CIで使用。Cloudflare Pagesは使わない）
-npm test             # Vitest 全テスト実行（695テスト・main/stagingブランチでは698テスト、記事数により変動。SEC-35がブランチ別にテストを登録するため件数が変わる）
+npm test             # Vitest 全テスト実行（754テスト、記事数により変動。Issue #127 以降はブランチによって件数が変わらない）
 npm run test:watch   # Vitest ウォッチモード
 node scripts/check-dependency-freshness.mjs  # npm管理外依存の鮮度・EOL・SRI判定（ネットワーク必要、SEC-40。週次はGitHub Actions）
-npm run test:e2e     # Playwright E2Eテスト（要: npm run build 済み、453テスト：445実行+8スキップ）
+npm run test:e2e     # Playwright E2Eテスト（要: npm run build 済み、465テスト：457実行+8スキップ）
 ```
 
 ## ディレクトリ構成
@@ -42,11 +42,14 @@ src/
 │   └── rehype-focusable-code-blocks.mjs  # preへtabindex付与
 ├── integrations/image-optimize.mjs   # ビルド後画像リサイズ（sharp, MAX_WIDTH: 1200）
 ├── lib/posts.ts             # URL生成ユーティリティ
+├── lib/site-env.mjs         # ビルド時の環境値導出（SITE_URL・robots。CF_PAGES_BRANCH が入力。Issue #127）
+├── pages/robots.txt.ts      # robots.txt をビルド時に生成（public/robots.txt は置かない）
 └── content.config.ts        # Content Layer（glob loader）+ Zodスキーマ定義
 
 public/
 ├── admin/index.html         # Decap CMS管理画面（CSS/JS カスタマイズ含む、約1020行）
-├── admin/config.yml         # CMS設定（GitHub backend, OAuth）
+├── admin/config.yml         # CMS設定（GitHub backend, OAuth。branch / base_url は書かない）
+├── admin/cms-env.js         # CMS の branch / base_url をホスト名から導出（Issue #127）
 └── images/uploads/          # アップロード画像
 
 scripts/
@@ -63,9 +66,10 @@ functions/auth/              # Cloudflare Functions: GitHub OAuth proxy
 functions/_shared/           # Functions共通モジュール（OAuthオリジン許可リスト。onRequest*をexportしないのでルートにならない）
 
 tests/
-├── *.test.mjs               # Vitest単体・統合テスト（10ファイル。Issue #117 hardening は security-hardening.test.mjs、SEC-40 は dependency-freshness.test.mjs〔フィクスチャのみ〕）
+├── *.test.mjs               # Vitest単体・統合テスト（11ファイル。Issue #117 hardening は security-hardening.test.mjs、SEC-40 は dependency-freshness.test.mjs〔フィクスチャのみ〕、Issue #127 環境値導出は env-derivation.test.mjs）
+├── lib/                     # テスト用ヘルパ（cms-env-loader.mjs。*.test.mjs ではないのでテスト対象外）
 ├── fuzz-validation.test.mjs # ファズテスト（XSS/SQLi/パストラバーサル/プロトタイプ汚染等、216テスト）
-├── e2e/                     # Playwright E2E（site, cms, cms-customizations, cms-crud, cms-operations, cms-exploratory, accessibility）
+├── e2e/                     # Playwright E2E（site, cms, cms-customizations, cms-crud, cms-operations, cms-exploratory, cms-env-branch, accessibility, app-info）
 └── TEST-REPORT.md           # テスト計画書・テストケース一覧・実行結果
 ```
 
@@ -114,8 +118,8 @@ tests/
 
 ## テスト
 
-- **Vitest**: 設定検証、コンテンツ検証、単体テスト、ビルド統合テスト、セキュリティ検証、ファズテスト、基本機能保護テスト（695テスト・main/stagingブランチでは698テスト、記事数により変動）。`.github/workflows/ci.yml` によりmain/staging/feature/*へのpush・PRで自動実行される（Playwright は含めない）。CIはmain/stagingへのpushで走るため、CIログ上は698件になる（SEC-35のブランチ別テスト登録によりfeatureブランチとmain/stagingで件数が異なる。詳細はCLAUDE.md「ブランチマージ時」参照）
-- **Playwright**: PC/iPad/iPhone 3デバイスで453テスト（445実行+8スキップ、ローカルのみ）。**CI に Playwright は載せない**（実行時間のためローカル運用を継続）。本番（main）マージ前のローカル全件は必須（Bug #50）
+- **Vitest**: 設定検証、コンテンツ検証、単体テスト、ビルド統合テスト、セキュリティ検証、ファズテスト、基本機能保護テスト（754テスト、記事数により変動）。`.github/workflows/ci.yml` によりmain/staging/feature/*へのpush・PRで自動実行される（Playwright は含めない）。Issue #127 で SEC-35 のブランチ別テスト登録を廃止したため、feature・main・staging・CI で件数は同じ
+- **Playwright**: PC/iPad/iPhone 3デバイスで465テスト（457実行+8スキップ、ローカルのみ）。**CI に Playwright は載せない**（実行時間のためローカル運用を継続）。本番（main）マージ前のローカル全件は必須（Bug #50）
 - コンテンツ検証テストは記事数・ページ数に応じて動的展開される
 - テスト実行後、失敗がある場合は原因を調査し修正する（テストを削除・スキップしない）
 - **テストにコンテンツをハードコードしない**: 記事名・固定ページ名・URL等はソースから動的取得する（コンテンツ変更でテストが壊れない設計）
@@ -165,7 +169,7 @@ DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を�
 - **レポート形式**: `report.html`（画像埋め込み、PC/iPad/iPhone 3デバイス横並び表示）
 - **スクリーンショット**: `screenshots/`, `site-interactive/`, `cms-interactive/` サブフォルダに整理
 - **検証スクリプト**: `verify-staging.mjs`（基本動作確認）、`verify-site-interactive.mjs`（サイト操作性、10シナリオ×3デバイス）、`verify-cms-interactive.mjs`（CMS操作性、16シナリオ×3デバイス）、`verify-cms-crud.mjs`（CMS CRUD操作、16シナリオ×3デバイス）、`evidence/YYYY-MM-DD/verify-security.mjs`（SEC01〜SEC10の証跡確認、10項目）
-- **過去手法の優先**: 新しいE2Eエビデンスを作る場合も、既存スクリプトの構成（スタンドアロンPlaywright、赤枠アノテーション、HTMLレポート、結果JSON）を踏襲する。**雛形として `evidence/2026-05-24/verify-comprehensive.mjs` を優先使用する**（150シナリオ×3デバイス対応の最新包括版）。旧スクリプト: `verify-site-interactive.mjs` / `verify-cms-interactive.mjs` / `verify-cms-crud.mjs` / `verify-cms19-grouping.mjs`
+- **過去手法の優先**: 新しいE2Eエビデンスを作る場合も、既存スクリプトの構成（スタンドアロンPlaywright、赤枠アノテーション、HTMLレポート、結果JSON）を踏襲する。**雛形として `evidence/2026-05-24/verify-comprehensive.mjs` を優先使用する**（50シナリオを3デバイスで計150検証）。シナリオID数とデバイス展開数を混同せず、JSONのdevice別件数を照合する。旧スクリプト: `verify-site-interactive.mjs` / `verify-cms-interactive.mjs` / `verify-cms-crud.mjs` / `verify-cms19-grouping.mjs`
 - **CMS OAuthモック必須**: CMSエビデンスは実GitHub認証に依存させず、OAuth 3ステップハンドシェイクとGitHub APIモックで擬似ログインする。認証後のCMS独自カスタマイズ画面を撮影すること
 - **赤枠アノテーション**: 全スクリーンショットの注目箇所に赤枠とラベルを必ず付与する（ボタン・メニュー・重なり検出箇所・バグ再発防止確認箇所）
 - **ボタン操作テスト**: ボタンを実際に押下してメニュー展開・モーダル表示をエビデンス取得。複数メニュー同時展開時の操作性も確認
@@ -176,7 +180,7 @@ DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を�
 - **社内レビュー**: エビデンス提出前にスクリーンショットの内容を確認し、認証後の編集画面が正しく表示されていることをレビューする。ログイン画面のみのスクリーンショットは不可
 - **エビデンス取得後の必須作業**: (1) 社内レビュー（全数確認）→ (2) report.html更新（PC/iPad/iPhone横並び形式）→ (3) 作業完了報告書（work-completion-report.html）作成 → (4) フォルダ整理（デバッグファイル削除）→ (5) コミット・プッシュ
 - **フォルダ構成**: `evidence/YYYY-MM-DD/` 直下に `report.html`, `work-completion-report.html`, `verify-*.mjs`, `*-results.json` を配置。スクリーンショットは `screenshots/`, `site-interactive/`, `cms-interactive/`, `cms-crud/`, `security/` サブフォルダに整理。デバッグ用スクリーンショットや一時ファイルはコミット前に削除する
-- **CMS CRUD認証**: verify-cms-crud.mjsはDecap CMS 3ステップOAuthハンドシェイクをcontext.route()でシミュレート。実行前にconfig.ymlのbase_urlをlocalhost（テストサーバーURL）に一時変更し、実行後は必ず元の値に復元してからコミットする（詳細: DOCUMENTATION.md 4.9.8章）
+- **CMS CRUD認証**: verify-cms-crud.mjsはDecap CMS 3ステップOAuthハンドシェイクをcontext.route()でシミュレート。Issue #127 以降は base_url が `location.origin` から導出されるため、**config.yml の base_url を一時変更する手順は不要**（config.yml に base_url が無い）。旧スクリプトの一時書き換え処理は置換対象が無く何もしない（詳細: DOCUMENTATION.md 4.9.9章）
 - **E2Eテストのスクリーンショットエビデンス**: CMS関連のE2Eスペックテスト（Playwright）でも認証後のCMS画面スクリーンショットを `evidence/YYYY-MM-DD/screenshots/` に保存する。ファイル名規則: `e{テストID}-{検証項目}-{デバイス名}.png`。認証には `context.route()` + 3ステップOAuthハンドシェイクを使用する。`page.route()` ではOAuthポップアップをインターセプトできないため不可（Bug #36）
 - **エビデンスの格納ルール**: エビデンス（スクリーンショット・レポート・検証結果JSON）は必ず `evidence/YYYY-MM-DD/` フォルダに格納する。ルートディレクトリや他の日付フォルダに格納してはならない。過去日付のエビデンスフォルダを上書き・削除しないこと
 
@@ -217,7 +221,7 @@ DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を�
 1. コード変更は必ず `staging` ブランチで先に実装・テスト・プッシュする
 2. staging.reiwa.casa で動作確認を行い、問題がないことを確認する
 3. ユーザーの明示的な承認を得てから `staging` → `main` にマージする（勝手にマージしない）
-4. マージ後、`config.yml` の `branch` / `base_url`、`astro.config.mjs` の `SITE_URL`、`public/robots.txt` のクロール方針が main の値（`branch: main` / `base_url: https://reiwa.casa` / `SITE_URL: https://reiwa.casa` / `Allow: /` + Sitemap）であることを確認する。**PRマージ等の機械的な差分採用でこれら4項目がマージ方向の副作用で丸ごと相手ブランチの値に上書きされることがある**（Bug #51: staging CMSが本番mainへ直接コミットする状態が21分間発生）。互いに整合しているだけでは検知できないため、`npm test`（`cms-config.test.mjs` のSEC-35テストが実際のブランチに対する値を自動検証する）を必ず実行する。**SEC-35はブランチ別にテストを登録する**ため、main/stagingでは厳密チェック4件が有効になり、feature/*等の判定不能ブランチでは内部整合チェック1件のみになる（Vitest合計はfeatureブランチ695件、main/staging698件）。件数差はこの登録差によるものであり、テストの欠落や壊れではない
+4. **環境固有値はファイルに無い（Issue #127）**。`config.yml` に `branch` / `base_url`、`public/robots.txt`、`SITE_URL` のリテラルは存在せず、main と staging でこれらのファイルは同一内容になる。マージで「main の値に戻す」作業は無い。マージ後は `git diff staging -- astro.config.mjs public/admin/config.yml public/admin/cms-env.js src/lib/site-env.mjs src/pages/robots.txt.ts` が空であることと `npm test`（SEC-35 改訂テスト・env-derivation 静的ガード）の全PASSを確認し、本番デプロイ後は DOCUMENTATION.md 4.6.6章の**読み取りのみ**の確認（robots・canonical・cms-env.js）を行う。**Issue #127 を main に初めて反映するときだけ** 4.6.5章の移行手順（main 側の旧値を捨て、4ファイルを staging と同じ新構造に揃える）に従う（Bug #51 の構造的解消）
 5. **コンテンツ（記事・固定ページ・画像）は main と staging で常に同一に保つ**: マージ時に `src/content/`・`public/images/uploads/`・`public/admin/url-map.json` の差分がないことを確認し、差分があれば同期する
 6. main ブランチでテストを実行し、全PASS を確認してからプッシュする
 7. **Vitest だけでは main マージ不可**。ローカル `npm run test:e2e`（3デバイス全件）と `node evidence/YYYY-MM-DD/verify-comprehensive.mjs`（雛形 `evidence/2026-05-24/verify-comprehensive.mjs`）の完了が必須。CI の Vitest 成功・staging CMS 実ログイン確認・「後で E2E」は代替にならない（Bug #50）
@@ -231,7 +235,8 @@ DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を�
 - OAuth scope は `public_repo,read:user` に限定する（`repo` / `user` 禁止）
 - HTMLテンプレートに埋め込む変数は必ずエスケープする
 - 変数宣言は `const` / `let` のみ（`var` 禁止）、`'use strict'` を使用
-- セキュリティ要件は DOCUMENTATION.md 1.4.2章（SEC-01〜SEC-40）、品質基準は 4.7章を参照
+- セキュリティ要件は DOCUMENTATION.md 1.4.2章（SEC-01〜SEC-41、SEC-127A〔仮ID〕）、品質基準は 4.7章を参照
+- **環境固有値をファイルに書き戻さない**（SEC-127A 仮ID）: config.yml に `branch` / `base_url`、`public/robots.txt`、`astro.config.mjs` の `SITE_URL` リテラルを追加しない。本番ホスト名は `public/admin/cms-env.js` の `HOSTNAME_TO_BRANCH` と `src/lib/site-env.mjs` の `PRODUCTION_SITE_URL` の2か所だけ（一致はテストが検証）。admin/index.html にはホスト名も URL も書かない
 - **frontmatter は `scripts/lib/safe-frontmatter.mjs` 経由で解析する**（scripts だけでなく tests/・E2E も同じ。gray-matter を直接呼ばない。`npm run build` は organize-posts より先に Vitest を実行するため、テストも同じ経路になる。`language: 'yaml'` 指定だけでは `---js` の eval を防げない。Bug #52）
 - **OAuth オリジン許可リストは `functions/_shared/allowed-origin.js` だけで管理する**（SEC-37）。コールバック HTML への値の埋め込みは `toScriptStringLiteral()`（JSON.stringify ベース、SEC-39）を使い、応答 CSP は `frame-ancestors`/`form-action`/`base-uri` まで自己完結させる（SEC-38。Functions の応答には `_headers` が適用されない）
 - **GitHub Actions は commit SHA で固定し `# vX.Y.Z` を併記する**（SEC-36）
@@ -265,4 +270,4 @@ DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を�
 - sitemap除外は `astro.config.mjs` の `filter` で行う。**frontmatterとfilterのずれは `build.test.mjs`（FR-29）が検出する**ので、slugを変えたらfilterも直す。
 - 原稿変更時は `tests/e2e/app-info.spec.ts` のソース連動E2E（2ページ×3デバイス）で確認する。
 - **CMSに項目を足さずにフロントマターを増やさない**。Decap CMSは設定にない項目を保存時に落とす。`cms-config.test.mjs` が固定ページの全フロントマター項目とZodスキーマ項目をCMS設定と突き合わせて検出する。
-- 現行テスト定義はVitest 695件（feature ブランチ）／698件（main・staging。SEC-35のブランチ別テスト登録により+3件）、E2E 453件（旧444件＋FR-29 9件、445実行+8スキップ）。QAは `docs/qa-2026-09-09-otp-app-pages.md`。
+- 現行テスト定義はVitest 754件（全ブランチ共通。Issue #127 で SEC-35 のブランチ別登録を廃止）、E2E 465件（旧444件＋FR-29 9件＋Issue #127 E-47 12件、457実行+8スキップ）。QAは `docs/qa-2026-09-09-otp-app-pages.md`。

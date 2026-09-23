@@ -1,0 +1,6 @@
+backend:
+  name: github
+  repo: bickojima/my-blog
+  branch: main
+  base_url: https://reiwa.casa
+  auth_endpoint: /auth
