@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import matter from 'gray-matter';
+import { parseFrontmatter } from './lib/safe-frontmatter.mjs';
 
 const POSTS_DIR = 'src/content/posts';
 
@@ -23,7 +23,8 @@ function findMdFiles(dir) {
 function extractFrontmatter(filePath) {
   const content = fs.readFileSync(filePath, 'utf-8');
   try {
-    const { data } = matter(content, { language: 'yaml' });
+    // SEC-29 / Bug #52: YAML以外（`---js` 等）は評価前に拒否する（例外は下のcatchでnull扱い）
+    const { data } = parseFrontmatter(content);
     if (!data.date || !data.title) return null;
     const dateStr = data.date instanceof Date
       ? data.date.toISOString().split('T')[0]

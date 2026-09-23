@@ -127,6 +127,7 @@ version**, separately for Production and Preview.
 
 - If the install resolves to `npm ci`, **the lead is refuted** and the pinning holds end to end. Close it.
 - If it resolves to `npm install`, a package-manager default, or a framework-preset default that does not consult the lockfile, the lead is substantiated and the fix is to set the build command explicitly to `npm ci && npm run build:raw`.
+  - **Correction (2026-09-23, Issue #128):** do not use `build:raw` here. The Pages build command is `npm run build` (confirmed in the dashboard on 2026-09-23). Its leading `vitest run` step is the test gate that stops a deploy when tests fail, and `build:raw` skips that step. If this fix is needed, use `npm ci && npm run build` (see DOCUMENTATION.md 2.5.1).
 
 As a cross-check, open the most recent production build log, read the install line it printed
 and the resolved `astro` version, and compare that version against `package-lock.json`. A

@@ -1,0 +1,72 @@
+<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><title>Issue #117 OAuth hardening E2E</title>
+<style>body{font-family:sans-serif;margin:16px}table{border-collapse:collapse;width:100%}th,td{border:1px solid #ccc;padding:6px;vertical-align:top}th{width:18%;text-align:left}td img{max-width:100%;border:1px solid #ddd}.ok{color:#fff;background:#1a7f37;display:inline-block;padding:2px 6px}.ng{color:#fff;background:#cf222e;display:inline-block;padding:2px 6px}pre{white-space:pre-wrap;font-size:11px;max-height:160px;overflow:auto}</style></head>
+<body><h1>Issue #117 hardening: OAuth Functions 実コード経由 E2E（2026-09-23）</h1>
+<p>対象: SEC-37（許可リスト単一化）/ SEC-38（コールバック CSP・charset）/ SEC-39（JSON.stringify リテラル）。/auth・/auth/callback は functions/auth/*.js の実コードで応答し、GitHub のトークン交換と API のみモック。結果: <b>15/15 PASS</b></p>
+<table><tr><th>シナリオ</th><th>PC</th><th>iPad</th><th>iPhone</th></tr><tr><th>H01<br><small>実操作ログイン（実 /auth・/auth/callback コード経由）でCMS画面が表示され、正しいトークンでAPIを呼ぶ</small></th><td><div class="ok">PASS</div><a href="screenshots/h01-login-PC.png"><img src="screenshots/h01-login-PC.png" loading="lazy"></a><pre>{
+ "loggedIn": true,
+ "authHeaderSeen": "token gho_issue117_normal_token",
+ "popupStatus": "Token sent! Closing window..."
+}</pre></td><td><div class="ok">PASS</div><a href="screenshots/h01-login-iPad.png"><img src="screenshots/h01-login-iPad.png" loading="lazy"></a><pre>{
+ "loggedIn": true,
+ "authHeaderSeen": "token gho_issue117_normal_token",
+ "popupStatus": "Token sent! Closing window..."
+}</pre></td><td><div class="ok">PASS</div><a href="screenshots/h01-login-iPhone.png"><img src="screenshots/h01-login-iPhone.png" loading="lazy"></a><pre>{
+ "loggedIn": true,
+ "authHeaderSeen": "token gho_issue117_normal_token",
+ "popupStatus": "Token sent! Closing window..."
+}</pre></td></tr>
+<tr><th>H02<br><small>コールバック応答が charset 付き Content-Type と自己完結 CSP（frame-ancestors/form-action/base-uri）を返す</small></th><td><div class="ok">PASS</div><a href="screenshots/h01-callback-popup-PC.png"><img src="screenshots/h01-callback-popup-PC.png" loading="lazy"></a><pre>{
+ "contentType": "text/html; charset=utf-8",
+ "csp": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; frame-ancestors 'none'; form-action 'none'; base-uri 'none'"
+}</pre></td><td><div class="ok">PASS</div><a href="screenshots/h01-callback-popup-iPad.png"><img src="screenshots/h01-callback-popup-iPad.png" loading="lazy"></a><pre>{
+ "contentType": "text/html; charset=utf-8",
+ "csp": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; frame-ancestors 'none'; form-action 'none'; base-uri 'none'"
+}</pre></td><td><div class="ok">PASS</div><a href="screenshots/h01-callback-popup-iPhone.png"><img src="screenshots/h01-callback-popup-iPhone.png" loading="lazy"></a><pre>{
+ "contentType": "text/html; charset=utf-8",
+ "csp": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; frame-ancestors 'none'; form-action 'none'; base-uri 'none'"
+}</pre></td></tr>
+<tr><th>H03<br><small>&lt;/script&gt;・引用符・バッククオート・${} を含むトークンが完全一致で CMS に渡り、注入スクリプトは実行されない</small></th><td><div class="ok">PASS</div><a href="screenshots/h03-hostile-token-PC.png"><img src="screenshots/h03-hostile-token-PC.png" loading="lazy"></a><pre>{
+ "loggedIn": true,
+ "exact": true,
+ "popupScripts": 1,
+ "popupPwn": null,
+ "authHeaderSeen": "token gho_x&lt;/script&gt;&lt;script&gt;window.__pwn=1&lt;/script&gt;\"'`${window.__pwn=2}`\\"
+}</pre></td><td><div class="ok">PASS</div><a href="screenshots/h03-hostile-token-iPad.png"><img src="screenshots/h03-hostile-token-iPad.png" loading="lazy"></a><pre>{
+ "loggedIn": true,
+ "exact": true,
+ "popupScripts": 1,
+ "popupPwn": null,
+ "authHeaderSeen": "token gho_x&lt;/script&gt;&lt;script&gt;window.__pwn=1&lt;/script&gt;\"'`${window.__pwn=2}`\\"
+}</pre></td><td><div class="ok">PASS</div><a href="screenshots/h03-hostile-token-iPhone.png"><img src="screenshots/h03-hostile-token-iPhone.png" loading="lazy"></a><pre>{
+ "loggedIn": true,
+ "exact": true,
+ "popupScripts": 1,
+ "popupPwn": null,
+ "authHeaderSeen": "token gho_x&lt;/script&gt;&lt;script&gt;window.__pwn=1&lt;/script&gt;\"'`${window.__pwn=2}`\\"
+}</pre></td></tr>
+<tr><th>H04<br><small>/auth/callback を iframe に埋め込むと描画されず、ブラウザが frame-ancestors none 違反として遮断する</small></th><td><div class="ok">PASS</div><a href="screenshots/h04-iframe-blocked-PC.png"><img src="screenshots/h04-iframe-blocked-PC.png" loading="lazy"></a><pre>{
+ "frameUrl": "chrome-error://chromewebdata/",
+ "rendered": false,
+ "cspErrors": [
+  "Framing 'https://staging.reiwa.casa/' violates the following Content Security Policy directive: \"frame-ancestors 'none'\". The request has been blocked."
+ ]
+}</pre></td><td><div class="ok">PASS</div><a href="screenshots/h04-iframe-blocked-iPad.png"><img src="screenshots/h04-iframe-blocked-iPad.png" loading="lazy"></a><pre>{
+ "frameUrl": "chrome-error://chromewebdata/",
+ "rendered": false,
+ "cspErrors": [
+  "Framing 'https://staging.reiwa.casa/' violates the following Content Security Policy directive: \"frame-ancestors 'none'\". The request has been blocked."
+ ]
+}</pre></td><td><div class="ok">PASS</div><a href="screenshots/h04-iframe-blocked-iPhone.png"><img src="screenshots/h04-iframe-blocked-iPhone.png" loading="lazy"></a><pre>{
+ "frameUrl": "chrome-error://chromewebdata/",
+ "rendered": false,
+ "cspErrors": [
+  "Framing 'https://staging.reiwa.casa/' violates the following Content Security Policy directive: \"frame-ancestors 'none'\". The request has been blocked."
+ ]
+}</pre></td></tr>
+<tr><th>H05<br><small>opener なしで開くとインラインスクリプトが実行され「No parent window」エラーを表示する</small></th><td><div class="ok">PASS</div><a href="screenshots/h05-no-opener-PC.png"><img src="screenshots/h05-no-opener-PC.png" loading="lazy"></a><pre>{
+ "status": "Error: No parent window found"
+}</pre></td><td><div class="ok">PASS</div><a href="screenshots/h05-no-opener-iPad.png"><img src="screenshots/h05-no-opener-iPad.png" loading="lazy"></a><pre>{
+ "status": "Error: No parent window found"
+}</pre></td><td><div class="ok">PASS</div><a href="screenshots/h05-no-opener-iPhone.png"><img src="screenshots/h05-no-opener-iPhone.png" loading="lazy"></a><pre>{
+ "status": "Error: No parent window found"
+}</pre></td></tr></table></body></html>

@@ -1,0 +1,19 @@
+# Dependabot 設定（SEC-40, Issue #132）
+# 役割分担（docs/DOCUMENTATION.md 4.11章）:
+# - github-actions: Dependabot が更新 PR を作る（SHA 固定の場合は SHA とバージョンコメントを更新）
+# - npm: 脆弱性は Dependabot alerts / npm audit、通常更新は手動（本ファイルでは扱わない）
+# - CDN（Decap CMS）/ Node.js / Cloudflare Pages: Dependabot 対象外。
+#   .github/workflows/dependency-freshness.yml の週次チェックで検知する
+# staging 先行運用のため PR は staging 向けに作る。
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    target-branch: staging
+    schedule:
+      interval: weekly
+      day: monday
+      timezone: Asia/Tokyo
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: ci
