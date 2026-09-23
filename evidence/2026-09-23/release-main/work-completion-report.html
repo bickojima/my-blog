@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>作業完了報告書 — 本番リリース (2026-09-23)</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; line-height: 1.6; color: #222; background: #f7f8fa; }
+  header { background: #1e2d4e; color: #fff; padding: 24px 32px; }
+  header h1 { font-size: 1.6rem; font-weight: 700; }
+  header p { margin-top: 4px; opacity: 0.8; }
+  main { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+  section { background: #fff; border-radius: 8px; border: 1px solid #e0e3ea; margin-bottom: 20px; overflow: hidden; }
+  section h2 { background: #f0f3fa; border-bottom: 1px solid #e0e3ea; padding: 12px 20px; font-size: 1rem; font-weight: 700; color: #1e2d4e; }
+  section .body { padding: 16px 20px; overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid #eaecf0; font-size: 13px; vertical-align: top; }
+  th { background: #f8f9fc; font-weight: 600; color: #444; }
+  .pass { color: #1a7a4a; font-weight: 700; }
+  .note { color: #8a5a00; }
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+  .stat-card { background: #f8f9fc; border: 1px solid #e0e3ea; border-radius: 6px; padding: 12px 16px; text-align: center; }
+  .stat-card .num { font-size: 2rem; font-weight: 800; color: #1a7a4a; line-height: 1; }
+  .stat-card .label { font-size: 11px; color: #666; margin-top: 4px; }
+  code { background: #f0f3fa; padding: 1px 5px; border-radius: 3px; font-size: 12px; word-break: break-all; }
+</style>
+</head>
+<body>
+<header>
+  <h1>作業完了報告書 — staging → main 本番リリース</h1>
+  <p>実施日: 2026年9月23日 | リリースPR: #139 | マージコミット: <code style="color:#fff;background:transparent">f60b81d</code></p>
+</header>
+<main>
+<section>
+  <h2>実施結果サマリー</h2>
+  <div class="body">
+    <div class="stat-grid">
+      <div class="stat-card"><div class="num">695 / 698</div><div class="label">Vitest 全PASS（通常 / CF_PAGES_BRANCH=main）</div></div>
+      <div class="stat-card"><div class="num">445+8</div><div class="label">Playwright E2E 453件（0 failed / 0 flaky、15.6m）</div></div>
+      <div class="stat-card"><div class="num">150/150</div><div class="label">verify-comprehensive.mjs</div></div>
+      <div class="stat-card"><div class="num">145</div><div class="label">スクリーンショット全数レビュー</div></div>
+    </div>
+  </div>
+</section>
+<section>
+  <h2>リリース対象（origin/main..origin/staging @ b275e6b）</h2>
+  <div class="body">
+    <table>
+      <tr><th>PR</th><th>内容</th></tr>
+      <tr><td>#133</td><td>Issue #129 セキュリティエビデンス範囲の明確化</td></tr>
+      <tr><td>#135</td><td>Issue #117 hardening（Bug #52, SEC-36〜39）</td></tr>
+      <tr><td>#136</td><td>未解決課題QA文書の個人識別パス伏せ字化</td></tr>
+      <tr><td>#137</td><td>Issue #128 Cloudflare Pages テストゲートの文書化</td></tr>
+      <tr><td>#134</td><td>Issue #132 npm管理外依存の鮮度・EOL監視（SEC-40）</td></tr>
+    </table>
+    <p style="margin-top:8px">想定外のコミットなし。リリース作業中に staging へ PR #138（QA文書のみ、19:05 マージ）が入ったが、本リリースには含まれていない。</p>
+  </div>
+</section>
+<section>
+  <h2>マージ前ゲート（release/staging-to-main-2026-09-23 上）</h2>
+  <div class="body">
+    <table>
+      <tr><th>確認</th><th>結果</th></tr>
+      <tr><td>環境固有ファイル（Bug #51）</td><td class="pass">config.yml <code>branch: main</code> / <code>base_url: https://reiwa.casa</code>、SITE_URL <code>https://reiwa.casa</code>、robots <code>Allow: /</code> + 本番Sitemap。マージ後ツリーと staging の差分は3ファイルのみ</td></tr>
+      <tr><td>コンテンツ同一性</td><td class="pass"><code>src/content/</code>・<code>public/images/uploads/</code>・<code>public/admin/url-map.json</code> 差分なし</td></tr>
+      <tr><td><code>npm test</code></td><td class="pass">695/695 PASS（release ブランチ名のため SEC-35 は内部整合のみ）</td></tr>
+      <tr><td><code>CF_PAGES_BRANCH=main npm test</code></td><td class="pass">698/698 PASS（SEC-35 厳密チェック4件有効）</td></tr>
+      <tr><td><code>npm run build</code></td><td class="pass">成功（20ページ）</td></tr>
+      <tr><td><code>npm run test:e2e</code></td><td class="pass">445 passed / 8 skipped（既存の条件付き skip）/ 0 failed。<a href="e2e-summary.txt">e2e-summary.txt</a></td></tr>
+      <tr><td>包括エビデンス</td><td class="pass">150/150 PASS、バグ候補0。<a href="report.html">report.html</a>（PC/iPad/iPhone 横並び）。dist/admin/config.yml の一時変更は実行後に復元を確認</td></tr>
+      <tr><td>PR CI（test-and-build）</td><td class="pass">SUCCESS</td></tr>
+    </table>
+  </div>
+</section>
+<section>
+  <h2>社内レビュー（スクリーンショット145枚）</h2>
+  <div class="body">
+    <table>
+      <tr><th>確認</th><th>結果</th></tr>
+      <tr><td>ログイン画面のみになっていない</td><td class="pass">T02〜T55 は認証後 CMS 画面（コレクション一覧・エディタ・新規作成・年月セレクタ）。3デバイスとも確認</td></tr>
+      <tr><td>赤枠アノテーション</td><td class="pass">注目箇所があるシナリオに赤枠とラベルあり（見出し・サイトリンク・日付/下書きバッジ・年月セレクタ・URLバー等）</td></tr>
+      <tr><td>前回リリース（2026-09-20）との比較</td><td class="pass">145枚すべて画素差 0.5% 未満で一致。表示の後退なし</td></tr>
+      <tr><td class="note">既知の見え方（後退ではない）</td><td class="note">既存記事エディタ（T07 等）のフィールドが空欄、T28 以降の iPad/iPhone 一覧に「その他」グループ（空エントリ）が出る。いずれも 2026-09-20 と同一で、GitHub API モックによるもの</td></tr>
+    </table>
+  </div>
+</section>
+<section>
+  <h2>本番確認（読み取りのみ、<a href="verify-prod-readonly.sh">verify-prod-readonly.sh</a>）</h2>
+  <div class="body">
+    <table>
+      <tr><th>確認</th><th>結果</th></tr>
+      <tr><td>Cloudflare Pages（f60b81d の check-run）</td><td class="pass">completed / success（10:41:39Z）</td></tr>
+      <tr><td>トップ / 記事ページ</td><td class="pass">200 / 200（記事は末尾スラッシュなしで 308 → <code>/…/</code> で 200）</td></tr>
+      <tr><td>canonical</td><td class="pass">トップ・記事とも <code>https://reiwa.casa/…</code></td></tr>
+      <tr><td>/robots.txt</td><td class="pass"><code>Allow: /</code> + <code>Sitemap: https://reiwa.casa/sitemap-index.xml</code></td></tr>
+      <tr><td>/sitemap-index.xml</td><td class="pass">200</td></tr>
+      <tr><td>/admin/</td><td class="pass">200。CSP・COOP・CORP・X-Frame-Options 等はリリース前（<a href="prod-before/admin-headers.txt">prod-before</a>）と同一</td></tr>
+      <tr><td>/admin/config.yml</td><td class="pass"><code>branch: main</code> / <code>base_url: https://reiwa.casa</code></td></tr>
+      <tr><td>/auth</td><td class="pass">302 → github.com/login/oauth/authorize、scope <code>public_repo,read:user</code>（リリース前と同一）</td></tr>
+      <tr><td>main と staging の差分</td><td class="pass">リリース対象 b275e6b との差分は環境固有3ファイルのみ。現在の staging とは加えて PR #138 の QA文書1件</td></tr>
+    </table>
+  </div>
+</section>
+</main>
+</body>
+</html>
