@@ -448,6 +448,13 @@
         }
       });
     </script>
+    <script>
+      // Issue #127: 自動初期化を止め、書き込み先ブランチと base_url を実行時に渡してから CMS.init する。
+      // この2項目は config.yml に置かない（main / staging でファイル差分を持たないため。Bug #51）。
+      'use strict';
+      window.CMS_MANUAL_INIT = true;
+    </script>
+    <script src="/admin/cms-env.js"></script>
     <script src="https://unpkg.com/decap-cms@3.16.2/dist/decap-cms.js" integrity="sha384-tbnFsiSBvMm2vOLu70Mx7HlnMj6kXxR0Tdo0USlY9564mb1AyMnIdCjOZ738PWPr" crossorigin="anonymous"></script>
     <script>
       // プレビューペインに本番サイト相当のスタイルを適用
@@ -527,6 +534,14 @@
           font-size: inherit;
         }
       `, { raw: true });
+    </script>
+    <script>
+      // Issue #127: config.yml（name/repo/auth_endpoint 等）の上に backend.branch / base_url を
+      // deepmerge させる（init 側が優先）。判定は /admin/cms-env.js の resolveCmsBackend():
+      // ホスト名が本番と完全一致したときだけ main、それ以外はすべて staging。base_url は location.origin。
+      // cms-env.js が読めない場合はここで例外になり CMS は起動しない（誤ったブランチへは書き込まない）。
+      'use strict';
+      CMS.init({ config: { backend: window.resolveCmsBackend(window.location) } });
     </script>
     <script>
       // Decap CMS UI カスタマイズ + 画像アップロード処理

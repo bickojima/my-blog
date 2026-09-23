@@ -1,0 +1,18 @@
+[
+  {
+    "branch": "main",
+    "status": "PASS",
+    "robots": "User-agent: *\nAllow: /\nSitemap: https://reiwa.casa/sitemap-index.xml",
+    "canonical": "https://reiwa.casa/",
+    "sitemapIncludesExpectedOrigin": true,
+    "sitemapIncludesOtherOrigin": false
+  },
+  {
+    "branch": "staging",
+    "status": "PASS",
+    "robots": "User-agent: *\nDisallow: /",
+    "canonical": "https://staging.reiwa.casa/",
+    "sitemapIncludesExpectedOrigin": true,
+    "sitemapIncludesOtherOrigin": false
+  }
+]

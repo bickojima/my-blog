@@ -1,0 +1,165 @@
+{
+  "observedAt": "2026-09-23T11:40:32.990Z",
+  "expectedMergeCommit": "2bbac7d4132a2fcdc6a26a66b8473ab236128b07",
+  "deploymentCommitId": "unavailable: Cloudflare API token absent in task environment; Wrangler list failed auth",
+  "results": [
+    {
+      "host": "https://staging.reiwa.casa",
+      "statuses": {
+        "/robots.txt": 200,
+        "/": 200,
+        "/sitemap-index.xml": 200,
+        "/admin/config.yml": 200,
+        "/admin/cms-env.js": 200,
+        "/admin/": 200
+      },
+      "robotsDisallow": true,
+      "canonical": "<link rel=\"canonical\" href=\"https://staging.reiwa.casa/\">",
+      "sitemapHostCorrect": true,
+      "configBranchBaseUrlAbsent": true,
+      "cmsEnvScriptPresent": true,
+      "adminCsp": "default-src 'none'; script-src 'self' https://unpkg.com 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' blob: https://github.com https://api.github.com https://*.githubusercontent.com; img-src 'self' https: data: blob:; font-src 'self' data:; frame-src 'self' blob:; frame-ancestors 'self'; form-action 'self' https://github.com; base-uri 'self'; upgrade-insecure-requests",
+      "adminCspAllowsInsights": false
+    },
+    {
+      "host": "https://staging.my-blog-3cg.pages.dev",
+      "statuses": {
+        "/robots.txt": 200,
+        "/": 200,
+        "/sitemap-index.xml": 200,
+        "/admin/config.yml": 200,
+        "/admin/cms-env.js": 200,
+        "/admin/": 200
+      },
+      "robotsDisallow": true,
+      "canonical": "<link rel=\"canonical\" href=\"https://staging.reiwa.casa/\">",
+      "sitemapHostCorrect": true,
+      "configBranchBaseUrlAbsent": true,
+      "cmsEnvScriptPresent": true,
+      "adminCsp": "default-src 'none'; script-src 'self' https://unpkg.com 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' blob: https://github.com https://api.github.com https://*.githubusercontent.com; img-src 'self' https: data: blob:; font-src 'self' data:; frame-src 'self' blob:; frame-ancestors 'self'; form-action 'self' https://github.com; base-uri 'self'; upgrade-insecure-requests",
+      "adminCspAllowsInsights": false
+    }
+  ],
+  "fingerprints": [
+    {
+      "host": "https://staging.reiwa.casa",
+      "path": "/robots.txt",
+      "status": 200,
+      "contentType": "text/plain; charset=utf-8",
+      "date": "Wed, 23 Sep 2026 11:40:32 GMT",
+      "etag": "\"7449a33a1700b7073a75b43477194126\"",
+      "cfRay": "a3f9466c9f50f2d4-NRT",
+      "bodySha256": "331ea9090db0c9f6f597bd9840fd5b171830f6e0b3ba1cb24dfa91f0c95aedc1"
+    },
+    {
+      "host": "https://staging.reiwa.casa",
+      "path": "/",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "date": "Wed, 23 Sep 2026 11:40:32 GMT",
+      "etag": null,
+      "cfRay": "a3f9466d2a1ea562-NRT",
+      "bodySha256": "d4a5ffe603f65c8be26d7021acd84cb4920574b0fcb05875e9560ed6501ce846"
+    },
+    {
+      "host": "https://staging.reiwa.casa",
+      "path": "/sitemap-index.xml",
+      "status": 200,
+      "contentType": "application/xml",
+      "date": "Wed, 23 Sep 2026 11:40:32 GMT",
+      "etag": "W/\"2bdafa0d474a68b0f2b85adb21bc471f\"",
+      "cfRay": "a3f9466dbc6cf2d4-NRT",
+      "bodySha256": "4618e4bdfbd0e4ac88fdc52e7b05dca5fdfa7fe544d87ce40a0aafb4edeccc1e"
+    },
+    {
+      "host": "https://staging.reiwa.casa",
+      "path": "/admin/config.yml",
+      "status": 200,
+      "contentType": "text/yaml; charset=utf-8",
+      "date": "Wed, 23 Sep 2026 11:40:32 GMT",
+      "etag": "\"88278242db8be7ba9f9083bf88faf576\"",
+      "cfRay": "a3f9466e0e0cf2d4-NRT",
+      "bodySha256": "cdaea3a30f6b886c16ba6796445f87c96626d32226088aff18a8ef88c753616d"
+    },
+    {
+      "host": "https://staging.reiwa.casa",
+      "path": "/admin/cms-env.js",
+      "status": 200,
+      "contentType": "application/javascript",
+      "date": "Wed, 23 Sep 2026 11:40:32 GMT",
+      "etag": "W/\"125c3ccf0e9fa3df0fa441d7fa6d442b\"",
+      "cfRay": "a3f9466e4f0ba562-NRT",
+      "bodySha256": "b0ea6f3b00490cda7f771dd5e7f7af3e992cfab5ae45af1d6f64808842aabaaa"
+    },
+    {
+      "host": "https://staging.reiwa.casa",
+      "path": "/admin/",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "date": "Wed, 23 Sep 2026 11:40:32 GMT",
+      "etag": null,
+      "cfRay": "a3f9466e8fdcf2d4-NRT",
+      "bodySha256": "6c2af4a074e8d0ec9eb6b52f4ec1cc69a8ff4929607ae914e72528ec8bcb423f"
+    },
+    {
+      "host": "https://staging.my-blog-3cg.pages.dev",
+      "path": "/robots.txt",
+      "status": 200,
+      "contentType": "text/plain; charset=utf-8",
+      "date": "Wed, 23 Sep 2026 11:40:32 GMT",
+      "etag": "\"7449a33a1700b7073a75b43477194126\"",
+      "cfRay": "a3f9466f3f323f16-NRT",
+      "bodySha256": "331ea9090db0c9f6f597bd9840fd5b171830f6e0b3ba1cb24dfa91f0c95aedc1"
+    },
+    {
+      "host": "https://staging.my-blog-3cg.pages.dev",
+      "path": "/",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "date": "Wed, 23 Sep 2026 11:40:32 GMT",
+      "etag": null,
+      "cfRay": "a3f9466fafbfa1cb-NRT",
+      "bodySha256": "d4a5ffe603f65c8be26d7021acd84cb4920574b0fcb05875e9560ed6501ce846"
+    },
+    {
+      "host": "https://staging.my-blog-3cg.pages.dev",
+      "path": "/sitemap-index.xml",
+      "status": 200,
+      "contentType": "application/xml",
+      "date": "Wed, 23 Sep 2026 11:40:32 GMT",
+      "etag": "W/\"2bdafa0d474a68b0f2b85adb21bc471f\"",
+      "cfRay": "a3f946711e023f16-NRT",
+      "bodySha256": "4618e4bdfbd0e4ac88fdc52e7b05dca5fdfa7fe544d87ce40a0aafb4edeccc1e"
+    },
+    {
+      "host": "https://staging.my-blog-3cg.pages.dev",
+      "path": "/admin/config.yml",
+      "status": 200,
+      "contentType": "text/yaml; charset=utf-8",
+      "date": "Wed, 23 Sep 2026 11:40:32 GMT",
+      "etag": "\"88278242db8be7ba9f9083bf88faf576\"",
+      "cfRay": "a3f946713e8b3f16-NRT",
+      "bodySha256": "cdaea3a30f6b886c16ba6796445f87c96626d32226088aff18a8ef88c753616d"
+    },
+    {
+      "host": "https://staging.my-blog-3cg.pages.dev",
+      "path": "/admin/cms-env.js",
+      "status": 200,
+      "contentType": "application/javascript",
+      "date": "Wed, 23 Sep 2026 11:40:32 GMT",
+      "etag": "W/\"125c3ccf0e9fa3df0fa441d7fa6d442b\"",
+      "cfRay": "a3f946715e93a1cb-NRT",
+      "bodySha256": "b0ea6f3b00490cda7f771dd5e7f7af3e992cfab5ae45af1d6f64808842aabaaa"
+    },
+    {
+      "host": "https://staging.my-blog-3cg.pages.dev",
+      "path": "/admin/",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "date": "Wed, 23 Sep 2026 11:40:32 GMT",
+      "etag": "W/\"8cbfd483d0bb75f5dd916e12dd659501\"",
+      "cfRay": "a3f946717f8f3f16-NRT",
+      "bodySha256": "6c2af4a074e8d0ec9eb6b52f4ec1cc69a8ff4929607ae914e72528ec8bcb423f"
+    }
+  ]
+}

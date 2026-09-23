@@ -1,8 +1,9 @@
 backend:
   name: github
   repo: bickojima/my-blog
-  branch: main
-  base_url: https://reiwa.casa
+  # branch / base_url はここに書かない（Issue #127・Bug #51）。
+  # admin/index.html が実行時にホスト名から導出して CMS.init で渡す（/admin/cms-env.js）。
+  # 本番ホストのときだけ branch: main、それ以外は staging。base_url は常に location.origin。
   auth_endpoint: /auth
 
 # 画像アップロード先（Astroのpublic配下に置く）
