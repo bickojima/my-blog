@@ -23,7 +23,7 @@
 | 12 | `.assetsignore` は Pages で無効 | 対応済み（SEC-34） | 対応済み | — | — | `build.test.mjs` / `fuzz-validation.test.mjs`（SEC-34） |
 | 13 | `decap-cms-app` が未使用 | 対応済み（依存削除、CDN は `decap-cms@3.16.2`） | 対応済み | — | — | `package.json` に無いこと、admin の CDN 固定テスト |
 | 14 | 公開ページにヘッダ配信の CSP が無い | 未対応（`Base.astro` の meta CSP のみ） | **対応不要（現時点）** | (a) `/*` にヘッダ CSP を置くと Cloudflare Pages は `/admin/*` にも Append する（Bug #28/#49）。CSP は複数あると全て適用されるため、公開用の厳しい方針（unpkg・`unsafe-eval` 不可）が管理画面を壊す。回避には `! Content-Security-Policy` による detach 等の未検証の構成が必要で、本番管理画面へのリスクが効果を上回る。(b) meta CSP が運べない `frame-ancestors` は `/*` の `X-Frame-Options: SAMEORIGIN` で既に担保。(c) 非 HTML 応答（RSS・画像・favicon・url-map.json）は自前の静的ファイルで `nosniff` 付き。(d) `'unsafe-inline'` の撤廃はインラインスクリプトのハッシュ化（Astro の CSP 機能等）を伴う公開サイト全体の変更で、注入元となりうるのはリポジトリ書込権限を持つ執筆者本人のみ | 公開ページに将来 XSS の sink が生じた場合、CSP は緩和にならない（`'unsafe-inline'`）。**再検討の契機**: 第三者由来のコンテンツ（コメント・埋め込み等）を受け入れるとき、外部スクリプトを追加するとき、または `/admin/*` の CSP 設計（#130）を見直すとき | 現状の meta CSP・XFO は既存テスト（SEC-28、SEC-30）で担保 |
-| 15 | ブランチ束縛が4箇所で手動管理 | 未対応 | **#127 へ移管** | #127（環境固有ファイルの構造的解消）と同根。実装要件・完了証跡は #127 に集約する（Q5 / 4章の依存関係） | #127 の完了まで SEC-35（Bug #51 再発防止テスト）で検知のみ | SEC-35（`cms-config.test.mjs`） |
+| 15 | ブランチ束縛が4箇所で手動管理 | 未対応 | **#127 へ移管** | #127（環境固有ファイルの構造的解消）と同根。実装要件・完了証跡は #127 に集約する（Q5 / 4章の依存関係） | #127 の完了まで SEC-35（Bug #51 再発防止テスト）で検知のみ。**2026-09-23 追記: #127 で4箇所をファイルから削除し、ビルド時 `CF_PAGES_BRANCH`／実行時ホスト名から導出する構造へ変更**（`src/lib/site-env.mjs`・`public/admin/cms-env.js`。DOCUMENTATION 4.6.4章） | SEC-35 改訂（`cms-config`・`env-derivation`・`build`・E2E `cms-env-branch`）、SEC-127A（仮ID） |
 
 ## 2. 実装内容と本番影響範囲
 

@@ -1,0 +1,17 @@
+top: 200
+article: /posts/2026/02/チャーハン美味しい -> 308, followed: 200 (final: https://reiwa.casa/posts/2026/02/%e3%83%81%e3%83%a3%e3%83%bc%e3%83%8f%e3%83%b3%e7%be%8e%e5%91%b3%e3%81%97%e3%81%84/)
+canonical(top): <link rel="canonical" href="https://reiwa.casa/"
+canonical(article): <link rel="canonical" href="https://reiwa.casa/posts/2026/02/%E3%83%81%E3%83%A3%E3%83%BC%E3%83%8F%E3%83%B3%E7%BE%8E%E5%91%B3%E3%81%97%E3%81%84/"
+sitemap-index.xml: 200
+admin/: 200
+--- robots.txt
+User-agent: *
+Allow: /
+Sitemap: https://reiwa.casa/sitemap-index.xml
+--- admin/config.yml (head)
+backend:
+  name: github
+  repo: bickojima/my-blog
+  branch: main
+  base_url: https://reiwa.casa
+  auth_endpoint: /auth

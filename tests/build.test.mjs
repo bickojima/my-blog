@@ -1,8 +1,11 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { execSync } from 'child_process';
 import { existsSync, readFileSync, readdirSync } from 'fs';
 import { join, extname, basename } from 'path';
 import { parseFrontmatter } from '../scripts/lib/safe-frontmatter.mjs'; // Bug #52: gray-matter を直接呼ばない
+import { mkdtempSync, rmSync } from 'fs';
+import { tmpdir } from 'os';
+import { isProductionBranch, PRODUCTION_SITE_URL, STAGING_SITE_URL } from '../src/lib/site-env.mjs';
 
 const DIST_DIR = join(process.cwd(), 'dist');
 const POSTS_DIR = join(process.cwd(), 'src/content/posts');
@@ -93,8 +96,10 @@ describe('ビルド検証', () => {
 
     it('robots.txtがブランチに対応するクロール方針になっている（Bug #41・#45再発防止）', () => {
       const content = readFileSync(join(DIST_DIR, 'robots.txt'), 'utf-8');
-      const astroConfig = readFileSync(join(process.cwd(), 'astro.config.mjs'), 'utf-8');
-      const isStaging = /const SITE_URL = 'https:\/\/staging\.reiwa\.casa'/.test(astroConfig);
+      // Issue #127 で書き換え: 旧テストは astro.config.mjs の SITE_URL リテラルから環境を推定していた。
+      // SITE_URL・robots.txt はビルド時の CF_PAGES_BRANCH から導出するようになったため、
+      // このビルド（beforeAll の build:raw。テストプロセスの環境変数を引き継ぐ）の CF_PAGES_BRANCH で期待値を決める。
+      const isStaging = !isProductionBranch(process.env.CF_PAGES_BRANCH);
 
       if (isStaging) {
         // staging: 検索エンジンにインデックスさせない
@@ -1160,4 +1165,84 @@ describe('ビルド検証', () => {
       }
     });
   });
+});
+
+describe('CF_PAGES_BRANCH 別ビルドの環境値（SEC-35 改訂, Issue #127）', () => {
+  // main / staging / 未設定 の3通りで実際に astro build し、生成物の robots.txt・canonical・sitemap・RSS が
+  // 導出どおりの環境値になることを確かめる。ソースは1つ（main と staging で同一内容）で、差はビルド環境変数だけ。
+  // 「ビルド検証」の describe の後に同一ファイル内で直列に実行する（並列の astro build を避ける）。
+  // prebuild（normalize-images / organize-posts）は「ビルド検証」の build:raw で実行済みのため、ここでは astro build のみ。
+  const VARIANTS = [
+    { label: 'main', env: 'main', site: PRODUCTION_SITE_URL, production: true },
+    { label: 'staging', env: 'staging', site: STAGING_SITE_URL, production: false },
+    { label: '未設定（ローカル・CI・判定不能）', env: undefined, site: STAGING_SITE_URL, production: false },
+  ];
+  const outDirs = {};
+  let workDir;
+
+  beforeAll(() => {
+    workDir = mkdtempSync(join(tmpdir(), 'my-blog-env-build-'));
+    for (const v of VARIANTS) {
+      const env = { ...process.env };
+      if (v.env === undefined) delete env.CF_PAGES_BRANCH;
+      else env.CF_PAGES_BRANCH = v.env;
+      const out = join(workDir, v.env || 'unset');
+      execSync(`npx astro build --outDir "${out}"`, { cwd: process.cwd(), stdio: 'pipe', timeout: 180000, env });
+      outDirs[v.label] = out;
+    }
+  }, 600000);
+
+  afterAll(() => {
+    if (workDir) rmSync(workDir, { recursive: true, force: true });
+  });
+
+  for (const v of VARIANTS) {
+    describe(`CF_PAGES_BRANCH=${v.label}`, () => {
+      const file = (p) => readFileSync(join(outDirs[v.label], p), 'utf-8');
+
+      it(v.production ? 'robots.txt は Allow: / と本番 Sitemap 行' : 'robots.txt は Disallow: /（Allow・Sitemap 行なし）', () => {
+        const robots = file('robots.txt');
+        if (v.production) {
+          expect(robots).toMatch(/^Allow:\s*\/$/m);
+          expect(robots).not.toMatch(/Disallow/);
+          expect(robots).toContain(`Sitemap: ${PRODUCTION_SITE_URL}/sitemap-index.xml`);
+        } else {
+          expect(robots).toMatch(/^Disallow:\s*\/$/m);
+          expect(robots).not.toMatch(/^Allow:/m);
+          expect(robots).not.toMatch(/Sitemap:/);
+        }
+      });
+
+      it(`トップと記事ページの canonical が ${v.site} を指す`, () => {
+        expect(file('index.html')).toContain(`<link rel="canonical" href="${v.site}/">`);
+        if (firstPost) {
+          const html = file(`posts/${firstPost.year}/${firstPost.month}/${firstPost.title}/index.html`);
+          const m = html.match(/<link rel="canonical" href="([^"]+)"/);
+          expect(m, 'canonical がない').not.toBeNull();
+          expect(new URL(m[1]).origin).toBe(v.site);
+        }
+      });
+
+      it(`sitemap-index.xml と sitemap-0.xml の URL がすべて ${v.site} 配下`, () => {
+        const locs = [
+          ...file('sitemap-index.xml').matchAll(/<loc>([^<]+)<\/loc>/g),
+          ...file('sitemap-0.xml').matchAll(/<loc>([^<]+)<\/loc>/g),
+        ].map((m) => m[1]);
+        expect(locs.length).toBeGreaterThan(1);
+        for (const loc of locs) expect(new URL(loc).origin, loc).toBe(v.site);
+      });
+
+      it(`RSS の link が ${v.site} 配下`, () => {
+        const links = [...file('rss.xml').matchAll(/<link>([^<]+)<\/link>/g)].map((m) => m[1]);
+        expect(links.length).toBeGreaterThan(0);
+        for (const link of links) expect(new URL(link).origin, link).toBe(v.site);
+      });
+
+      it('admin/config.yml は全ビルド同一で branch / base_url を含まない', () => {
+        const cfg = file('admin/config.yml');
+        expect(cfg).toBe(readFileSync(join(process.cwd(), 'public/admin/config.yml'), 'utf-8'));
+        expect(cfg).not.toMatch(/^\s*(branch|base_url)\s*:/m);
+      });
+    });
+  }
 });

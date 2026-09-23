@@ -30,6 +30,8 @@ Astro + Decap CMS によるブログサイト。Cloudflare Pages でホスティ
 | 1.21 | 2026-09-20 | Issue #117 項目2/12: CI `contents: read`、無効な `.assetsignore` 削除。Vitest 635→638 |
 | 1.22 | 2026-09-23 | Issue #117 hardening: frontmatter を YAML のみに限定（Bug #52）、Actions の SHA 固定（SEC-36）、OAuth 許可リスト単一化（SEC-37）、コールバック CSP 自己完結（SEC-38）、埋め込み値の JSON.stringify リテラル化（SEC-39）。Vitest 639→668（main・staging 671） |
 | 1.23 | 2026-09-23 | Issue #132: npm管理外依存（Decap CMS CDN・GitHub Actions・Node.js・Cloudflare Pages ビルド環境）の鮮度・EOL・SRI を週次ワークフローで判定（SEC-40）。Dependabot（github-actions、staging 向け）追加。Vitest feature 695 / main・staging 698 |
+| 1.24 | 2026-09-23 | Issue #127: 環境固有値（SITE_URL・robots.txt・CMS の branch/base_url）をファイルから削除し、ビルド時 `CF_PAGES_BRANCH`／実行時ホスト名から導出。main と staging の環境差分ゼロ（Bug #51 の構造的解消）。Vitest 751（全ブランチ共通）、E2E 465 |
+| 1.25 | 2026-09-23 | Issue #130: SEC-41として管理画面CSPのCloudflare Insights遮断を維持し、実ホストの編集・入力・preview・モック保存操作を3デバイスで検証（54/54 PASS）。Vitest 754、E2E 465 |
 
 詳細なシステム変更履歴は [DOCUMENTATION.md](docs/DOCUMENTATION.md) を参照。
 
@@ -87,12 +89,12 @@ my-blog/
 │       └── callback.js           # コールバック処理
 ├── public/
 │   ├── admin/
-│   │   ├── index.html            # 管理画面（UIカスタマイズ含む）
-│   │   └── config.yml            # Decap CMS設定
+│   │   ├── index.html            # 管理画面（UIカスタマイズ含む。CMS_MANUAL_INIT + CMS.init）
+│   │   ├── cms-env.js            # CMS の書き込み先 branch / base_url をホスト名から導出（Issue #127）
+│   │   └── config.yml            # Decap CMS設定（branch / base_url は書かない）
 │   ├── images/uploads/           # アップロード画像
 │   ├── _headers                  # Cloudflare Pagesカスタムヘッダー
 │   ├── _redirects                # リダイレクト設定
-│   ├── robots.txt                # クローラー制御
 │   ├── favicon.svg / favicon.ico # ファビコン
 ├── scripts/
 │   ├── lib/safe-frontmatter.mjs  # YAML限定のfrontmatter解析（`---js`等を拒否）
@@ -147,10 +149,10 @@ my-blog/
 | `npm run dev` | 開発サーバー起動（localhost:4321） |
 | `npm run build` | 本番ビルド（`./dist/` に出力） |
 | `npm run preview` | ビルド結果のローカルプレビュー |
-| `npm test` | 単体・統合テスト実行（Vitest / 695テスト〔main・staging では698〕、記事数により変動。ネットワーク不要） |
+| `npm test` | 単体・統合テスト実行（Vitest / 754テスト〔全ブランチ共通〕、記事数により変動。ネットワーク不要） |
 | `node scripts/check-dependency-freshness.mjs` | npm管理外依存の鮮度・EOL・SRI を照会し `reports/dependency-freshness/latest.json` に出力（ネットワーク必要。週次は `.github/workflows/dependency-freshness.yml`。手順は DOCUMENTATION.md 4.11章） |
 | `npm run test:watch` | ウォッチモードでテスト実行 |
-| `npm run test:e2e` | E2Eテスト実行（Playwright / PC・iPad・iPhone 453テスト: 445実行+8スキップ） |
+| `npm run test:e2e` | E2Eテスト実行（Playwright / PC・iPad・iPhone 465テスト: 457実行+8スキップ） |
 
 ## 5. 管理画面のUIカスタマイズ
 
@@ -239,14 +241,14 @@ main (本番)  ←── merge ── staging (テスト) ←── merge ──
      └── 定期マージ ──────────┘ (コンテンツ同期)
 ```
 
-| ブランチ | デプロイ先 | CMS backend.branch | 用途 |
+| ブランチ | デプロイ先 | CMS 書き込み先（ホスト名から実行時導出） | 用途 |
 | :--- | :--- | :--- | :--- |
 | `main` | reiwa.casa | main | 本番環境 |
 | `staging` | staging.reiwa.casa | staging | テスト環境 |
 
 - 新機能開発: `feature/*` → `staging` へPR → テスト → `main` へPR
 - コンテンツ同期: `main` の記事更新を `staging` に定期マージ
-- `config.yml` の `base_url` / `branch` は各ブランチで個別管理（マージ時にコンフリクト解消）
+- 環境固有値（`SITE_URL`・`robots.txt`・CMS の `branch` / `base_url`）はファイルに持たない。ビルド時は `CF_PAGES_BRANCH`（`src/lib/site-env.mjs`、main のときだけ本番値）、CMS は配信ホスト名（`public/admin/cms-env.js`、`reiwa.casa` のときだけ main）から導出するため、main と staging でファイル差分が無く、マージ時の値の戻しは不要（Issue #127。旧運用はマージのたびにコンフリクト解消していた。Bug #51）
 - マージ手順の詳細は [DOCUMENTATION.md 4.6章](docs/DOCUMENTATION.md) を参照
 - **Vitest だけでは main マージ不可**。ローカル `npm run test:e2e` 全件と `verify-comprehensive.mjs` が必須。**CI に Playwright は載せない**（Bug #50）
 

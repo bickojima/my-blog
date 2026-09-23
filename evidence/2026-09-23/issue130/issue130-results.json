@@ -1,0 +1,1062 @@
+{
+  "date": "2026-09-23",
+  "summary": {
+    "total": 42,
+    "pass": 42,
+    "fail": 0
+  },
+  "results": [
+    {
+      "device": "PC",
+      "mode": "A",
+      "id": "LA-01",
+      "name": "ローカル: 認証後に記事一覧が表示される",
+      "pass": true,
+      "screenshot": "screenshots/LA-01-collection-PC.png",
+      "detail": {
+        "groupingMenuOpen": true
+      }
+    },
+    {
+      "device": "PC",
+      "mode": "A",
+      "id": "LA-02",
+      "name": "ローカル: 記事をクリックで開き編集画面が表示される",
+      "pass": true,
+      "screenshot": "screenshots/LA-02-editor-PC.png"
+    },
+    {
+      "device": "PC",
+      "mode": "A",
+      "id": "LA-03",
+      "name": "ローカル: 本文をキーボード入力できる",
+      "pass": true,
+      "screenshot": "screenshots/LA-03-typed-PC.png",
+      "detail": {
+        "bodyTail": "CSP検証用記事Aの本文テキスト。 Issue130 CSP検証の本文入力"
+      }
+    },
+    {
+      "device": "PC",
+      "mode": "A",
+      "id": "LA-04",
+      "name": "ローカル: プレビューに入力本文が表示される",
+      "pass": true,
+      "screenshot": "screenshots/LA-04-preview-PC.png",
+      "detail": {
+        "previewShown": true,
+        "previewHasText": true,
+        "toggled": false
+      }
+    },
+    {
+      "device": "PC",
+      "mode": "A",
+      "id": "LA-05",
+      "name": "ローカル: 保存（今すぐ公開）が成功する",
+      "pass": true,
+      "screenshot": "screenshots/LA-05-saved-PC.png",
+      "extraScreenshot": "screenshots/LA-05-publish-menu-PC.png",
+      "detail": {
+        "notice": "保存しました。 | 保存しました。 | 保存しました。 | 保存しました。 |  |  |  |  | ",
+        "writes": [
+          "POST /repos/bickojima/my-blog/git/blobs",
+          "POST /repos/bickojima/my-blog/git/trees",
+          "POST /repos/bickojima/my-blog/git/commits",
+          "PATCH /repos/bickojima/my-blog/git/refs/heads/staging"
+        ],
+        "previewClosedForSave": false,
+        "layoutBefore": {
+          "innerWidth": 1280,
+          "urlBarDisplay": ""
+        },
+        "layoutAfter": {
+          "innerWidth": 1280
+        },
+        "publishMethod": "click",
+        "clickBlockedBy": ""
+      }
+    },
+    {
+      "device": "PC",
+      "mode": "A",
+      "id": "LA-06",
+      "name": "ローカル: CSP違反ゼロ・機能エラーなし",
+      "pass": true,
+      "screenshot": "screenshots/LA-06-csp-summary-PC.png",
+      "detail": {
+        "cspPass": true,
+        "funcPass": true
+      }
+    },
+    {
+      "device": "PC",
+      "mode": "B",
+      "id": "LB-01",
+      "name": "ローカル+ビーコン注入: 認証後に記事一覧が表示される",
+      "pass": true,
+      "screenshot": "screenshots/LB-01-collection-PC.png",
+      "detail": {
+        "groupingMenuOpen": true
+      }
+    },
+    {
+      "device": "PC",
+      "mode": "B",
+      "id": "LB-02",
+      "name": "ローカル+ビーコン注入: 記事をクリックで開き編集画面が表示される",
+      "pass": true,
+      "screenshot": "screenshots/LB-02-editor-PC.png"
+    },
+    {
+      "device": "PC",
+      "mode": "B",
+      "id": "LB-03",
+      "name": "ローカル+ビーコン注入: 本文をキーボード入力できる",
+      "pass": true,
+      "screenshot": "screenshots/LB-03-typed-PC.png",
+      "detail": {
+        "bodyTail": "CSP検証用記事Aの本文テキスト。 Issue130 CSP検証の本文入力"
+      }
+    },
+    {
+      "device": "PC",
+      "mode": "B",
+      "id": "LB-04",
+      "name": "ローカル+ビーコン注入: プレビューに入力本文が表示される",
+      "pass": true,
+      "screenshot": "screenshots/LB-04-preview-PC.png",
+      "detail": {
+        "previewShown": true,
+        "previewHasText": true,
+        "toggled": false
+      }
+    },
+    {
+      "device": "PC",
+      "mode": "B",
+      "id": "LB-05",
+      "name": "ローカル+ビーコン注入: 保存（今すぐ公開）が成功する",
+      "pass": true,
+      "screenshot": "screenshots/LB-05-saved-PC.png",
+      "extraScreenshot": "screenshots/LB-05-publish-menu-PC.png",
+      "detail": {
+        "notice": "保存しました。 | 保存しました。 | 保存しました。 | 保存しました。 |  |  |  |  | ",
+        "writes": [
+          "POST /repos/bickojima/my-blog/git/blobs",
+          "POST /repos/bickojima/my-blog/git/trees",
+          "POST /repos/bickojima/my-blog/git/commits",
+          "PATCH /repos/bickojima/my-blog/git/refs/heads/staging"
+        ],
+        "previewClosedForSave": false,
+        "layoutBefore": {
+          "innerWidth": 1280,
+          "urlBarDisplay": ""
+        },
+        "layoutAfter": {
+          "innerWidth": 1280
+        },
+        "publishMethod": "click",
+        "clickBlockedBy": ""
+      }
+    },
+    {
+      "device": "PC",
+      "mode": "B",
+      "id": "LB-06",
+      "name": "ローカル+ビーコン注入: CSP違反はcloudflareinsights由来のみ・機能エラーなし",
+      "pass": true,
+      "screenshot": "screenshots/LB-06-csp-summary-PC.png",
+      "detail": {
+        "cspPass": true,
+        "funcPass": true
+      }
+    },
+    {
+      "device": "iPad",
+      "mode": "A",
+      "id": "LA-01",
+      "name": "ローカル: 認証後に記事一覧が表示される",
+      "pass": true,
+      "screenshot": "screenshots/LA-01-collection-iPad.png",
+      "detail": {
+        "groupingMenuOpen": true
+      }
+    },
+    {
+      "device": "iPad",
+      "mode": "A",
+      "id": "LA-02",
+      "name": "ローカル: 記事をクリックで開き編集画面が表示される",
+      "pass": true,
+      "screenshot": "screenshots/LA-02-editor-iPad.png"
+    },
+    {
+      "device": "iPad",
+      "mode": "A",
+      "id": "LA-03",
+      "name": "ローカル: 本文をキーボード入力できる",
+      "pass": true,
+      "screenshot": "screenshots/LA-03-typed-iPad.png",
+      "detail": {
+        "bodyTail": "CSP検証用記事Aの本文テキスト。 Issue130 CSP検証の本文入力"
+      }
+    },
+    {
+      "device": "iPad",
+      "mode": "A",
+      "id": "LA-04",
+      "name": "ローカル: プレビューに入力本文が表示される",
+      "pass": true,
+      "screenshot": "screenshots/LA-04-preview-iPad.png",
+      "detail": {
+        "previewShown": true,
+        "previewHasText": true,
+        "toggled": false
+      }
+    },
+    {
+      "device": "iPad",
+      "mode": "A",
+      "id": "LA-05",
+      "name": "ローカル: 保存（今すぐ公開）が成功する",
+      "pass": true,
+      "screenshot": "screenshots/LA-05-saved-iPad.png",
+      "extraScreenshot": "screenshots/LA-05-publish-menu-iPad.png",
+      "detail": {
+        "notice": "保存しました。 | 保存しました。 | 保存しました。 | 保存しました。 |  |  |  |  | ",
+        "writes": [
+          "POST /repos/bickojima/my-blog/git/blobs",
+          "POST /repos/bickojima/my-blog/git/trees",
+          "POST /repos/bickojima/my-blog/git/commits",
+          "PATCH /repos/bickojima/my-blog/git/refs/heads/staging"
+        ],
+        "previewClosedForSave": false,
+        "layoutBefore": {
+          "innerWidth": 834,
+          "urlBarDisplay": ""
+        },
+        "layoutAfter": {
+          "innerWidth": 834
+        },
+        "publishMethod": "click",
+        "clickBlockedBy": ""
+      }
+    },
+    {
+      "device": "iPad",
+      "mode": "A",
+      "id": "LA-06",
+      "name": "ローカル: CSP違反ゼロ・機能エラーなし",
+      "pass": true,
+      "screenshot": "screenshots/LA-06-csp-summary-iPad.png",
+      "detail": {
+        "cspPass": true,
+        "funcPass": true
+      }
+    },
+    {
+      "device": "iPad",
+      "mode": "B",
+      "id": "LB-01",
+      "name": "ローカル+ビーコン注入: 認証後に記事一覧が表示される",
+      "pass": true,
+      "screenshot": "screenshots/LB-01-collection-iPad.png",
+      "detail": {
+        "groupingMenuOpen": true
+      }
+    },
+    {
+      "device": "iPad",
+      "mode": "B",
+      "id": "LB-02",
+      "name": "ローカル+ビーコン注入: 記事をクリックで開き編集画面が表示される",
+      "pass": true,
+      "screenshot": "screenshots/LB-02-editor-iPad.png"
+    },
+    {
+      "device": "iPad",
+      "mode": "B",
+      "id": "LB-03",
+      "name": "ローカル+ビーコン注入: 本文をキーボード入力できる",
+      "pass": true,
+      "screenshot": "screenshots/LB-03-typed-iPad.png",
+      "detail": {
+        "bodyTail": "CSP検証用記事Aの本文テキスト。 Issue130 CSP検証の本文入力"
+      }
+    },
+    {
+      "device": "iPad",
+      "mode": "B",
+      "id": "LB-04",
+      "name": "ローカル+ビーコン注入: プレビューに入力本文が表示される",
+      "pass": true,
+      "screenshot": "screenshots/LB-04-preview-iPad.png",
+      "detail": {
+        "previewShown": true,
+        "previewHasText": true,
+        "toggled": false
+      }
+    },
+    {
+      "device": "iPad",
+      "mode": "B",
+      "id": "LB-05",
+      "name": "ローカル+ビーコン注入: 保存（今すぐ公開）が成功する",
+      "pass": true,
+      "screenshot": "screenshots/LB-05-saved-iPad.png",
+      "extraScreenshot": "screenshots/LB-05-publish-menu-iPad.png",
+      "detail": {
+        "notice": "保存しました。 | 保存しました。 | 保存しました。 | 保存しました。 |  |  |  |  | ",
+        "writes": [
+          "POST /repos/bickojima/my-blog/git/blobs",
+          "POST /repos/bickojima/my-blog/git/trees",
+          "POST /repos/bickojima/my-blog/git/commits",
+          "PATCH /repos/bickojima/my-blog/git/refs/heads/staging"
+        ],
+        "previewClosedForSave": false,
+        "layoutBefore": {
+          "innerWidth": 834,
+          "urlBarDisplay": ""
+        },
+        "layoutAfter": {
+          "innerWidth": 834
+        },
+        "publishMethod": "click",
+        "clickBlockedBy": ""
+      }
+    },
+    {
+      "device": "iPad",
+      "mode": "B",
+      "id": "LB-06",
+      "name": "ローカル+ビーコン注入: CSP違反はcloudflareinsights由来のみ・機能エラーなし",
+      "pass": true,
+      "screenshot": "screenshots/LB-06-csp-summary-iPad.png",
+      "detail": {
+        "cspPass": true,
+        "funcPass": true
+      }
+    },
+    {
+      "device": "iPhone",
+      "mode": "A",
+      "id": "LA-01",
+      "name": "ローカル: 認証後に記事一覧が表示される",
+      "pass": true,
+      "screenshot": "screenshots/LA-01-collection-iPhone.png",
+      "detail": {
+        "groupingMenuOpen": true
+      }
+    },
+    {
+      "device": "iPhone",
+      "mode": "A",
+      "id": "LA-02",
+      "name": "ローカル: 記事をクリックで開き編集画面が表示される",
+      "pass": true,
+      "screenshot": "screenshots/LA-02-editor-iPhone.png"
+    },
+    {
+      "device": "iPhone",
+      "mode": "A",
+      "id": "LA-03",
+      "name": "ローカル: 本文をキーボード入力できる",
+      "pass": true,
+      "screenshot": "screenshots/LA-03-typed-iPhone.png",
+      "detail": {
+        "bodyTail": "CSP検証用記事Aの本文テキスト。 Issue130 CSP検証の本文入力"
+      }
+    },
+    {
+      "device": "iPhone",
+      "mode": "A",
+      "id": "LA-04",
+      "name": "ローカル: プレビューに入力本文が表示される",
+      "pass": true,
+      "screenshot": "screenshots/LA-04-preview-iPhone.png",
+      "detail": {
+        "previewShown": true,
+        "previewHasText": true,
+        "toggled": false
+      }
+    },
+    {
+      "device": "iPhone",
+      "mode": "A",
+      "id": "LA-05",
+      "name": "ローカル: 保存（今すぐ公開）が成功する",
+      "pass": true,
+      "screenshot": "screenshots/LA-05-saved-iPhone.png",
+      "extraScreenshot": "screenshots/LA-05-publish-menu-iPhone.png",
+      "detail": {
+        "notice": "保存しました。 | 保存しました。 | 保存しました。 | 保存しました。 |  |  |  |  | ",
+        "writes": [
+          "POST /repos/bickojima/my-blog/git/blobs",
+          "POST /repos/bickojima/my-blog/git/trees",
+          "POST /repos/bickojima/my-blog/git/commits",
+          "PATCH /repos/bickojima/my-blog/git/refs/heads/staging"
+        ],
+        "previewClosedForSave": true,
+        "layoutBefore": {
+          "innerWidth": 800,
+          "urlBarDisplay": ""
+        },
+        "layoutAfter": {
+          "innerWidth": 800
+        },
+        "publishMethod": "keyboard(ArrowDown+Enter)",
+        "clickBlockedBy": "<div class=\"css-nkr4wf-Editor e1nx103k4\">"
+      }
+    },
+    {
+      "device": "iPhone",
+      "mode": "A",
+      "id": "LA-06",
+      "name": "ローカル: CSP違反ゼロ・機能エラーなし",
+      "pass": true,
+      "screenshot": "screenshots/LA-06-csp-summary-iPhone.png",
+      "detail": {
+        "cspPass": true,
+        "funcPass": true
+      }
+    },
+    {
+      "device": "iPhone",
+      "mode": "B",
+      "id": "LB-01",
+      "name": "ローカル+ビーコン注入: 認証後に記事一覧が表示される",
+      "pass": true,
+      "screenshot": "screenshots/LB-01-collection-iPhone.png",
+      "detail": {
+        "groupingMenuOpen": true
+      }
+    },
+    {
+      "device": "iPhone",
+      "mode": "B",
+      "id": "LB-02",
+      "name": "ローカル+ビーコン注入: 記事をクリックで開き編集画面が表示される",
+      "pass": true,
+      "screenshot": "screenshots/LB-02-editor-iPhone.png"
+    },
+    {
+      "device": "iPhone",
+      "mode": "B",
+      "id": "LB-03",
+      "name": "ローカル+ビーコン注入: 本文をキーボード入力できる",
+      "pass": true,
+      "screenshot": "screenshots/LB-03-typed-iPhone.png",
+      "detail": {
+        "bodyTail": "CSP検証用記事Aの本文テキスト。 Issue130 CSP検証の本文入力"
+      }
+    },
+    {
+      "device": "iPhone",
+      "mode": "B",
+      "id": "LB-04",
+      "name": "ローカル+ビーコン注入: プレビューに入力本文が表示される",
+      "pass": true,
+      "screenshot": "screenshots/LB-04-preview-iPhone.png",
+      "detail": {
+        "previewShown": true,
+        "previewHasText": true,
+        "toggled": false
+      }
+    },
+    {
+      "device": "iPhone",
+      "mode": "B",
+      "id": "LB-05",
+      "name": "ローカル+ビーコン注入: 保存（今すぐ公開）が成功する",
+      "pass": true,
+      "screenshot": "screenshots/LB-05-saved-iPhone.png",
+      "extraScreenshot": "screenshots/LB-05-publish-menu-iPhone.png",
+      "detail": {
+        "notice": "保存しました。 | 保存しました。 | 保存しました。 | 保存しました。 |  |  |  |  | ",
+        "writes": [
+          "POST /repos/bickojima/my-blog/git/blobs",
+          "POST /repos/bickojima/my-blog/git/trees",
+          "POST /repos/bickojima/my-blog/git/commits",
+          "PATCH /repos/bickojima/my-blog/git/refs/heads/staging"
+        ],
+        "previewClosedForSave": true,
+        "layoutBefore": {
+          "innerWidth": 800,
+          "urlBarDisplay": ""
+        },
+        "layoutAfter": {
+          "innerWidth": 800
+        },
+        "publishMethod": "keyboard(ArrowDown+Enter)",
+        "clickBlockedBy": "<div class=\"css-nkr4wf-Editor e1nx103k4\">"
+      }
+    },
+    {
+      "device": "iPhone",
+      "mode": "B",
+      "id": "LB-06",
+      "name": "ローカル+ビーコン注入: CSP違反はcloudflareinsights由来のみ・機能エラーなし",
+      "pass": true,
+      "screenshot": "screenshots/LB-06-csp-summary-iPhone.png",
+      "detail": {
+        "cspPass": true,
+        "funcPass": true
+      }
+    },
+    {
+      "device": "PC",
+      "mode": "production",
+      "id": "R-PROD",
+      "name": "本番 /admin/（読み取りのみ）: CSP違反はcloudflareinsights由来のみ",
+      "pass": true,
+      "screenshot": "screenshots/R-PROD-login-PC.png",
+      "detail": {
+        "status": 200,
+        "loginVisible": true,
+        "insightsCount": 1,
+        "nonInsights": 0,
+        "blockedWrites": []
+      }
+    },
+    {
+      "device": "iPad",
+      "mode": "production",
+      "id": "R-PROD",
+      "name": "本番 /admin/（読み取りのみ）: CSP違反はcloudflareinsights由来のみ",
+      "pass": true,
+      "screenshot": "screenshots/R-PROD-login-iPad.png",
+      "detail": {
+        "status": 200,
+        "loginVisible": true,
+        "insightsCount": 1,
+        "nonInsights": 0,
+        "blockedWrites": []
+      }
+    },
+    {
+      "device": "iPhone",
+      "mode": "production",
+      "id": "R-PROD",
+      "name": "本番 /admin/（読み取りのみ）: CSP違反はcloudflareinsights由来のみ",
+      "pass": true,
+      "screenshot": "screenshots/R-PROD-login-iPhone.png",
+      "detail": {
+        "status": 200,
+        "loginVisible": true,
+        "insightsCount": 1,
+        "nonInsights": 0,
+        "blockedWrites": []
+      }
+    },
+    {
+      "device": "PC",
+      "mode": "staging",
+      "id": "R-STG",
+      "name": "staging /admin/（読み取りのみ）: CSP違反はcloudflareinsights由来のみ",
+      "pass": true,
+      "screenshot": "screenshots/R-STG-login-PC.png",
+      "detail": {
+        "status": 200,
+        "loginVisible": true,
+        "insightsCount": 1,
+        "nonInsights": 0,
+        "blockedWrites": []
+      }
+    },
+    {
+      "device": "iPad",
+      "mode": "staging",
+      "id": "R-STG",
+      "name": "staging /admin/（読み取りのみ）: CSP違反はcloudflareinsights由来のみ",
+      "pass": true,
+      "screenshot": "screenshots/R-STG-login-iPad.png",
+      "detail": {
+        "status": 200,
+        "loginVisible": true,
+        "insightsCount": 1,
+        "nonInsights": 0,
+        "blockedWrites": []
+      }
+    },
+    {
+      "device": "iPhone",
+      "mode": "staging",
+      "id": "R-STG",
+      "name": "staging /admin/（読み取りのみ）: CSP違反はcloudflareinsights由来のみ",
+      "pass": true,
+      "screenshot": "screenshots/R-STG-login-iPhone.png",
+      "detail": {
+        "status": 200,
+        "loginVisible": true,
+        "insightsCount": 1,
+        "nonInsights": 0,
+        "blockedWrites": []
+      }
+    }
+  ],
+  "runs": [
+    {
+      "kind": "local",
+      "mode": "A",
+      "device": "PC",
+      "cspHeader": "default-src 'none'; script-src 'self' https://unpkg.com 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' blob: https://github.com https://api.github.com https://*.githubusercontent.com; img-src 'self' https: data: blob:; font-src 'self' data:; frame-src 'self' blob:; frame-ancestors 'self'; form-action 'self' https://github.com; base-uri 'self'; upgrade-insecure-requests",
+      "apiWrites": [
+        {
+          "method": "POST",
+          "path": "/repos/bickojima/my-blog/git/blobs"
+        },
+        {
+          "method": "POST",
+          "path": "/repos/bickojima/my-blog/git/trees"
+        },
+        {
+          "method": "POST",
+          "path": "/repos/bickojima/my-blog/git/commits"
+        },
+        {
+          "method": "PATCH",
+          "path": "/repos/bickojima/my-blog/git/refs/heads/staging"
+        }
+      ],
+      "cspViolations": [],
+      "nonInsightsViolations": [],
+      "cspConsole": [],
+      "nonInsightsCspConsole": [],
+      "functionalConsole": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "failedNonInsights": []
+    },
+    {
+      "kind": "local",
+      "mode": "B",
+      "device": "PC",
+      "cspHeader": "default-src 'none'; script-src 'self' https://unpkg.com 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' blob: https://github.com https://api.github.com https://*.githubusercontent.com; img-src 'self' https: data: blob:; font-src 'self' data:; frame-src 'self' blob:; frame-ancestors 'self'; form-action 'self' https://github.com; base-uri 'self'; upgrade-insecure-requests",
+      "apiWrites": [
+        {
+          "method": "POST",
+          "path": "/repos/bickojima/my-blog/git/blobs"
+        },
+        {
+          "method": "POST",
+          "path": "/repos/bickojima/my-blog/git/trees"
+        },
+        {
+          "method": "POST",
+          "path": "/repos/bickojima/my-blog/git/commits"
+        },
+        {
+          "method": "PATCH",
+          "path": "/repos/bickojima/my-blog/git/refs/heads/staging"
+        }
+      ],
+      "cspViolations": [
+        {
+          "blockedURI": "https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516",
+          "directive": "script-src-elem",
+          "sourceFile": "",
+          "frameUrl": "http://127.0.0.1:8799/admin/#/"
+        }
+      ],
+      "nonInsightsViolations": [],
+      "cspConsole": [
+        {
+          "text": "Loading the script 'https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516' violates the following Content Security Policy directive: \"script-src 'self' https://unpkg.com 'unsafe-eval' 'unsafe-inline'\". Note that 'script-src-elem' was not explicitly set, so 'script-src' is used as a fallback. The action has been blocked.",
+          "url": "http://127.0.0.1:8799/admin/#/",
+          "isCsp": true
+        }
+      ],
+      "nonInsightsCspConsole": [],
+      "functionalConsole": [],
+      "pageErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516",
+          "error": "csp"
+        }
+      ],
+      "failedNonInsights": []
+    },
+    {
+      "kind": "local",
+      "mode": "A",
+      "device": "iPad",
+      "cspHeader": "default-src 'none'; script-src 'self' https://unpkg.com 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' blob: https://github.com https://api.github.com https://*.githubusercontent.com; img-src 'self' https: data: blob:; font-src 'self' data:; frame-src 'self' blob:; frame-ancestors 'self'; form-action 'self' https://github.com; base-uri 'self'; upgrade-insecure-requests",
+      "apiWrites": [
+        {
+          "method": "POST",
+          "path": "/repos/bickojima/my-blog/git/blobs"
+        },
+        {
+          "method": "POST",
+          "path": "/repos/bickojima/my-blog/git/trees"
+        },
+        {
+          "method": "POST",
+          "path": "/repos/bickojima/my-blog/git/commits"
+        },
+        {
+          "method": "PATCH",
+          "path": "/repos/bickojima/my-blog/git/refs/heads/staging"
+        }
+      ],
+      "cspViolations": [],
+      "nonInsightsViolations": [],
+      "cspConsole": [],
+      "nonInsightsCspConsole": [],
+      "functionalConsole": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "failedNonInsights": []
+    },
+    {
+      "kind": "local",
+      "mode": "B",
+      "device": "iPad",
+      "cspHeader": "default-src 'none'; script-src 'self' https://unpkg.com 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' blob: https://github.com https://api.github.com https://*.githubusercontent.com; img-src 'self' https: data: blob:; font-src 'self' data:; frame-src 'self' blob:; frame-ancestors 'self'; form-action 'self' https://github.com; base-uri 'self'; upgrade-insecure-requests",
+      "apiWrites": [
+        {
+          "method": "POST",
+          "path": "/repos/bickojima/my-blog/git/blobs"
+        },
+        {
+          "method": "POST",
+          "path": "/repos/bickojima/my-blog/git/trees"
+        },
+        {
+          "method": "POST",
+          "path": "/repos/bickojima/my-blog/git/commits"
+        },
+        {
+          "method": "PATCH",
+          "path": "/repos/bickojima/my-blog/git/refs/heads/staging"
+        }
+      ],
+      "cspViolations": [
+        {
+          "blockedURI": "https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516",
+          "directive": "script-src-elem",
+          "sourceFile": "",
+          "frameUrl": "http://127.0.0.1:8799/admin/#/"
+        }
+      ],
+      "nonInsightsViolations": [],
+      "cspConsole": [
+        {
+          "text": "Loading the script 'https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516' violates the following Content Security Policy directive: \"script-src 'self' https://unpkg.com 'unsafe-eval' 'unsafe-inline'\". Note that 'script-src-elem' was not explicitly set, so 'script-src' is used as a fallback. The action has been blocked.",
+          "url": "http://127.0.0.1:8799/admin/#/",
+          "isCsp": true
+        }
+      ],
+      "nonInsightsCspConsole": [],
+      "functionalConsole": [],
+      "pageErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516",
+          "error": "csp"
+        }
+      ],
+      "failedNonInsights": []
+    },
+    {
+      "kind": "local",
+      "mode": "A",
+      "device": "iPhone",
+      "cspHeader": "default-src 'none'; script-src 'self' https://unpkg.com 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' blob: https://github.com https://api.github.com https://*.githubusercontent.com; img-src 'self' https: data: blob:; font-src 'self' data:; frame-src 'self' blob:; frame-ancestors 'self'; form-action 'self' https://github.com; base-uri 'self'; upgrade-insecure-requests",
+      "apiWrites": [
+        {
+          "method": "POST",
+          "path": "/repos/bickojima/my-blog/git/blobs"
+        },
+        {
+          "method": "POST",
+          "path": "/repos/bickojima/my-blog/git/trees"
+        },
+        {
+          "method": "POST",
+          "path": "/repos/bickojima/my-blog/git/commits"
+        },
+        {
+          "method": "PATCH",
+          "path": "/repos/bickojima/my-blog/git/refs/heads/staging"
+        }
+      ],
+      "cspViolations": [],
+      "nonInsightsViolations": [],
+      "cspConsole": [],
+      "nonInsightsCspConsole": [],
+      "functionalConsole": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "failedNonInsights": []
+    },
+    {
+      "kind": "local",
+      "mode": "B",
+      "device": "iPhone",
+      "cspHeader": "default-src 'none'; script-src 'self' https://unpkg.com 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' blob: https://github.com https://api.github.com https://*.githubusercontent.com; img-src 'self' https: data: blob:; font-src 'self' data:; frame-src 'self' blob:; frame-ancestors 'self'; form-action 'self' https://github.com; base-uri 'self'; upgrade-insecure-requests",
+      "apiWrites": [
+        {
+          "method": "POST",
+          "path": "/repos/bickojima/my-blog/git/blobs"
+        },
+        {
+          "method": "POST",
+          "path": "/repos/bickojima/my-blog/git/trees"
+        },
+        {
+          "method": "POST",
+          "path": "/repos/bickojima/my-blog/git/commits"
+        },
+        {
+          "method": "PATCH",
+          "path": "/repos/bickojima/my-blog/git/refs/heads/staging"
+        }
+      ],
+      "cspViolations": [
+        {
+          "blockedURI": "https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516",
+          "directive": "script-src-elem",
+          "sourceFile": "",
+          "frameUrl": "http://127.0.0.1:8799/admin/#/"
+        }
+      ],
+      "nonInsightsViolations": [],
+      "cspConsole": [
+        {
+          "text": "Loading the script 'https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516' violates the following Content Security Policy directive: \"script-src 'self' https://unpkg.com 'unsafe-eval' 'unsafe-inline'\". Note that 'script-src-elem' was not explicitly set, so 'script-src' is used as a fallback. The action has been blocked.",
+          "url": "http://127.0.0.1:8799/admin/#/",
+          "isCsp": true
+        }
+      ],
+      "nonInsightsCspConsole": [],
+      "functionalConsole": [],
+      "pageErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516",
+          "error": "csp"
+        }
+      ],
+      "failedNonInsights": []
+    },
+    {
+      "kind": "remote",
+      "env": "production",
+      "url": "https://reiwa.casa/admin/",
+      "device": "PC",
+      "status": 200,
+      "loginVisible": true,
+      "cspHeader": "default-src 'none'; script-src 'self' https://unpkg.com 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' blob: https://github.com https://api.github.com https://*.githubusercontent.com; img-src 'self' https: data: blob:; font-src 'self' data:; frame-src 'self' blob:; frame-ancestors 'self'; form-action 'self' https://github.com; base-uri 'self'; upgrade-insecure-requests",
+      "blockedWrites": [],
+      "cspViolations": [
+        {
+          "blockedURI": "https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495",
+          "directive": "script-src-elem",
+          "sourceFile": "",
+          "frameUrl": "https://reiwa.casa/admin/#/"
+        }
+      ],
+      "nonInsightsViolations": [],
+      "cspConsole": [
+        {
+          "text": "Loading the script 'https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495' violates the following Content Security Policy directive: \"script-src 'self' https://unpkg.com 'unsafe-eval' 'unsafe-inline'\". Note that 'script-src-elem' was not explicitly set, so 'script-src' is used as a fallback. The action has been blocked.",
+          "url": "https://reiwa.casa/admin/#/",
+          "isCsp": true
+        }
+      ],
+      "nonInsightsCspConsole": [],
+      "functionalConsole": [],
+      "pageErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495",
+          "error": "csp"
+        }
+      ],
+      "failedNonInsights": []
+    },
+    {
+      "kind": "remote",
+      "env": "production",
+      "url": "https://reiwa.casa/admin/",
+      "device": "iPad",
+      "status": 200,
+      "loginVisible": true,
+      "cspHeader": "default-src 'none'; script-src 'self' https://unpkg.com 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' blob: https://github.com https://api.github.com https://*.githubusercontent.com; img-src 'self' https: data: blob:; font-src 'self' data:; frame-src 'self' blob:; frame-ancestors 'self'; form-action 'self' https://github.com; base-uri 'self'; upgrade-insecure-requests",
+      "blockedWrites": [],
+      "cspViolations": [
+        {
+          "blockedURI": "https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495",
+          "directive": "script-src-elem",
+          "sourceFile": "",
+          "frameUrl": "https://reiwa.casa/admin/#/"
+        }
+      ],
+      "nonInsightsViolations": [],
+      "cspConsole": [
+        {
+          "text": "Loading the script 'https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495' violates the following Content Security Policy directive: \"script-src 'self' https://unpkg.com 'unsafe-eval' 'unsafe-inline'\". Note that 'script-src-elem' was not explicitly set, so 'script-src' is used as a fallback. The action has been blocked.",
+          "url": "https://reiwa.casa/admin/#/",
+          "isCsp": true
+        }
+      ],
+      "nonInsightsCspConsole": [],
+      "functionalConsole": [],
+      "pageErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495",
+          "error": "csp"
+        }
+      ],
+      "failedNonInsights": []
+    },
+    {
+      "kind": "remote",
+      "env": "production",
+      "url": "https://reiwa.casa/admin/",
+      "device": "iPhone",
+      "status": 200,
+      "loginVisible": true,
+      "cspHeader": "default-src 'none'; script-src 'self' https://unpkg.com 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' blob: https://github.com https://api.github.com https://*.githubusercontent.com; img-src 'self' https: data: blob:; font-src 'self' data:; frame-src 'self' blob:; frame-ancestors 'self'; form-action 'self' https://github.com; base-uri 'self'; upgrade-insecure-requests",
+      "blockedWrites": [],
+      "cspViolations": [
+        {
+          "blockedURI": "https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495",
+          "directive": "script-src-elem",
+          "sourceFile": "",
+          "frameUrl": "https://reiwa.casa/admin/#/"
+        }
+      ],
+      "nonInsightsViolations": [],
+      "cspConsole": [
+        {
+          "text": "Loading the script 'https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495' violates the following Content Security Policy directive: \"script-src 'self' https://unpkg.com 'unsafe-eval' 'unsafe-inline'\". Note that 'script-src-elem' was not explicitly set, so 'script-src' is used as a fallback. The action has been blocked.",
+          "url": "https://reiwa.casa/admin/#/",
+          "isCsp": true
+        }
+      ],
+      "nonInsightsCspConsole": [],
+      "functionalConsole": [],
+      "pageErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495",
+          "error": "csp"
+        }
+      ],
+      "failedNonInsights": []
+    },
+    {
+      "kind": "remote",
+      "env": "staging",
+      "url": "https://staging.reiwa.casa/admin/",
+      "device": "PC",
+      "status": 200,
+      "loginVisible": true,
+      "cspHeader": "default-src 'none'; script-src 'self' https://unpkg.com 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' blob: https://github.com https://api.github.com https://*.githubusercontent.com; img-src 'self' https: data: blob:; font-src 'self' data:; frame-src 'self' blob:; frame-ancestors 'self'; form-action 'self' https://github.com; base-uri 'self'; upgrade-insecure-requests",
+      "blockedWrites": [],
+      "cspViolations": [
+        {
+          "blockedURI": "https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495",
+          "directive": "script-src-elem",
+          "sourceFile": "",
+          "frameUrl": "https://staging.reiwa.casa/admin/#/"
+        }
+      ],
+      "nonInsightsViolations": [],
+      "cspConsole": [
+        {
+          "text": "Loading the script 'https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495' violates the following Content Security Policy directive: \"script-src 'self' https://unpkg.com 'unsafe-eval' 'unsafe-inline'\". Note that 'script-src-elem' was not explicitly set, so 'script-src' is used as a fallback. The action has been blocked.",
+          "url": "https://staging.reiwa.casa/admin/#/",
+          "isCsp": true
+        }
+      ],
+      "nonInsightsCspConsole": [],
+      "functionalConsole": [],
+      "pageErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495",
+          "error": "csp"
+        }
+      ],
+      "failedNonInsights": []
+    },
+    {
+      "kind": "remote",
+      "env": "staging",
+      "url": "https://staging.reiwa.casa/admin/",
+      "device": "iPad",
+      "status": 200,
+      "loginVisible": true,
+      "cspHeader": "default-src 'none'; script-src 'self' https://unpkg.com 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' blob: https://github.com https://api.github.com https://*.githubusercontent.com; img-src 'self' https: data: blob:; font-src 'self' data:; frame-src 'self' blob:; frame-ancestors 'self'; form-action 'self' https://github.com; base-uri 'self'; upgrade-insecure-requests",
+      "blockedWrites": [],
+      "cspViolations": [
+        {
+          "blockedURI": "https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495",
+          "directive": "script-src-elem",
+          "sourceFile": "",
+          "frameUrl": "https://staging.reiwa.casa/admin/#/"
+        }
+      ],
+      "nonInsightsViolations": [],
+      "cspConsole": [
+        {
+          "text": "Loading the script 'https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495' violates the following Content Security Policy directive: \"script-src 'self' https://unpkg.com 'unsafe-eval' 'unsafe-inline'\". Note that 'script-src-elem' was not explicitly set, so 'script-src' is used as a fallback. The action has been blocked.",
+          "url": "https://staging.reiwa.casa/admin/#/",
+          "isCsp": true
+        }
+      ],
+      "nonInsightsCspConsole": [],
+      "functionalConsole": [],
+      "pageErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495",
+          "error": "csp"
+        }
+      ],
+      "failedNonInsights": []
+    },
+    {
+      "kind": "remote",
+      "env": "staging",
+      "url": "https://staging.reiwa.casa/admin/",
+      "device": "iPhone",
+      "status": 200,
+      "loginVisible": true,
+      "cspHeader": "default-src 'none'; script-src 'self' https://unpkg.com 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' blob: https://github.com https://api.github.com https://*.githubusercontent.com; img-src 'self' https: data: blob:; font-src 'self' data:; frame-src 'self' blob:; frame-ancestors 'self'; form-action 'self' https://github.com; base-uri 'self'; upgrade-insecure-requests",
+      "blockedWrites": [],
+      "cspViolations": [
+        {
+          "blockedURI": "https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495",
+          "directive": "script-src-elem",
+          "sourceFile": "",
+          "frameUrl": "https://staging.reiwa.casa/admin/#/"
+        }
+      ],
+      "nonInsightsViolations": [],
+      "cspConsole": [
+        {
+          "text": "Loading the script 'https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495' violates the following Content Security Policy directive: \"script-src 'self' https://unpkg.com 'unsafe-eval' 'unsafe-inline'\". Note that 'script-src-elem' was not explicitly set, so 'script-src' is used as a fallback. The action has been blocked.",
+          "url": "https://staging.reiwa.casa/admin/#/",
+          "isCsp": true
+        }
+      ],
+      "nonInsightsCspConsole": [],
+      "functionalConsole": [],
+      "pageErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495",
+          "error": "csp"
+        }
+      ],
+      "failedNonInsights": []
+    }
+  ]
+}
