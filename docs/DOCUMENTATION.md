@@ -72,6 +72,7 @@
 | 1.65 | 2026-09-21 | Bug #51: PR #119 のマージで staging の環境固有ファイル（config.ymlのbranch/base_url、astro.config.mjsのSITE_URL、robots.txt）が丸ごとmain値へ上書きされ、staging CMSが本番mainへ直接コミットする状態が約21分間発生していた問題を4.5章に5 Whysとともに追記（復旧コミット `0a6c762`）。SEC-35（環境固有ファイルの実ブランチ整合性検証）を1.4.2章に追加し、1.5章トレーサビリティマトリクスに反映。cms-config.test.mjsに、実際にチェックアウトしているブランチ（`CF_PAGES_BRANCH` > `GITHUB_REF_NAME` > `git rev-parse`で判定）に対して4項目が正しい値かを検証する回帰テストを追加（main/staging以外は内部整合のみ検証）。SEC-35はブランチ別にテストを登録する設計のため、Vitest合計は**featureブランチ639件／main・staging642件**になる（登録数の差3件はテストの欠落ではなくSEC-35の設計）。4.6.2章のマージ確認観点に自動検証の項目を追加 |
 | 1.66 | 2026-09-23 | Issue #129: verify-security.mjsの守備範囲を4.9.8章のSEC01〜SEC10のエビデンス確認に限定し、SEC-01〜SEC-35全体の検査器との誤認を解消。全要件の検証責務は1.5.4章を正本とし、SEC-33〜35をbuild/cms-configのVitestへ対応づける |
 | 1.67 | 2026-09-23 | Issue #117 hardening 項目の全件判定（判定表: `docs/security/issue-117-hardening-decisions.md`）。**Bug #52**（SEC-29 の実装不備: gray-matter は `language: 'yaml'` 指定時も `---js` の言語宣言を優先し javascript エンジン＝eval が動く。Issue #117 項目1の「完了」判定は誤りだった。organize-posts に加え、`npm run build` が organize-posts より先に実行する Vitest（と E2E）のテストも同じ経路だった）を4.5章に5 Whysとともに追記し、`scripts/lib/safe-frontmatter.mjs` で YAML 以外のエンジンを拒否、`src/content` を読む全テストもラッパー経由に置換。SEC-36（Actions の commit SHA 固定、項目3）、SEC-37（OAuth オリジン許可リストの単一化 `functions/_shared/allowed-origin.js`、項目5）、SEC-38（OAuth コールバック応答の CSP 自己完結＋charset 明示、項目9）、SEC-39（`<script>` 埋め込み値の JSON.stringify リテラル化、項目10）を1.4.2章・1.5.4章に追加。項目6・7・8・14は対応不要（根拠・残余リスクは判定表）、項目15は #127 へ移管。2.4.5章・2.4.6章・3.2.3章を更新。Vitest featureブランチ 639→**668**件／main・staging 642→**671**件 |
+| 1.68 | 2026-09-23 | Issue #128: Cloudflare Pages のビルドコマンドが `npm run build` であることを 2026-09-23 にダッシュボードで確認した。Vitest が失敗すると `astro build` まで進まずデプロイされない（テストゲート）ことも確認した。この内容を2.5.1章に明記した。あわせて、`build:raw` を「Cloudflare Pages用」としていた誤記を訂正した（実際の用途は build.test.mjs の内部と CI）。build.test.mjs がゲート対象外で CI でのみ実行されるという残余リスクと、SEC-35 が `CF_PAGES_BRANCH` により Pages 上の最終防壁になることも記載した。ローカル実証のエビデンスは `evidence/2026-09-23/issue128/` にある |
 
 ## システム変更履歴
 
@@ -1140,6 +1141,15 @@ GitHub Settings > Developer settings > OAuth Apps で環境ごとに個別のア
 | 出力ディレクトリ | `dist` |
 | ルートディレクトリ | `/` |
 | Node.js バージョン | 22.12.0以上（`.nvmrc` で 22.12.0。Astro 7 要件。Cloudflare Pages v3 既定は 22.16.0） |
+
+#### テストゲート（Issue #128）
+
+2026-09-23 に Cloudflare ダッシュボードで、Build command が `npm run build`、Build output が `dist`、Production branch が `main`、Automatic deployments が Enabled であることを確認した。`build:raw`（テストなしビルド）は Pages では使っていない。`build:raw` を使うのは `tests/build.test.mjs` の内部と GitHub Actions CI（`npm test` の後に実行）だけである。
+
+- **Vitest 失敗時はデプロイされない**: `npm run build` は `vitest run --exclude tests/build.test.mjs && normalize-images && organize-posts && astro build` を `&&` でつないでいる。このため Vitest が失敗すると `astro build` まで進まず、`dist` は生成されない。その結果、Pages のビルドが失敗し、デプロイは行われない。GitHub Actions CI の成否とは独立して、Pages 自体がテストゲートになる。
+- **ローカル実証（2026-09-23）**: 通常ビルドでは終了コード0で、`dist` が生成された。一時的な失敗テストを置くと終了コード1になり、`astro build` は実行されず、`dist` は生成されなかった。`CF_PAGES_BRANCH=staging` を付けた場合も終了コード1で、`dist` は生成されなかった。エビデンスは `evidence/2026-09-23/issue128/` にある。staging への意図的な失敗コミットによる実環境での実証は行っていない（ユーザー判断）。
+- **残余リスク（build.test.mjs はゲート対象外）**: `tests/build.test.mjs` は内部で `npm run build:raw` を実行する。そのため再帰を避ける目的で、`npm run build` からは `--exclude` で除外している。ビルド成果物を検証するテスト（dist の内容、sitemap、ヘッダー、コントラスト比など）が失敗しても Pages のデプロイは止まらず、GitHub Actions CI の `npm test` でのみ検出される。CI の失敗はデプロイを止めない。このため、main へのマージ前に `build.test.mjs` を含む `npm test` の全 PASS を確認する運用（4.6.2章 No.3）で補う。
+- **Bug #51 / SEC-35 は Pages 上で最終防壁になる**: `tests/cms-config.test.mjs` の SEC-35 テストは `build.test.mjs` 以外のテストファイルにあるため、Pages のゲートに含まれる。Pages のビルド環境では `CF_PAGES_BRANCH` によって実ブランチ（main / staging）を判定し、実ブランチ用のテストを登録する。そのため、環境固有ファイル（config.yml の branch/base_url、SITE_URL、robots.txt）が別環境の値で上書きされたブランチはビルドが失敗し、デプロイされない。ローカル実証の `CF_PAGES_BRANCH=staging` ケースでは、SEC-35 の staging 用テストが登録され、Vitest の合格件数が3件増えることも確認した。
 
 #### ブランチコントロール
 
@@ -2376,4 +2386,4 @@ evidence/YYYY-MM-DD/
 
 ---
 
-**最終更新**: 2026年9月23日（v1.67）
+**最終更新**: 2026年9月23日（v1.68）
