@@ -1,0 +1,8 @@
+<!doctype html>
+<html lang="ja"><meta charset="utf-8"><title>Issue #130 作業完了報告</title>
+<h1>Issue #130: admin CSP の実ホスト確認</h1>
+<p>結果: 54/54 PASS。内訳はローカルPC 12件（LA/LB各6）、production実ホスト18件（RP）、staging実ホスト18件（RS）、production/stagingの読み取り6件（R）。production と staging の実ホストではPC・iPad・iPhoneからログイン、記事を開く、本文入力、preview、保存要求を行った。ローカル操作はPCのみ。以前のローカルiPad/iPhone証跡は `../issue130/` に別保存。保存要求は production が main、staging が staging を指すことを確認した。</p>
+<p>OAuth と GitHub API は Playwright のモックで置き換え、実ホストへの書き込みを遮断した。CSP違反は Cloudflare Insights beacon 由来のみで、検証した編集操作中に他のCSP違反または機能エラーは観測しなかった。</p>
+<p>結果JSON: <a href="issue130-results.json">issue130-results.json</a>。全結果・端末別スクリーンショット: <a href="report.html">report.html</a>。</p>
+<p>制限: 実GitHub OAuthや実保存、CMS全機能の無影響は検証していない。保存成功はモックAPIのレスポンスに対するUI確認。</p>
+</html>

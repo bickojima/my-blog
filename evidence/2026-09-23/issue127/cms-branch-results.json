@@ -1,0 +1,425 @@
+{
+  "generatedAt": "2026-09-23T10:44:24.611Z",
+  "results": [
+    {
+      "device": "PC",
+      "host": "localhost",
+      "origin": "http://localhost:4276",
+      "expected": "staging",
+      "id": "B01",
+      "name": "ログイン後の記事一覧・ポップアップ URL = origin + /auth",
+      "pass": true,
+      "screenshot": "screenshots/b01-list-localhost-PC.png",
+      "popupUrl": "http://localhost:4276/auth?provider=github&site_id=demo.decapcms.org&scope=repo"
+    },
+    {
+      "device": "PC",
+      "host": "localhost",
+      "origin": "http://localhost:4276",
+      "expected": "staging",
+      "id": "B02",
+      "name": "記事を実操作で保存 → 書き込み先 ref",
+      "pass": true,
+      "screenshot": "screenshots/b02-saved-localhost-PC.png",
+      "publishOp": "click",
+      "measuredRefPatches": [
+        "/repos/bickojima/my-blog/git/refs/heads/staging"
+      ],
+      "writes": [
+        "POST /repos/bickojima/my-blog/git/blobs",
+        "POST /repos/bickojima/my-blog/git/trees",
+        "POST /repos/bickojima/my-blog/git/commits",
+        "PATCH /repos/bickojima/my-blog/git/refs/heads/staging"
+      ],
+      "branchesTouched": [
+        "staging"
+      ],
+      "consoleErrors": []
+    },
+    {
+      "device": "PC",
+      "host": "production",
+      "origin": "https://reiwa.casa",
+      "expected": "main",
+      "id": "B01",
+      "name": "ログイン後の記事一覧・ポップアップ URL = origin + /auth",
+      "pass": true,
+      "screenshot": "screenshots/b01-list-production-PC.png",
+      "popupUrl": "https://reiwa.casa/auth?provider=github&site_id=reiwa.casa&scope=repo"
+    },
+    {
+      "device": "PC",
+      "host": "production",
+      "origin": "https://reiwa.casa",
+      "expected": "main",
+      "id": "B02",
+      "name": "記事を実操作で保存 → 書き込み先 ref",
+      "pass": true,
+      "screenshot": "screenshots/b02-saved-production-PC.png",
+      "publishOp": "click",
+      "measuredRefPatches": [
+        "/repos/bickojima/my-blog/git/refs/heads/main"
+      ],
+      "writes": [
+        "POST /repos/bickojima/my-blog/git/blobs",
+        "POST /repos/bickojima/my-blog/git/trees",
+        "POST /repos/bickojima/my-blog/git/commits",
+        "PATCH /repos/bickojima/my-blog/git/refs/heads/main"
+      ],
+      "branchesTouched": [
+        "main"
+      ],
+      "consoleErrors": []
+    },
+    {
+      "device": "PC",
+      "host": "staging",
+      "origin": "https://staging.reiwa.casa",
+      "expected": "staging",
+      "id": "B01",
+      "name": "ログイン後の記事一覧・ポップアップ URL = origin + /auth",
+      "pass": true,
+      "screenshot": "screenshots/b01-list-staging-PC.png",
+      "popupUrl": "https://staging.reiwa.casa/auth?provider=github&site_id=staging.reiwa.casa&scope=repo"
+    },
+    {
+      "device": "PC",
+      "host": "staging",
+      "origin": "https://staging.reiwa.casa",
+      "expected": "staging",
+      "id": "B02",
+      "name": "記事を実操作で保存 → 書き込み先 ref",
+      "pass": true,
+      "screenshot": "screenshots/b02-saved-staging-PC.png",
+      "publishOp": "click",
+      "measuredRefPatches": [
+        "/repos/bickojima/my-blog/git/refs/heads/staging"
+      ],
+      "writes": [
+        "POST /repos/bickojima/my-blog/git/blobs",
+        "POST /repos/bickojima/my-blog/git/trees",
+        "POST /repos/bickojima/my-blog/git/commits",
+        "PATCH /repos/bickojima/my-blog/git/refs/heads/staging"
+      ],
+      "branchesTouched": [
+        "staging"
+      ],
+      "consoleErrors": []
+    },
+    {
+      "device": "PC",
+      "host": "pages-preview",
+      "origin": "https://abc123.my-blog-3cg.pages.dev",
+      "expected": "staging",
+      "id": "B01",
+      "name": "ログイン後の記事一覧・ポップアップ URL = origin + /auth",
+      "pass": true,
+      "screenshot": "screenshots/b01-list-pages-preview-PC.png",
+      "popupUrl": "https://abc123.my-blog-3cg.pages.dev/auth?provider=github&site_id=abc123.my-blog-3cg.pages.dev&scope=repo"
+    },
+    {
+      "device": "PC",
+      "host": "pages-preview",
+      "origin": "https://abc123.my-blog-3cg.pages.dev",
+      "expected": "staging",
+      "id": "B02",
+      "name": "記事を実操作で保存 → 書き込み先 ref",
+      "pass": true,
+      "screenshot": "screenshots/b02-saved-pages-preview-PC.png",
+      "publishOp": "click",
+      "measuredRefPatches": [
+        "/repos/bickojima/my-blog/git/refs/heads/staging"
+      ],
+      "writes": [
+        "POST /repos/bickojima/my-blog/git/blobs",
+        "POST /repos/bickojima/my-blog/git/trees",
+        "POST /repos/bickojima/my-blog/git/commits",
+        "PATCH /repos/bickojima/my-blog/git/refs/heads/staging"
+      ],
+      "branchesTouched": [
+        "staging"
+      ],
+      "consoleErrors": []
+    },
+    {
+      "device": "iPad",
+      "host": "localhost",
+      "origin": "http://localhost:4276",
+      "expected": "staging",
+      "id": "B01",
+      "name": "ログイン後の記事一覧・ポップアップ URL = origin + /auth",
+      "pass": true,
+      "screenshot": "screenshots/b01-list-localhost-iPad.png",
+      "popupUrl": "http://localhost:4276/auth?provider=github&site_id=demo.decapcms.org&scope=repo"
+    },
+    {
+      "device": "iPad",
+      "host": "localhost",
+      "origin": "http://localhost:4276",
+      "expected": "staging",
+      "id": "B02",
+      "name": "記事を実操作で保存 → 書き込み先 ref",
+      "pass": true,
+      "screenshot": "screenshots/b02-saved-localhost-iPad.png",
+      "publishOp": "click",
+      "measuredRefPatches": [
+        "/repos/bickojima/my-blog/git/refs/heads/staging"
+      ],
+      "writes": [
+        "POST /repos/bickojima/my-blog/git/blobs",
+        "POST /repos/bickojima/my-blog/git/trees",
+        "POST /repos/bickojima/my-blog/git/commits",
+        "PATCH /repos/bickojima/my-blog/git/refs/heads/staging"
+      ],
+      "branchesTouched": [
+        "staging"
+      ],
+      "consoleErrors": []
+    },
+    {
+      "device": "iPad",
+      "host": "production",
+      "origin": "https://reiwa.casa",
+      "expected": "main",
+      "id": "B01",
+      "name": "ログイン後の記事一覧・ポップアップ URL = origin + /auth",
+      "pass": true,
+      "screenshot": "screenshots/b01-list-production-iPad.png",
+      "popupUrl": "https://reiwa.casa/auth?provider=github&site_id=reiwa.casa&scope=repo"
+    },
+    {
+      "device": "iPad",
+      "host": "production",
+      "origin": "https://reiwa.casa",
+      "expected": "main",
+      "id": "B02",
+      "name": "記事を実操作で保存 → 書き込み先 ref",
+      "pass": true,
+      "screenshot": "screenshots/b02-saved-production-iPad.png",
+      "publishOp": "click",
+      "measuredRefPatches": [
+        "/repos/bickojima/my-blog/git/refs/heads/main"
+      ],
+      "writes": [
+        "POST /repos/bickojima/my-blog/git/blobs",
+        "POST /repos/bickojima/my-blog/git/trees",
+        "POST /repos/bickojima/my-blog/git/commits",
+        "PATCH /repos/bickojima/my-blog/git/refs/heads/main"
+      ],
+      "branchesTouched": [
+        "main"
+      ],
+      "consoleErrors": []
+    },
+    {
+      "device": "iPad",
+      "host": "staging",
+      "origin": "https://staging.reiwa.casa",
+      "expected": "staging",
+      "id": "B01",
+      "name": "ログイン後の記事一覧・ポップアップ URL = origin + /auth",
+      "pass": true,
+      "screenshot": "screenshots/b01-list-staging-iPad.png",
+      "popupUrl": "https://staging.reiwa.casa/auth?provider=github&site_id=staging.reiwa.casa&scope=repo"
+    },
+    {
+      "device": "iPad",
+      "host": "staging",
+      "origin": "https://staging.reiwa.casa",
+      "expected": "staging",
+      "id": "B02",
+      "name": "記事を実操作で保存 → 書き込み先 ref",
+      "pass": true,
+      "screenshot": "screenshots/b02-saved-staging-iPad.png",
+      "publishOp": "click",
+      "measuredRefPatches": [
+        "/repos/bickojima/my-blog/git/refs/heads/staging"
+      ],
+      "writes": [
+        "POST /repos/bickojima/my-blog/git/blobs",
+        "POST /repos/bickojima/my-blog/git/trees",
+        "POST /repos/bickojima/my-blog/git/commits",
+        "PATCH /repos/bickojima/my-blog/git/refs/heads/staging"
+      ],
+      "branchesTouched": [
+        "staging"
+      ],
+      "consoleErrors": []
+    },
+    {
+      "device": "iPad",
+      "host": "pages-preview",
+      "origin": "https://abc123.my-blog-3cg.pages.dev",
+      "expected": "staging",
+      "id": "B01",
+      "name": "ログイン後の記事一覧・ポップアップ URL = origin + /auth",
+      "pass": true,
+      "screenshot": "screenshots/b01-list-pages-preview-iPad.png",
+      "popupUrl": "https://abc123.my-blog-3cg.pages.dev/auth?provider=github&site_id=abc123.my-blog-3cg.pages.dev&scope=repo"
+    },
+    {
+      "device": "iPad",
+      "host": "pages-preview",
+      "origin": "https://abc123.my-blog-3cg.pages.dev",
+      "expected": "staging",
+      "id": "B02",
+      "name": "記事を実操作で保存 → 書き込み先 ref",
+      "pass": true,
+      "screenshot": "screenshots/b02-saved-pages-preview-iPad.png",
+      "publishOp": "click",
+      "measuredRefPatches": [
+        "/repos/bickojima/my-blog/git/refs/heads/staging"
+      ],
+      "writes": [
+        "POST /repos/bickojima/my-blog/git/blobs",
+        "POST /repos/bickojima/my-blog/git/trees",
+        "POST /repos/bickojima/my-blog/git/commits",
+        "PATCH /repos/bickojima/my-blog/git/refs/heads/staging"
+      ],
+      "branchesTouched": [
+        "staging"
+      ],
+      "consoleErrors": []
+    },
+    {
+      "device": "iPhone",
+      "host": "localhost",
+      "origin": "http://localhost:4276",
+      "expected": "staging",
+      "id": "B01",
+      "name": "ログイン後の記事一覧・ポップアップ URL = origin + /auth",
+      "pass": true,
+      "screenshot": "screenshots/b01-list-localhost-iPhone.png",
+      "popupUrl": "http://localhost:4276/auth?provider=github&site_id=demo.decapcms.org&scope=repo"
+    },
+    {
+      "device": "iPhone",
+      "host": "localhost",
+      "origin": "http://localhost:4276",
+      "expected": "staging",
+      "id": "B02",
+      "name": "記事を実操作で保存 → 書き込み先 ref",
+      "pass": true,
+      "screenshot": "screenshots/b02-saved-localhost-iPhone.png",
+      "publishOp": "keyboard Enter（iPhone でメニューが表示領域外。既存事象）",
+      "measuredRefPatches": [
+        "/repos/bickojima/my-blog/git/refs/heads/staging"
+      ],
+      "writes": [
+        "POST /repos/bickojima/my-blog/git/blobs",
+        "POST /repos/bickojima/my-blog/git/trees",
+        "POST /repos/bickojima/my-blog/git/commits",
+        "PATCH /repos/bickojima/my-blog/git/refs/heads/staging"
+      ],
+      "branchesTouched": [
+        "staging"
+      ],
+      "consoleErrors": []
+    },
+    {
+      "device": "iPhone",
+      "host": "production",
+      "origin": "https://reiwa.casa",
+      "expected": "main",
+      "id": "B01",
+      "name": "ログイン後の記事一覧・ポップアップ URL = origin + /auth",
+      "pass": true,
+      "screenshot": "screenshots/b01-list-production-iPhone.png",
+      "popupUrl": "https://reiwa.casa/auth?provider=github&site_id=reiwa.casa&scope=repo"
+    },
+    {
+      "device": "iPhone",
+      "host": "production",
+      "origin": "https://reiwa.casa",
+      "expected": "main",
+      "id": "B02",
+      "name": "記事を実操作で保存 → 書き込み先 ref",
+      "pass": true,
+      "screenshot": "screenshots/b02-saved-production-iPhone.png",
+      "publishOp": "keyboard Enter（iPhone でメニューが表示領域外。既存事象）",
+      "measuredRefPatches": [
+        "/repos/bickojima/my-blog/git/refs/heads/main"
+      ],
+      "writes": [
+        "POST /repos/bickojima/my-blog/git/blobs",
+        "POST /repos/bickojima/my-blog/git/trees",
+        "POST /repos/bickojima/my-blog/git/commits",
+        "PATCH /repos/bickojima/my-blog/git/refs/heads/main"
+      ],
+      "branchesTouched": [
+        "main"
+      ],
+      "consoleErrors": []
+    },
+    {
+      "device": "iPhone",
+      "host": "staging",
+      "origin": "https://staging.reiwa.casa",
+      "expected": "staging",
+      "id": "B01",
+      "name": "ログイン後の記事一覧・ポップアップ URL = origin + /auth",
+      "pass": true,
+      "screenshot": "screenshots/b01-list-staging-iPhone.png",
+      "popupUrl": "https://staging.reiwa.casa/auth?provider=github&site_id=staging.reiwa.casa&scope=repo"
+    },
+    {
+      "device": "iPhone",
+      "host": "staging",
+      "origin": "https://staging.reiwa.casa",
+      "expected": "staging",
+      "id": "B02",
+      "name": "記事を実操作で保存 → 書き込み先 ref",
+      "pass": true,
+      "screenshot": "screenshots/b02-saved-staging-iPhone.png",
+      "publishOp": "keyboard Enter（iPhone でメニューが表示領域外。既存事象）",
+      "measuredRefPatches": [
+        "/repos/bickojima/my-blog/git/refs/heads/staging"
+      ],
+      "writes": [
+        "POST /repos/bickojima/my-blog/git/blobs",
+        "POST /repos/bickojima/my-blog/git/trees",
+        "POST /repos/bickojima/my-blog/git/commits",
+        "PATCH /repos/bickojima/my-blog/git/refs/heads/staging"
+      ],
+      "branchesTouched": [
+        "staging"
+      ],
+      "consoleErrors": []
+    },
+    {
+      "device": "iPhone",
+      "host": "pages-preview",
+      "origin": "https://abc123.my-blog-3cg.pages.dev",
+      "expected": "staging",
+      "id": "B01",
+      "name": "ログイン後の記事一覧・ポップアップ URL = origin + /auth",
+      "pass": true,
+      "screenshot": "screenshots/b01-list-pages-preview-iPhone.png",
+      "popupUrl": "https://abc123.my-blog-3cg.pages.dev/auth?provider=github&site_id=abc123.my-blog-3cg.pages.dev&scope=repo"
+    },
+    {
+      "device": "iPhone",
+      "host": "pages-preview",
+      "origin": "https://abc123.my-blog-3cg.pages.dev",
+      "expected": "staging",
+      "id": "B02",
+      "name": "記事を実操作で保存 → 書き込み先 ref",
+      "pass": true,
+      "screenshot": "screenshots/b02-saved-pages-preview-iPhone.png",
+      "publishOp": "keyboard Enter（iPhone でメニューが表示領域外。既存事象）",
+      "measuredRefPatches": [
+        "/repos/bickojima/my-blog/git/refs/heads/staging"
+      ],
+      "writes": [
+        "POST /repos/bickojima/my-blog/git/blobs",
+        "POST /repos/bickojima/my-blog/git/trees",
+        "POST /repos/bickojima/my-blog/git/commits",
+        "PATCH /repos/bickojima/my-blog/git/refs/heads/staging"
+      ],
+      "branchesTouched": [
+        "staging"
+      ],
+      "consoleErrors": []
+    }
+  ]
+}

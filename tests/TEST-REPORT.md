@@ -60,7 +60,8 @@
 | 1.52 | 2026-09-23 | Issue #129: `verify-security.mjs` はSEC01〜SEC10の証跡取得・確認を行うと明記し、SEC-01〜SEC-35全体の検査責務をDOCUMENTATION 1.5.4章のトレーサビリティへ集約。SEC-33〜35の対応するVitestを記載。テスト件数変更なし |
 | 1.53 | 2026-09-23 | Issue #117 hardening 対応（判定表: `docs/security/issue-117-hardening-decisions.md`）: 新規 `security-hardening.test.mjs`（2.8章、28件: Bug #52/SEC-29 frontmatter YAML限定 10件〔うち2件は tests/・scripts/ の gray-matter 直接読み込み禁止の静的検証〕、SEC-37 許可リスト単一化 4件、SEC-38 コールバックCSP 2件、SEC-39 JSON.stringifyリテラル 12件）、`build.test.mjs` に SEC-36（Actions SHA 固定）1件（113→114）。既存テストの更新: auth-functions 2.3.1章 #1（escapeForScript→toScriptStringLiteral）、SEC-27 テスト（共有モジュール import を検証）、成功時 Content-Type（`text/html; charset=utf-8`）、fuzz 2.7章 #9/#10（ソース文字列一致→生成リテラルを評価して元トークンと完全一致する挙動検証へ強化、改行テストは実際に改行・U+2028/U+2029 を含むトークンで検証）。件数は増減なし（削除・スキップなし）。Bug #52 の第2経路（`npm run build` が先に実行する Vitest/E2E のテストも gray-matter で `src/content` を直接解析）に対応し、content-validation / cms-config / fuzz-validation / build / e2e app-info の frontmatter 解析を `parseFrontmatter` に置換（テストケースの内容・件数は不変）。Vitest featureブランチ 639→**668**件／main・staging 642→**671**件。実ブラウザE2Eエビデンス `evidence/2026-09-23/issue117/`（OAuth Functions 実コード経由、15/15 PASS） |
 | 1.54 | 2026-09-23 | Issue #132: SEC-40（npm管理外依存の鮮度・EOL監視）の判定ロジック・棚卸し・週次ワークフロー設定を検証する `dependency-freshness.test.mjs` 27件を追加（2.9章）。ネットワーク取得はフィクスチャで置換し、`fetch` が呼ばれたら失敗させて `npm test` のオフライン決定性を担保。Vitest **feature 668→695件／main・staging 671→698件** |
-| 1.55 | 2026-09-23 | Issue #127（環境値の自動導出）: 環境固有の4項目をファイルから削除し導出する構造に変えたため、SEC-35 のテストを「導出結果の正しさ」の検証へ作り替え。新規 `env-derivation.test.mjs`（2.10章、37件: ビルド時導出16件・CMS 実行時導出14件・main/staging 差分ゼロの静的ガード7件）、`build.test.mjs` に `CF_PAGES_BRANCH 別ビルドの環境値` 15件（main/staging/未設定の3ビルド×5項目、114→129）、`cms-config.test.mjs` の SEC-35 を5件に改訂（旧: feature 1件／main・staging 4件のブランチ別登録 → 全ブランチ共通5件、56→60）。**書き換えた既存テスト（削除・スキップなし）**: cms-config 2.4章 No.3・No.5・No.45（config.yml から branch/base_url を削除したため、config.yml と実行時導出値を deepmerge した実効設定で同じ性質を検証）、2.4.3章 No.51〜55（ブランチ判定＋内部整合 → ホスト別の実効 backend 4件＋config.yml 単体に値が無いこと1件。旧テストは対象の値がファイルから消えたため成立しない）、build 2.5.5章 No.1（SITE_URL リテラルからの環境推定 → ビルド時 CF_PAGES_BRANCH による判定）。Vitest feature 695／main・staging 698 → **全ブランチ 751件**。E2E に `cms-env-branch.spec.ts`（E-47、4ホスト×3デバイス=12件、実操作保存で書き込み先 ref を実測）を追加し 453→**465件**。エビデンス `evidence/2026-09-23/issue127/` |
+| 1.55 | 2026-09-23 | Issue #127（環境値の自動導出）: 環境固有の4項目をファイルから削除し導出する構造に変えたため、SEC-35 のテストを「導出結果の正しさ」の検証へ作り替え。新規 `env-derivation.test.mjs`（2.10章、37件: ビルド時導出16件・CMS 実行時導出14件・main/staging 差分ゼロの静的ガード7件）、`build.test.mjs` に `CF_PAGES_BRANCH 別ビルドの環境値` 15件（main/staging/未設定の3ビルド×5項目、114→129）、`cms-config.test.mjs` の SEC-35 を5件に改訂（旧: feature 1件／main・staging 4件のブランチ別登録 → 全ブランチ共通5件、56→60）。**書き換えた既存テスト（削除・スキップなし）**: cms-config 2.4章 No.3・No.5・No.45（config.yml から branch/base_url を削除したため、config.yml と実行時導出値を deepmerge した実効設定で同じ性質を検証）、2.4.3章 No.51〜55（ブランチ判定＋内部整合 → ホスト別の実効 backend 4件＋config.yml 単体に値が無いこと1件。旧テストは対象の値がファイルから消えたため成立しない）、build 2.5.5章 No.1（SITE_URL リテラルからの環境推定 → ビルド時 CF_PAGES_BRANCH による判定）。E2E E-39「固定ページのorderフィールドはmin=1の数値フィールドである」（本変更で spec の認証が実際に成立するようになり、未認証時用の `body.isVisible()` フォールバックが認証後画面で false になって3デバイスで失敗。数値フィールドの表示・min≥1・編集可を必須とする形に強化。DOCUMENTATION 4.5章 Bug #P127-2）。Vitest feature 695／main・staging 698 → **全ブランチ 751件**。E2E に `cms-env-branch.spec.ts`（E-47、4ホスト×3デバイス=12件、実操作保存で書き込み先 ref を実測）を追加し 453→**465件**。エビデンス `evidence/2026-09-23/issue127/` |
+| 1.56 | 2026-09-23 | Issue #130（SEC-41）: admin CSP で Cloudflare Insights beacon を許可せず、CSPポリシーは緩和せず、`public/_headers` の方針コメントとCMS実操作E2Eで検証。`fuzz-validation.test.mjs` にadmin CSP・重複ヘッダー防止35件を追加。production/staging 実ホストへPlaywrightで接続し、OAuth/GitHub APIは全面モックして実書込を遮断。PC/iPad/iPhoneで編集・入力・preview・保存要求branchを確認し54/54 PASS（production/staging各3端末の操作、ローカルPC操作、実ホストreadonly）。非Insights CSP違反・機能エラーなし。ローカルiPad/iPhoneは従前証跡 `evidence/2026-09-23/issue130/` を別保存。Vitest 754件、ローカルE2E全465件。証跡 `evidence/2026-09-23/issue130-review/` |
 
 ## テスト基盤の変更履歴
 
@@ -482,7 +483,7 @@ admin-html.test.mjs              -     ●     -     -     -     -     -     -  
 
 | No. | 基準 |
 | :--- | :--- |
-| 1 | 全テストケース（Vitest 751件〔全ブランチ共通。Issue #127 で SEC-35 のブランチ別登録を廃止〕 + E2E 465件 = 1189件）がPASSまたは仕様上の条件スキップであること |
+| 1 | 全テストケース（Vitest 754件〔全ブランチ共通。Issue #127 で SEC-35 のブランチ別登録を廃止〕 + E2E 465件 = 1219件）がPASSまたは仕様上の条件スキップであること |
 | 2 | `npm run build` が正常に完了すること |
 | 3 | 要件トレーサビリティマトリクス（docs/DOCUMENTATION.md 1.5章）において全要件が「充足」であること |
 | 4 | 本番（main）マージ前にローカル `npm run test:e2e` 全件と `verify-comprehensive.mjs` が完了していること（**CI に Playwright は載せない**。Bug #50） |
@@ -1358,6 +1359,16 @@ Bug #27時点は`/admin/*`側で値を「オーバーライド」する設計だ
 | 5 | CSP connect-src に blob: 含む（Bug #29再発防止） | M-02 | Decap CMS画像保存時の`fetch(blobURL)`に必要 |
 | 6 | /* と /admin/* で同名ヘッダーが重複していない（Bug #28再発防止） | M-02 | Cloudflare Pages Append動作による重複送信防止 |
 
+#### 2.7.13 管理画面CSPで外部解析ビーコンを許可しない（SEC-41, Issue #130）
+
+| # | テストケース | 手法 | 期待結果 |
+| :--- | :--- | :--- | :--- |
+| 1 | `/admin/*` CSP に `cloudflareinsights` が含まれない | M-02 | Insights beacon は遮断されたまま |
+| 2 | `script-src` / `connect-src` に任意ホスト向け wildcard / scheme-source がない | M-02 | beacon許可のためにCSPを緩めない |
+| 3 | `_headers` に遮断方針を記録する | M-02 | 意図しない将来の許可変更を検出 |
+
+実ホスト操作確認は `evidence/2026-09-23/issue130-review/` に保存する。production/staging のPC/iPad/iPhoneでCMS編集・入力・preview・保存を操作した。OAuth/GitHub APIはモックして実書込を遮断し、検証した操作範囲でInsights以外のCSP違反と機能エラーが無いことを確認する。これは実GitHub保存や全CMS機能の無影響を証明するものではない。
+
 ### 2.8 Issue #117 hardening 再発防止（security-hardening.test.mjs: 28件）
 
 判定表: `docs/security/issue-117-hardening-decisions.md`。
@@ -1458,7 +1469,7 @@ No.31〜37 は「main と staging で環境固有ファイルに差分を置か�
 
 要件トレーサビリティマトリクスは **docs/DOCUMENTATION.md 1.5章** に移動した。要件定義と同一ファイルで管理することで、要件追加時のトレース漏れを防止する。
 
-現在の充足状況: **FR-01〜FR-29, CMS-01〜CMS-19, NFR-01〜NFR-08, SEC-01〜SEC-40, SEC-127A（仮ID）はテストで充足されている。未テスト要件は0件（docs/DOCUMENTATION.md 1.5.4章参照）。** Modern Web Guidanceエビデンスは `evidence/2026-06-11/` に保存する。
+現在の充足状況: **FR-01〜FR-29, CMS-01〜CMS-19, NFR-01〜NFR-08, SEC-01〜SEC-41, SEC-127A（仮ID）はテストで充足されている。SEC-41は実ホストで検証した操作範囲を対象とする。未テスト要件は0件（docs/DOCUMENTATION.md 1.5.4章参照）。** Modern Web Guidanceエビデンスは `evidence/2026-06-11/` に保存する。
 
 ---
 
@@ -1885,9 +1896,9 @@ npm run build
 | 実行日時 | 2026-09-23（Issue #127 対応後。ブランチ `feat/issue-127-derive-env-values`、staging 9c58398 に rebase 済み） |
 | Vitest バージョン | v4.1.11 |
 | 実行時間 | 約8s（`npx vitest run`。CF_PAGES_BRANCH 別の3ビルドを含む）。`CF_PAGES_BRANCH=main` / `staging` でも同件数で実測 |
-| 合否判定 | **合格**（未設定・main・staging の3文脈とも 751 passed） |
+| 合否判定 | **合格**（未設定・main・staging の3文脈とも 754 passed） |
 
-**Vitest総件数はブランチに依存しない（Issue #127 以降）**: 旧 SEC-35 は判定ブランチによって登録数が変わった（feature 695／main・staging 698）が、導出結果を検証する形に改訂したため、feature・main・staging・CI のどこでも同じ751件になる。
+**Vitest総件数はブランチに依存しない（Issue #127 以降）**: 旧 SEC-35 は判定ブランチによって登録数が変わった（feature 695／main・staging 698）が、導出結果を検証する形に改訂したため、feature・main・staging・CI のどこでも同じ754件になる。
 
 ### 4.3.2 テストファイル別結果
 
@@ -1906,9 +1917,9 @@ Issue #127 対応後の実測（全ブランチ共通）:
 | `security-hardening.test.mjs` | 28 | PASS | — |
 | `dependency-freshness.test.mjs` | 27 | PASS | — |
 | `env-derivation.test.mjs` | 37 | PASS | — |
-| **合計** | **751** | **全PASS** | **実測は `npx vitest run` の出力を正とする** |
+| **合計** | **754** | **全PASS** | **実測は `npx vitest run` の出力を正とする** |
 
-`CF_PAGES_BRANCH=main npx vitest run` / `CF_PAGES_BRANCH=staging npx vitest run` でも同じ 751 passed（旧版の main・staging 別表は Issue #127 で不要になった）。
+`CF_PAGES_BRANCH=main npx vitest run` / `CF_PAGES_BRANCH=staging npx vitest run` でも同じ 754 passed（旧版の main・staging 別表は Issue #127 で不要になった）。
 
 Issue #117 項目2/12 により `build.test.mjs` 111→113、`fuzz-validation.test.mjs` 215→216。Vitest 合計 635→638。Bug #51再発防止（SEC-35、`cms-config.test.mjs`に環境固有ファイルの実ブランチ整合性検証を追加）によりVitest合計は **feature ブランチ 639件／main・staging 642件**（差の3件はSEC-35のブランチ別テスト登録による。既存テストへの影響はない）。Issue #117 hardening 対応で `security-hardening.test.mjs` 28件と `build.test.mjs` 1件（SEC-36）を追加し、**feature ブランチ 668件／main・staging 671件**。Issue #132（SEC-40）で `dependency-freshness.test.mjs` 27件を追加し **feature ブランチ 695件／main・staging 698件**。Issue #127 で `env-derivation.test.mjs` 37件、`build.test.mjs` 15件（114→129）を追加し、`cms-config.test.mjs` の SEC-35 を 1件（feature）／4件（main・staging）から全ブランチ共通5件へ改訂（56→60）。**全ブランチ 751件**。
 
@@ -1959,7 +1970,7 @@ Issue #117 項目2/12 により `build.test.mjs` 111→113、`fuzz-validation.te
 
 ---
 
-**最終更新**: 2026年9月23日（v1.54）
+**最終更新**: 2026年9月23日（v1.56）
 
 ### 2026-09-20 セキュリティIssue #109〜#113対応完了
 
