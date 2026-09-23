@@ -377,21 +377,18 @@ test.describe('E-39: 固定ページ作成画面', () => {
     await page.waitForTimeout(4000);
 
     // orderフィールドの検証（Bug #25再発防止: min=1制約）
+    // Issue #127 で書き換え: 以前は config.yml の base_url（リモートURL）と localhost のオリジンが一致せず
+    // ログインが完了しないまま「numberInput が無ければ body 表示で PASS」の分岐を通っていた。
+    // base_url が location.origin から導出されるようになり実際に認証後の編集画面が開くため、
+    // 数値フィールドの存在と min=1 を必須で検証する（Decap のエディタ画面は body の高さが 0 になり、
+    // 旧来の body.isVisible() 判定は認証後画面では false になる）。
     const numberInput = page.locator('input[type="number"]').first();
-    if (await numberInput.isVisible().catch(() => false)) {
-      const minAttr = await numberInput.getAttribute('min').catch(() => null);
-      // min属性が存在する場合は1以上であることを確認
-      if (minAttr !== null) {
-        expect(parseInt(minAttr, 10)).toBeGreaterThanOrEqual(1);
-      }
-
-      // 数値フィールドが編集可能であることを確認
-      const isEditable = await numberInput.isEditable().catch(() => false);
-      expect(isEditable).toBeTruthy();
-    }
-    // numberInputが存在しない場合もテストはPASS
-    const bodyVisible = await page.locator('body').isVisible().catch(() => false);
-    expect(bodyVisible).toBeTruthy();
+    await expect(numberInput).toBeVisible({ timeout: 15000 });
+    const minAttr = await numberInput.getAttribute('min');
+    expect(minAttr).not.toBeNull();
+    expect(parseInt(minAttr as string, 10)).toBeGreaterThanOrEqual(1);
+    // 数値フィールドが編集可能であることを確認
+    expect(await numberInput.isEditable()).toBeTruthy();
   });
 });
 

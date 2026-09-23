@@ -1,0 +1,89 @@
+# Issue #127 両方向マージ実証ログ
+実行日時: 2026-09-23 20:00:39 +0900
+feature(HEAD)=fe646e8b8474891be0f3f812ed823a66726a3df5 origin/main=f60b81d3c0810bf273c5ff6430cc83a54e2ad43e origin/staging=10a1589734e62090c42fbd76ad887b06f0119bcc
+
+## 0. 変更前: origin/main と origin/staging の環境固有ファイル差分（Bug #51 の原因）
+ astro.config.mjs        | 2 +-
+ public/admin/config.yml | 4 ++--
+ public/robots.txt       | 3 +--
+ 3 files changed, 4 insertions(+), 5 deletions(-)
+-const SITE_URL = 'https://reiwa.casa';
++const SITE_URL = 'https://staging.reiwa.casa';
+-  branch: main
+-  base_url: https://reiwa.casa
++  branch: staging
++  base_url: https://staging.reiwa.casa
+-Allow: /
+-Sitemap: https://reiwa.casa/sitemap-index.xml
++Disallow: /
+
+## 1. staging-sim = 実装コミット
+fe646e8 feat(env): derive environment-specific values instead of per-branch files (#127)
+
+## 2. main-sim = origin/main に staging-sim を初回マージ（4.6.5章 移行手順）
+初回マージ: コンフリクトあり（移行手順どおり新構造側に揃える）
+astro.config.mjs
+public/admin/config.yml
+public/robots.txt
+移行後 main-sim と staging-sim の環境固有ファイル差分（空であること）:
+public/robots.txt 存在: なし
+
+## 3. 両ブランチを分岐させる
+main-sim:    3251080 demo: main 側で記事を追加（CMS の本番コミットを模擬）
+staging-sim: 0101615 demo: staging 側で機能追加（ドキュメント変更を模擬）
+分岐点: fe646e8b8474891be0f3f812ed823a66726a3df5
+
+## 4a. staging → main（merge-to-main）
+マージ staging-sim → main-sim: コンフリクトなし
+マージで環境固有ファイルが変化したか（空であること）:
+マージで取り込まれたファイル:
+docs/MODERN-WEB-GUIDANCE.md
+
+## 4b. main → staging（merge-to-staging）
+マージ main-sim → staging-sim: コンフリクトなし
+マージで環境固有ファイルが変化したか（空であること）:
+マージで取り込まれたファイル:
+src/content/posts/2026/09/マージ実証用の記事.md
+
+## 5. マージ後の両ブランチの環境固有ファイル差分（空であること）
+public/robots.txt 存在: merge-to-main=なし / merge-to-staging=なし
+config.yml の branch/base_url 行: merge-to-main=0 / merge-to-staging=0
+
+## 5b. 生成物の環境値
+### merge-to-main を CF_PAGES_BRANCH=main でビルド
+robots.txt:
+    User-agent: *
+    Allow: /
+    Sitemap: https://reiwa.casa/sitemap-index.xml
+canonical(index): <link rel="canonical" href="https://reiwa.casa/">
+sitemap-index: <loc>https://reiwa.casa/sitemap-0.xml</loc>
+sitemap-0 のオリジン一覧: https://reiwa.casa
+admin/config.yml の branch/base_url 行数: 0
+Vitest（CF_PAGES_BRANCH=main）:
+ Test Files  11 passed (11)
+      Tests  761 passed (761)
+### merge-to-staging を CF_PAGES_BRANCH=staging でビルド
+robots.txt:
+    User-agent: *
+    Disallow: /
+canonical(index): <link rel="canonical" href="https://staging.reiwa.casa/">
+sitemap-index: <loc>https://staging.reiwa.casa/sitemap-0.xml</loc>
+sitemap-0 のオリジン一覧: https://staging.reiwa.casa
+admin/config.yml の branch/base_url 行数: 0
+Vitest（CF_PAGES_BRANCH=staging）:
+ Test Files  11 passed (11)
+      Tests  761 passed (761)
+
+## 6. 陰性対照: 旧構造の値を持ち込むと静的ガードが検出する
+     × config.yml に backend.branch / backend.base_url を書かない 3ms
+     × config.yml に環境URL（https://…reiwa.casa）を書かない 0ms
+     × public/robots.txt を置かず、src/pages/robots.txt.ts が buildRobotsTxt(CF_PAGES_BRANCH) で生成する 1ms
+     × config.yml 単体には branch / base_url が無い（マージで持ち込まれる環境値を置かない） 3ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  tests/cms-config.test.mjs > 環境固有値の導出整合性検証（SEC-35 改訂, Bug #51再発防止, Issue #127） > config.yml 単体には branch / base_url が無い（マージで持ち込まれる環境値を置かない）
+ FAIL  tests/env-derivation.test.mjs > main / staging で環境固有ファイルに差分を置かない静的ガード（SEC-35 改訂, Bug #51・Issue #127） > config.yml に backend.branch / backend.base_url を書かない
+ FAIL  tests/env-derivation.test.mjs > main / staging で環境固有ファイルに差分を置かない静的ガード（SEC-35 改訂, Bug #51・Issue #127） > config.yml に環境URL（https://…reiwa.casa）を書かない
+ FAIL  tests/env-derivation.test.mjs > main / staging で環境固有ファイルに差分を置かない静的ガード（SEC-35 改訂, Bug #51・Issue #127） > public/robots.txt を置かず、src/pages/robots.txt.ts が buildRobotsTxt(CF_PAGES_BRANCH) で生成する
+      Tests  4 failed | 93 passed (97)
+
+完了

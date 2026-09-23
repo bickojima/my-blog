@@ -1,0 +1,9 @@
+<!doctype html><html lang="ja"><meta charset="utf-8"><title>#127 staging 包括E2E作業報告</title>
+<style>body{font:16px/1.7 system-ui,sans-serif;max-width:900px;margin:3rem auto;padding:0 1rem;color:#202124}h1{font-size:1.6rem}table{border-collapse:collapse}td,th{border:1px solid #bbb;padding:.5rem .8rem;text-align:left}code{background:#f1f3f4;padding:.1rem .3rem}</style>
+<h1>Issue #127 staging 包括E2E 作業報告</h1>
+<p>2026-09-23に <a href="https://staging.reiwa.casa">https://staging.reiwa.casa</a> の実配信を対象に検証。50シナリオIDを各端末で実行し、結果は端末別50件、合計150件。</p>
+<table><thead><tr><th>端末</th><th>PASS</th><th>FAIL</th></tr></thead><tbody><tr><td>PC</td><td>50</td><td>0</td></tr><tr><td>iPad Pro 11</td><td>50</td><td>0</td></tr><tr><td>iPhone 14</td><td>50</td><td>0</td></tr><tr><th>合計</th><th>150</th><th>0</th></tr></tbody></table>
+<p>サイト公開動作とCMS UI操作を確認。CMS OAuthとGitHub APIはPlaywrightでモックし、書込先APIへの実書込は発生させていない。証跡は <a href="report.html">report.html</a>、<a href="comprehensive-results.json">comprehensive-results.json</a>、screenshots/。結果JSONの端末別件数を確認した。</p>
+<p>別途、<code>issue130-post-staging</code> のCMS実操作ゲートは78/78 PASS。stagingのrobots/canonical/sitemap/config/cms-env/CSPのライブ確認は <code>../staging-live/deployment-fingerprint.json</code> を参照。</p>
+<p>制限: Cloudflare API認証情報がなくPages deployment commit metadataは確認できていない。配信HTML/configのfingerprint一致、staging URL、独立E2Eを証跡にした。</p>
+</html>

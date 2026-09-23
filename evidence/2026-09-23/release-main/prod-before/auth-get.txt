@@ -1,0 +1,2 @@
+HTTP/2 302 
+location: https://github.com/login/oauth/authorize?client_id=Ov23liNxCgnMDc7alKJC&redirect_uri=https%3A%2F%2Freiwa.casa%2Fauth%2Fcallback&scope=public_repo%2Cread%3Auser&state=<redacted>
