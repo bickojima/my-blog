@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { execSync } from 'child_process';
 import { existsSync, readFileSync, readdirSync } from 'fs';
 import { join, extname, basename } from 'path';
-import matter from 'gray-matter';
+import { parseFrontmatter } from '../scripts/lib/safe-frontmatter.mjs'; // Bug #52: gray-matter を直接呼ばない
 
 const DIST_DIR = join(process.cwd(), 'dist');
 const POSTS_DIR = join(process.cwd(), 'src/content/posts');
@@ -24,7 +24,7 @@ function getPublishedPosts() {
   collect(POSTS_DIR);
   return files
     .map(f => {
-      const { data } = matter(readFileSync(f, 'utf-8'));
+      const { data } = parseFrontmatter(readFileSync(f, 'utf-8'));
       const dateStr = data.date instanceof Date
         ? data.date.toISOString().split('T')[0]
         : String(data.date);
@@ -42,7 +42,7 @@ function getPublishedPages() {
   return readdirSync(PAGES_DIR)
     .filter(f => extname(f) === '.md')
     .map(f => {
-      const { data } = matter(readFileSync(join(PAGES_DIR, f), 'utf-8'));
+      const { data } = parseFrontmatter(readFileSync(join(PAGES_DIR, f), 'utf-8'));
       return { title: data.title, slug: data.slug, order: data.order, draft: data.draft, noindex: data.noindex };
     })
     .filter(p => !p.draft)
@@ -330,7 +330,7 @@ describe('ビルド検証', () => {
       collect(POSTS_DIR);
       return files
         .map((f) => {
-          const { data } = matter(readFileSync(f, 'utf-8'));
+          const { data } = parseFrontmatter(readFileSync(f, 'utf-8'));
           const dateStr = data.date instanceof Date
             ? data.date.toISOString().split('T')[0]
             : String(data.date);
@@ -395,7 +395,7 @@ describe('ビルド検証', () => {
         const rss = readFileSync(join(DIST_DIR, 'rss.xml'), 'utf-8');
         const draftTitles = readdirSync(POSTS_DIR, { recursive: true })
           .filter((f) => String(f).endsWith('.md'))
-          .map((f) => matter(readFileSync(join(POSTS_DIR, String(f)), 'utf-8')).data)
+          .map((f) => parseFrontmatter(readFileSync(join(POSTS_DIR, String(f)), 'utf-8')).data)
           .filter((data) => data.draft)
           .map((data) => data.title);
         for (const title of draftTitles) {
@@ -484,7 +484,7 @@ describe('ビルド検証', () => {
       const pageData = () =>
         readdirSync(PAGES_DIR)
           .filter((file) => file.endsWith('.md'))
-          .map((file) => matter(readFileSync(join(PAGES_DIR, file), 'utf-8')).data);
+          .map((file) => parseFrontmatter(readFileSync(join(PAGES_DIR, file), 'utf-8')).data);
       const noindexPages = () => pageData().filter((d) => d.noindex === true && d.draft !== true);
       const indexedPages = () => pageData().filter((d) => d.noindex !== true && d.draft !== true);
 
@@ -753,7 +753,7 @@ describe('ビルド検証', () => {
         .filter((f) => String(f).endsWith('.md'))
         .map((f) => {
           const content = readFileSync(join(POSTS_DIR, String(f)), 'utf-8');
-          const { data } = matter(content);
+          const { data } = parseFrontmatter(content);
           return { data, slug: basename(String(f), '.md') };
         })
         .filter(({ data }) => data.draft === true)
@@ -778,7 +778,7 @@ describe('ビルド検証', () => {
         .filter((f) => String(f).endsWith('.md'))
         .map((f) => {
           const content = readFileSync(join(POSTS_DIR, String(f)), 'utf-8');
-          const { data } = matter(content);
+          const { data } = parseFrontmatter(content);
           return { data, slug: basename(String(f), '.md') };
         })
         .filter(({ data }) => data.draft !== true)

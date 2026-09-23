@@ -9,7 +9,7 @@
 
 | # | 項目 | 照合時の現状 | 判定 | 根拠 | 残余リスク | 検証手段 |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| 1 | gray-matter の `---js` が eval される | **未解決**（Issue コメントの「SEC-29で完了」は誤り）。`matter(content, { language: 'yaml' })` を渡しても、本文が `---js` で始まると gray-matter は区切り直後の言語宣言を優先する（`gray-matter/index.js` parseMatter）。`organize-posts.mjs` 旧版で `---js` 記事を処理するとペイロードが実行されることを実測 | **実装（Bug #52）** | 意図した防御が効いていないことの是正。修正は小さい | 能力の増加は無い（到達主体は既にリポジトリ書込権限または CI 上の任意コード実行を持つ）。テストコード（`tests/*.test.mjs`）の gray-matter 直呼びは対象外（CI は PR 自身のコードを実行する前提） | `tests/security-hardening.test.mjs`（`---js`/`---javascript`/`---JS`/`---json` 拒否、YAML 正常解析、organize-posts 実行でペイロード非実行）。旧版で実行・新版で非実行を実測 |
+| 1 | gray-matter の `---js` が eval される | **未解決**（Issue コメントの「SEC-29で完了」は誤り）。`matter(content, { language: 'yaml' })` を渡しても、本文が `---js` で始まると gray-matter は区切り直後の言語宣言を優先する（`gray-matter/index.js` parseMatter）。`organize-posts.mjs` 旧版で `---js` 記事を処理するとペイロードが実行されることを実測。**第2の経路（レビュー差し戻しで判明）**: Cloudflare Pages のビルドコマンド `npm run build` は organize-posts より前に `vitest run --exclude tests/build.test.mjs` を実行し、`content-validation`・`cms-config`・`fuzz-validation`・`build`（CI のみ）の各テストと E2E `app-info.spec.ts` が全記事・固定ページを gray-matter の `matter()` で直接解析していた。このため `---js` 記事は Pages のビルド環境と CI で organize-posts より先に eval される（修正前、一時的な `---js` 記事を置いて `npx vitest run tests/content-validation.test.mjs` を実行し、ペイロードがマーカーファイルを作ることを実測）。**Astro 本体のローダーは安全**: `@astrojs/internal-helpers/frontmatter` は `---`/`+++` の中身を js-yaml の `load`（v4、JS 型なし）／TOML でのみ解析し、`---js` は YAML エラーでビルド失敗になる（`npx astro build` で実測、ペイロード非実行） | **実装（Bug #52）** | 意図した防御が効いていないことの是正。修正は小さい | 能力の増加は無い（到達主体は既にリポジトリ書込権限または CI 上の任意コード実行を持つ）。`---js` 記事を置くと Vitest のコンテンツ系テストと organize-posts は例外で失敗・除外され（fail-closed）、`npm run build` はビルドを止める | `tests/security-hardening.test.mjs`（`---js`/`---javascript`/`---JS`/`---json` 拒否、YAML 正常解析、organize-posts 実行でペイロード非実行、tests/・scripts/ の gray-matter 直接読み込み禁止、`src/content` 読み取り箇所のラッパー経由）。旧版で実行・新版で非実行を organize-posts と `npx vitest run tests/content-validation.test.mjs` の両経路で実測 |
 | 2 | CI に `permissions: contents: read` | 対応済み（SEC-33）。staging/main とも確認 | 対応済み | — | — | `build.test.mjs`（SEC-33） |
 | 3 | actions を commit SHA で固定 | 未対応（`@v4` タグ参照） | **実装（SEC-36）** | タグは上流で付け替え可能。SHA 固定でタグ改ざん時に CI で任意コードが動く経路を閉じる。現在 `@v4` が指す commit（checkout / setup-node とも v4.4.0）にそのまま固定したので挙動変化なし | 固定した SHA が古くなる（更新の検知・運用は #132 の依存監視へ委ねる）。CI トークンは `contents: read` で、Pages デプロイは CI と独立のため影響範囲は元々小さい | `build.test.mjs`（全 `uses:` が40桁 SHA＋版コメント） |
 | 4 | `{ once: true }` | 対応済み（SEC-31） | 対応済み | — | — | `auth-functions.test.mjs`（SEC-31 4件） |
@@ -29,7 +29,7 @@
 
 | 要件 | 変更ファイル | 本番への影響 |
 | :--- | :--- | :--- |
-| Bug #52（SEC-29 是正） | `scripts/lib/safe-frontmatter.mjs`（新規）、`scripts/organize-posts.mjs` | ビルド前処理のみ。YAML の記事は従来どおり処理（本ブランチで `npm run build:raw` 後の `public/admin/url-map.json` に差分なし）。YAML 以外の frontmatter を持つ記事は url-map.json とフォルダ整理の対象外になる（Astro 本体は元々 YAML のみ対応） |
+| Bug #52（SEC-29 是正） | `scripts/lib/safe-frontmatter.mjs`（新規）、`scripts/organize-posts.mjs`、`src/content` を読むテスト（`content-validation`・`cms-config`・`fuzz-validation`・`build` の各 `.test.mjs`、`e2e/app-info.spec.ts`） | ビルド前処理のみ。YAML の記事は従来どおり処理（本ブランチで `npm run build:raw` 後の `public/admin/url-map.json` に差分なし）。YAML 以外の frontmatter を持つ記事は url-map.json とフォルダ整理の対象外になる（Astro 本体は元々 YAML のみ対応） |
 | SEC-36 | `.github/workflows/ci.yml` | CI のみ。固定先は現行 `@v4` と同一 commit のため挙動変化なし。本番配信・Pages ビルドには影響しない |
 | SEC-37 | `functions/_shared/allowed-origin.js`（新規）、`functions/auth/index.js`、`functions/auth/callback.js` | **本番の OAuth ログイン経路（Pages Functions）**。許可範囲は同一。Pages のバンドルで共有モジュールが取り込まれ、ルートは `/auth`・`/auth/callback` のみであることを `wrangler pages functions build` で確認済み |
 | SEC-38 | `functions/auth/callback.js` | **本番の OAuth コールバック応答ヘッダー**。ポップアップとして開くため `frame-ancestors 'none'` の影響は無い（実ブラウザ E2E で3デバイス確認） |
@@ -48,6 +48,6 @@
 
 ## 4. 判断に迷った点
 
-- 項目1は Issue コメントで「完了」とされていたが、実挙動では未解決だった。脆弱性ではない（能力の増加が無い）ため、新規バグ **Bug #52** として SEC-29 の実装不備を是正する扱いにした（新規 SEC ID は採番しない）。
+- 項目1は Issue コメントで「完了」とされていたが、実挙動では未解決だった。初回修正（organize-posts のみ）はレビューで「`npm run build` が先に実行する Vitest のテスト群も同じ経路」と差し戻され、`src/content` を読む全箇所をラッパー経由にした。脆弱性ではない（能力の増加が無い）ため、新規バグ **Bug #52** として SEC-29 の実装不備を是正する扱いにした（新規 SEC ID は採番しない）。
 - 項目14は「効果が乏しい」というより「効果に対して本番管理画面を壊すリスクが高い」ための見送り。再検討の契機を上表に記載した。
 - 項目3の SHA 更新運用（Dependabot 等）は #132 の範囲とし、本作業では導入しない。

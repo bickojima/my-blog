@@ -10,7 +10,7 @@
  */
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, mkdirSync, writeFileSync, existsSync, readFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, existsSync, readFileSync, readdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { parseFrontmatter } from '../scripts/lib/safe-frontmatter.mjs';
@@ -73,6 +73,42 @@ describe('frontmatter は YAML のみを解析する（SEC-29, Bug #52 再発防
     const src = readFileSync(ORGANIZE_POSTS, 'utf-8');
     expect(src).toContain("from './lib/safe-frontmatter.mjs'");
     expect(src).not.toMatch(/from ['"]gray-matter['"]/);
+  });
+
+  // Bug #52 追加経路: Pages のビルドコマンド `npm run build` は organize-posts より先に `vitest run` を実行し、
+  // テストが全記事・固定ページを gray-matter で直接解析していたため、`---js` 記事がテスト内で eval されていた。
+  // tests/（e2e 含む）と scripts/ では安全ラッパー以外が gray-matter を読み込むことを禁止する。
+  it('tests/ と scripts/ で gray-matter を直接 import / require するのは安全ラッパーだけである', () => {
+    const WRAPPER = join('scripts', 'lib', 'safe-frontmatter.mjs');
+    const GRAY_MATTER_IMPORT = /(?:from\s*|import\s*\(\s*|require\s*\(\s*)['"]gray-matter['"]/;
+    const walk = (dir) => readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
+      const p = join(dir, e.name);
+      if (e.isDirectory()) return e.name === 'node_modules' ? [] : walk(p);
+      return /\.(m?js|cjs|ts|mts)$/.test(e.name) ? [p] : [];
+    });
+    const files = [...walk('tests'), ...walk('scripts')];
+    expect(files).toContain(WRAPPER);
+    const offenders = files.filter((f) => f !== WRAPPER && GRAY_MATTER_IMPORT.test(readFileSync(f, 'utf-8')));
+    expect(offenders, `gray-matter を直接読み込んでいる: ${offenders.join(', ')}（scripts/lib/safe-frontmatter.mjs の parseFrontmatter を使う）`).toEqual([]);
+  });
+
+  it('src/content を読む tests/・scripts/ のファイルは全て安全ラッパー経由で frontmatter を解析する', () => {
+    const walk = (dir) => readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
+      const p = join(dir, e.name);
+      if (e.isDirectory()) return walk(p);
+      return /\.(m?js|ts)$/.test(e.name) ? [p] : [];
+    });
+    const readers = [...walk('tests'), ...walk('scripts')]
+      .filter((f) => f !== join('tests', 'security-hardening.test.mjs'))
+      .map((f) => [f, readFileSync(f, 'utf-8')])
+      .filter(([, src]) => /src\/content|content\/posts|content\/pages|POSTS_DIR|PAGES_DIR/.test(src))
+      .filter(([, src]) => /frontmatter|\bmatter\b|parseFrontmatter/i.test(src));
+    // 少なくとも既知の読み手（organize-posts と Vitest/E2E の content 読み取り）が対象に入っていること
+    expect(readers.length).toBeGreaterThanOrEqual(5);
+    for (const [f, src] of readers) {
+      expect(src, `${f} が gray-matter を直接使っている`).not.toMatch(/['"]gray-matter['"]/);
+      expect(src, `${f} が安全ラッパーを使っていない`).toMatch(/safe-frontmatter\.mjs['"]/);
+    }
   });
 });
 

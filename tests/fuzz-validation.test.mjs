@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { readFileSync, existsSync, readdirSync } from 'fs';
 import { join, extname } from 'path';
-import matter from 'gray-matter';
+import { parseFrontmatter } from '../scripts/lib/safe-frontmatter.mjs'; // Bug #52: gray-matter を直接呼ばない
 import { z } from 'astro/zod';
 import yaml from 'js-yaml';
 
@@ -280,7 +280,7 @@ describe('固定ページ order フィールドのファズテスト', () => {
 
     it('全固定ページのorderが正の整数（1以上）', () => {
       for (const file of pageFiles) {
-        const { data } = matter(readFileSync(file, 'utf-8'));
+        const { data } = parseFrontmatter(readFileSync(file, 'utf-8'));
         expect(
           Number.isInteger(data.order) && data.order >= 1,
           `${file.split('/').pop()}: order=${data.order} は不正値`
@@ -290,7 +290,7 @@ describe('固定ページ order フィールドのファズテスト', () => {
 
     it('全固定ページのorderがNumber.MAX_SAFE_INTEGER以下', () => {
       for (const file of pageFiles) {
-        const { data } = matter(readFileSync(file, 'utf-8'));
+        const { data } = parseFrontmatter(readFileSync(file, 'utf-8'));
         expect(
           data.order <= Number.MAX_SAFE_INTEGER,
           `${file.split('/').pop()}: order=${data.order} がMAX_SAFE_INTEGERを超過`
@@ -376,7 +376,7 @@ describe('固定ページ slug フィールドのファズテスト', () => {
 
     it('既存ページに予約語slugが使われていない', () => {
       for (const file of pageFiles) {
-        const { data } = matter(readFileSync(file, 'utf-8'));
+        const { data } = parseFrontmatter(readFileSync(file, 'utf-8'));
         expect(
           !reservedSlugs.includes(data.slug),
           `${file.split('/').pop()}: slug="${data.slug}" は予約語`
