@@ -76,6 +76,7 @@
 | 1.69 | 2026-09-23 | Issue #132: npm管理外依存（CDN の Decap CMS、GitHub Actions、Node.js 宣言、Cloudflare Pages ビルド環境）の棚卸し・鮮度・EOL・SRI を週次で機械判定する SEC-40 を追加。`scripts/check-dependency-freshness.mjs`（結果 JSON / Markdown、ok・warning・alert・error）、`.github/workflows/dependency-freshness.yml`（週次、alert で Issue 起票＋ジョブ失敗）、`.github/dependabot.yml`（github-actions を staging 向け週次更新。SEC-36 の SHA 固定と版コメントを同時更新）を追加し、4.11章に棚卸し表・判定ルール・通知経路・Decap 更新/SRI 再計算/E2E 手順・Dependabot との分担・四半期の手動確認を記載。Cloudflare Pages の手動確認（2026-09-23、ビルドイメージと NODE_VERSION は未確認）を記録。Vitest feature 668→**695**件／main・staging 671→**698**件 |
 | 1.70 | 2026-09-23 | Issue #127: 環境固有の4項目（`astro.config.mjs` の SITE_URL、`public/admin/config.yml` の backend.branch / base_url、`public/robots.txt`）をファイルから削除し、ビルド時（`CF_PAGES_BRANCH`）・実行時（`location.hostname` / `origin`）に導出する構造へ変更（ユーザー決定「環境値の自動導出」方式）。導出点は `src/lib/site-env.mjs`（SITE_URL・robots、`src/pages/robots.txt.ts` で生成）と `public/admin/cms-env.js`（CMS の branch・base_url。admin/index.html が `CMS_MANUAL_INIT` + `CMS.init` で deepmerge）。安全側の既定: 本番値は `CF_PAGES_BRANCH === 'main'`／ホスト名 `reiwa.casa` 完全一致のときだけ、それ以外は staging 値。main と staging の環境差分はゼロになり、Bug #51 の構造的原因を解消。SEC-35 を「導出結果の正しさ」の検証へ改訂し、SEC-127A（仮ID・マージ時採番調整）を1.4.2章・1.5.4章に追加。2.1.1・2.5.4・3.3.2・4.3.1・4.6（マージ手順・環境別値・main 移行手順 4.6.5・本番読み取り確認 4.6.6）・4.7.2・4.9.9・4.10.3章を更新。Bug #P127-1（仮番号: iPhone エミュレーションで「公開」メニューが表示領域外。変更前から発生・未修正）を4.5章に記録。Bug #P127-2（仮番号: CMS 系 E2E spec が base_url とのオリジン差で未認証のまま実行され、弱い分岐で PASS していた。本変更で認証が成立し E-39 の失敗で発覚。E-39 を書き換え）を4.5章に記録。Vitest 695件（feature）／698件（main・staging）→ **全ブランチ共通 751件**（ブランチ別登録を廃止）、E2E 453→**465件**（`cms-env-branch.spec.ts` 4ホスト×3デバイス） |
 | 1.71 | 2026-09-23 | Issue #130: Cloudflare Insights beacon を `/admin/*` のCSPで遮断し、検証した操作中に他のCSP違反・機能エラーがないことを確認する SEC-41 を追加.`_headers` のCSPポリシーは維持し、遮断方針コメントと実操作回帰テストを追加。production/staging 実ホストでOAuth・GitHub APIをモックし実書込を遮断した上で、PC/iPad/iPhoneの編集・入力・preview・保存要求branchを検証（54/54 PASS: production/stagingの操作各3端末、ローカルPC操作、実ホストreadonly。非Insights CSP違反0、機能エラー0）。Vitest 754件、E2E 465件。証跡 `evidence/2026-09-23/issue130-review/` |
+| 1.72 | 2026-09-24 | 4.6.1章に「リリース経路の原則」を追記: リリースは staging のマージでのみ行い、main 直コミット・staging 未経由の main 向け PR を禁止。Issue #127 以降 main と staging はツリー完全一致が正。PR #144（`c91eb81`）・#145 の main 直行と Dependabot #140/#141 の staging 残留による双方向のずれを同期 PR で解消した経緯を記録。4.6.3章に同期後のツリー一致確認を追記。テスト件数変更なし |
 
 ## システム変更履歴
 
@@ -1933,6 +1934,12 @@ SEC-29（Bug #48）の対策は`public/admin/url-map.json`から下書き記事�
 
 staging ブランチで開発・テスト完了後、main ブランチにマージする手順を示す。
 
+**リリース経路の原則（2026-09-24 追記）:**
+
+- **リリースは staging のマージ（staging → main の PR）でのみ行う**。main への直接コミット・直接 push、および staging を経由しない main 向け PR（リリース候補ブランチ上での追加コミット、CI 設定のみの main 直行 PR を含む）は禁止する。main に必要な変更は、まず staging 向け PR で staging に入れてから staging → main でリリースする。
+- **Issue #127 以降、main と staging はツリー完全一致が正**（環境固有値はファイルに無く、4.6.4章の規則で導出する）。リリース直後・同期直後に `git diff origin/main origin/staging` が空であることを確認し、差分があれば「どちらが新しいか」を内容で判定して同期 PR で解消する。
+- 経緯: 2026-09-23 のリリース 2 で、main 向け PR #144 に staging 未経由のコミット（`c91eb81`、evidence/docs 追加）が入り、PR #145（CI Actions の SHA 固定）も main に直行した。一方 staging には Dependabot PR #140/#141 が main 未反映で残り、両ブランチの履歴が双方向にずれた。2026-09-24 に `sync/main-into-staging-2026-09-24`（main → staging、コンフリクトなし・環境固有ファイル差分ゼロ）と `sync/staging-into-main-2026-09-24`（staging → main）で解消した。これは Issue #127 の「両方向マージで環境値が汚染されない」ことの実地確認にもなった。
+
 **本番マージの完了条件（Bug #50）:**
 
 - `npm test`（Vitest）全PASS。これは CI でも見る。
@@ -1992,6 +1999,7 @@ git push origin main
 ### 4.6.3 main → staging コンテンツ同期
 
 本番で CMS から記事が追加・編集された場合、staging に反映する。
+同期後は `git diff main staging` が空（ツリー完全一致）であることを確認する。コード・文書・CI の変更をこの方向で持ち込んではならない（4.6.1章「リリース経路の原則」）。
 
 ```bash
 git checkout staging
@@ -2549,4 +2557,4 @@ Actions のメジャー遅れを alert にしないのは、Dependabot が更新
 
 ---
 
-**最終更新**: 2026年9月23日（v1.71）
+**最終更新**: 2026年9月24日（v1.72）
