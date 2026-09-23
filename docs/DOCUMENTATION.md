@@ -70,6 +70,7 @@
 | 1.63 | 2026-09-20 | Bug #50: 本番マージを Vitest（CI含む）と staging 実ログインだけで完了し、ローカル E2E 全件を後回しにしたプロセス不備。4.6章の「E2E は可能な場合」を廃止し、ローカル `npm run test:e2e` 全件と `verify-comprehensive.mjs` を main マージ必須条件に変更。**CI に Playwright は載せない**（実行時間のためローカル運用継続）。雛形はシナリオ FAIL で非ゼロ終了。再発防止は手順文書の固定＋Vitest 4件。Vitest 631→**635**件 |
 | 1.64 | 2026-09-20 | Issue #117 項目2/12: SEC-33（CI `permissions: contents: read`）、SEC-34（無効な `public/.assetsignore` 削除）。Vitest 635→**638**件 |
 | 1.65 | 2026-09-21 | Bug #51: PR #119 のマージで staging の環境固有ファイル（config.ymlのbranch/base_url、astro.config.mjsのSITE_URL、robots.txt）が丸ごとmain値へ上書きされ、staging CMSが本番mainへ直接コミットする状態が約21分間発生していた問題を4.5章に5 Whysとともに追記（復旧コミット `0a6c762`）。SEC-35（環境固有ファイルの実ブランチ整合性検証）を1.4.2章に追加し、1.5章トレーサビリティマトリクスに反映。cms-config.test.mjsに、実際にチェックアウトしているブランチ（`CF_PAGES_BRANCH` > `GITHUB_REF_NAME` > `git rev-parse`で判定）に対して4項目が正しい値かを検証する回帰テストを追加（main/staging以外は内部整合のみ検証）。SEC-35はブランチ別にテストを登録する設計のため、Vitest合計は**featureブランチ639件／main・staging642件**になる（登録数の差3件はテストの欠落ではなくSEC-35の設計）。4.6.2章のマージ確認観点に自動検証の項目を追加 |
+| 1.66 | 2026-09-23 | Issue #129: verify-security.mjsの守備範囲を4.9.8章のSEC01〜SEC10のエビデンス確認に限定し、SEC-01〜SEC-35全体の検査器との誤認を解消。全要件の検証責務は1.5.4章を正本とし、SEC-33〜35をbuild/cms-configのVitestへ対応づける |
 
 ## システム変更履歴
 
@@ -2077,7 +2078,7 @@ git履歴に個人情報（氏名・メールアドレス）が含まれてい�
 | `verify-site-interactive.mjs` | サイト操作性（ドロップダウン展開・ページ遷移等） | 10 scenarios × 3 devices |
 | `verify-cms-interactive.mjs` | CMS操作性（ボタン押下・メニュー展開・モーダル・画像アップロード） | 16 scenarios × 3 devices |
 | `verify-cms-crud.mjs` | CMS CRUD操作（記事作成/編集/削除・画像アップロード・タグ・固定ページ） | 16 scenarios × 3 devices |
-| `verify-security.mjs` | セキュリティ検証（XSS・CSP・OAuth・CDN・postMessage等） | 10 checks × 1 device |
+| `evidence/YYYY-MM-DD/verify-security.mjs` | セキュリティ証跡の対象10項目（SEC01〜SEC10） | 10 checks × 1 device |
 | `evidence/2026-05-22/verify-modern-web-guidance.mjs` | Modern Web Guidance準拠検証（公開サイト3デバイス、CMS独自カスタマイズPC/iPhone） | 8 checks |
 | `evidence/2026-05-22/verify-cms19-month-filter.mjs` | CMS年月フィルター検証（OAuthモック、月選択フィルター、select安定性、ソート切替） | 5 scenarios × 3 devices |
 
@@ -2147,7 +2148,7 @@ UI変更・CMS変更・Modern Web Guidance対応では、DOMを直接書き換�
 
 ### 4.9.8 セキュリティ検証エビデンス（SEC01〜SEC10）
 
-セキュリティ要件の充足を自動検証し、スクリーンショット付きで記録する。
+列挙したSEC01〜SEC10の10項目について証跡を取得・確認し、スクリーンショット付きで記録する。
 
 | ID | 検証項目 | 要件参照 | 検証方法 |
 |:---|:---|:---|:---|
@@ -2278,12 +2279,13 @@ await loginButton.click();
 
 ### 4.10.2 定期セキュリティ検証
 
-**自動検証（エビデンス取得時に毎回実行）:**
-- `verify-security.mjs` によるセキュリティ要件（SEC-01〜SEC-35）の自動検証
-- XSS耐性、CSPヘッダー、OAuth scope、CDNバージョン、postMessage origin等を自動チェック
-- 検証結果はスクリーンショット付きで記録
+**エビデンス検証（エビデンス取得時に実行）:**
+- `evidence/YYYY-MM-DD/verify-security.mjs` は、4.9.8章のSEC01〜SEC10に記載した項目をスクリーンショット付きで確認するエビデンス用スクリプトであり、SEC-01〜SEC-35全体の完全な自動検証器ではない。ローカル実行環境の制約により一部確認は表示・ソース確認に限られる。
+- SEC要件全体のテスト網羅性は1.5.4章のトレーサビリティマトリクスを正本とする。設定・コードの回帰検査はVitest、公開環境の応答・操作は必要に応じてE2E/実測で担保する。
+- SEC-33は `tests/build.test.mjs`（CIの `permissions: contents: read`）、SEC-34は `tests/build.test.mjs` / `tests/fuzz-validation.test.mjs`（`.assetsignore`の不在）、SEC-35は `tests/cms-config.test.mjs`（現在のブランチと環境固有値の整合）で検証する。これらを `verify-security.mjs` へ重複実装しない。
+- 結果の保存方法とスクリーンショットは4.9章のエビデンス方針に従う。
 
-**手動レビュー（機能追加時）:**
+**追加の手動レビュー（機能追加時）:**
 - admin/index.html 変更時: innerHTML不使用、var不使用、use strict確認
 - _headers 変更時: Bug #28（ヘッダー重複）の回避確認
 - OAuth関連変更時: scope最小化、stateパラメータ確認
