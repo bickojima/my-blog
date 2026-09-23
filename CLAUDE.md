@@ -23,7 +23,7 @@
 npm run dev          # 開発サーバー起動（前処理含む）
 npm run build        # テスト必須ビルド（vitest run → normalize-images → organize-posts → astro build → image-optimize）
 npm run build:raw    # テストなしビルド（build.test.mjs内部で使用、Cloudflare Pages用）
-npm test             # Vitest 全テスト実行（639テスト・main/stagingブランチでは642テスト、記事数により変動。SEC-35がブランチ別にテストを登録するため件数が変わる）
+npm test             # Vitest 全テスト実行（668テスト・main/stagingブランチでは671テスト、記事数により変動。SEC-35がブランチ別にテストを登録するため件数が変わる）
 npm run test:watch   # Vitest ウォッチモード
 npm run test:e2e     # Playwright E2Eテスト（要: npm run build 済み、453テスト：445実行+8スキップ）
 ```
@@ -50,16 +50,18 @@ public/
 
 scripts/
 ├── normalize-images.mjs     # prebuild: EXIF正規化 + リサイズ
-└── organize-posts.mjs       # prebuild: 記事ファイル整理 + url-map.json生成
+├── organize-posts.mjs       # prebuild: 記事ファイル整理 + url-map.json生成
+└── lib/safe-frontmatter.mjs # frontmatterはYAMLのみ解析（`---js`等は評価せず拒否。Bug #52）
 
 docs/
 ├── DOCUMENTATION.md         # システム設計書（要件定義・基本設計・詳細設計・運用設計）
 └── MODERN-WEB-GUIDANCE.md   # Modern Web Guidance 日本語索引（全139ガイド・適用実績）
 
 functions/auth/              # Cloudflare Functions: GitHub OAuth proxy
+functions/_shared/           # Functions共通モジュール（OAuthオリジン許可リスト。onRequest*をexportしないのでルートにならない）
 
 tests/
-├── *.test.mjs               # Vitest単体・統合テスト（8ファイル）
+├── *.test.mjs               # Vitest単体・統合テスト（9ファイル。Issue #117 hardening は security-hardening.test.mjs）
 ├── fuzz-validation.test.mjs # ファズテスト（XSS/SQLi/パストラバーサル/プロトタイプ汚染等、216テスト）
 ├── e2e/                     # Playwright E2E（site, cms, cms-customizations, cms-crud, cms-operations, cms-exploratory, accessibility）
 └── TEST-REPORT.md           # テスト計画書・テストケース一覧・実行結果
@@ -108,7 +110,7 @@ tests/
 
 ## テスト
 
-- **Vitest**: 設定検証、コンテンツ検証、単体テスト、ビルド統合テスト、セキュリティ検証、ファズテスト、基本機能保護テスト（639テスト・main/stagingブランチでは642テスト、記事数により変動）。`.github/workflows/ci.yml` によりmain/staging/feature/*へのpush・PRで自動実行される（Playwright は含めない）。CIはmain/stagingへのpushで走るため、CIログ上は642件になる（SEC-35のブランチ別テスト登録によりfeatureブランチとmain/stagingで件数が異なる。詳細はCLAUDE.md「ブランチマージ時」参照）
+- **Vitest**: 設定検証、コンテンツ検証、単体テスト、ビルド統合テスト、セキュリティ検証、ファズテスト、基本機能保護テスト（668テスト・main/stagingブランチでは671テスト、記事数により変動）。`.github/workflows/ci.yml` によりmain/staging/feature/*へのpush・PRで自動実行される（Playwright は含めない）。CIはmain/stagingへのpushで走るため、CIログ上は671件になる（SEC-35のブランチ別テスト登録によりfeatureブランチとmain/stagingで件数が異なる。詳細はCLAUDE.md「ブランチマージ時」参照）
 - **Playwright**: PC/iPad/iPhone 3デバイスで453テスト（445実行+8スキップ、ローカルのみ）。**CI に Playwright は載せない**（実行時間のためローカル運用を継続）。本番（main）マージ前のローカル全件は必須（Bug #50）
 - コンテンツ検証テストは記事数・ページ数に応じて動的展開される
 - テスト実行後、失敗がある場合は原因を調査し修正する（テストを削除・スキップしない）
@@ -204,7 +206,7 @@ DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を�
 1. コード変更は必ず `staging` ブランチで先に実装・テスト・プッシュする
 2. staging.reiwa.casa で動作確認を行い、問題がないことを確認する
 3. ユーザーの明示的な承認を得てから `staging` → `main` にマージする（勝手にマージしない）
-4. マージ後、`config.yml` の `branch` / `base_url`、`astro.config.mjs` の `SITE_URL`、`public/robots.txt` のクロール方針が main の値（`branch: main` / `base_url: https://reiwa.casa` / `SITE_URL: https://reiwa.casa` / `Allow: /` + Sitemap）であることを確認する。**PRマージ等の機械的な差分採用でこれら4項目がマージ方向の副作用で丸ごと相手ブランチの値に上書きされることがある**（Bug #51: staging CMSが本番mainへ直接コミットする状態が21分間発生）。互いに整合しているだけでは検知できないため、`npm test`（`cms-config.test.mjs` のSEC-35テストが実際のブランチに対する値を自動検証する）を必ず実行する。**SEC-35はブランチ別にテストを登録する**ため、main/stagingでは厳密チェック4件が有効になり、feature/*等の判定不能ブランチでは内部整合チェック1件のみになる（Vitest合計はfeatureブランチ639件、main/staging642件）。件数差はこの登録差によるものであり、テストの欠落や壊れではない
+4. マージ後、`config.yml` の `branch` / `base_url`、`astro.config.mjs` の `SITE_URL`、`public/robots.txt` のクロール方針が main の値（`branch: main` / `base_url: https://reiwa.casa` / `SITE_URL: https://reiwa.casa` / `Allow: /` + Sitemap）であることを確認する。**PRマージ等の機械的な差分採用でこれら4項目がマージ方向の副作用で丸ごと相手ブランチの値に上書きされることがある**（Bug #51: staging CMSが本番mainへ直接コミットする状態が21分間発生）。互いに整合しているだけでは検知できないため、`npm test`（`cms-config.test.mjs` のSEC-35テストが実際のブランチに対する値を自動検証する）を必ず実行する。**SEC-35はブランチ別にテストを登録する**ため、main/stagingでは厳密チェック4件が有効になり、feature/*等の判定不能ブランチでは内部整合チェック1件のみになる（Vitest合計はfeatureブランチ668件、main/staging671件）。件数差はこの登録差によるものであり、テストの欠落や壊れではない
 5. **コンテンツ（記事・固定ページ・画像）は main と staging で常に同一に保つ**: マージ時に `src/content/`・`public/images/uploads/`・`public/admin/url-map.json` の差分がないことを確認し、差分があれば同期する
 6. main ブランチでテストを実行し、全PASS を確認してからプッシュする
 7. **Vitest だけでは main マージ不可**。ローカル `npm run test:e2e`（3デバイス全件）と `node evidence/YYYY-MM-DD/verify-comprehensive.mjs`（雛形 `evidence/2026-05-24/verify-comprehensive.mjs`）の完了が必須。CI の Vitest 成功・staging CMS 実ログイン確認・「後で E2E」は代替にならない（Bug #50）
@@ -218,7 +220,11 @@ DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を�
 - OAuth scope は `public_repo,read:user` に限定する（`repo` / `user` 禁止）
 - HTMLテンプレートに埋め込む変数は必ずエスケープする
 - 変数宣言は `const` / `let` のみ（`var` 禁止）、`'use strict'` を使用
-- セキュリティ要件は DOCUMENTATION.md 1.4.2章（SEC-01〜SEC-34）、品質基準は 4.7章を参照
+- セキュリティ要件は DOCUMENTATION.md 1.4.2章（SEC-01〜SEC-39）、品質基準は 4.7章を参照
+- **frontmatter は `scripts/lib/safe-frontmatter.mjs` 経由で解析する**（scripts だけでなく tests/・E2E も同じ。gray-matter を直接呼ばない。`npm run build` は organize-posts より先に Vitest を実行するため、テストも同じ経路になる。`language: 'yaml'` 指定だけでは `---js` の eval を防げない。Bug #52）
+- **OAuth オリジン許可リストは `functions/_shared/allowed-origin.js` だけで管理する**（SEC-37）。コールバック HTML への値の埋め込みは `toScriptStringLiteral()`（JSON.stringify ベース、SEC-39）を使い、応答 CSP は `frame-ancestors`/`form-action`/`base-uri` まで自己完結させる（SEC-38。Functions の応答には `_headers` が適用されない）
+- **GitHub Actions は commit SHA で固定し `# vX.Y.Z` を併記する**（SEC-36）
+- Issue #117 の hardening 項目の判定（実装・対応不要・#127移管）は `docs/security/issue-117-hardening-decisions.md` を参照
 - `npm run build` はビルド前に自動でテスト実行（build.test.mjs以外）。テスト失敗時はビルド中断
 - CDN `<script src="...">` タグは必ず `</script>` で閉じる（閉じタグ欠落で後続スクリプトが飲み込まれる）
 - `_headers` でセキュリティヘッダーを追加する際、管理画面（`/admin/*`）への影響を必ず検証する:
@@ -248,4 +254,4 @@ DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を�
 - sitemap除外は `astro.config.mjs` の `filter` で行う。**frontmatterとfilterのずれは `build.test.mjs`（FR-29）が検出する**ので、slugを変えたらfilterも直す。
 - 原稿変更時は `tests/e2e/app-info.spec.ts` のソース連動E2E（2ページ×3デバイス）で確認する。
 - **CMSに項目を足さずにフロントマターを増やさない**。Decap CMSは設定にない項目を保存時に落とす。`cms-config.test.mjs` が固定ページの全フロントマター項目とZodスキーマ項目をCMS設定と突き合わせて検出する。
-- 現行テスト定義はVitest 639件（feature ブランチ）／642件（main・staging。SEC-35のブランチ別テスト登録により+3件）、E2E 453件（旧444件＋FR-29 9件、445実行+8スキップ）。QAは `docs/qa-2026-09-09-otp-app-pages.md`。
+- 現行テスト定義はVitest 668件（feature ブランチ）／671件（main・staging。SEC-35のブランチ別テスト登録により+3件）、E2E 453件（旧444件＋FR-29 9件、445実行+8スキップ）。QAは `docs/qa-2026-09-09-otp-app-pages.md`。

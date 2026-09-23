@@ -71,6 +71,7 @@
 | 1.64 | 2026-09-20 | Issue #117 項目2/12: SEC-33（CI `permissions: contents: read`）、SEC-34（無効な `public/.assetsignore` 削除）。Vitest 635→**638**件 |
 | 1.65 | 2026-09-21 | Bug #51: PR #119 のマージで staging の環境固有ファイル（config.ymlのbranch/base_url、astro.config.mjsのSITE_URL、robots.txt）が丸ごとmain値へ上書きされ、staging CMSが本番mainへ直接コミットする状態が約21分間発生していた問題を4.5章に5 Whysとともに追記（復旧コミット `0a6c762`）。SEC-35（環境固有ファイルの実ブランチ整合性検証）を1.4.2章に追加し、1.5章トレーサビリティマトリクスに反映。cms-config.test.mjsに、実際にチェックアウトしているブランチ（`CF_PAGES_BRANCH` > `GITHUB_REF_NAME` > `git rev-parse`で判定）に対して4項目が正しい値かを検証する回帰テストを追加（main/staging以外は内部整合のみ検証）。SEC-35はブランチ別にテストを登録する設計のため、Vitest合計は**featureブランチ639件／main・staging642件**になる（登録数の差3件はテストの欠落ではなくSEC-35の設計）。4.6.2章のマージ確認観点に自動検証の項目を追加 |
 | 1.66 | 2026-09-23 | Issue #129: verify-security.mjsの守備範囲を4.9.8章のSEC01〜SEC10のエビデンス確認に限定し、SEC-01〜SEC-35全体の検査器との誤認を解消。全要件の検証責務は1.5.4章を正本とし、SEC-33〜35をbuild/cms-configのVitestへ対応づける |
+| 1.67 | 2026-09-23 | Issue #117 hardening 項目の全件判定（判定表: `docs/security/issue-117-hardening-decisions.md`）。**Bug #52**（SEC-29 の実装不備: gray-matter は `language: 'yaml'` 指定時も `---js` の言語宣言を優先し javascript エンジン＝eval が動く。Issue #117 項目1の「完了」判定は誤りだった。organize-posts に加え、`npm run build` が organize-posts より先に実行する Vitest（と E2E）のテストも同じ経路だった）を4.5章に5 Whysとともに追記し、`scripts/lib/safe-frontmatter.mjs` で YAML 以外のエンジンを拒否、`src/content` を読む全テストもラッパー経由に置換。SEC-36（Actions の commit SHA 固定、項目3）、SEC-37（OAuth オリジン許可リストの単一化 `functions/_shared/allowed-origin.js`、項目5）、SEC-38（OAuth コールバック応答の CSP 自己完結＋charset 明示、項目9）、SEC-39（`<script>` 埋め込み値の JSON.stringify リテラル化、項目10）を1.4.2章・1.5.4章に追加。項目6・7・8・14は対応不要（根拠・残余リスクは判定表）、項目15は #127 へ移管。2.4.5章・2.4.6章・3.2.3章を更新。Vitest featureブランチ 639→**668**件／main・staging 642→**671**件 |
 
 ## システム変更履歴
 
@@ -511,7 +512,7 @@ staging環境のrobots.txtは`Disallow: /`を維持し、mainマージ時のみ`
 | ID | 要件 | 実装箇所 | 備考 |
 | :--- | :--- | :--- | :--- |
 | SEC-01 | XSS防止（DOM）: innerHTML/outerHTMLを使用せずDOM APIで構築する | `admin/index.html` | createElement, textContent, appendChild を使用 |
-| SEC-02 | XSS防止（テンプレート）: HTML埋め込み変数をエスケープする | `functions/auth/callback.js` | escapeForScript()でHTML特殊文字をエスケープ |
+| SEC-02 | XSS防止（テンプレート）: HTML埋め込み変数をエスケープする | `functions/auth/callback.js` | `toScriptStringLiteral()`（JSON.stringify ベース、SEC-39）で JS 文字列リテラル化してから埋め込む（旧 `escapeForScript()` は SEC-39 で置換） |
 | SEC-03 | CDN外部リソース安全性: 外部スクリプトのバージョンを正確に固定する | `admin/index.html` | `^`/`~`範囲指定でなく正確なバージョン番号を使用 |
 | SEC-04 | リンク安全性: target="_blank"にrel="noopener"を付与する | `admin/index.html` | window.opener逆参照攻撃を防止 |
 | SEC-05 | コード注入防止: eval()/Function()/document.write()を使用しない | 全ソースコード | コード注入経路の排除 |
@@ -536,15 +537,19 @@ staging環境のrobots.txtは`Disallow: /`を維持し、mainマージ時のみ`
 | SEC-24 | Zodスキーマ厳格化: title max(200), date YYYY-MM-DD正規表現, tags max(50)/max(20), thumbnail startsWith('/images/'), summary max(500) | `content.config.ts` | 入力値を型＋値域の両面で制約 |
 | SEC-25 | ビルドスクリプト防御強化: シンボリックリンクスキップ、ファイルサイズ上限(50MB)、ピクセル数上限(50Mピクセル、回転後再取得含む全sharp呼び出し)、gray-matterエンジン無効化、パス境界チェック | `scripts/`, `src/integrations/` | ピクセルフラッド・シンボリックリンク攻撃防止 |
 | SEC-26 | OAuth HTTPメソッド制限: OAuth関数をonRequestからonRequestGetに変更し、POST/PUT/DELETE等の不要なHTTPメソッドを拒否する | `functions/auth/` | Cloudflare Functions のメソッド別ハンドラ |
-| SEC-27 | OAuth送信先オリジン許可リスト検証: 本番・staging・プロジェクトプレビュー（`*.my-blog-3cg.pages.dev`）・ローカル開発環境のみ許可し、不正オリジンを403拒否する | `functions/auth/` | postMessageトークン窃取・悪意のあるリダイレクト防止 |
+| SEC-27 | OAuth送信先オリジン許可リスト検証: 本番・staging・プロジェクトプレビュー（`*.my-blog-3cg.pages.dev`）・ローカル開発環境のみ許可し、不正オリジンを403拒否する | `functions/_shared/allowed-origin.js`（`functions/auth/` から import。SEC-37） | postMessageトークン窃取・悪意のあるリダイレクト防止 |
 | SEC-28 | 公開ページCSPメタタグ導入: Base.astro の `<head>` に `<meta http-equiv="Content-Security-Policy">` を設定（default-src 'self'等）。Bug #28防止のため`_headers`の`/*`には設定せず管理画面と完全分離 | `src/layouts/Base.astro` | 公開ページの多層防御（Defense-in-Depth） |
-| SEC-29 | 下書き記事のurl-map.json混入防止: `organize-posts.mjs`で`draft: true`の記事を`public/admin/url-map.json`の生成対象から除外し、`gray-matter`に`{ language: 'yaml' }`を明示してfront-matter中の組み込みjavascriptエンジン（内部的に`eval`相当を実行しうる）を無効化する | `scripts/organize-posts.mjs` | 対応Issue: #114。下書き記事のURLマッピング漏洩防止＋frontmatter経由のコード実行防止 |
+| SEC-29 | 下書き記事のurl-map.json混入防止: `organize-posts.mjs`で`draft: true`の記事を`public/admin/url-map.json`の生成対象から除外し、`gray-matter`の組み込みjavascriptエンジン（内部的に`eval`相当を実行しうる）を無効化する。**`{ language: 'yaml' }`の指定だけでは`---js`の言語宣言が優先され無効化できない（Bug #52）ため、`scripts/lib/safe-frontmatter.mjs`でjavascript/jsonエンジンを例外を投げるエンジンで上書きし、YAML以外のfrontmatterを評価前に拒否する** | `scripts/organize-posts.mjs`, `scripts/lib/safe-frontmatter.mjs` | 対応Issue: #114。下書き記事のURLマッピング漏洩防止＋frontmatter経由のコード実行防止 |
 | SEC-30 | `/*`と`/admin/*`のヘッダー重複排除: `_headers`の`/admin/*`セクションからCross-Origin-Opener-Policy / Cross-Origin-Resource-Policy / X-Frame-Optionsの再定義を削除し、`/*`からの継承に一本化する | `public/_headers` | 対応Issue: #115。Cloudflare Pagesは`/*`と`/admin/*`の同名ヘッダーをオーバーライドせずAppend（重複送信）するため、COOP等のRFC 8941 Structured Headerがカンマ結合され構文エラーとして無効化される蓋然性がある。重複を解消すれば実効値を変えずにこの懸念を無条件に除去できる（ブラウザ側の実際の解決結果までは未観測。詳細: `docs/security/audit-run2-needs-validation.md`） |
 | SEC-31 | OAuthハンドシェイクのメッセージリスナー堅牢化: `functions/auth/callback.js`のpostMessage受信リスナーで`{ once: true }`を廃止し、オリジン検証（`event.origin !== expectedOrigin`）とペイロード完全一致検証（`event.data !== "authorizing:github"`）の両方を通過した場合にのみ`removeEventListener`する。加えて30秒のフェイルセーフタイマーでハング防止する | `functions/auth/callback.js` | 対応Issue: #117 項目4。`{ once: true }`は最初に届いた無関係メッセージでリスナーを消費してしまい、正規のackを取りこぼす可能性があった |
 | SEC-32 | 画像正規化処理のビルド堅牢化: `normalize-images.mjs`のsharp処理全体をtry/catchで保護し、壊れた画像1件でビルド全体が失敗しないようにする。加えて`.rotate().toBuffer()`の出力バッファにも`MAX_FILE_SIZE`（50MB）上限を適用し、超過時は書き戻さず元ファイルを保持する | `scripts/normalize-images.mjs` | 対応Issue: #117 項目11。入力側のpixel limit・ファイルサイズ上限に加え、出力側にも上限を設けることで回転処理による意図しない肥大化を防止する |
 | SEC-33 | CIトークン最小権限: GitHub Actions の `test-and-build` ジョブは `permissions: contents: read` のみを宣言する | `.github/workflows/ci.yml` | 対応Issue: #117 項目2。fork PR は既定で読取専用だが、ソース上に明示してリポジトリ既定の将来変更から守る。**CI に Playwright は載せない**（Bug #50） |
 | SEC-34 | 無効な `.assetsignore` を置かない: Cloudflare Pages では Workers Static Assets の `.assetsignore` は効かず、`public/` に置くと公開配信される | ファイルを置かない | 対応Issue: #117 項目12。保護にならないノイズを削除する |
 | SEC-35 | 環境固有ファイルの実ブランチ整合性検証: `public/admin/config.yml`（branch/base_url）・`astro.config.mjs`（SITE_URL）・`public/robots.txt`（クロール方針）の4項目が、現在チェックアウトしているブランチ（`CF_PAGES_BRANCH` > `GITHUB_REF_NAME` > `git rev-parse --abbrev-ref HEAD` の優先順で判定）に対応した値になっていることを検証する。ブランチがmain/staging以外またはCIのpull_requestイベント等で判定できない場合は、4項目が同一環境（main寄り/staging寄り）を指しているという内部整合のみを検証する | `tests/cms-config.test.mjs` | Bug #51再発防止。互いに整合していても揃って誤った環境値に上書きされるケース（内部整合チェックだけでは検出できない）を検知する |
+| SEC-36 | GitHub Actions の action 参照は40桁の commit SHA で固定し、行末に対応する版（`# vX.Y.Z`）を併記する | `.github/workflows/*.yml` | 対応Issue: #117 項目3。タグは上流で付け替え可能なため。固定先は従来の `@v4` と同一 commit（checkout / setup-node とも v4.4.0）。SHA の更新検知は #132 の依存監視で扱う |
+| SEC-37 | OAuth オリジン許可リストの単一化: `isAllowedOrigin` は `functions/_shared/allowed-origin.js` にのみ定義し、`/auth`・`/auth/callback` の両方が import する。共有モジュールは `onRequest*` を export せず Pages のルートにならない | `functions/_shared/allowed-origin.js`, `functions/auth/*.js` | 対応Issue: #117 項目5。許可リストの写しが独立に変更され、開始とコールバックで判定が食い違う（ログイン不能等）ことを構造的に防ぐ。許可範囲は SEC-27 と同一 |
+| SEC-38 | OAuth コールバック応答の CSP 自己完結: `Content-Security-Policy` に `default-src 'none'` に加えて `frame-ancestors 'none'; form-action 'none'; base-uri 'none'` を明示し、`Content-Type: text/html; charset=utf-8` と `<meta charset="utf-8">` を付ける | `functions/auth/callback.js` | 対応Issue: #117 項目9。これらのディレクティブは `default-src` にフォールバックせず、Functions の応答には `public/_headers` が適用されないため応答自身で完結させる |
+| SEC-39 | `<script>` 埋め込み値の安全なリテラル化: コールバック HTML に埋め込むトークン・オリジンは `JSON.stringify` で引用符込みの JS 文字列リテラルにし、`<` `>` `&` と U+2028/U+2029 を `\uXXXX` へ変換してから埋め込む | `functions/auth/callback.js` | 対応Issue: #117 項目10。手書きの置換列（旧 `escapeForScript`）は U+2028/U+2029・バッククオート・`${` を扱わず置換順序にも依存していた。埋め込み先の引用符の種類に依存しない方式にする |
 
 ---
 
@@ -628,7 +633,7 @@ staging環境のrobots.txtは`Disallow: /`を維持し、mainマージ時のみ`
 | 要件ID | 要件概要 | テストファイル | 対応テストケース | 主テスト手法 | 充足状況 |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | SEC-01 | XSS防止（DOM） | admin-html | 2.6.12章 #1 | M-02 | 充足 |
-| SEC-02 | XSS防止（テンプレート） | auth-functions | 2.3.1章 #1 | M-02 | 充足 |
+| SEC-02 | XSS防止（テンプレート） | auth-functions, fuzz-validation, security-hardening | 2.3.1章 #1、TEST-REPORT 2.8章（SEC-39） | M-02 | 充足 |
 | SEC-03 | CDN外部リソース安全性 | admin-html | 2.6.12章 #2, #7 | M-02 | 充足 |
 | SEC-04 | リンク安全性 | admin-html | 2.6.12章 #3 | M-02 | 充足 |
 | SEC-05 | コード注入防止 | admin-html | 2.6.12章 #4 | M-02 | 充足 |
@@ -653,17 +658,21 @@ staging環境のrobots.txtは`Disallow: /`を維持し、mainマージ時のみ`
 | SEC-24 | Zodスキーマ厳格化 | fuzz-validation | 2.7.2〜2.7.6章 | M-09 | 充足 |
 | SEC-25 | ビルドスクリプト防御強化 | build | ビルドパイプライン検証（全sharp呼び出しpixel limit） | M-02 | 充足 |
 | SEC-26 | OAuth HTTPメソッド制限 | auth-functions | 2.3章 | M-02 | 充足 |
-| SEC-27 | OAuth送信先オリジン許可リスト検証 | auth-functions | 2.3章（オリジン許可・拒否検証） | M-02 | 充足 |
+| SEC-27 | OAuth送信先オリジン許可リスト検証 | auth-functions, security-hardening | 2.3章（オリジン許可・拒否検証）、TEST-REPORT 2.8章（SEC-37） | M-02 | 充足 |
 | SEC-28 | 公開ページCSPメタタグ導入 | build | 2.5章（Base.astro・生成HTMLメタタグ検証） | M-02 | 充足 |
-| SEC-29 | 下書き記事のurl-map.json混入防止 | build | `下書き記事がurl-map.jsonに含まれていない（SEC-29, Bug #48 再発防止）`, `公開記事のslugが全てurl-map.jsonに含まれている（下書き除外が過剰でないことの確認）` | M-02 | 充足 |
+| SEC-29 | 下書き記事のurl-map.json混入防止＋frontmatterはYAMLのみ | build, security-hardening | `下書き記事がurl-map.jsonに含まれていない（SEC-29, Bug #48 再発防止）`, `公開記事のslugが全てurl-map.jsonに含まれている（下書き除外が過剰でないことの確認）` / security-hardening: `frontmatter は YAML のみを解析する（SEC-29, Bug #52 再発防止, Issue #117 項目1）`（`---js`等4言語の拒否、未登録言語の拒否、YAML正常解析、organize-posts実行でペイロード非実行、安全ラッパー経由、`tests/ と scripts/ で gray-matter を直接 import / require するのは安全ラッパーだけである`、`src/content を読む tests/・scripts/ のファイルは全て安全ラッパー経由で frontmatter を解析する`） | M-02 | 充足 |
 | SEC-30 | `/*`と`/admin/*`のヘッダー重複排除 | build, fuzz-validation | build: `X-Frame-Optionsは/admin/*で再定義されず/*から継承される（Issue #115, Bug #49）`, `COOPは/admin/*で再定義されず/*から継承され、same-origin-allow-popupsが適用される（Issue #115, Bug #49）`, `/* と /admin/* で同名ヘッダーが一切重複していない（SEC-30, Bug #49 再発防止）` / fuzz-validation: `X-Frame-Options は /admin/* で再定義されず /* から継承される（Issue #115, Bug #49）`, `Cross-Origin-Opener-Policy は /admin/* で再定義されず /* から継承される（Issue #115, Bug #49）`, `Cross-Origin-Resource-Policy は /admin/* で再定義されず /* から継承される（Issue #115, Bug #49）`, `COOP/CORP/X-Frame-Options は /admin/* で再定義されず /* から継承される（Bug #28 再発防止・Issue #115/Bug #49で設計変更）` | M-02 | 充足 |
 | SEC-31 | OAuthハンドシェイクのメッセージリスナー堅牢化 | auth-functions | `OAuthハンドシェイクのmessage listenerに { once: true } を使っていない（SEC-31）`, `ackは event.data の完全一致で検証している（SEC-31）`, `オリジン検証とペイロード検証の両方を通過したときだけ removeEventListener している（SEC-31）`, `フェイルセーフの setTimeout（30000ms）でタイムアウト時に listener を外す（SEC-31）` | M-02 | 充足 |
 | SEC-32 | 画像正規化処理のビルド堅牢化 | build | `sharp処理が try/catch で囲まれ、catch でビルド全体を throw していない（SEC-32）`, `.rotate().toBuffer() の出力 buffer.length に MAX_FILE_SIZE 上限がある（SEC-32）`, `lstat 失敗も try/catch で保護されている（SEC-32）` | M-02 | 充足 |
 | SEC-33 | CIトークン最小権限 | build | `CI ジョブは contents: read に限定する（SEC-33, Issue #117 項目2）` | M-02 | 充足 |
 | SEC-34 | 無効な `.assetsignore` を置かない | build, fuzz-validation | `dist に .assetsignore が存在しない（SEC-34, Issue #117 項目12）`, `Cloudflare Pages で無効な public/.assetsignore が存在しない（SEC-34, Issue #117 項目12）` | M-02 | 充足 |
 | SEC-35 | 環境固有ファイルの実ブランチ整合性検証 | cms-config | `現在のブランチ（main/staging）に対してconfig.ymlのbranchが一致する`、`現在のブランチ（main/staging）に対してconfig.ymlのbase_urlが一致する`、`現在のブランチ（main/staging）に対してastro.config.mjsのSITE_URLが一致する`、`現在のブランチ（main/staging）に対してpublic/robots.txtのクロール方針が一致する`（`main/staging`はテンプレート表記。実行時は`it()`のタイトルにテンプレートリテラルで実ブランチ名が展開され、`現在のブランチ（main）に対して…`または`現在のブランチ（staging）に対して…`という具体的なテスト名でログ・レポートに出力される）、`ブランチをmain/stagingと判定できない場合はconfig.yml・SITE_URL・robots.txtが同一環境を指す`（いずれも `環境固有ファイルの実ブランチ整合性検証（SEC-35, Bug #51再発防止）`） | M-02 | 充足 |
+| SEC-36 | Actions の commit SHA 固定 | build | `CI の全 action 参照は40桁の commit SHA で固定し、版をコメントで併記する（SEC-36, Issue #117 項目3）` | M-02 | 充足 |
+| SEC-37 | OAuth オリジン許可リストの単一化 | security-hardening, auth-functions | `OAuth オリジン許可リストは1か所で定義する（SEC-37, Issue #117 項目5）`（4件）、`OAuth開始・コールバックで送信先オリジン許可リスト判定関数を実装している（SEC-27, SEC-37）`、E2E エビデンス `evidence/2026-09-23/issue117/` H01 | M-02 | 充足 |
+| SEC-38 | OAuth コールバック応答の CSP 自己完結 | security-hardening, auth-functions | `OAuth コールバック応答の CSP を自己完結させる（SEC-38, Issue #117 項目9）`（2件）、`GitHubが成功した場合、トークンを含むHTMLが返される`（Content-Type）、E2E エビデンス H02/H04/H05 | M-02 | 充足 |
+| SEC-39 | `<script>` 埋め込み値の JSON.stringify リテラル化 | security-hardening, fuzz-validation, auth-functions | `<script> 埋め込み値は JSON.stringify リテラルで出力する（SEC-39, Issue #117 項目10）`（12件）、fuzz-validation `トークンのエスケープ検証`（挙動検証へ強化）、E2E エビデンス H03 | M-02 | 充足 |
 
-**充足状況: FR-01〜FR-29, CMS-01〜CMS-19, NFR-01〜NFR-08, SEC-01〜SEC-35はテストで充足されている。未テスト要件は0件。**
+**充足状況: FR-01〜FR-29, CMS-01〜CMS-19, NFR-01〜NFR-08, SEC-01〜SEC-39はテストで充足されている。未テスト要件は0件。**
 
 ---
 
@@ -1013,7 +1022,7 @@ Decap CMS は以下の処理を内部的に実行する。
 
 #### 2.4.5.1 `/auth` エンドポイント（`functions/auth/index.js`）
 
-GitHub の認可 URL にリダイレクトする。`redirect_uri` はリクエストのオリジンから自動構築される。
+GitHub の認可 URL にリダイレクトする。`redirect_uri` はリクエストのオリジンから自動構築される（定数化しない理由は `docs/security/issue-117-hardening-decisions.md` 項目6: オリジンは配信ホストそのもので許可リストと GitHub の callback URL 照合の二重で制約される）。オリジン許可リストは `functions/_shared/allowed-origin.js`（SEC-37）を `/auth`・`/auth/callback` の両方が import する。
 
 ```javascript
 // 処理概要（擬似コード）
@@ -1050,17 +1059,25 @@ return new Response(`
     // Step 1: 認証開始通知（オリジン制限付き）
     const expectedOrigin = url.origin;  // サーバーサイドで算出
     window.opener.postMessage("authorizing:github", expectedOrigin);
-    // Step 2: 親ウィンドウからの応答を待機（オリジン検証）
-    window.addEventListener("message", function(event) {
+    // Step 2: 親ウィンドウからの応答を待機（オリジン検証＋ack完全一致。SEC-31）
+    window.addEventListener("message", function handleMessage(event) {
       if (event.origin !== expectedOrigin) return;
+      if (event.data !== "authorizing:github") return;
+      window.removeEventListener("message", handleMessage);
       // Step 3: トークン送信（XSSエスケープ済み）
       const msg = "authorization:github:success:" + JSON.stringify({token, provider});
       window.opener.postMessage(msg, event.origin);
       // Step 4: ポップアップを閉じる
       window.close();
-    }, { once: true });
+    });
   </script>
-`);
+`, { headers: {
+  // SEC-38: charset 明示と自己完結した CSP（_headers は Functions 応答に適用されない）
+  'Content-Type': 'text/html; charset=utf-8',
+  'Content-Security-Policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; frame-ancestors 'none'; form-action 'none'; base-uri 'none'",
+  'X-Frame-Options': 'DENY',
+}});
+// token / expectedOrigin は toScriptStringLiteral()（JSON.stringify ベース、SEC-39）でリテラル化して埋め込む
 ```
 
 ### 2.4.6 セキュリティ上の考慮事項
@@ -1071,8 +1088,9 @@ return new Response(`
 | トークン交換 | 認可コード→アクセストークンの交換はサーバーサイドで実行する（ブラウザで行うと Secret が漏洩する） |
 | postMessage のオリジン検証 | callback.js は `expectedOrigin`（サーバーサイド算出）で `postMessage` の送信先を制限し、`event.origin` で受信元を検証する。ワイルドカード `"*"` は使用しない |
 | scope の最小化 | `public_repo,read:user` のみを要求し、不要な権限は取得しない。`repo` スコープ（プライベートリポジトリ含む全アクセス）は使用しない |
-| XSS 対策 | callback.js でトークン値をHTMLに埋め込む際に `escapeForScript()` でエスケープし、スクリプト注入を防止する。admin/index.html では innerHTML を使用せず DOM API（createElement/textContent）で安全にDOM構築する |
+| XSS 対策 | callback.js でトークン値をHTMLに埋め込む際に `toScriptStringLiteral()`（JSON.stringify で引用符込みリテラル化し `< > &`・U+2028/U+2029 を `\uXXXX` 化。SEC-39）を使い、スクリプト注入を防止する。admin/index.html では innerHTML を使用せず DOM API（createElement/textContent）で安全にDOM構築する |
 | CDN バージョン固定 | Decap CMS の CDN URL はキャレット範囲（`^3.16.2`）ではなく正確なバージョン（`3.16.2`）を指定し、SRI（`integrity`）と合わせてサプライチェーン攻撃のリスクを軽減する。3.16.2 dist の `.wasm` は任意の `media_processing` WebP 変換でのみ遅延読み込みされ、本サイトでは未使用のため管理画面 CSP に `wasm-unsafe-eval` は追加しない |
+| コールバック応答の CSP | `frame-ancestors`・`form-action`・`base-uri` は `default-src` にフォールバックしないため個別に `'none'` を指定し、`charset=utf-8` を明示する（SEC-38）。Functions の応答には `public/_headers` が適用されない |
 | トークンの保管 | ブラウザの localStorage に保管される。XSS 対策として管理画面に `noindex` を設定し外部からのアクセスを制限する |
 
 ### 2.4.7 環境変数
@@ -1287,7 +1305,7 @@ const pages = defineCollection({
 | :--- | :--- |
 | 対象ディレクトリ | `src/content/posts/` |
 | 入力 | 全`.md`ファイル（再帰スキャン） |
-| 処理1 | frontmatterの`date`を解析し、`yyyy/mm/`ディレクトリを決定 |
+| 処理1 | frontmatterの`date`を解析し、`yyyy/mm/`ディレクトリを決定。frontmatterは`scripts/lib/safe-frontmatter.mjs`経由でYAMLのみ解析し（`src/content`を読むテストも同じラッパーを使う）、`---js`等のYAML以外は評価せず警告を出して対象外にする（SEC-29, Bug #52） |
 | 処理2 | 現在のディレクトリと異なる場合、ファイルを移動 |
 | 処理3 | `public/admin/url-map.json`を生成（各記事のslug→公開URLマッピング） |
 | 出力 | 整理された記事ファイル + url-map.json |
@@ -1788,6 +1806,7 @@ GitHubリポジトリが利用可能な場合、以下の手順でシステム�
 | 49 | 2026-09-20 | `_headers`の`/*`と`/admin/*`両方にCross-Origin-Opener-Policy / Cross-Origin-Resource-Policy / X-Frame-Optionsが定義されており、Cloudflare Pagesの同名ヘッダーAppend仕様（Bug #28で判明済みの仕様）により本番`/admin/`で各ヘッダーが2回送出されることを`curl -sI https://reiwa.casa/admin/`で実測確認した（`https://reiwa.casa/`では各1回）。COOP等はRFC 8941 Structured Headerであり、重複値がカンマ結合されるとitemパースに失敗し無効な値として扱われる（＝`unsafe-none`等へのフォールバック）蓋然性が高い。ただし、ブラウザが実際にどう解決したかは未観測であり、これは「決定的事実」ではなく「リード（要検証所見）」である（詳細: `docs/security/audit-run2-needs-validation.md`）。対応Issue: #115 | Bug #28対策時に「`/*`と`/admin/*`で同一値なら重複送信されても安全」という設計判断（旧SEC-23の記述）を採用し、公開ページにも管理画面と同一値のCOOP/CORP/X-Frame-Optionsを`/*`に追加した。しかしCloudflare Pagesのヘッダー結合はオーバーライドではなく単純なAppendであるため、「同一値なら安全」という前提はCOOP/CORP等のStructured Header（カンマ結合で複数値になった時点でパース仕様上不正になりうる）には成立しなかった。この観点は`_headers`ヘッダー重複防止検証（Bug #28再発防止）の既存テストでもガード条件（`if (globalVal && adminVal)`）に隠れて長らく実効的に検証されていなかった | `/admin/*`セクションからCross-Origin-Opener-Policy / Cross-Origin-Resource-Policy / X-Frame-Optionsの再定義を削除し、`/*`からの継承一本化に設計変更した（管理画面が必要とする値は`/*`側にのみ定義する）。重複を解消することで、ブラウザの実解決結果によらず本懸念を無条件に除去できる。再発防止: (1) `/admin/*`にこれら3ヘッダーが存在しないことを検証するテストへ更新（build.test.mjs, fuzz-validation.test.mjs）。(2) 旧テストのガード条件（両方の値が存在する場合のみ検証）を撤廃し、アサーションが必ず実行される形に書き換え | build.test.mjs（`X-Frame-Optionsは/admin/*で再定義されず/*から継承される（Issue #115, Bug #49）`ほか）、fuzz-validation.test.mjs（`COOP/CORP/X-Frame-Options は /admin/* で再定義されず /* から継承される（Bug #28 再発防止・Issue #115/Bug #49で設計変更）`ほか） |
 | 50 | 2026-09-20 | セキュリティ監査run-2の本番反映で、ローカル Playwright E2E 全件（3デバイス）と包括エビデンスを完了せずに main へマージした。CI の Vitest 成功と staging CMS 実ログインをもって完了扱いし、E2E を「プロセス負債」として後回しにした | 4.6.2章が E2E を「可能な場合」と任意化し、マージ後手順も `npm test`（Vitest）のみだった。Playwright は CI 未実行（実行時間のためローカル運用）であるため、「CI が緑＝テスト完了」と読み替えられた。ユーザーの staging ログイン確認と「やりきる」指示が、未完了の E2E を免除すると解釈された | 4.6章から「可能な場合」を削除し、ローカル `npm run test:e2e` 全件と `verify-comprehensive.mjs` を main マージの必須条件にする。**CI に Playwright は載せない**（Q23）。Vitest 成功・CMS 実ログイン・「後で E2E」は代替にならないと明文化。雛形スクリプトはシナリオ FAIL で `process.exit(1)` する。再発防止テストで CI ワークフローと手順文書を固定する | build.test.mjs（`CI は Vitest とビルドのみで Playwright E2E を必須化しない（Bug #50）`ほか2件） |
 | 51 | 2026-09-20 | PR #119 のマージにより staging ブランチの環境固有ファイルが main の値で丸ごと上書きされた: `public/admin/config.yml` の `branch`（`staging`→`main`）・`base_url`（`https://staging.reiwa.casa`→`https://reiwa.casa`）、`astro.config.mjs` の `SITE_URL`（`https://staging.reiwa.casa`→`https://reiwa.casa`）、`public/robots.txt`（`Disallow: /`→`Allow: /` + 本番sitemap行）の4項目が同時に main 値へ変わった。結果として staging の CMS 管理画面で記事を保存すると本番 main ブランチへ直接コミットされる状態になり、staging の `robots.txt` も検索インデックス可能になった。上書きは22:26:18のマージで発生し、22:47:40の復旧コミット `0a6c762` まで約21分間継続した。実害の報告はない | マージ作業がPRのマージ方向（マージ元→マージ先のファイル差分をそのまま採用する操作）の副作用で環境固有ファイルを巻き込んだ。上書き後の4項目（config.ymlのbranch/base_url、SITE_URL、robots.txt）はすべてmain値で揃っており内部的には完全に整合していたため、当時存在した「4項目が互いに整合しているか」だけを見る既存テスト（cms-config.test.mjsのbase_url検証等）では検知できなかった。実際にチェックアウトしているブランチに対して値が正しいかを検証する仕組みが存在しなかった | staging ブランチが実際にチェックアウトされているブランチに対して4項目が正しい環境の値になっているかを検証する回帰テストを追加する。4項目が「互いに整合している」ことだけを見るチェックでは、揃って誤った環境値に上書きされた今回のケースを検出できないため、ブランチ判定を起点にした検証に設計する | cms-config.test.mjs（`環境固有ファイルの実ブランチ整合性検証（SEC-35, Bug #51再発防止）`） |
+| 52 | 2026-09-23 | SEC-29（Bug #48 対策）で「gray-matter の javascript エンジンを無効化する」として入れた `matter(content, { language: 'yaml' })` が効いていなかった: frontmatter が `---js`（`---javascript`/`---JS` も同様）で始まる記事を `organize-posts.mjs` が処理すると、gray-matter の javascript エンジン（`eval`）でペイロードが実行される。旧版で実行・新版で非実行を実測。Issue #117 項目1は「完了」と記録されていたが誤りだった。**第2の経路（レビュー差し戻しで判明）**: Cloudflare Pages のビルドコマンド `npm run build` は organize-posts より前に `vitest run --exclude tests/build.test.mjs` を実行し、`content-validation`・`cms-config`・`fuzz-validation`・`build`（CI のみ）の各テストと E2E `app-info.spec.ts` が全記事・固定ページを gray-matter の `matter()` で直接解析していた。このため `---js` 記事は Pages のビルド環境と CI で organize-posts より先に eval される（修正前、一時的な `---js` 記事を置いて `npx vitest run tests/content-validation.test.mjs` を実行し、ペイロードがマーカーファイルを作ることを実測）。Astro 本体のコンテンツローダー（`@astrojs/internal-helpers/frontmatter`）は `---`/`+++` を js-yaml の `load`／TOML でのみ解析するため `---js` は YAML エラーになり eval されない（実測: ビルド失敗・マーカー非作成）。能力の増加は無い（到達主体は既にリポジトリ書込権限または CI 上の任意コード実行を持つ）ため脆弱性ではなく hardening の実装不備 | gray-matter は `language` オプションより開始区切り直後の言語宣言を優先し（`index.js` parseMatter）、`engines` は置換ではなくマージされる（`lib/defaults.js`）。修正時にオプションの字面だけで効果を判断し、`---js` を実際に投入する挙動テストを書かなかった。さらに修正範囲を organize-posts に限定し、同じライブラリで同じ入力（`src/content`）を読む他の呼び出し元（テスト群）を洗い出さなかった | `scripts/lib/safe-frontmatter.mjs` で javascript/json エンジンを「必ず例外を投げるエンジン」で上書きし、`organize-posts.mjs` と、`src/content` を読む全テスト（`content-validation`・`cms-config`・`fuzz-validation`・`build`・E2E `app-info.spec.ts`）をこのラッパー経由に置換。tests/ と scripts/ ではラッパー以外の gray-matter 読み込みを禁止する。例外は既存の catch で当該記事を対象外にして継続 | security-hardening.test.mjs（`frontmatter は YAML のみを解析する（SEC-29, Bug #52 再発防止, Issue #117 項目1）` 10件。うち1件は一時ディレクトリで organize-posts.mjs を実行しペイロード非実行を確認、2件は tests/・scripts/ の gray-matter 直接読み込み禁止と `src/content` 読み取り箇所のラッパー経由を静的検証） |
 
 **Bug #46 5 Whys:**
 
@@ -1848,6 +1867,17 @@ GitHubリポジトリが利用可能な場合、以下の手順でシステム�
 5. なぜ21分間で発見できたか（逆に、なぜ即座に発見されなかったか）: 復旧はコミットメッセージのみに痕跡が残っており、CLAUDE.mdが定める「バグ発生時の対応フロー」（バグ一覧への記録・再発防止テストの実装）が実施されないまま次の作業（Bug #50対応）に進んでいたため、根本原因分析と恒久対策が先送りになっていた。
 
 根本対策は、環境固有ファイルの検証を「ファイル間の相互整合性」から「実際にチェックアウトしているブランチに対する正しさ」に設計変更することである。ブランチは `CF_PAGES_BRANCH`（Cloudflare Pagesビルド時。Base.astroの既存判定方式を踏襲）→ `GITHUB_REF_NAME`（GitHub Actions）→ `git rev-parse --abbrev-ref HEAD`（ローカル）の優先順で判定し、main/staging と判定できた場合のみ絶対値を検証、それ以外（feature/*ブランチやCIのpull_requestイベント等）は誤検知を避けるため内部整合のみを検証する。加えて、今回のようにバグ一覧への記録が漏れる再発を防ぐため、CLAUDE.mdの「バグ発生時の対応フロー」を都度確実に履行する。
+
+**Bug #52 5 Whys:**
+
+1. なぜ `---js` の frontmatter が評価されたか: gray-matter の parseMatter は、開始区切り `---` の直後に言語名があるとそれを `file.language` として採用し、呼び出し側の `language` オプションを上書きする。
+2. なぜ `{ language: 'yaml' }` で防げると判断したか: オプション名から「解析言語を固定する」と読み取り、ライブラリ実装（区切り直後の言語宣言が優先、`engines` はマージ）を確認しなかった。監査 run-2 の指摘（`{ engines: {} }` はマージで無効）への対処でも同じ誤りの型（オプションの字面で効果を判断）を繰り返した。
+3. なぜテストで検出できなかったか: SEC-29 の回帰テストは url-map.json の下書き除外だけを検証し、`---js` を実際に投入してペイロードが実行されないことを確かめる挙動テストが無かった。
+3a. なぜ organize-posts を直しても経路が残ったか: Pages のビルドコマンド `npm run build` は organize-posts より前に `vitest run` を実行し、テスト（content-validation / cms-config / fuzz-validation / build、E2E app-info）自身が全記事・固定ページを gray-matter で直接解析していた。初回修正は監査が指摘したファイル（organize-posts）だけを対象にし、「同じライブラリで同じ信頼境界の入力を読む箇所」を横断的に洗い出さなかった。敵対的レビューで指摘され、一時的な `---js` 記事で `npx vitest run tests/content-validation.test.mjs` がペイロードを実行することを実測した。
+4. なぜ Issue で「完了」と記録されたか: 完了判定をコード差分（オプション追加）の存在で行い、攻撃入力による実測を完了条件にしていなかった。
+5. なぜ実害に至らなかったか: 記事を置けるのはリポジトリ書込権限保持者のみで、その主体は元々ビルドスクリプト自体を書き換えられる（能力の増加が無い）。
+
+根本対策は、セキュリティ上の遮断を「オプション指定の有無」ではなく「遮断対象の入力を実際に与えて非実行を確認するテスト」で担保し、遮断点をライブラリ呼び出しの単一ラッパーに集約して「ラッパー以外からの直接読み込み禁止」を静的テストで固定すること。`security-hardening.test.mjs` は旧実装ではペイロードが実行されることを確認したうえで、新実装で非実行となることを検証している。
 
 ### 4.5.1 既知の制限事項（Bug #48関連: url-map.json対策の適用範囲）
 
@@ -1948,7 +1978,7 @@ git push origin staging
 
 第三者セキュリティ診断（2026年2月21日実施）で検出された問題と対策を踏まえ、再発防止のための品質向上策と定期診断の運用を定める。
 
-セキュリティ要件は第1部 1.4.2章（SEC-01〜SEC-35）として定義されている。本章では運用面での品質基準、再発防止策、定期診断の手順を定める。個人情報保護については4.8章を参照。
+セキュリティ要件は第1部 1.4.2章（SEC-01〜SEC-39）として定義されている。本章では運用面での品質基準、再発防止策、定期診断の手順を定める。個人情報保護については4.8章を参照。
 
 ### 4.7.1 品質向上策
 
@@ -2337,7 +2367,7 @@ evidence/YYYY-MM-DD/
 
 | 指標 | 目標値 | 現状 |
 |:---|:---|:---|
-| Vitestテスト全PASS | 100% | 638/638 (100%) |
+| Vitestテスト全PASS | 100% | 668/668 (100%)（featureブランチ、2026-09-23 Issue #117 対応時） |
 | Playwright E2Eテスト全PASS | 100% | 2026-09-20 ローカル全件: 445 PASS・8 skip / 453件（16.3m）。CI では実行しない（Bug #50） |
 | セキュリティ検証全PASS | 100% | 10/10 (100%) |
 | ボタン重なり検出 | 0件 | 0件 |
@@ -2346,4 +2376,4 @@ evidence/YYYY-MM-DD/
 
 ---
 
-**最終更新**: 2026年9月21日（v1.65）
+**最終更新**: 2026年9月23日（v1.67）
