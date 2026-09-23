@@ -1,0 +1,15 @@
+{
+  "fetchedAt": "2027-04-10T00:00:00.000Z",
+  "npm": { "decap-cms": { "latest": "4.0.0", "latestPublished": "2027-03-01T00:00:00.000Z", "deprecated": { "3.16.2": "fixture: upgrade required (not real)" } } },
+  "advisories": { "decap-cms@3.16.2": [ { "id": 1, "severity": "high", "title": "fixture advisory (not real)", "url": "https://example.invalid/advisory/1", "vulnerable_versions": "<3.16.3" } ] },
+  "sri": { "https://unpkg.com/decap-cms@3.16.2/dist/decap-cms.js": { "algorithm": "sha384", "digest": "AAAAfixtureMismatchAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", "bytes": 1 } },
+  "githubReleases": {
+    "actions/checkout": { "latestTag": "v7.0.1" },
+    "actions/setup-node": { "latestTag": "v7.0.0" },
+    "actions/upload-artifact": { "latestTag": "v7.0.1" },
+    "actions/download-artifact": { "latestTag": "v8.0.1" }
+  },
+  "endoflife": { "nodejs": { "releases": [
+    { "name": "22", "isLts": true, "isEol": false, "eolFrom": "2027-04-30", "latest": "22.30.0" }
+  ] } }
+}

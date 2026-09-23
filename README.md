@@ -29,6 +29,7 @@ Astro + Decap CMS によるブログサイト。Cloudflare Pages でホスティ
 | 1.20 | 2026-09-20 | Bug #50: 本番マージ前のローカル E2E 全件と verify-comprehensive.mjs を必須化。CI に Playwright は載せない。Vitest 631→635 |
 | 1.21 | 2026-09-20 | Issue #117 項目2/12: CI `contents: read`、無効な `.assetsignore` 削除。Vitest 635→638 |
 | 1.22 | 2026-09-23 | Issue #117 hardening: frontmatter を YAML のみに限定（Bug #52）、Actions の SHA 固定（SEC-36）、OAuth 許可リスト単一化（SEC-37）、コールバック CSP 自己完結（SEC-38）、埋め込み値の JSON.stringify リテラル化（SEC-39）。Vitest 639→668（main・staging 671） |
+| 1.23 | 2026-09-23 | Issue #132: npm管理外依存（Decap CMS CDN・GitHub Actions・Node.js・Cloudflare Pages ビルド環境）の鮮度・EOL・SRI を週次ワークフローで判定（SEC-40）。Dependabot（github-actions、staging 向け）追加。Vitest feature 695 / main・staging 698 |
 
 詳細なシステム変更履歴は [DOCUMENTATION.md](docs/DOCUMENTATION.md) を参照。
 
@@ -96,7 +97,9 @@ my-blog/
 ├── scripts/
 │   ├── lib/safe-frontmatter.mjs  # YAML限定のfrontmatter解析（`---js`等を拒否）
 │   ├── normalize-images.mjs      # EXIF回転正規化（prebuild）
-│   └── organize-posts.mjs        # 記事ファイル自動整理（prebuild）
+│   ├── organize-posts.mjs        # 記事ファイル自動整理（prebuild）
+│   ├── check-dependency-freshness.mjs  # npm管理外依存の鮮度・EOL判定（週次、SEC-40）
+│   └── dependency-freshness.config.json # 同・閾値と手動確認項目
 ├── src/
 │   ├── content/posts/            # 記事（yyyy/mm/ディレクトリ構造）
 │   ├── content/pages/            # 固定ページ（profile.md 等）
@@ -144,7 +147,8 @@ my-blog/
 | `npm run dev` | 開発サーバー起動（localhost:4321） |
 | `npm run build` | 本番ビルド（`./dist/` に出力） |
 | `npm run preview` | ビルド結果のローカルプレビュー |
-| `npm test` | 単体・統合テスト実行（Vitest / 668テスト〔main・staging では671〕、記事数により変動） |
+| `npm test` | 単体・統合テスト実行（Vitest / 695テスト〔main・staging では698〕、記事数により変動。ネットワーク不要） |
+| `node scripts/check-dependency-freshness.mjs` | npm管理外依存の鮮度・EOL・SRI を照会し `reports/dependency-freshness/latest.json` に出力（ネットワーク必要。週次は `.github/workflows/dependency-freshness.yml`。手順は DOCUMENTATION.md 4.11章） |
 | `npm run test:watch` | ウォッチモードでテスト実行 |
 | `npm run test:e2e` | E2Eテスト実行（Playwright / PC・iPad・iPhone 453テスト: 445実行+8スキップ） |
 
