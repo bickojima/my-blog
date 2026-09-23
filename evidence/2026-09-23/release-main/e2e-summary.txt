@@ -1,0 +1,7 @@
+  Slow test file: [iPhone] › tests/e2e/cms-operations.spec.ts (8.1m)
+  Slow test file: [iPad] › tests/e2e/cms-operations.spec.ts (7.4m)
+  Slow test file: [PC] › tests/e2e/cms-operations.spec.ts (7.2m)
+  Slow test file: [iPhone] › tests/e2e/cms-exploratory.spec.ts (6.9m)
+  Slow test file: [PC] › tests/e2e/cms-exploratory.spec.ts (6.9m)
+  8 skipped
+  445 passed (15.6m)
