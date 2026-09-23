@@ -1,0 +1,22 @@
+HTTP/2 200 
+date: Wed, 23 Sep 2026 10:07:01 GMT
+content-type: text/html; charset=utf-8
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=kSI%2FWuVmnU0aJdbfMaPpzz98z6%2BZEJX%2FdobLM3r1XOktqHehDc9Jb64%2BEEce6ORt7KQJaGtA%2FmFNw8zh5GuXL1XoZhXk83yEPghv53cqr2%2B09ZMbzm3C4iL7x%2FfD3oMp%2FSTN7Sg8EwvB"}]}
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+access-control-allow-origin: *
+cache-control: public, max-age=0, must-revalidate
+x-permitted-cross-domain-policies: none
+strict-transport-security: max-age=63072000; includeSubDomains; preload
+cross-origin-opener-policy: same-origin-allow-popups
+cross-origin-resource-policy: same-site
+permissions-policy: accelerometer=(), autoplay=(), camera=(), cross-origin-isolated=(), display-capture=(), encrypted-media=(), fullscreen=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), midi=(), payment=(), picture-in-picture=(), publickey-credentials-get=(), screen-wake-lock=(), sync-xhr=(), usb=(), web-share=(), xr-spatial-tracking=(), gamepad=(), hid=(), idle-detection=(), serial=(), interest-cohort=(), clipboard-read=(), clipboard-write=(), browsing-topics=()
+referrer-policy: strict-origin-when-cross-origin
+x-content-type-options: nosniff
+x-dns-prefetch-control: off
+x-frame-options: SAMEORIGIN
+server: cloudflare
+cf-cache-status: DYNAMIC
+speculation-rules: "/cdn-cgi/speculation"
+cf-ray: a3f8bd720b9e6c77-NRT
+alt-svc: h3=":443"; ma=86400
+

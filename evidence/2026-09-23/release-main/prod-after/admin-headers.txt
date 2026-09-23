@@ -1,0 +1,24 @@
+HTTP/2 200 
+date: Wed, 23 Sep 2026 10:42:28 GMT
+content-type: text/html; charset=utf-8
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=7eHIccMlV41KddTrv1pHT024GO8%2BaVqc8tSyV0fKWkS457wtFmAEcDvXY76RrTFp9DYjXtZ5OiyUMzRRVWHD2lfkJA9gSyB6KgP08EWt49qBso0DY0rfvlNCCu1JW7PvPuzQ3cPDc2Dd"}]}
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+access-control-allow-origin: *
+cache-control: no-store
+speculation-rules: "/cdn-cgi/speculation"
+strict-transport-security: max-age=63072000; includeSubDomains; preload
+content-security-policy: default-src 'none'; script-src 'self' https://unpkg.com 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' blob: https://github.com https://api.github.com https://*.githubusercontent.com; img-src 'self' https: data: blob:; font-src 'self' data:; frame-src 'self' blob:; frame-ancestors 'self'; form-action 'self' https://github.com; base-uri 'self'; upgrade-insecure-requests
+cross-origin-opener-policy: same-origin-allow-popups
+cross-origin-resource-policy: same-site
+permissions-policy: accelerometer=(), autoplay=(), camera=(), cross-origin-isolated=(), display-capture=(), encrypted-media=(), fullscreen=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), midi=(), payment=(), picture-in-picture=(), publickey-credentials-get=(), screen-wake-lock=(), sync-xhr=(), usb=(), web-share=(), xr-spatial-tracking=(), gamepad=(), hid=(), idle-detection=(), serial=(), interest-cohort=(), clipboard-read=(), clipboard-write=(), browsing-topics=()
+referrer-policy: strict-origin-when-cross-origin
+x-content-type-options: nosniff
+x-dns-prefetch-control: off
+x-frame-options: SAMEORIGIN
+x-permitted-cross-domain-policies: none
+x-robots-tag: noindex
+server: cloudflare
+cf-cache-status: DYNAMIC
+cf-ray: a3f8f15e7fdbd755-NRT
+alt-svc: h3=":443"; ma=86400
+
