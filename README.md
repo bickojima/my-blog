@@ -257,6 +257,8 @@ main (本番)  ←── merge ── staging (テスト) ←── merge ──
 | 出力ディレクトリ | `dist` | `dist` |
 | 環境変数 | Production: `OAUTH_CLIENT_ID`, `OAUTH_CLIENT_SECRET` | Preview: `OAUTH_CLIENT_ID`, `OAUTH_CLIENT_SECRET`（別OAuth App） |
 
+`npm run build` の最初のステップは Vitest（`build.test.mjs` を除く）である。テストが失敗すると `astro build` まで進まず、デプロイされない（テストゲート。詳細は設計書 2.5.1章）。
+
 ## 9. ドキュメント体系
 
 | 文書 | 内容 |
