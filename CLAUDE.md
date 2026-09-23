@@ -22,7 +22,7 @@
 ```bash
 npm run dev          # 開発サーバー起動（前処理含む）
 npm run build        # テスト必須ビルド（vitest run → normalize-images → organize-posts → astro build → image-optimize）
-npm run build:raw    # テストなしビルド（build.test.mjs内部で使用、Cloudflare Pages用）
+npm run build:raw    # テストなしビルド（build.test.mjs内部とGitHub Actions CIで使用。Cloudflare Pagesは使わない）
 npm test             # Vitest 全テスト実行（668テスト・main/stagingブランチでは671テスト、記事数により変動。SEC-35がブランチ別にテストを登録するため件数が変わる）
 npm run test:watch   # Vitest ウォッチモード
 npm run test:e2e     # Playwright E2Eテスト（要: npm run build 済み、453テスト：445実行+8スキップ）
@@ -89,6 +89,8 @@ tests/
 
 ### ビルドパイプライン
 `normalize-images.mjs` → `organize-posts.mjs` → `astro build` → `image-optimize.mjs`（Astro integration）
+
+- **Cloudflare Pages のビルドコマンドは `npm run build`（テストゲート）**: 先頭の `vitest run --exclude tests/build.test.mjs` が失敗すると `astro build` まで進まず、デプロイされない（2026-09-23 ダッシュボード確認・ローカル実証済み、Issue #128、DOCUMENTATION.md 2.5.1章）。`build.test.mjs` はゲート対象外で CI でのみ実行される
 
 ### ヘッダーナビゲーション（Base.astro）
 - `draft` と `noindex` の固定ページを除いた件数に応じて表示が変化:
