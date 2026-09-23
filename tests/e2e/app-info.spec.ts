@@ -2,13 +2,13 @@ import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
-import matter from 'gray-matter';
+import { parseFrontmatter } from '../../scripts/lib/safe-frontmatter.mjs'; // Bug #52: gray-matter を直接呼ばない
 
 // 対象は固定ページのfrontmatterから決める（URL・タイトルをテストへ書かない）
 const pagesDir = path.join(process.cwd(), 'src/content/pages');
 const noindexPages = readdirSync(pagesDir)
   .filter(file => file.endsWith('.md'))
-  .map(file => matter(readFileSync(path.join(pagesDir, file), 'utf8')).data)
+  .map(file => parseFrontmatter(readFileSync(path.join(pagesDir, file), 'utf8')).data)
   .filter(data => data.noindex === true && data.draft !== true);
 
 for (const data of noindexPages) {
@@ -45,7 +45,7 @@ for (const data of noindexPages) {
 test('FR-29: noindex固定ページをメニューから除外し通常ページへ遷移できる', async ({ page }, testInfo) => {
   const visiblePages = readdirSync(pagesDir)
     .filter(file => file.endsWith('.md'))
-    .map(file => matter(readFileSync(path.join(pagesDir, file), 'utf8')).data)
+    .map(file => parseFrontmatter(readFileSync(path.join(pagesDir, file), 'utf8')).data)
     .filter(data => !data.draft && !data.noindex)
     .sort((a, b) => a.order - b.order);
   await page.goto('/');

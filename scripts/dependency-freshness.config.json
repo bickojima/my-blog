@@ -1,0 +1,28 @@
+{
+  "$comment": "npm管理外依存の鮮度・EOL監視（SEC-40, Issue #132）の設定。閾値の根拠と運用手順は docs/DOCUMENTATION.md 4.11章を参照。",
+  "thresholds": {
+    "eolWarnDays": 90,
+    "eolAlertDays": 30,
+    "cdnMinorAlert": 3,
+    "upstreamStaleDays": 365,
+    "manualReviewIntervalDays": 92
+  },
+  "scan": {
+    "cdnRoots": ["public", "src"],
+    "cdnExtensions": [".html", ".astro"],
+    "workflowDir": ".github/workflows",
+    "nodeVersionFiles": [".nvmrc", ".node-version"]
+  },
+  "manualChecks": [
+    {
+      "id": "cloudflare-pages-build-image",
+      "name": "Cloudflare Pages ビルドイメージ・環境変数 NODE_VERSION",
+      "current": "Build command `npm run build`、Build output `dist`、Production branch `main`（2026-09-23 ダッシュボードで確認）。ビルドイメージのバージョンと NODE_VERSION は未確認（設計書 2.5.1章の記載値は v3）",
+      "lastReviewed": "2026-09-23",
+      "reviewed": ["Build command: npm run build", "Build output directory: dist", "Production branch: main"],
+      "unverified": ["ビルドイメージ（Build system version）", "環境変数 NODE_VERSION の有無・値"],
+      "how": "Cloudflare ダッシュボード > Workers & Pages > my-blog > Settings > Build で Build system version と環境変数 NODE_VERSION の有無を確認し、.nvmrc と同じメジャーでビルドされていることをデプロイログの Node バージョン表示で確認する。確認後に lastReviewed を更新する",
+      "eolSource": "https://developers.cloudflare.com/pages/configuration/build-image/"
+    }
+  ]
+}
