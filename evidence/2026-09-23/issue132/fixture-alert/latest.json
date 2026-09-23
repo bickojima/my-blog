@@ -1,0 +1,246 @@
+{
+  "schemaVersion": 1,
+  "task": "dependency-freshness",
+  "generatedAt": "2027-04-10T00:00:00.000Z",
+  "remoteFetchedAt": "2027-04-10T00:00:00.000Z",
+  "remoteSource": "fixture",
+  "status": "alert",
+  "success": true,
+  "thresholds": {
+    "eolWarnDays": 90,
+    "eolAlertDays": 30,
+    "cdnMinorAlert": 3,
+    "upstreamStaleDays": 365,
+    "manualReviewIntervalDays": 92
+  },
+  "counts": {
+    "ok": 4,
+    "manual": 0,
+    "warning": 3,
+    "unknown": 0,
+    "alert": 2
+  },
+  "items": [
+    {
+      "id": "cdn:decap-cms",
+      "category": "cdn",
+      "name": "decap-cms",
+      "current": "3.16.2",
+      "latest": "4.0.0",
+      "pinning": "version + SRI(sha384)",
+      "source": "public/admin/index.html:451",
+      "status": "alert",
+      "findings": [
+        {
+          "status": "alert",
+          "code": "SRI_MISMATCH",
+          "message": "CDN 実体の sha384 が integrity 属性と不一致（実体 AAAAfixtureMismatchAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA）。管理画面が起動しない／改ざんの可能性"
+        },
+        {
+          "status": "alert",
+          "code": "CDN_DEPRECATED",
+          "message": "固定版 3.16.2 は npm で deprecated: fixture: upgrade required (not real)"
+        },
+        {
+          "status": "alert",
+          "code": "CDN_MAJOR_BEHIND",
+          "message": "メジャー更新あり（3.16.2 → 4.0.0）"
+        },
+        {
+          "status": "alert",
+          "code": "CDN_ADVISORY",
+          "message": "high: fixture advisory (not real)（https://example.invalid/advisory/1）"
+        }
+      ]
+    },
+    {
+      "id": "action:actions/checkout@.github/workflows/ci.yml:19",
+      "category": "github-actions",
+      "name": "actions/checkout",
+      "current": "v4.4.0",
+      "latest": "v7.0.1",
+      "pinning": "commit SHA",
+      "source": ".github/workflows/ci.yml:19",
+      "status": "warning",
+      "findings": [
+        {
+          "status": "ok",
+          "code": "ACTION_SHA_PINNED",
+          "message": "SHA 固定（v4.4.0）"
+        },
+        {
+          "status": "warning",
+          "code": "ACTION_MAJOR_BEHIND",
+          "message": "メジャー更新あり（v4.4.0 → v7.0.1）。Dependabot PR で追従する"
+        }
+      ]
+    },
+    {
+      "id": "action:actions/setup-node@.github/workflows/ci.yml:22",
+      "category": "github-actions",
+      "name": "actions/setup-node",
+      "current": "v4.4.0",
+      "latest": "v7.0.0",
+      "pinning": "commit SHA",
+      "source": ".github/workflows/ci.yml:22",
+      "status": "warning",
+      "findings": [
+        {
+          "status": "ok",
+          "code": "ACTION_SHA_PINNED",
+          "message": "SHA 固定（v4.4.0）"
+        },
+        {
+          "status": "warning",
+          "code": "ACTION_MAJOR_BEHIND",
+          "message": "メジャー更新あり（v4.4.0 → v7.0.0）。Dependabot PR で追従する"
+        }
+      ]
+    },
+    {
+      "id": "action:actions/checkout@.github/workflows/dependency-freshness.yml:30",
+      "category": "github-actions",
+      "name": "actions/checkout",
+      "current": "v7.0.1",
+      "latest": "v7.0.1",
+      "pinning": "commit SHA",
+      "source": ".github/workflows/dependency-freshness.yml:30",
+      "status": "ok",
+      "findings": [
+        {
+          "status": "ok",
+          "code": "ACTION_SHA_PINNED",
+          "message": "SHA 固定（v7.0.1）"
+        },
+        {
+          "status": "ok",
+          "code": "ACTION_MAJOR_LATEST",
+          "message": "最新メジャー（最新 v7.0.1）"
+        }
+      ]
+    },
+    {
+      "id": "action:actions/setup-node@.github/workflows/dependency-freshness.yml:35",
+      "category": "github-actions",
+      "name": "actions/setup-node",
+      "current": "v7.0.0",
+      "latest": "v7.0.0",
+      "pinning": "commit SHA",
+      "source": ".github/workflows/dependency-freshness.yml:35",
+      "status": "ok",
+      "findings": [
+        {
+          "status": "ok",
+          "code": "ACTION_SHA_PINNED",
+          "message": "SHA 固定（v7.0.0）"
+        },
+        {
+          "status": "ok",
+          "code": "ACTION_MAJOR_LATEST",
+          "message": "最新メジャー（最新 v7.0.0）"
+        }
+      ]
+    },
+    {
+      "id": "action:actions/upload-artifact@.github/workflows/dependency-freshness.yml:51",
+      "category": "github-actions",
+      "name": "actions/upload-artifact",
+      "current": "v7.0.1",
+      "latest": "v7.0.1",
+      "pinning": "commit SHA",
+      "source": ".github/workflows/dependency-freshness.yml:51",
+      "status": "ok",
+      "findings": [
+        {
+          "status": "ok",
+          "code": "ACTION_SHA_PINNED",
+          "message": "SHA 固定（v7.0.1）"
+        },
+        {
+          "status": "ok",
+          "code": "ACTION_MAJOR_LATEST",
+          "message": "最新メジャー（最新 v7.0.1）"
+        }
+      ]
+    },
+    {
+      "id": "action:actions/download-artifact@.github/workflows/dependency-freshness.yml:71",
+      "category": "github-actions",
+      "name": "actions/download-artifact",
+      "current": "v8.0.1",
+      "latest": "v8.0.1",
+      "pinning": "commit SHA",
+      "source": ".github/workflows/dependency-freshness.yml:71",
+      "status": "ok",
+      "findings": [
+        {
+          "status": "ok",
+          "code": "ACTION_SHA_PINNED",
+          "message": "SHA 固定（v8.0.1）"
+        },
+        {
+          "status": "ok",
+          "code": "ACTION_MAJOR_LATEST",
+          "message": "最新メジャー（最新 v8.0.1）"
+        }
+      ]
+    },
+    {
+      "id": "runtime:nodejs",
+      "category": "runtime",
+      "name": "Node.js",
+      "current": ".nvmrc=22.12.0, package.json#engines.node=>=22.12.0, .github/workflows/ci.yml:24=22, .github/workflows/dependency-freshness.yml:37=.nvmrc",
+      "latest": "22.30.0",
+      "pinning": ".nvmrc（Pages/ローカル）・engines・CI node-version",
+      "source": ".nvmrc, package.json#engines.node, .github/workflows/ci.yml:24, .github/workflows/dependency-freshness.yml:37",
+      "status": "alert",
+      "findings": [
+        {
+          "status": "alert",
+          "code": "NODE_EOL_ALERT",
+          "message": "Node.js 22: EOL まで 20 日（2027-04-30）"
+        },
+        {
+          "status": "warning",
+          "code": "NODE_PATCH_BEHIND",
+          "message": ".nvmrc の固定版 22.12.0 は 22 系最新 22.30.0 より古い（セキュリティリリース未適用の可能性。Cloudflare Pages は .nvmrc を使う）"
+        }
+      ]
+    },
+    {
+      "id": "manual:cloudflare-pages-build-image",
+      "category": "manual",
+      "name": "Cloudflare Pages ビルドイメージ・環境変数 NODE_VERSION",
+      "current": "Build command `npm run build`、Build output `dist`、Production branch `main`（2026-09-23 ダッシュボードで確認）。ビルドイメージのバージョンと NODE_VERSION は未確認（設計書 2.5.1章の記載値は v3）",
+      "latest": null,
+      "pinning": "ダッシュボード設定（API 未連携）",
+      "source": "scripts/dependency-freshness.config.json",
+      "status": "warning",
+      "findings": [
+        {
+          "status": "warning",
+          "code": "MANUAL_REVIEW_DUE",
+          "message": "前回確認（2026-09-23）から 199 日。四半期確認の期限超過"
+        },
+        {
+          "status": "warning",
+          "code": "MANUAL_PARTIAL",
+          "message": "未確認の項目が残っている: ビルドイメージ（Build system version）、環境変数 NODE_VERSION の有無・値"
+        }
+      ]
+    }
+  ],
+  "problems": [
+    "[alert] decap-cms（public/admin/index.html:451）: CDN 実体の sha384 が integrity 属性と不一致（実体 AAAAfixtureMismatchAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA）。管理画面が起動しない／改ざんの可能性",
+    "[alert] decap-cms（public/admin/index.html:451）: 固定版 3.16.2 は npm で deprecated: fixture: upgrade required (not real)",
+    "[alert] decap-cms（public/admin/index.html:451）: メジャー更新あり（3.16.2 → 4.0.0）",
+    "[alert] decap-cms（public/admin/index.html:451）: high: fixture advisory (not real)（https://example.invalid/advisory/1）",
+    "[warning] actions/checkout（.github/workflows/ci.yml:19）: メジャー更新あり（v4.4.0 → v7.0.1）。Dependabot PR で追従する",
+    "[warning] actions/setup-node（.github/workflows/ci.yml:22）: メジャー更新あり（v4.4.0 → v7.0.0）。Dependabot PR で追従する",
+    "[alert] Node.js（.nvmrc, package.json#engines.node, .github/workflows/ci.yml:24, .github/workflows/dependency-freshness.yml:37）: Node.js 22: EOL まで 20 日（2027-04-30）",
+    "[warning] Node.js（.nvmrc, package.json#engines.node, .github/workflows/ci.yml:24, .github/workflows/dependency-freshness.yml:37）: .nvmrc の固定版 22.12.0 は 22 系最新 22.30.0 より古い（セキュリティリリース未適用の可能性。Cloudflare Pages は .nvmrc を使う）",
+    "[warning] Cloudflare Pages ビルドイメージ・環境変数 NODE_VERSION（scripts/dependency-freshness.config.json）: 前回確認（2026-09-23）から 199 日。四半期確認の期限超過",
+    "[warning] Cloudflare Pages ビルドイメージ・環境変数 NODE_VERSION（scripts/dependency-freshness.config.json）: 未確認の項目が残っている: ビルドイメージ（Build system version）、環境変数 NODE_VERSION の有無・値"
+  ],
+  "exitCode": 2
+}

@@ -1,0 +1,237 @@
+{
+  "schemaVersion": 1,
+  "task": "dependency-freshness",
+  "generatedAt": "2026-09-23T05:00:00.000Z",
+  "remoteFetchedAt": "2026-09-23T00:00:00.000Z",
+  "remoteSource": "fixture",
+  "status": "error",
+  "success": false,
+  "thresholds": {
+    "eolWarnDays": 90,
+    "eolAlertDays": 30,
+    "cdnMinorAlert": 3,
+    "upstreamStaleDays": 365,
+    "manualReviewIntervalDays": 92
+  },
+  "counts": {
+    "ok": 0,
+    "manual": 0,
+    "warning": 1,
+    "unknown": 8,
+    "alert": 0
+  },
+  "items": [
+    {
+      "id": "cdn:decap-cms",
+      "category": "cdn",
+      "name": "decap-cms",
+      "current": "3.16.2",
+      "latest": null,
+      "pinning": "version + SRI(sha384)",
+      "source": "public/admin/index.html:451",
+      "status": "unknown",
+      "findings": [
+        {
+          "status": "unknown",
+          "code": "SRI_FETCH_FAILED",
+          "message": "CDN 実体の取得に失敗: fixture: getaddrinfo ENOTFOUND"
+        },
+        {
+          "status": "unknown",
+          "code": "NPM_FETCH_FAILED",
+          "message": "npm registry 取得失敗: fixture: getaddrinfo ENOTFOUND"
+        },
+        {
+          "status": "unknown",
+          "code": "ADVISORY_FETCH_FAILED",
+          "message": "脆弱性情報の取得失敗: fixture: getaddrinfo ENOTFOUND"
+        }
+      ]
+    },
+    {
+      "id": "action:actions/checkout@.github/workflows/ci.yml:19",
+      "category": "github-actions",
+      "name": "actions/checkout",
+      "current": "v4.4.0",
+      "latest": null,
+      "pinning": "commit SHA",
+      "source": ".github/workflows/ci.yml:19",
+      "status": "unknown",
+      "findings": [
+        {
+          "status": "ok",
+          "code": "ACTION_SHA_PINNED",
+          "message": "SHA 固定（v4.4.0）"
+        },
+        {
+          "status": "unknown",
+          "code": "ACTION_FETCH_FAILED",
+          "message": "最新リリース取得失敗: fixture: HTTP 403"
+        }
+      ]
+    },
+    {
+      "id": "action:actions/setup-node@.github/workflows/ci.yml:22",
+      "category": "github-actions",
+      "name": "actions/setup-node",
+      "current": "v4.4.0",
+      "latest": null,
+      "pinning": "commit SHA",
+      "source": ".github/workflows/ci.yml:22",
+      "status": "unknown",
+      "findings": [
+        {
+          "status": "ok",
+          "code": "ACTION_SHA_PINNED",
+          "message": "SHA 固定（v4.4.0）"
+        },
+        {
+          "status": "unknown",
+          "code": "ACTION_FETCH_FAILED",
+          "message": "最新リリース取得失敗: fixture: HTTP 403"
+        }
+      ]
+    },
+    {
+      "id": "action:actions/checkout@.github/workflows/dependency-freshness.yml:30",
+      "category": "github-actions",
+      "name": "actions/checkout",
+      "current": "v7.0.1",
+      "latest": null,
+      "pinning": "commit SHA",
+      "source": ".github/workflows/dependency-freshness.yml:30",
+      "status": "unknown",
+      "findings": [
+        {
+          "status": "ok",
+          "code": "ACTION_SHA_PINNED",
+          "message": "SHA 固定（v7.0.1）"
+        },
+        {
+          "status": "unknown",
+          "code": "ACTION_FETCH_FAILED",
+          "message": "最新リリース取得失敗: fixture: HTTP 403"
+        }
+      ]
+    },
+    {
+      "id": "action:actions/setup-node@.github/workflows/dependency-freshness.yml:35",
+      "category": "github-actions",
+      "name": "actions/setup-node",
+      "current": "v7.0.0",
+      "latest": null,
+      "pinning": "commit SHA",
+      "source": ".github/workflows/dependency-freshness.yml:35",
+      "status": "unknown",
+      "findings": [
+        {
+          "status": "ok",
+          "code": "ACTION_SHA_PINNED",
+          "message": "SHA 固定（v7.0.0）"
+        },
+        {
+          "status": "unknown",
+          "code": "ACTION_FETCH_FAILED",
+          "message": "最新リリース取得失敗: fixture: HTTP 403"
+        }
+      ]
+    },
+    {
+      "id": "action:actions/upload-artifact@.github/workflows/dependency-freshness.yml:51",
+      "category": "github-actions",
+      "name": "actions/upload-artifact",
+      "current": "v7.0.1",
+      "latest": null,
+      "pinning": "commit SHA",
+      "source": ".github/workflows/dependency-freshness.yml:51",
+      "status": "unknown",
+      "findings": [
+        {
+          "status": "ok",
+          "code": "ACTION_SHA_PINNED",
+          "message": "SHA 固定（v7.0.1）"
+        },
+        {
+          "status": "unknown",
+          "code": "ACTION_FETCH_FAILED",
+          "message": "最新リリース取得失敗: fixture: HTTP 403"
+        }
+      ]
+    },
+    {
+      "id": "action:actions/download-artifact@.github/workflows/dependency-freshness.yml:71",
+      "category": "github-actions",
+      "name": "actions/download-artifact",
+      "current": "v8.0.1",
+      "latest": null,
+      "pinning": "commit SHA",
+      "source": ".github/workflows/dependency-freshness.yml:71",
+      "status": "unknown",
+      "findings": [
+        {
+          "status": "ok",
+          "code": "ACTION_SHA_PINNED",
+          "message": "SHA 固定（v8.0.1）"
+        },
+        {
+          "status": "unknown",
+          "code": "ACTION_FETCH_FAILED",
+          "message": "最新リリース取得失敗: fixture: HTTP 403"
+        }
+      ]
+    },
+    {
+      "id": "runtime:nodejs",
+      "category": "runtime",
+      "name": "Node.js",
+      "current": ".nvmrc=22.12.0, package.json#engines.node=>=22.12.0, .github/workflows/ci.yml:24=22, .github/workflows/dependency-freshness.yml:37=.nvmrc",
+      "latest": null,
+      "pinning": ".nvmrc（Pages/ローカル）・engines・CI node-version",
+      "source": ".nvmrc, package.json#engines.node, .github/workflows/ci.yml:24, .github/workflows/dependency-freshness.yml:37",
+      "status": "unknown",
+      "findings": [
+        {
+          "status": "unknown",
+          "code": "NODE_EOL_FETCH_FAILED",
+          "message": "endoflife.date 取得失敗: fixture: getaddrinfo ENOTFOUND"
+        }
+      ]
+    },
+    {
+      "id": "manual:cloudflare-pages-build-image",
+      "category": "manual",
+      "name": "Cloudflare Pages ビルドイメージ・環境変数 NODE_VERSION",
+      "current": "Build command `npm run build`、Build output `dist`、Production branch `main`（2026-09-23 ダッシュボードで確認）。ビルドイメージのバージョンと NODE_VERSION は未確認（設計書 2.5.1章の記載値は v3）",
+      "latest": null,
+      "pinning": "ダッシュボード設定（API 未連携）",
+      "source": "scripts/dependency-freshness.config.json",
+      "status": "warning",
+      "findings": [
+        {
+          "status": "manual",
+          "code": "MANUAL_REVIEWED",
+          "message": "前回確認 2026-09-23（0 日前）"
+        },
+        {
+          "status": "warning",
+          "code": "MANUAL_PARTIAL",
+          "message": "未確認の項目が残っている: ビルドイメージ（Build system version）、環境変数 NODE_VERSION の有無・値"
+        }
+      ]
+    }
+  ],
+  "problems": [
+    "[unknown] decap-cms（public/admin/index.html:451）: CDN 実体の取得に失敗: fixture: getaddrinfo ENOTFOUND",
+    "[unknown] decap-cms（public/admin/index.html:451）: npm registry 取得失敗: fixture: getaddrinfo ENOTFOUND",
+    "[unknown] decap-cms（public/admin/index.html:451）: 脆弱性情報の取得失敗: fixture: getaddrinfo ENOTFOUND",
+    "[unknown] actions/checkout（.github/workflows/ci.yml:19）: 最新リリース取得失敗: fixture: HTTP 403",
+    "[unknown] actions/setup-node（.github/workflows/ci.yml:22）: 最新リリース取得失敗: fixture: HTTP 403",
+    "[unknown] actions/checkout（.github/workflows/dependency-freshness.yml:30）: 最新リリース取得失敗: fixture: HTTP 403",
+    "[unknown] actions/setup-node（.github/workflows/dependency-freshness.yml:35）: 最新リリース取得失敗: fixture: HTTP 403",
+    "[unknown] actions/upload-artifact（.github/workflows/dependency-freshness.yml:51）: 最新リリース取得失敗: fixture: HTTP 403",
+    "[unknown] actions/download-artifact（.github/workflows/dependency-freshness.yml:71）: 最新リリース取得失敗: fixture: HTTP 403",
+    "[unknown] Node.js（.nvmrc, package.json#engines.node, .github/workflows/ci.yml:24, .github/workflows/dependency-freshness.yml:37）: endoflife.date 取得失敗: fixture: getaddrinfo ENOTFOUND",
+    "[warning] Cloudflare Pages ビルドイメージ・環境変数 NODE_VERSION（scripts/dependency-freshness.config.json）: 未確認の項目が残っている: ビルドイメージ（Build system version）、環境変数 NODE_VERSION の有無・値"
+  ],
+  "exitCode": 1
+}
