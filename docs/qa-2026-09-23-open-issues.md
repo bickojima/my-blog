@@ -2,7 +2,7 @@
 
 作成日: 2026-09-23
 対象: `bickojima/my-blog` の open issue #81, #90, #95, #117, #127〜#132
-状態: **要件定義確定・実作業中（2026-09-23 ユーザー決定をQ6〜Q9・Q13〜Q17に反映）。#81・#129はクローズ済み。#117（PR #135）・#128（PR #137）はstaging反映済み。#127/#130は実装・ローカル全ゲートと実ホスト操作E2E完了、PR作成前レビュー待ち。#132は実装済み、workflow_dispatch検証待ち。#90/#131の履歴書換えは他issue完了・main反映・open PRゼロの後に凍結して実施する。**
+状態: **要件定義確定・実作業中（Q6〜Q9・Q13〜Q17を反映）。#81・#129はクローズ済み。#117（PR #135）・#128（PR #137）はstaging反映済み。#127/#130はPR #143でstagingへ反映し、staging配信の環境値確認、実ホストCMS 78/78、包括E2E各端末50/50（計150/150）を確認済み。包括E2Eの「150シナリオ×3デバイス」は文書誤記として50シナリオ×3デバイス=150検証へ訂正。Cloudflare API認証がなくdeploy commit metadataは未確認。現在main向け初回統合候補を隔離ブランチで検証中、mainマージは未実施。#132は実装済み、workflow_dispatch検証待ち。#90/#131の履歴書換えは他issue完了・main反映・open PRゼロの後に凍結して実施する。**
 
 ## 1. 目的と完了条件
 
@@ -114,22 +114,30 @@ issueは全部で10件。全件を対象とし、判断根拠を曖昧にした�
 - これらはsource-only監査と未実施の環境確認を明記する。レポートの「未確認」を実証済みと扱わない。
 - 次の作業は、GitHub最新refsを作業元とし、対象issueごとのbranch/PRへ分ける。現ローカルcheckoutはmainより40コミットbehind。`fix/security-audit-run2` の広い差分を無条件に他のissue作業へ持ち込まない。
 
-### 再開後の進捗（2026-09-23、staging向けPR作成前）
+### 初回調査時点の進捗（2026-09-23、staging向けPR作成前）
 
 - GitHub refs: `main=f60b81d`（#139 release 1）、`staging=10a1589`（#142 evidence）。初回調査の refs（main `1c4ea54` / staging `4666f68`）は古い。
 - #127/#130: branch `codex/issue-127-derived-env` はstagingを親に作成。#127 commit `fe646e8` と#130 SEC-41変更、E-39 false-pass修正、QA/設計/テスト文書とevidenceを含む。Vitest 754/754 PASS、build PASS、Playwright 457 PASS + 8 skip / 465、#130 実ホスト操作54/54 PASS。両方向merge rehearsalでは初回3ファイル競合を新構造に揃えた後、以後のmergeはcleanで環境値差分0。`evidence/2026-09-23/issue127/` と `issue130-review/`。
-- #127/#130のコードは執筆時点でstaging branchへ未反映。次ゲートはレビュー後staging向けPR、staging反映後に実配信でrobots/canonical/sitemap/admin CMS branch/CSPと操作を確認。本番mainには未反映。
+- 【初回調査時点の記録】#127/#130はstagingへ未反映で、実配信検証前だった。後続の現況は本書冒頭「状態」を参照。本番mainへの2回目反映は未実施。
 - #128: Pagesの`npm run build`がVitestをゲートする範囲に限定して受入確認する。`build.test.mjs`自体はPagesゲート外の残余があり、CI失敗全般のdeploy停止とは説明しない。Q7により意図的staging失敗コミットは不要。
 - #130実ホスト証跡54件の内訳はRP18 + RS18 + LA6 + LB6 + R6。production/stagingのCMS操作は3端末、ローカル操作はPCのみ。実OAuth/API書込は遮断しており、旧ローカルiPad/iPhone結果は別ディレクトリ `evidence/2026-09-23/issue130/` に保存。
 - #132の週次workflowはmainに存在する。issue close前に`workflow_dispatch` run、artifact/statusを読み取り確認し、alert通知実証の限界を残す。
-- #90: 既存Drive先`06_my-blog/evidence-history-archive` ID `1Xd2_sPE1y3LPJwK6NE-yxlyPgD2QSTUl`、`evidence-history-archive` folder ID `1qZpRsZs0kgY-ssH-Uje2KO8YaOf0V9k8`。Drive上のmanifestは758 pairs/528 unique blobs、既存verifyは758件SHA一致、missing/mismatch/stray 0。HTML相対参照540件中539解決、1件はevidence外の`../../docs/qa-2026-09-09-otp-app-pages.md`参照。既存移行物を引継ぎ、新証跡の差分と1 broken external relative linkを調査し、コピーをやり直さない。最終的なDrive metadata・本人のみ権限・復元検証が必要。
+- #90: 既存Driveの親フォルダ`06_my-blog` ID `1Xd2_sPE1y3LPJwK6NE-yxlyPgD2QSTUl`、配下の`evidence-history-archive` folder ID `1qZpRsZs0kgY-ssH-Uje2KO8YaOf0V9k8`。Drive上のmanifestは758 pairs/528 unique blobs、既存verifyは758件SHA一致、missing/mismatch/stray 0。HTML相対参照540件中539解決、1件はevidence外の`../../docs/qa-2026-09-09-otp-app-pages.md`参照。既存移行物を引継ぎ、新証跡の差分と1 broken external relative linkを調査し、コピーをやり直さない。最終的なDrive metadata・本人のみ権限・復元検証が必要。
 - PR #140/#141 Dependabotがstaging向けにopen。#90/#131の履歴書換え開始前に処理してopen PR 0を再確認する。force pushは統合計画・バックアップ・hash/restore検証の敵対的レビューGOまで行わない。
+
+### 最新ゲート状況（2026-09-23、初回調査時点の記録を更新）
+
+- stagingはPR #143 merge commit `2bbac7d4132a2fcdc6a26a66b8473ab236128b07`。`https://staging.reiwa.casa` と `https://staging.my-blog-3cg.pages.dev` から新しい環境設定を読み取り、robotsはDisallow、canonical/sitemapはstaging origin、admin configからbranch/base_url削除、cms-env.jsは200、admin CSPにInsightsなしを確認。配信のSHA-256 fingerprintは作業ツリーと一致。Cloudflare API tokenがなくdeployment commit metadataは未確認。
+- #130 staging後の実ホストCMS E2Eは78/78 PASS: RP18 + RS18 + LA18 + LB18 + R-PROD3 + R-STG3。実OAuthとGitHub APIはmockし、実書込0。ローカルはPC/iPad/iPhoneで各18件、実ホストも両環境3端末で保存/previewフローを操作。証跡 `evidence/2026-09-23/issue130-post-staging/`。
+- 包括E2Eはstaging実配信に対しPC/iPad/iPhone各50/50、計150/150 PASS。仕様は50 scenario IDsを各端末で実行すること。ローカルPlaywright suiteは465中457 PASS・既存skip 8・失敗0（14.3分）。Vitest 754/754、Pages相当build 625/625、build.test 129/129 PASS。1回目のmain build出力を後続の環境未設定Vitestが `dist` に上書きしたため、一時的にstaging値を読んだ。main buildを単独実行して直後に確認し、robots Allow + production Sitemap、canonical/sitemap production-onlyを再確認。これは観測順序の混同でありコードバグとは認定していない。端末別ビルド結果は `evidence/2026-09-23/release-main/branch-build-results.json`。
+- main向け候補は隔離worktree `codex/release-2-issues-127-130` にて `main=f60b81d` と `staging=2bbac7d` を統合中。初回mergeでastro.config.mjs/config.yml/robots.txtの3競合を新構造に解決。main側のrobots Allow・production canonical/sitemapを検証済み。main merge / production deploy未実施。
+- #140/#141はGitHub Actions SHA-pin updates（v7）で、CI PASS表示を確認済み。#90/#131履歴移行前にstagingへ順次mergeし、staging/mainへ同期してopen PRゼロを再確認する。
 
 ## 7. 敵対的レビューで要再検証の点
 
 1. **#81 live状態**: canonical、robots、sitemap、staging noindexを本番・stagingで読み取り確認する。ブランチ内ファイルの静的検査だけでクローズしない。
 2. **#127 実refs**: GitHubの最新main/staging/関連PRを読み取り、ローカルorigin refsやPR本文の古い値と整合させる。両方向merge実験の証拠があるか確認する。
-3. **#128 失敗時deploy**: 現構成で実際にCI失敗がPages deployを止めるか未検証。安全な検証環境で失敗を注入し、停止結果を確認する。
+3. **#128 失敗時deploy**: Q7/PR #137でローカル失敗注入を実証済み。確認範囲はPages Build command `npm run build`内のVitestのみ。`build.test.mjs`などCI失敗全般を止める保証はなく、stagingへの意図的失敗コミットも行わない。Issue本文の受入条件と残余リスクの表記をこの範囲に揃え、根拠コメント後にクローズ判断する。
 4. **#90 リンク・復元**: Google Driveへのコピー後、全ファイルのhash一致、階層対応、本人アカウントでのリンク到達、ダウンロードからの復元を確認する。HTMLレポートの相対画像参照が維持されるか確認する。過去Git履歴から除去した後のrepo全体容量も計測する。
 5. **#90/#131 全refs影響**: Git内外のコミットhash参照（文書、issues、PR、worktree、タグ、他clone）と、書換え後もGitHub上に旧データが残る可能性を洗い出す。Drive移行とauthor書換えを一体化した一回の履歴移行・バックアップ・復旧・検証・ロールアウト順序を敵対的レビューする。履歴書換えを完全削除と誤認しない。
 6. **#117監査所見**: 監査資料にある項目は「脆弱性」とhardeningを区別し、最新ブランチにおける実装状態と残余リスクを各々再確認する。
