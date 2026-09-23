@@ -169,7 +169,7 @@ DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を�
 - **レポート形式**: `report.html`（画像埋め込み、PC/iPad/iPhone 3デバイス横並び表示）
 - **スクリーンショット**: `screenshots/`, `site-interactive/`, `cms-interactive/` サブフォルダに整理
 - **検証スクリプト**: `verify-staging.mjs`（基本動作確認）、`verify-site-interactive.mjs`（サイト操作性、10シナリオ×3デバイス）、`verify-cms-interactive.mjs`（CMS操作性、16シナリオ×3デバイス）、`verify-cms-crud.mjs`（CMS CRUD操作、16シナリオ×3デバイス）、`evidence/YYYY-MM-DD/verify-security.mjs`（SEC01〜SEC10の証跡確認、10項目）
-- **過去手法の優先**: 新しいE2Eエビデンスを作る場合も、既存スクリプトの構成（スタンドアロンPlaywright、赤枠アノテーション、HTMLレポート、結果JSON）を踏襲する。**雛形として `evidence/2026-05-24/verify-comprehensive.mjs` を優先使用する**（150シナリオ×3デバイス対応の最新包括版）。旧スクリプト: `verify-site-interactive.mjs` / `verify-cms-interactive.mjs` / `verify-cms-crud.mjs` / `verify-cms19-grouping.mjs`
+- **過去手法の優先**: 新しいE2Eエビデンスを作る場合も、既存スクリプトの構成（スタンドアロンPlaywright、赤枠アノテーション、HTMLレポート、結果JSON）を踏襲する。**雛形として `evidence/2026-05-24/verify-comprehensive.mjs` を優先使用する**（50シナリオを3デバイスで計150検証）。シナリオID数とデバイス展開数を混同せず、JSONのdevice別件数を照合する。旧スクリプト: `verify-site-interactive.mjs` / `verify-cms-interactive.mjs` / `verify-cms-crud.mjs` / `verify-cms19-grouping.mjs`
 - **CMS OAuthモック必須**: CMSエビデンスは実GitHub認証に依存させず、OAuth 3ステップハンドシェイクとGitHub APIモックで擬似ログインする。認証後のCMS独自カスタマイズ画面を撮影すること
 - **赤枠アノテーション**: 全スクリーンショットの注目箇所に赤枠とラベルを必ず付与する（ボタン・メニュー・重なり検出箇所・バグ再発防止確認箇所）
 - **ボタン操作テスト**: ボタンを実際に押下してメニュー展開・モーダル表示をエビデンス取得。複数メニュー同時展開時の操作性も確認
@@ -226,7 +226,8 @@ DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を�
 6. main ブランチでテストを実行し、全PASS を確認してからプッシュする
 7. **Vitest だけでは main マージ不可**。ローカル `npm run test:e2e`（3デバイス全件）と `node evidence/YYYY-MM-DD/verify-comprehensive.mjs`（雛形 `evidence/2026-05-24/verify-comprehensive.mjs`）の完了が必須。CI の Vitest 成功・staging CMS 実ログイン確認・「後で E2E」は代替にならない（Bug #50）
 8. **CI に Playwright は載せない**（実行時間のためローカル運用を継続）。E2E / verify-comprehensive の必須化はローカル手順と Vitest による手順文書の固定で行う
-9. 詳細手順は DOCUMENTATION.md 4.6章を参照
+9. **リリースは staging のマージでのみ行う**: main 直コミット・staging 未経由の main 向け PR（リリース候補ブランチでの追加コミット、CI のみの main 直行 PR を含む）は禁止。Issue #127 以降 main と staging はツリー完全一致が正で、リリース・同期後に `git diff origin/main origin/staging` が空であることを確認する（DOCUMENTATION.md 4.6.1章「リリース経路の原則」）
+10. 詳細手順は DOCUMENTATION.md 4.6章を参照
 
 ### セキュリティ・品質チェック（コード変更時）
 - admin/index.html で `innerHTML` / `outerHTML` を使用しない（DOM API を使用）

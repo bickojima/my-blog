@@ -60,8 +60,9 @@
 | 1.52 | 2026-09-23 | Issue #129: `verify-security.mjs` はSEC01〜SEC10の証跡取得・確認を行うと明記し、SEC-01〜SEC-35全体の検査責務をDOCUMENTATION 1.5.4章のトレーサビリティへ集約。SEC-33〜35の対応するVitestを記載。テスト件数変更なし |
 | 1.53 | 2026-09-23 | Issue #117 hardening 対応（判定表: `docs/security/issue-117-hardening-decisions.md`）: 新規 `security-hardening.test.mjs`（2.8章、28件: Bug #52/SEC-29 frontmatter YAML限定 10件〔うち2件は tests/・scripts/ の gray-matter 直接読み込み禁止の静的検証〕、SEC-37 許可リスト単一化 4件、SEC-38 コールバックCSP 2件、SEC-39 JSON.stringifyリテラル 12件）、`build.test.mjs` に SEC-36（Actions SHA 固定）1件（113→114）。既存テストの更新: auth-functions 2.3.1章 #1（escapeForScript→toScriptStringLiteral）、SEC-27 テスト（共有モジュール import を検証）、成功時 Content-Type（`text/html; charset=utf-8`）、fuzz 2.7章 #9/#10（ソース文字列一致→生成リテラルを評価して元トークンと完全一致する挙動検証へ強化、改行テストは実際に改行・U+2028/U+2029 を含むトークンで検証）。件数は増減なし（削除・スキップなし）。Bug #52 の第2経路（`npm run build` が先に実行する Vitest/E2E のテストも gray-matter で `src/content` を直接解析）に対応し、content-validation / cms-config / fuzz-validation / build / e2e app-info の frontmatter 解析を `parseFrontmatter` に置換（テストケースの内容・件数は不変）。Vitest featureブランチ 639→**668**件／main・staging 642→**671**件。実ブラウザE2Eエビデンス `evidence/2026-09-23/issue117/`（OAuth Functions 実コード経由、15/15 PASS） |
 | 1.54 | 2026-09-23 | Issue #132: SEC-40（npm管理外依存の鮮度・EOL監視）の判定ロジック・棚卸し・週次ワークフロー設定を検証する `dependency-freshness.test.mjs` 27件を追加（2.9章）。ネットワーク取得はフィクスチャで置換し、`fetch` が呼ばれたら失敗させて `npm test` のオフライン決定性を担保。Vitest **feature 668→695件／main・staging 671→698件** |
-| 1.55 | 2026-09-23 | Issue #127（環境値の自動導出）: 環境固有の4項目をファイルから削除し導出する構造に変えたため、SEC-35 のテストを「導出結果の正しさ」の検証へ作り替え。新規 `env-derivation.test.mjs`（2.10章、37件: ビルド時導出16件・CMS 実行時導出14件・main/staging 差分ゼロの静的ガード7件）、`build.test.mjs` に `CF_PAGES_BRANCH 別ビルドの環境値` 15件（main/staging/未設定の3ビルド×5項目、114→129）、`cms-config.test.mjs` の SEC-35 を5件に改訂（旧: feature 1件／main・staging 4件のブランチ別登録 → 全ブランチ共通5件、56→60）。**書き換えた既存テスト（削除・スキップなし）**: cms-config 2.4章 No.3・No.5・No.45（config.yml から branch/base_url を削除したため、config.yml と実行時導出値を deepmerge した実効設定で同じ性質を検証）、2.4.3章 No.51〜55（ブランチ判定＋内部整合 → ホスト別の実効 backend 4件＋config.yml 単体に値が無いこと1件。旧テストは対象の値がファイルから消えたため成立しない）、build 2.5.5章 No.1（SITE_URL リテラルからの環境推定 → ビルド時 CF_PAGES_BRANCH による判定）。E2E E-39「固定ページのorderフィールドはmin=1の数値フィールドである」（本変更で spec の認証が実際に成立するようになり、未認証時用の `body.isVisible()` フォールバックが認証後画面で false になって3デバイスで失敗。数値フィールドの表示・min≥1・編集可を必須とする形に強化。DOCUMENTATION 4.5章 Bug #P127-2）。Vitest feature 695／main・staging 698 → **全ブランチ 751件**。E2E に `cms-env-branch.spec.ts`（E-47、4ホスト×3デバイス=12件、実操作保存で書き込み先 ref を実測）を追加し 453→**465件**。エビデンス `evidence/2026-09-23/issue127/` |
+| 1.55 | 2026-09-23 | Issue #127（環境値の自動導出）: 環境固有の4項目をファイルから削除し導出する構造に変えたため、SEC-35 のテストを「導出結果の正しさ」の検証へ作り替え。新規 `env-derivation.test.mjs`（2.10章、37件: ビルド時導出16件・CMS 実行時導出14件・main/staging 差分ゼロの静的ガード7件）、`build.test.mjs` に `CF_PAGES_BRANCH 別ビルドの環境値` 15件（main/staging/未設定の3ビルド×5項目、114→129）、`cms-config.test.mjs` の SEC-35 を5件に改訂（旧: feature 1件／main・staging 4件のブランチ別登録 → 全ブランチ共通5件、56→60）。**書き換えた既存テスト（削除・スキップなし）**: cms-config 2.4章 No.3・No.5・No.45（config.yml から branch/base_url を削除したため、config.yml と実行時導出値を deepmerge した実効設定で同じ性質を検証）、2.4.3章 No.51〜55（ブランチ判定＋内部整合 → ホスト別の実効 backend 4件＋config.yml 単体に値が無いこと1件。旧テストは対象の値がファイルから消えたため成立しない）、build 2.5.5章 No.1（SITE_URL リテラルからの環境推定 → ビルド時 CF_PAGES_BRANCH による判定）。E2E E-39「固定ページのorderフィールドはmin=1の数値フィールドである」（本変更で spec の認証が実際に成立するようになり、未認証時用の `body.isVisible()` フォールバックが認証後画面で false になって3デバイスで失敗。数値フィールドの表示・min≥1・編集可を必須とする形に強化。DOCUMENTATION 4.5章 Bug #P127-2）。Vitest feature 695／main・staging 698 → **全ブランチ 751件**。SEC-41対応で `fuzz-validation.test.mjs` にCSP運用時の違反検知3件を追加し、全ブランチ共通 **754件**。E2E に `cms-env-branch.spec.ts`（E-47、4ホスト×3デバイス=12件、実操作保存で書き込み先 ref を実測）を追加し 453→**465件**。エビデンス `evidence/2026-09-23/issue127/` |
 | 1.56 | 2026-09-23 | Issue #130（SEC-41）: admin CSP で Cloudflare Insights beacon を許可せず、CSPポリシーは緩和せず、`public/_headers` の方針コメントとCMS実操作E2Eで検証。`fuzz-validation.test.mjs` にadmin CSP・重複ヘッダー防止35件を追加。production/staging 実ホストへPlaywrightで接続し、OAuth/GitHub APIは全面モックして実書込を遮断。PC/iPad/iPhoneで編集・入力・preview・保存要求branchを確認し54/54 PASS（production/staging各3端末の操作、ローカルPC操作、実ホストreadonly）。非Insights CSP違反・機能エラーなし。ローカルiPad/iPhoneは従前証跡 `evidence/2026-09-23/issue130/` を別保存。Vitest 754件、ローカルE2E全465件。証跡 `evidence/2026-09-23/issue130-review/` |
+| 1.57 | 2026-09-23 | Issue #127/#130 実測更新: Vitest 754件（fuzz 219件）、Playwright 457 PASS + 8 skip / 465。2.5章を2.5.1〜2.5.13順に整理し、2.10節を第3部前へ移動。包括E2Eの件数は50シナリオID×3デバイス=150検証と訂正。staging実配信の包括E2Eは端末別50/50 PASS。
 
 ## テスト基盤の変更履歴
 
@@ -105,7 +106,10 @@
 2.4. [CMS設定検証](#24-cms設定検証)
 2.5. [ビルド検証](#25-ビルド検証)
 2.6. [管理画面HTML検証](#26-管理画面html検証)
+2.7. [ファズテスト・不整合値テスト](#27-ファズテスト不整合値テスト-fuzz-validationtestmjs-219件)
+2.8. [Issue #117 hardening 再発防止](#28-issue-117-hardening-再発防止-security-hardeningtestmjs-28件)
 2.9. [npm管理外依存の鮮度・EOL監視](#29-npm管理外依存の鮮度eol監視-dependency-freshnesstestmjs--27件)
+2.10. [環境値の導出](#210-環境値の導出-env-derivationtestmjs-37件)
 
 ### 第3部 要件トレーサビリティ
 
@@ -926,6 +930,34 @@ Issue #127 で、環境固有の4項目（config.yml の branch/base_url、astro
 | 51 | 下書き記事がurl-map.jsonに含まれていない（SEC-29, Bug #48再発防止） | URLマッピング | M-01, M-09 | 下書き記事（`draft: true`）のslugが、url-map.jsonの全キー・全値の末尾セグメント（basename）と完全一致しない |
 | 52 | 公開記事のslugが全てurl-map.jsonに含まれている（下書き除外が過剰でないことの確認） | URLマッピング | M-01, M-03 | 公開記事（`draft`が`true`でない）の全slugが、url-map.jsonのキーのbasenameに含まれる |
 
+### 2.5.1 セキュリティヘッダー検証（8件）
+
+| No. | テストケース | カテゴリ | テスト手法 | 期待結果 |
+| :--- | :--- | :--- | :--- | :--- |
+| 1 | _headersにX-Content-Type-Optionsが設定されている（SEC-10） | セキュリティヘッダー | M-02 | `X-Content-Type-Options: nosniff`が含まれる |
+| 2 | _headersにReferrer-Policyが設定されている（SEC-10） | セキュリティヘッダー | M-02 | `Referrer-Policy: strict-origin-when-cross-origin`が含まれる |
+| 3 | _headersにPermissions-Policyが設定されている（SEC-10） | セキュリティヘッダー | M-02 | `Permissions-Policy`ディレクティブが含まれる |
+| 4 | _headersにStrict-Transport-Securityが設定されている（SEC-10） | セキュリティヘッダー | M-02 | `Strict-Transport-Security`が含まれる |
+| 5 | /admin/*にContent-Security-Policyが設定されている（SEC-10） | セキュリティヘッダー | M-02 | `Content-Security-Policy`ディレクティブが`/admin/*`セクションに含まれる |
+| 6 | X-Frame-Optionsは/admin/*で再定義されず/*から継承される（SEC-10, Issue #115, Bug #49） | セキュリティヘッダー | M-02 | `/admin/*`セクションに`X-Frame-Options:`が存在せず、`/*`セクションに`X-Frame-Options: SAMEORIGIN`が含まれる |
+| 7 | COOPは/admin/*で再定義されず/*から継承され、same-origin-allow-popupsが適用される（SEC-10, Issue #115, Bug #49） | セキュリティヘッダー | M-02 | `/admin/*`セクションに`Cross-Origin-Opener-Policy:`が存在せず、`/*`セクションに`Cross-Origin-Opener-Policy: same-origin-allow-popups`が含まれる |
+| 8 | CSP connect-srcにblob:が含まれている（Bug #29再発防止） | セキュリティヘッダー | M-02 | CSPの`connect-src`ディレクティブに`blob:`が含まれる（Decap CMS画像保存時の`fetch(blobURL)`に必要） |
+
+### 2.5.2 ビルドパイプライン検証（3件）
+
+| No. | テストケース | カテゴリ | テスト手法 | 期待結果 |
+| :--- | :--- | :--- | :--- | :--- |
+| 51 | buildスクリプトに4段階パイプラインが定義されている（FR-20） | パイプライン | M-02 | `build:raw`に`normalize-images`, `organize-posts`, `astro build`が含まれる |
+| 52 | Vitestの探索範囲がtests配下の単体・統合テストに限定されている（Bug #46） | パイプライン | M-02 | `vitest.config.ts`に`include: ['tests/**/*.test.mjs']`がある |
+| 53 | CMS記事作成E2Eに並列負荷を考慮したタイムアウトがある（Bug #47） | パイプライン | M-02 | E-28 describe に `timeout: 60000` がある |
+
+### 2.5.3 _headersヘッダー重複防止検証（Bug #28再発防止、2件）
+
+| No. | テストケース | カテゴリ | テスト手法 | 期待結果 |
+| :--- | :--- | :--- | :--- | :--- |
+| 57 | /* と /admin/* で同名ヘッダーが重複していない | 重複防止 | M-02 | `/*`セクションと`/admin/*`セクションで同名ヘッダーが存在しない |
+| 58 | 管理画面で緩和が必要なヘッダーが /* に含まれていない | 重複防止 | M-02 | COOP/CORP/X-Frame-Optionsが`/*`セクションに含まれない |
+
 ### 2.5.4 Modern Web Guidanceアクセシビリティ検証（Bug #43再発防止1件を含む、3件）
 
 | No. | テストケース | テスト手法 | 期待結果 |
@@ -993,33 +1025,15 @@ Bug #42: `/page/[page].astro`が`paginate()`の結果をフィルタせず生成
 | 4 | noindex指定のない固定ページには noindex が付かず、sitemapに載る | M-01 | 既存の固定ページに `robots` メタがなく、sitemapに掲載される |
 | 5 | 検索除外ページをヘッダーナビから除外 | M-01 | トップと全公開固定ページのヘッダーにnoindexページへのリンクがなく、通常の固定ページへのリンクは残る |
 
-### 2.5.1 セキュリティヘッダー検証（8件）
+### 2.5.10 画像正規化処理の堅牢化（SEC-32、3件）
 
-| No. | テストケース | カテゴリ | テスト手法 | 期待結果 |
-| :--- | :--- | :--- | :--- | :--- |
-| 1 | _headersにX-Content-Type-Optionsが設定されている（SEC-10） | セキュリティヘッダー | M-02 | `X-Content-Type-Options: nosniff`が含まれる |
-| 2 | _headersにReferrer-Policyが設定されている（SEC-10） | セキュリティヘッダー | M-02 | `Referrer-Policy: strict-origin-when-cross-origin`が含まれる |
-| 3 | _headersにPermissions-Policyが設定されている（SEC-10） | セキュリティヘッダー | M-02 | `Permissions-Policy`ディレクティブが含まれる |
-| 4 | _headersにStrict-Transport-Securityが設定されている（SEC-10） | セキュリティヘッダー | M-02 | `Strict-Transport-Security`が含まれる |
-| 5 | /admin/*にContent-Security-Policyが設定されている（SEC-10） | セキュリティヘッダー | M-02 | `Content-Security-Policy`ディレクティブが`/admin/*`セクションに含まれる |
-| 6 | X-Frame-Optionsは/admin/*で再定義されず/*から継承される（SEC-10, Issue #115, Bug #49） | セキュリティヘッダー | M-02 | `/admin/*`セクションに`X-Frame-Options:`が存在せず、`/*`セクションに`X-Frame-Options: SAMEORIGIN`が含まれる |
-| 7 | COOPは/admin/*で再定義されず/*から継承され、same-origin-allow-popupsが適用される（SEC-10, Issue #115, Bug #49） | セキュリティヘッダー | M-02 | `/admin/*`セクションに`Cross-Origin-Opener-Policy:`が存在せず、`/*`セクションに`Cross-Origin-Opener-Policy: same-origin-allow-popups`が含まれる |
-| 8 | CSP connect-srcにblob:が含まれている（Bug #29再発防止） | セキュリティヘッダー | M-02 | CSPの`connect-src`ディレクティブに`blob:`が含まれる（Decap CMS画像保存時の`fetch(blobURL)`に必要） |
+| No. | テストケース | テスト手法 | 期待結果 |
+| :--- | :--- | :--- | :--- |
+| 1 | sharp処理が try/catch で囲まれ、catch でビルド全体を throw していない（SEC-32） | M-02 | sharp 呼び出しが try 内にあり、`Failed to normalize` の catch は `console.warn` のみで `throw` / `process.exit` しない |
+| 2 | .rotate().toBuffer() の出力 buffer.length に MAX_FILE_SIZE 上限がある（SEC-32） | M-02 | `.rotate().toBuffer()` があり、`buffer.length > MAX_FILE_SIZE` で出力側上限を検査する |
+| 3 | lstat 失敗も try/catch で保護されている（SEC-32） | M-02 | `lstat` が try/catch で囲まれ、`Failed to stat` の catch は warn して継続する |
 
-### 2.5.3 _headersヘッダー重複防止検証（Bug #28再発防止、2件）
-
-| No. | テストケース | カテゴリ | テスト手法 | 期待結果 |
-| :--- | :--- | :--- | :--- | :--- |
-| 57 | /* と /admin/* で同名ヘッダーが重複していない | 重複防止 | M-02 | `/*`セクションと`/admin/*`セクションで同名ヘッダーが存在しない |
-| 58 | 管理画面で緩和が必要なヘッダーが /* に含まれていない | 重複防止 | M-02 | COOP/CORP/X-Frame-Optionsが`/*`セクションに含まれない |
-
-### 2.5.2 ビルドパイプライン検証（3件）
-
-| No. | テストケース | カテゴリ | テスト手法 | 期待結果 |
-| :--- | :--- | :--- | :--- | :--- |
-| 51 | buildスクリプトに4段階パイプラインが定義されている（FR-20） | パイプライン | M-02 | `build:raw`に`normalize-images`, `organize-posts`, `astro build`が含まれる |
-| 52 | Vitestの探索範囲がtests配下の単体・統合テストに限定されている（Bug #46） | パイプライン | M-02 | `vitest.config.ts`に`include: ['tests/**/*.test.mjs']`がある |
-| 53 | CMS記事作成E2Eに並列負荷を考慮したタイムアウトがある（Bug #47） | パイプライン | M-02 | E-28 describe に `timeout: 60000` がある |
+---
 
 ### 2.5.11 本番マージ前のローカルE2E必須（Bug #50、4件）
 
@@ -1052,17 +1066,7 @@ Playwright は CI に載せない。ローカル全件と `verify-comprehensive.
 | 4 | RSS の全 `<link>` のオリジン | M-01 | 同上のオリジンのみ |
 | 5 | admin/config.yml は全ビルド同一で branch / base_url を含まない | M-01, M-03 | `public/admin/config.yml` と完全一致 |
 
-### 2.5.10 画像正規化処理の堅牢化（SEC-32、3件）
-
-| No. | テストケース | テスト手法 | 期待結果 |
-| :--- | :--- | :--- | :--- |
-| 1 | sharp処理が try/catch で囲まれ、catch でビルド全体を throw していない（SEC-32） | M-02 | sharp 呼び出しが try 内にあり、`Failed to normalize` の catch は `console.warn` のみで `throw` / `process.exit` しない |
-| 2 | .rotate().toBuffer() の出力 buffer.length に MAX_FILE_SIZE 上限がある（SEC-32） | M-02 | `.rotate().toBuffer()` があり、`buffer.length > MAX_FILE_SIZE` で出力側上限を検査する |
-| 3 | lstat 失敗も try/catch で保護されている（SEC-32） | M-02 | `lstat` が try/catch で囲まれ、`Failed to stat` の catch は warn して継続する |
-
----
-
-## 2.6. 管理画面HTML検証 (`admin-html.test.mjs`) — 82件
+## 2.6. 管理画面HTML検証 (`admin-html.test.mjs`) — 90件
 
 `public/admin/index.html`のHTML/CSS/JavaScript内容を文字列パターンマッチングで検証する。
 
@@ -1223,7 +1227,7 @@ Playwright は CI に載せない。ローカル全件と `verify-comprehensive.
 | :--- | :--- | :--- | :--- |
 | 8 | staging環境検知ロジックが存在する（FR-21: hostname判定） | M-02 | `hostname`文字列と`STAGING`/`staging`関連ロジックが存在する |
 
-### 2.7 ファズテスト・不整合値テスト（fuzz-validation.test.mjs: 216件）
+### 2.7 ファズテスト・不整合値テスト（fuzz-validation.test.mjs: 219件）
 
 SEC-14〜SEC-20に対応するファズテスト。ビルド時に必ず実行される必須テスト。XSS/SQLi/パストラバーサル/コマンドインジェクション/プロトタイプ汚染の攻撃ペイロードに対する耐性を検証する。
 
@@ -1434,9 +1438,6 @@ SEC-40（Issue #132）。`scripts/check-dependency-freshness.mjs` の純関数�
 
 ---
 
-# 第3部 要件トレーサビリティ
-
-
 ### 2.10 環境値の導出（env-derivation.test.mjs: 37件, Issue #127・SEC-35 改訂・SEC-127A 仮ID）
 
 | No. | テストケース | テスト手法 | 期待結果 |
@@ -1464,6 +1465,9 @@ SEC-40（Issue #132）。`scripts/check-dependency-freshness.mjs` の純関数�
 No.31〜37 は「main と staging で環境固有ファイルに差分を置かない」ことを守る静的ガード（SEC-127A）。これらが通る限り、どちら向きのマージでも環境値は持ち込まれない（両方向マージの実証は `evidence/2026-09-23/issue127/merge-demo.md`）。
 
 ---
+
+# 第3部 要件トレーサビリティ
+
 
 ## 3.1. 要件トレーサビリティマトリクス
 
@@ -1610,7 +1614,7 @@ axe-coreエンジン（@axe-core/playwright）を使用してWCAG 2.1 Level AA�
 | :--- | :--- | :--- | :--- |
 | E-46 | 検索除外ページの表示・実リンク操作・アクセシビリティ（FR-29） | HTTP 200、title/h1一致、`lang="ja"`、`robots` が `noindex`、フォーム不在、横スクロール非発生、axe WCAG 2.1 AA違反なし、本文リンクのclick遷移 | 実操作（click）＋axe。2ページ×PC/iPad/iPhoneで6件＋ナビの展開・表示対象・リンク遷移を3デバイスで確認（計9件） |
 
-E2E定義は453件（既存444件＋E-46の9件）。Issue #127 で E-47 の12件を追加し **465件**（下表）。ローカルdist・staging実機・本番実機で実行し、結果と画像を `evidence/2026-09-09/` に保存する。
+E2E定義は465件。下表の前回実行（445 PASS, 8 skip / 453件）にE-47をPC/iPad/iPhone各4件追加し、今回の実行では457 PASS, 8 skip。ローカルdist・staging実機・本番実機で実行し、結果と画像を `evidence/2026-09-09/` に保存する。
 
 | 実行環境 | 結果 | 証跡 |
 | :--- | :--- | :--- |
@@ -1628,7 +1632,7 @@ E2E定義は453件（既存444件＋E-46の9件）。Issue #127 で E-47 の12�
 
 ### 4.1.4 デバイス別テスト
 
-全テストケースを以下の3デバイスで実行する（合計453テスト：445実行 + 8スキップ）。
+全テストケースを以下の3デバイスで実行する（合計465テスト：457実行 + 8スキップ）。
 
 | デバイス | ビューポート | 用途 |
 | :--- | :--- | :--- |
@@ -1704,6 +1708,8 @@ UI変更・CMS変更・Modern Web Guidance対応では、DOMを直接書き換�
 `npm run test:e2e`（Playwright spec ファイル群）が「要件トレーサビリティ」を担うのに対し、
 `verify-comprehensive.mjs` は「スクリーンショット付き包括的エビデンス」を担う。
 2つは役割が異なり、両方を維持する。
+
+現行雛形は50個のシナリオIDをPC/iPad/iPhoneで各1回実行するため、結果は端末ごと50件、合計150検証である。「150シナリオ×3デバイス」とは記載しない。報告前にJSONのユニークID数、device別件数、合計を照合する。2026-09-23のstaging実配信では各端末50/50、合計150/150 PASS。証跡: `evidence/2026-09-23/issue127/staging-comprehensive/comprehensive-results.json`。
 
 | 項目 | Playwright spec（`tests/e2e/*.spec.ts`） | verify-comprehensive.mjs |
 | :--- | :--- | :--- |
@@ -1893,7 +1899,7 @@ npm run build
 
 | 項目 | 結果 |
 | :--- | :--- |
-| 実行日時 | 2026-09-23（Issue #127 対応後。ブランチ `feat/issue-127-derive-env-values`、staging 9c58398 に rebase 済み） |
+| 実行日時 | 2026-09-23（main向け統合候補、`codex/release-2-issues-127-130`） |
 | Vitest バージョン | v4.1.11 |
 | 実行時間 | 約8s（`npx vitest run`。CF_PAGES_BRANCH 別の3ビルドを含む）。`CF_PAGES_BRANCH=main` / `staging` でも同件数で実測 |
 | 合否判定 | **合格**（未設定・main・staging の3文脈とも 754 passed） |
@@ -1902,7 +1908,7 @@ npm run build
 
 ### 4.3.2 テストファイル別結果
 
-Issue #127 対応後の実測（全ブランチ共通）:
+2026-09-23のmain向け統合候補で再実行した実測（lockfile準拠 `npm ci` 後、全ブランチ共通）:
 
 | テストファイル | テスト数 | 結果 | 実行時間 |
 | :--- | :--- | :--- | :--- |
@@ -1911,7 +1917,7 @@ Issue #127 対応後の実測（全ブランチ共通）:
 | `rehype-image-caption.test.mjs` | 8 | PASS | 2ms |
 | `rehype-focusable-code-blocks.test.mjs` | 2 | PASS | 1ms |
 | `auth-functions.test.mjs` | 29 | PASS | 15ms |
-| `fuzz-validation.test.mjs` | 216 | PASS | 25ms |
+| `fuzz-validation.test.mjs` | 219 | PASS | 25ms |
 | `content-validation.test.mjs` | 125 | PASS | 31ms |
 | `build.test.mjs` | 129 | PASS | — |
 | `security-hardening.test.mjs` | 28 | PASS | — |
@@ -1921,16 +1927,16 @@ Issue #127 対応後の実測（全ブランチ共通）:
 
 `CF_PAGES_BRANCH=main npx vitest run` / `CF_PAGES_BRANCH=staging npx vitest run` でも同じ 754 passed（旧版の main・staging 別表は Issue #127 で不要になった）。
 
-Issue #117 項目2/12 により `build.test.mjs` 111→113、`fuzz-validation.test.mjs` 215→216。Vitest 合計 635→638。Bug #51再発防止（SEC-35、`cms-config.test.mjs`に環境固有ファイルの実ブランチ整合性検証を追加）によりVitest合計は **feature ブランチ 639件／main・staging 642件**（差の3件はSEC-35のブランチ別テスト登録による。既存テストへの影響はない）。Issue #117 hardening 対応で `security-hardening.test.mjs` 28件と `build.test.mjs` 1件（SEC-36）を追加し、**feature ブランチ 668件／main・staging 671件**。Issue #132（SEC-40）で `dependency-freshness.test.mjs` 27件を追加し **feature ブランチ 695件／main・staging 698件**。Issue #127 で `env-derivation.test.mjs` 37件、`build.test.mjs` 15件（114→129）を追加し、`cms-config.test.mjs` の SEC-35 を 1件（feature）／4件（main・staging）から全ブランチ共通5件へ改訂（56→60）。**全ブランチ 751件**。
+Issue #117 項目2/12 により `build.test.mjs` 111→113、`fuzz-validation.test.mjs` 215→216。Vitest 合計 635→638。Bug #51再発防止（SEC-35、`cms-config.test.mjs`に環境固有ファイルの実ブランチ整合性検証を追加）によりVitest合計は **feature ブランチ 639件／main・staging 642件**（差の3件はSEC-35のブランチ別テスト登録による。既存テストへの影響はない）。Issue #117 hardening 対応で `security-hardening.test.mjs` 28件と `build.test.mjs` 1件（SEC-36）を追加し、**feature ブランチ 668件／main・staging 671件**。Issue #132（SEC-40）で `dependency-freshness.test.mjs` 27件を追加し **feature ブランチ 695件／main・staging 698件**。Issue #127 で `env-derivation.test.mjs` 37件、`build.test.mjs` 15件（114→129）を追加し、`cms-config.test.mjs` の SEC-35 を 1件（feature）／4件（main・staging）から全ブランチ共通5件へ改訂（56→60）。**全ブランチ 751件**。SEC-41対応で `fuzz-validation.test.mjs` にCSP運用時の違反検知3件を追加し、全ブランチ共通 **754件**。
 
 ### 4.3.3 E2Eテスト最新実行結果（Playwright）
 
 | 項目 | 結果 |
 | :--- | :--- |
-| 実行日時 | 2026-09-20（Bug #50 再発防止後の全件再実行） |
+| 実行日時 | 2026-09-23（main向け統合候補、権限付きローカルwebServer起動） |
 | Playwright バージョン | v1.58.2 |
-| 実行時間 | 16.3m |
-| 合否判定 | **合格**（445 PASS, 8 skip / 453テスト）|
+| 実行時間 | 14.3m |
+| 合否判定 | **合格**（457 PASS, 8 skip / 465テスト）|
 
 | テストファイル | PC | iPad | iPhone | 合計 |
 | :--- | :--- | :--- | :--- | :--- |
@@ -1942,7 +1948,8 @@ Issue #117 項目2/12 により `build.test.mjs` 111→113、`fuzz-validation.te
 | `accessibility.spec.ts`（E-25〜E-27） | 6 PASS | 6 PASS | 6 PASS | 18 |
 | `cms-exploratory.spec.ts`（E-37, E-39〜E-43） | 12 PASS | 12 PASS | 12 PASS | 36 |
 | `app-info.spec.ts`（E-46） | 3 PASS | 3 PASS | 3 PASS | 9 |
-| **合計** | **146 PASS, 5 skip** | **148 PASS, 3 skip** | **151 PASS** | **445 PASS, 8 skip** |
+| `cms-env-branch.spec.ts`（E-47） | 4 PASS | 4 PASS | 4 PASS | 12 |
+| **合計** | **150 PASS, 5 skip** | **152 PASS, 3 skip** | **155 PASS** | **457 PASS, 8 skip** |
 
 **スキップ内訳**: E-34のボトムシート・codeblock・URLバーはPC/iPadでskip、CMSタップ領域はPCのみskip。E-21公開サイトタッチ領域はPCのみskip。合計8件skip。
 
@@ -1974,4 +1981,4 @@ Issue #117 項目2/12 により `build.test.mjs` 111→113、`fuzz-validation.te
 
 ### 2026-09-20 セキュリティIssue #109〜#113対応完了
 
-Vitest 622 passed（全PASS）。SEC-27（オリジン許可リスト）、SEC-22（Cache-Control全レスポンス適用）、SEC-25（ピクセル上限パラメータ整合性）、SEC-28（公開ページCSPメタタグ）の検証を含む。全E2E 445 passed / 8 skipped（453テスト）。
+Vitest 622 passed（全PASS）。SEC-27（オリジン許可リスト）、SEC-22（Cache-Control全レスポンス適用）、SEC-25（ピクセル上限パラメータ整合性）、SEC-28（公開ページCSPメタタグ）の検証を含む。全E2E 457 passed / 8 skipped（465テスト）。
