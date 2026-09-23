@@ -1,9 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync } from 'fs';
 import { join } from 'path';
-import { execSync } from 'child_process';
 import yaml from 'js-yaml';
 import { parseFrontmatter } from '../scripts/lib/safe-frontmatter.mjs'; // Bug #52: gray-matter を直接呼ばない
+import { loadResolveCmsBackend, locationOf, effectiveBackend } from './lib/cms-env-loader.mjs';
+import { PRODUCTION_SITE_URL, STAGING_SITE_URL } from '../src/lib/site-env.mjs';
 
 const configPath = join(process.cwd(), 'public/admin/config.yml');
 const configRaw = readFileSync(configPath, 'utf-8');
@@ -17,54 +18,16 @@ try {
 const docPath = join(process.cwd(), 'docs/DOCUMENTATION.md');
 const docContent = readFileSync(docPath, 'utf-8');
 
-const astroConfigPath = join(process.cwd(), 'astro.config.mjs');
-const astroConfigRaw = readFileSync(astroConfigPath, 'utf-8');
-const robotsPath = join(process.cwd(), 'public/robots.txt');
-const robotsRaw = readFileSync(robotsPath, 'utf-8');
-
-/**
- * 現在のブランチを判定する（Bug #51再発防止）。
- * Base.astro は本番ビルド時のみ利用可能な CF_PAGES_BRANCH のみで判定しているが、
- * このテストはローカル・CI（GitHub Actions）双方で実行されるため、
- * Cloudflare Pages > GitHub Actions > ローカルgit の優先順でフォールバックする。
- * GitHub Actions の pull_request イベントでは GITHUB_REF_NAME が `<PR番号>/merge` になり
- * main/staging と一致しないが、その場合は意図的に「ブランチ判定不能」側（内部整合のみ検証）に倒す。
- */
-function getCurrentBranch() {
-  if (process.env.CF_PAGES_BRANCH) return process.env.CF_PAGES_BRANCH;
-  if (process.env.GITHUB_REF_NAME) return process.env.GITHUB_REF_NAME;
-  try {
-    return execSync('git rev-parse --abbrev-ref HEAD', { cwd: process.cwd() })
-      .toString()
-      .trim();
-  } catch {
-    return null;
-  }
-}
-
-const currentBranch = getCurrentBranch();
-
-function extractSiteUrl(content) {
-  const m = content.match(/const SITE_URL = '([^']+)'/);
-  return m ? m[1] : null;
-}
-
-const siteUrl = extractSiteUrl(astroConfigRaw);
-
-const ENV_EXPECTATIONS = {
-  main: {
-    base_url: 'https://reiwa.casa',
-    siteUrl: 'https://reiwa.casa',
-    robotsRequired: /Allow:\s*\//,
-    robotsForbidden: /Disallow:\s*\//,
-  },
-  staging: {
-    base_url: 'https://staging.reiwa.casa',
-    siteUrl: 'https://staging.reiwa.casa',
-    robotsRequired: /Disallow:\s*\//,
-    robotsForbidden: /Allow:\s*\//,
-  },
-};
+// Issue #127: backend.branch / base_url は config.yml に置かず、admin/index.html が
+// /admin/cms-env.js の resolveCmsBackend(location) で導出して CMS.init に渡す（config.yml の上に deepmerge）。
+// 以下のテストは「config.yml + 実行時導出値」の実効設定を検証する。
+const resolveCmsBackend = loadResolveCmsBackend();
+const HOST_SAMPLES = [
+  'https://reiwa.casa/admin/',
+  'https://staging.reiwa.casa/admin/',
+  'https://abc123.my-blog-3cg.pages.dev/admin/',
+  'http://localhost:4173/admin/',
+];
 
 describe('CMS設定（config.yml）の検証', () => {
   describe('バックエンド設定', () => {
@@ -77,20 +40,28 @@ describe('CMS設定（config.yml）の検証', () => {
       expect(config.backend.repo).toBe('bickojima/my-blog');
     });
 
-    it('ブランチが有効な値に設定されている', () => {
-      expect(['main', 'staging']).toContain(config.backend.branch);
+    // Issue #127 で書き換え: 旧テストは config.yml の backend.branch が main/staging か見ていた。
+    // branch は config.yml から削除したため、実行時に導出される実効値で同じ性質を検証する。
+    it('ブランチが有効な値に設定されている（実行時導出の実効値が main/staging のいずれか）', () => {
+      for (const url of HOST_SAMPLES) {
+        const eff = effectiveBackend(config, resolveCmsBackend(locationOf(url)));
+        expect(['main', 'staging'], url).toContain(eff.branch);
+      }
     });
 
     it('認証エンドポイントが設定されている', () => {
       expect(config.backend.auth_endpoint).toBe('/auth');
     });
 
-    it('base_urlがブランチに対応するURLに設定されている', () => {
-      const expectedUrls = {
-        main: 'https://reiwa.casa',
-        staging: 'https://staging.reiwa.casa',
-      };
-      expect(config.backend.base_url).toBe(expectedUrls[config.backend.branch]);
+    // Issue #127 で書き換え: 旧テストは config.yml 内の branch と base_url の対応を見ていた。
+    // 両方とも実行時導出になったため、本番/staging ホストでの実効値の対応で同じ性質を検証する。
+    it('base_urlがブランチに対応するURLに設定されている（本番ホスト=main+本番URL、stagingホスト=staging+staging URL）', () => {
+      const prod = effectiveBackend(config, resolveCmsBackend(locationOf(PRODUCTION_SITE_URL + '/admin/')));
+      expect(prod.branch).toBe('main');
+      expect(prod.base_url).toBe(PRODUCTION_SITE_URL);
+      const stg = effectiveBackend(config, resolveCmsBackend(locationOf(STAGING_SITE_URL + '/admin/')));
+      expect(stg.branch).toBe('staging');
+      expect(stg.base_url).toBe(STAGING_SITE_URL);
     });
   });
 
@@ -393,12 +364,17 @@ describe('CMS設定（config.yml）の検証', () => {
 describe('基本機能保護テスト（FR-15〜FR-19）', () => {
   describe('コンテンツ保存・公開の前提条件（FR-15）', () => {
     it('backend設定に保存に必要な全フィールドが存在する', () => {
-      // 保存操作に必要な5つのフィールドが全て設定されていること
-      expect(config.backend.name).toBeDefined();
-      expect(config.backend.repo).toBeDefined();
-      expect(config.backend.branch).toBeDefined();
-      expect(config.backend.base_url).toBeDefined();
-      expect(config.backend.auth_endpoint).toBeDefined();
+      // 保存操作に必要な5つのフィールドが全て設定されていること。
+      // Issue #127: branch / base_url は config.yml ではなく CMS.init で渡す実行時導出値のため、
+      // config.yml と deepmerge した実効設定で検証する（どのホストでも欠けないこと）。
+      for (const url of HOST_SAMPLES) {
+        const eff = effectiveBackend(config, resolveCmsBackend(locationOf(url)));
+        expect(eff.name, url).toBeDefined();
+        expect(eff.repo, url).toBeDefined();
+        expect(eff.branch, url).toBeDefined();
+        expect(eff.base_url, url).toBeDefined();
+        expect(eff.auth_endpoint, url).toBeDefined();
+      }
     });
   });
 
@@ -468,48 +444,33 @@ describe('要件トレーサビリティ検証', () => {
   });
 });
 
-describe('環境固有ファイルの実ブランチ整合性検証（SEC-35, Bug #51再発防止）', () => {
-  // Bug #51: staging環境で config.yml(branch/base_url)・astro.config.mjs(SITE_URL)・robots.txt の
-  // 4項目が「互いに整合」していても、その揃った値がmainマージの副作用で丸ごとmain値に
-  // 上書きされたため、内部整合チェックだけでは事故を検出できなかった（staging CMSがmainブランチへ
-  // 直接コミットする状態が21分間発生）。
-  // このテストは「今チェックアウトしているブランチに対して正しい環境の値か」を検証する。
-  if (currentBranch === 'main' || currentBranch === 'staging') {
-    const expected = ENV_EXPECTATIONS[currentBranch];
+describe('環境固有値の導出整合性検証（SEC-35 改訂, Bug #51再発防止, Issue #127）', () => {
+  // Bug #51: config.yml(branch/base_url)・astro.config.mjs(SITE_URL)・robots.txt の4項目が
+  // マージの副作用で丸ごと相手ブランチの値に上書きされた。旧 SEC-35 は「チェックアウト中のブランチに対して
+  // 値が正しいか」を検知していたが、CI の pull_request では GITHUB_REF_NAME が `NNN/merge` になり
+  // 判定不能側（内部整合のみ）に倒れ、修正もしなかった。
+  // Issue #127 で4項目をファイルから消し、ビルド時（CF_PAGES_BRANCH）・実行時（location）に導出する構造へ変えたため、
+  // ここでは「どのブランチ・どのホストでも導出結果が正しい」ことを、ブランチに依存しない同じテスト集合で検証する
+  // （テスト件数が main / staging / feature で変わらない）。ファイル差分を置かない静的ガードは env-derivation.test.mjs。
+  const EXPECTED = [
+    // [CMS を開くホストの URL, 期待する書き込み先ブランチ]
+    [PRODUCTION_SITE_URL + '/admin/', 'main'],
+    [STAGING_SITE_URL + '/admin/', 'staging'],
+    ['https://my-blog-3cg.pages.dev/admin/', 'staging'],
+    ['http://localhost:4321/admin/', 'staging'],
+  ];
 
-    it(`現在のブランチ（${currentBranch}）に対してconfig.ymlのbranchが一致する`, () => {
-      expect(config.backend.branch).toBe(currentBranch);
-    });
-
-    it(`現在のブランチ（${currentBranch}）に対してconfig.ymlのbase_urlが一致する`, () => {
-      expect(config.backend.base_url).toBe(expected.base_url);
-    });
-
-    it(`現在のブランチ（${currentBranch}）に対してastro.config.mjsのSITE_URLが一致する`, () => {
-      expect(siteUrl).toBe(expected.siteUrl);
-    });
-
-    it(`現在のブランチ（${currentBranch}）に対してpublic/robots.txtのクロール方針が一致する`, () => {
-      expect(robotsRaw).toMatch(expected.robotsRequired);
-      expect(robotsRaw).not.toMatch(expected.robotsForbidden);
-    });
-  } else {
-    // feature/* 等はmain起点・staging起点どちらもあり得るため絶対値は検証しない。
-    // ブランチが判定できない場合（CI の pull_request イベント等）も同様に扱う。
-    // 代わりに、config.yml・astro.config.mjs・robots.txt の3ファイルが
-    // 同一環境（staging寄りかmain寄りか）を指しているという内部整合のみ検証する。
-    it('ブランチをmain/stagingと判定できない場合はconfig.yml・SITE_URL・robots.txtが同一環境を指す', () => {
-      const isStagingByConfig = config.backend.branch === 'staging';
-      const isStagingBySiteUrl = siteUrl === ENV_EXPECTATIONS.staging.siteUrl;
-      const isStagingByRobots = ENV_EXPECTATIONS.staging.robotsRequired.test(robotsRaw)
-        && !ENV_EXPECTATIONS.staging.robotsForbidden.test(robotsRaw);
-
-      expect(
-        config.backend.base_url,
-        'config.ymlのbranchとbase_urlが不一致'
-      ).toBe(isStagingByConfig ? ENV_EXPECTATIONS.staging.base_url : ENV_EXPECTATIONS.main.base_url);
-      expect(isStagingBySiteUrl, 'astro.config.mjsのSITE_URLがconfig.ymlのbranchと不一致').toBe(isStagingByConfig);
-      expect(isStagingByRobots, 'robots.txtの方針がconfig.ymlのbranchと不一致').toBe(isStagingByConfig);
+  for (const [url, branch] of EXPECTED) {
+    it(`${new URL(url).host} で開いた CMS の実効 backend は branch=${branch}・base_url=配信オリジン`, () => {
+      const loc = locationOf(url);
+      const eff = effectiveBackend(config, resolveCmsBackend(loc));
+      expect(eff.branch).toBe(branch);
+      expect(eff.base_url).toBe(loc.origin);
     });
   }
+
+  it('config.yml 単体には branch / base_url が無い（マージで持ち込まれる環境値を置かない）', () => {
+    expect(config.backend.branch).toBeUndefined();
+    expect(config.backend.base_url).toBeUndefined();
+  });
 });

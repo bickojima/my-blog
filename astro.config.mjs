@@ -5,10 +5,12 @@ import { unified } from '@astrojs/markdown-remark';
 import rehypeImageCaption from './src/plugins/rehype-image-caption.mjs';
 import rehypeFocusableCodeBlocks from './src/plugins/rehype-focusable-code-blocks.mjs';
 import imageOptimize from './src/integrations/image-optimize.mjs';
+import { resolveSiteUrl } from './src/lib/site-env.mjs';
 
-// site/sitemapのfilterはbranchごとに手動管理する（config.ymlのbase_url/branchと同じ方針）。
-// staging: https://staging.reiwa.casa / main: https://reiwa.casa（マージ時に手動修正。DOCUMENTATION.md 4.6.4章参照）
-const SITE_URL = 'https://staging.reiwa.casa';
+// Issue #127: サイトURLは Cloudflare Pages のビルド環境変数 CF_PAGES_BRANCH から導出する。
+// main のときだけ本番URL、それ以外（staging・プレビュー・ローカル・CI）は staging URL。
+// このファイルは main / staging で同一内容に保つ（ブランチ別の値をここに書かない。DOCUMENTATION.md 4.6.4章）。
+const SITE_URL = resolveSiteUrl(process.env.CF_PAGES_BRANCH);
 
 // https://astro.build/config
 export default defineConfig({
