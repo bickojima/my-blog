@@ -81,7 +81,7 @@ tests/
 - アップロード時にcanvasでEXIF正規化、ビルド時にsharp `.rotate()` で二重保証
 
 ### CMS管理画面 (admin/index.html)
-- Decap CMS v3.16.2 をDOM操作でカスタマイズ（単一MutationObserver、RAFデバウンス済み、単一IIFE、'use strict'/const/let統一）
+- Decap CMS v3.16.3 をDOM操作でカスタマイズ（単一MutationObserver、RAFデバウンス済み、単一IIFE、'use strict'/const/let統一）
 - モバイル: ドロップダウンは `position: fixed; bottom: 0` のボトムシート形式
 - プレビュースタイル: `CMS.registerPreviewStyle()` で本番サイト相当のCSSをプレビューiframeに注入
 - 主要JS関数: `addSiteLink`, `formatCollectionEntries`, `relabelImageButtons`, `updateDeleteButtonState`, `showPublicUrl`, `manageDropdownOverlay`, `hideCodeBlockOnMobile`, `activateDefaultGrouping`, `reverseViewGroups`, `formatGroupHeadings`, `createMonthSelector`, `restrictImageInputAccept`

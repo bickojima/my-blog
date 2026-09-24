@@ -19,8 +19,8 @@ const ROOT = process.cwd();
 const FIXTURES = join(ROOT, 'tests/fixtures/dependency-freshness');
 const fixture = (name) => JSON.parse(readFileSync(join(FIXTURES, name), 'utf8'));
 const config = loadConfig();
-const DECAP_URL = 'https://unpkg.com/decap-cms@3.16.2/dist/decap-cms.js';
-const DECAP_SRI = 'sha384-tbnFsiSBvMm2vOLu70Mx7HlnMj6kXxR0Tdo0USlY9564mb1AyMnIdCjOZ738PWPr';
+const DECAP_URL = 'https://unpkg.com/decap-cms@3.16.3/dist/decap-cms.js';
+const DECAP_SRI = 'sha384-A/Gdn928CNLufmnGWGs9RM4Q9o8bSNLeJERqBFrBjwzL7FRpoLT3MPF8Tl0+Wd2p';
 const SHA = 'a'.repeat(40);
 
 /** フィクスチャ判定用の合成インベントリ（実ファイルの内容に依存しない） */
@@ -31,8 +31,8 @@ function syntheticInventory(overrides = {}) {
       { file: '.github/workflows/x.yml', line: 1, action: 'actions/checkout', repo: 'actions/checkout', ref: SHA, isSha: true, versionComment: 'v7.0.1' },
     ],
     nodeSources: [
-      { source: '.nvmrc', kind: 'version-file', value: '22.12.0', major: 22 },
-      { source: 'package.json#engines.node', kind: 'engines', value: '>=22.12.0', major: 22 },
+      { source: '.nvmrc', kind: 'version-file', value: '22.23.3', major: 22 },
+      { source: 'package.json#engines.node', kind: 'engines', value: '>=22.23.3', major: 22 },
     ],
     manualChecks: [{ id: 'pages', name: 'Pages', current: 'v3', lastReviewed: '2026-09-01', how: 'dashboard' }],
     ...overrides,
@@ -53,7 +53,7 @@ afterAll(() => {
 describe('npm管理外依存 鮮度・EOL監視（SEC-40, Issue #132）', () => {
   describe('バージョン・SRI の基本関数', () => {
     it('正確な x.y.z だけを固定バージョンとして解釈する', () => {
-      expect(parseExactSemver('3.16.2')).toEqual({ major: 3, minor: 16, patch: 2 });
+      expect(parseExactSemver('3.16.3')).toEqual({ major: 3, minor: 16, patch: 3 });
       expect(parseExactSemver('v4.2.1')).toEqual({ major: 4, minor: 2, patch: 1 });
       expect(parseExactSemver('^3.16.2')).toBeNull();
       expect(parseExactSemver('3.16')).toBeNull();
@@ -61,12 +61,12 @@ describe('npm管理外依存 鮮度・EOL監視（SEC-40, Issue #132）', () => 
     });
 
     it('固定版と最新版の差を major / minor / patch / same に分類する', () => {
-      expect(compareVersions('3.16.2', '3.16.2').diff).toBe('same');
+      expect(compareVersions('3.16.3', '3.16.3').diff).toBe('same');
       expect(compareVersions('3.16.2', '3.16.3').diff).toBe('patch');
-      expect(compareVersions('3.10.0', '3.16.2')).toEqual({ diff: 'minor', minorsBehind: 6 });
-      expect(compareVersions('3.16.2', '4.0.0').diff).toBe('major');
-      expect(compareVersions('3.16.2', '3.15.0').diff).toBe('ahead');
-      expect(compareVersions('latest', '3.16.2').diff).toBe('unknown');
+      expect(compareVersions('3.10.0', '3.16.3')).toEqual({ diff: 'minor', minorsBehind: 6 });
+      expect(compareVersions('3.16.3', '4.0.0').diff).toBe('major');
+      expect(compareVersions('3.16.3', '3.15.0').diff).toBe('ahead');
+      expect(compareVersions('latest', '3.16.3').diff).toBe('unknown');
     });
 
     it('integrity 属性を分解し最も強いアルゴリズムで照合する', () => {
@@ -94,7 +94,7 @@ describe('npm管理外依存 鮮度・EOL監視（SEC-40, Issue #132）', () => 
 
   describe('ファイル内容の解析', () => {
     it('CDN URL から npm パッケージ名とバージョンを取り出す', () => {
-      expect(parseCdnUrl(DECAP_URL)).toMatchObject({ host: 'unpkg.com', pkg: 'decap-cms', version: '3.16.2' });
+      expect(parseCdnUrl(DECAP_URL)).toMatchObject({ host: 'unpkg.com', pkg: 'decap-cms', version: '3.16.3' });
       expect(parseCdnUrl('https://cdn.jsdelivr.net/npm/@scope/pkg@1.2.3/dist/x.js')).toMatchObject({ pkg: '@scope/pkg', version: '1.2.3' });
       expect(parseCdnUrl('https://unpkg.com/decap-cms/dist/decap-cms.js')).toMatchObject({ pkg: 'decap-cms', version: null });
       expect(parseCdnUrl('https://example.com/lib.js')).toMatchObject({ host: 'example.com', pkg: null });
@@ -176,7 +176,7 @@ describe('npm管理外依存 鮮度・EOL監視（SEC-40, Issue #132）', () => 
       const inv = syntheticInventory({
         actions: [{ file: 'ci.yml', line: 1, action: 'actions/setup-node', repo: 'actions/setup-node', ref: 'v4', isSha: false, versionComment: null }],
         nodeSources: [
-          { source: '.nvmrc', kind: 'version-file', value: '22.12.0', major: 22 },
+          { source: '.nvmrc', kind: 'version-file', value: '22.23.3', major: 22 },
           { source: 'ci.yml:3', kind: 'node-version', value: '24', major: 24 },
         ],
         manualChecks: [

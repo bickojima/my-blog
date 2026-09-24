@@ -68,6 +68,9 @@
 | 1.60 | 2026-09-24 | SEC-42 の回帰テストを追加（`commit-identities.test.mjs` 8件）。PR差分と通常push差分のみを検査し、force-pushまたはbefore SHA不在時は新HEAD全履歴を検査すること、tbi/bickojima/GitHub/Dependabotの許可tuple、author/committer両方の拒否、拒否値の非出力を検証。CI workflowのSHA range wiringを静的確認。 |
 | 1.61 | 2026-09-24 | SEC-42 identity gate実装後に `npm test` を実行し、既存754件＋新規回帰8件の計762件PASSを確認。個別実行 `npx vitest run tests/commit-identities.test.mjs` も8/8 PASS。 |
 
+
+| 1.62 | 2026-09-24 | Issue #153: Decap CMS 3.16.3 / Node.js 22.23.3対応。dependency freshnessの期待値更新、T07/T50実データ読込アサーション、Bug #54再発防止を追加。既存754件にSEC-42 identity gate 8件を含む現行Vitest 762件。包括E2Eは強化条件で150/150 PASS、T07/T50はタイトル・本文を目視確認。初回誤PASSは記録し無効扱い。QA: `docs/qa-2026-09-24-issue153.md`。
+
 ## テスト基盤の変更履歴
 
 | 時期 | 主な変更 | 関連PR |
@@ -189,7 +192,7 @@
 | :--- | :--- |
 | テストフレームワーク | Vitest v4.0.18 |
 | テストランナー | `vitest run`（CI）/ `vitest`（ウォッチ） |
-| Node.js | v22.12.0以上 |
+| Node.js | v22.23.3以上 |
 | OS | macOS / Linux（Cloudflare Pages ビルド環境） |
 
 ### 1.3.2 テストファイル構成
@@ -1416,7 +1419,7 @@ SEC-40（Issue #132）。`scripts/check-dependency-freshness.mjs` の純関数�
 | No. | テストケース | テスト手法 | 期待結果 |
 | :--- | :--- | :--- | :--- |
 | 1 | 正確な x.y.z だけを固定バージョンとして解釈する | M-02 | `^3.16.2` / `3.16` は null |
-| 2 | 固定版と最新版の差を major / minor / patch / same に分類する | M-02 | 3.10.0→3.16.2 は minor 6 遅れ |
+| 2 | 固定版と最新版の差を major / minor / patch / same に分類する | M-02 | 3.10.0→3.16.3 は minor 6 遅れ |
 | 3 | integrity 属性を分解し最も強いアルゴリズムで照合する | M-02 | sha256/384/512 混在時は sha512 を採用 |
 | 4 | computeSri は openssl dgst -sha384 -binary \| base64 と同じ値を返す | M-02 | `abc` の既知ダイジェストと一致 |
 | 5 | EOL は 90日前 warning / 30日前 alert / 経過で alert | M-02 | 境界日付で ok→warning→alert |
@@ -1595,7 +1598,7 @@ OAuthモック＋GitHub APIモックを使い、CMS管理画面を実際に操�
 | No. | テストケース | 検証内容 | テスト手法 |
 | :--- | :--- | :--- | :--- |
 | E-28 | 記事作成の実操作 | タイトル・本文入力→保存ボタンクリック、日付フィールド入力可能、Git blob作成API呼び出し検証 | モック/フォーム操作/API検証 |
-| E-29 | 記事編集の実操作 | 既存記事タイトル変更、本文テキスト追加、保存ボタン状態変化 | モック/フォーム操作 |
+| E-29 | 記事編集の実操作 | 既存記事タイトルと本文の読込を必須確認後、実操作でタイトル変更、本文テキスト追加、保存ボタン状態を確認（Bug #54再発防止） | モック/フォーム操作 |
 | E-30 | UIインタラクション検証 | サイトリンク表示・クリック可能、コレクション切り替え、公開URLバー表示・URL内容、新規作成ボタン、ツールバー重なりなし、URLバーとエディタ重なりなし | モック/動作検証/レイアウト検証 |
 | E-31 | コレクション一覧エントリー表示 | 日付バッジフォーマット（YYYY-MM-DD）、バッジスタイル適用、エントリークリックでエディタ遷移 | モック/動作検証 |
 | E-32 | 画面遷移の整合性 | エディタ→コレクション戻りリンク動作、往復ナビゲーションでUI状態リセット、ブラウザ戻る・進む | モック/動作検証 |
@@ -2005,7 +2008,7 @@ Issue #117 項目2/12 により `build.test.mjs` 111→113、`fuzz-validation.te
 | 項目 | 結果 |
 | :--- | :--- |
 | 対象 | 2026-09-24のfrozen refsから作成した隔離candidate-2（25 heads、467 commits） |
-| 全体テスト | Vitest 754/754 PASS、Playwright 457 PASS・8 skip / 465 |
+| 全体テスト | Vitest 762/762 PASS、Playwright 457 PASS・8 skip / 465 |
 | branch別build | `CF_PAGES_BRANCH=main` はrobots Allow・canonical/sitemap本番URL、`staging` はrobots Disallow・sitemap行なし・canonical/sitemap staging URL。両方のbuildでVitest 625/625、CMS env生成、config.ymlのbranch/base_url不在を確認 |
 | アーカイブ索引 | 1,519 entry、許可5 fieldのみ。`node scripts/validate-evidence-archive-index.mjs` PASS |
 | 履歴検証 | 移行対象694 unique blobは書き換え後のheadsから0 reachable、evidence外alias 0。Drive move 1,395 path/blob pair、Git keep 123 pair。redacted JSONは新blobで保持 |
@@ -2031,9 +2034,23 @@ Issue #117 項目2/12 により `build.test.mjs` 111→113、`fuzz-validation.te
 | ゲートの適用限界 | PR経路はマージ前に検査する。main/stagingにブランチ保護がない現状では、直接pushは受理後にCIが検知する。ブランチ保護は今回設定せず、履歴修復force-push完了後に別途検討する。 |
 
 
+### 4.3.8 Issue #153 CMS / Node.js 更新検証
+
+| 項目 | 結果 |
+| :--- | :--- |
+| Node.js | 22.23.3（`.nvmrc` と一致） |
+| CMS配布物 | Decap CMS 3.16.3。CDN JS SHA-384とSRI一致 |
+| Vitest | `npm test`: 762/762 PASS（12 files） |
+| Build | `npm run build`: gate 633/633 PASS、Astro 20ページ、画像最適化完了 |
+| Playwright | `npm run test:e2e`: 457 PASS / 8 skip（465件）。E-29既存記事のタイトル・本文読込と実編集をPASS |
+| 包括E2E | PC/iPad/iPhoneで150/150 PASS。T07/T50は実クリック後の既存タイトル・本文をassert |
+| 画面証跡 | 145枚の注釈不足0枚。iPhone T10/T36は認証後にfocused再撮影し2/2 PASS。Drive bundle readback SHA-256一致 |
+| Cloudflare Pages runtime | ダッシュボード認証がなく、Pages build logの実Nodeバージョンは未確認。workflow_dispatchもstaging実行待ち |
+
 ---
 
-**最終更新**: 2026年9月24日（v1.61）
+**最終更新**: 2026年9月24日（v1.62）
+
 
 ### 2026-09-20 セキュリティIssue #109〜#113対応完了
 

@@ -5,7 +5,7 @@
 // 本番 main へ直接コミットする状態が約21分間発生）。config.yml からこの2項目を削除し、
 // admin/index.html が CMS_MANUAL_INIT + CMS.init({ config: { backend: ... } }) で渡す。
 // Decap は config.yml の上に init の config を deepmerge し、init 側が優先される
-// （3.16.2 の配布物で `deepmerge(loadedYaml, manualConfig)` を確認済み）。
+// （3.16.3 の配布物で `deepmerge(loadedYaml, manualConfig)` を確認済み）。
 //
 // 判定方針（安全側の既定）:
 // - 書き込み先が main になるのは、ホスト名が本番ホスト名と「完全一致」したときだけ。

@@ -1,0 +1,14 @@
+{
+  "reviewStatus": "invalid-as-editor-data-evidence",
+  "initialSummary": {
+    "reported": "150/150 PASS",
+    "actualEditorData": "T07/T50 were empty despite editor navigation; do not treat as successful content-load verification"
+  },
+  "observed": {
+    "browserWarning": "Unrecognized front-matter format",
+    "request": "/git/trees/staging:src/content/posts/2026/02",
+    "cause": "The evidence Git Trees mock did not decode nested paths or return paths relative to the requested subtree, so the selected entry blob was not resolved."
+  },
+  "correction": "Use repository-root paths in fixture data, decode API paths and return direct children relative to the requested tree; require the selected existing article title and body to be visible after a real click.",
+  "recheck": "Fixed the Git Trees fixture and strengthened T07/T50 assertions; the complete 3-device run passed 150/150 with real title/body values. After a red-frame audit found iPhone T10/T36 lacked annotations, both were authenticated and reshot in a focused run (2/2 PASS); final audit found 145/145 screenshots annotated."
+}
