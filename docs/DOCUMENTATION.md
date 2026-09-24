@@ -80,8 +80,7 @@
 | 1.73 | 2026-09-24 | #90/#131 履歴移行計画と証跡アーカイブを4.2.6章に追加。公開索引のスキーマ、SHA-256復元確認、バックアップbundle、PR refsの制約と残余リスクを記録。`.gitignore` に画像・動画・PDF・trace・ZIP・report.html/work-completion-report.html を追加し、必須HTMLレポートはDrive正本としてreadback SHA-256検証後に索引へ登録、JSONと検証scriptはGit保持する運用を明記。
 | 1.74 | 2026-09-24 | #90/#131 の25 heads履歴更新を実施。old-OID lease付きatomic push、143/143 refs一致、main/staging CIとfresh clone fsck成功、Cloudflare production/stagingのread-only確認を記録。118 read-only PR refsは残存し、完全消去とは扱わない。TEST-REPORT 4.3.6 と履歴監査文書を更新。
 | 1.75 | 2026-09-24 | CLAUDE.md・TEST-REPORT.mdに残っていた旧エビデンス保存記述（`report.html`/`work-completion-report.html`をコミット・プッシュする前提の記述）を4.2.6章のDrive正本方針に統一。4.9.2章のエビデンス構成表と4.10.3章のフォルダ構成図にGit保持対象／Drive正本対象の区別を明記。2026-09-24の履歴書換え時点で既にGit管理下にあった14件（`work-completion-report.html` 13件、`report.html` 1件）は`evidence/archive-index.json`で`storage_class: "git"`登録済みの例外として当面Gitに残す方針を明文化（新規作成分はDrive正本を適用）。テスト件数変更なし。 |
-| 1.76 | 2026-09-24 | Issue #152 の再発防止として SEC-42 を追加。main/staging に入る新規コミットの author/committer を PR 差分・push 差分で検査し、force-push と before SHA 不在時は新HEAD全履歴を検査する。PRはマージ前に検査されるが、main/stagingのブランチ保護は未設定のため直接pushは受理後のCI検知となる。履歴修復force-push完了後にrequired status checks等のブランチ保護を別Issueで検討する。Dependabot botの許可identityと、拒否値をログへ出さない挙動を含む。
-
+| 1.76 | 2026-09-24 | Issue #152 の再発防止として SEC-42 を追加。main/staging に入る新規コミットの author/committer を PR 差分・push 差分で検査し、force-push と before SHA 不在時は新HEAD全履歴を検査する。PRはマージ前に検査されるが、main/stagingのブランチ保護は未設定のため直接pushは受理後のCI検知となる。履歴修復force-push完了後にrequired status checks等のブランチ保護を別Issueで検討する。Dependabot botの許可identityと、拒否値をログへ出さない挙動を含む。 |
 ## システム変更履歴
 
 PR履歴に基づく主要なシステム変更の記録である。

@@ -65,8 +65,8 @@
 | 1.57 | 2026-09-23 | Issue #127/#130 実測更新: Vitest 754件（fuzz 219件）、Playwright 457 PASS + 8 skip / 465。2.5章を2.5.1〜2.5.13順に整理し、2.10節を第3部前へ移動。包括E2Eの件数は50シナリオID×3デバイス=150検証と訂正。staging実配信の包括E2Eは端末別50/50 PASS。
 | 1.58 | 2026-09-24 | #90/#131 履歴移行の完了結果を追記。25 headsをold-OID lease付きatomic pushで更新（exit 0）、live refs 143/143一致。main/staging CI PASS、新規clone `git fsck` PASS（pack 40.14 MiB）、Pages read-only確認を記録。118 read-only PR refsは残存。公開証跡索引 validator を追加。
 | 1.59 | 2026-09-24 | 1.6.4章・4.1.6章に残っていた旧エビデンス保存記述（`report.html`/スクリーンショットをコミット前提の記述）をDrive正本方針（DOCUMENTATION.md 4.2.6章・4.10.3章）に統一。Git保持対象（検証JSON・`verify-*.mjs`・索引・小さな非レポートHTML）とDrive正本対象（画像・動画・PDF・`report.html`系）の区別を明記。テスト件数変更なし。 |
-| 1.60 | 2026-09-24 | SEC-42 の回帰テストを追加（`commit-identities.test.mjs` 8件）。PR差分と通常push差分のみを検査し、force-pushまたはbefore SHA不在時は新HEAD全履歴を検査すること、tbi/bickojima/GitHub/Dependabotの許可tuple、author/committer両方の拒否、拒否値の非出力を検証。CI workflowのSHA range wiringを静的確認。
-| 1.61 | 2026-09-24 | SEC-42 identity gate実装後に `npm test` を実行し、既存754件＋新規回帰8件の計762件PASSを確認。個別実行 `npx vitest run tests/commit-identities.test.mjs` も8/8 PASS。
+| 1.60 | 2026-09-24 | SEC-42 の回帰テストを追加（`commit-identities.test.mjs` 8件）。PR差分と通常push差分のみを検査し、force-pushまたはbefore SHA不在時は新HEAD全履歴を検査すること、tbi/bickojima/GitHub/Dependabotの許可tuple、author/committer両方の拒否、拒否値の非出力を検証。CI workflowのSHA range wiringを静的確認。 |
+| 1.61 | 2026-09-24 | SEC-42 identity gate実装後に `npm test` を実行し、既存754件＋新規回帰8件の計762件PASSを確認。個別実行 `npx vitest run tests/commit-identities.test.mjs` も8/8 PASS。 |
 
 ## テスト基盤の変更履歴
 
@@ -92,7 +92,32 @@
 
 ---
 
-# 第3部 要件トレーサビリティ
+## 目次
+
+### 第1部 テスト計画書
+
+1.1. [テスト目的](#11-テスト目的)
+1.2. [テスト対象・範囲](#12-テスト対象範囲)
+1.3. [テスト環境](#13-テスト環境)
+1.4. [テスト手法](#14-テスト手法)
+1.5. [テスト分類と戦略](#15-テスト分類と戦略)
+1.6. [開始基準・終了基準](#16-開始基準終了基準)
+
+### 第2部 テストケース一覧
+
+2.1. [コンテンツ検証](#21-コンテンツ検証)
+2.2. [rehype-image-caption プラグイン](#22-rehype-image-caption-プラグイン)
+2.3. [OAuth認証関数](#23-oauth認証関数)
+2.4. [CMS設定検証](#24-cms設定検証)
+2.5. [ビルド検証](#25-ビルド検証)
+2.6. [管理画面HTML検証](#26-管理画面html検証)
+2.7. [ファズテスト・不整合値テスト](#27-ファズテスト不整合値テスト-fuzz-validationtestmjs-219件)
+2.8. [Issue #117 hardening 再発防止](#28-issue-117-hardening-再発防止-security-hardeningtestmjs-28件)
+2.9. [npm管理外依存の鮮度・EOL監視](#29-npm管理外依存の鮮度eol監視-dependency-freshnesstestmjs--27件)
+2.10. [環境値の導出](#210-環境値の導出-env-derivationtestmjs-37件)
+2.11. [Git commit identity gate](#211-git-commit-identity-gate-commit-identitiestestmjs--8件)
+
+### 第3部 要件トレーサビリティ
 
 3.1. [要件トレーサビリティマトリクス](#31-要件トレーサビリティマトリクス)
 
@@ -1992,6 +2017,8 @@ Issue #117 項目2/12 により `build.test.mjs` 111→113、`fuzz-validation.te
 | Pages postflight | rootによるproduction/staging read-only確認でrobots、canonical/sitemap、CMS環境値を確認。実配信がブランチ別に正しい |
 | E2E起動記録 | 非昇格の初回起動はlisten EPERMでテスト開始前に終了し、テスト失敗には数えない。許可されたローカルwebServer起動条件で再実行し全件を完了 |
 
+公開索引の形式検証は [`scripts/validate-evidence-archive-index.mjs`](../scripts/validate-evidence-archive-index.mjs)、集約結果は [`docs/history-migration-2026-09-24.md`](../docs/history-migration-2026-09-24.md) に記録する。非公開Drive IDや共有URLはGitへ含めない。
+
 ### 4.3.7 Issue #152 SEC-42 identity gate 検証
 
 | 項目 | 結果 |
@@ -2003,8 +2030,6 @@ Issue #117 項目2/12 により `build.test.mjs` 111→113、`fuzz-validation.te
 | CI | staging向け PR #156 `test-and-build`: PASS |
 | ゲートの適用限界 | PR経路はマージ前に検査する。main/stagingにブランチ保護がない現状では、直接pushは受理後にCIが検知する。ブランチ保護は今回設定せず、履歴修復force-push完了後に別途検討する。 |
 
-
-公開索引の形式検証は [`scripts/validate-evidence-archive-index.mjs`](../scripts/validate-evidence-archive-index.mjs)、集約結果は [`docs/history-migration-2026-09-24.md`](../docs/history-migration-2026-09-24.md) に記録する。非公開Drive IDや共有URLはGitへ含めない。
 
 ---
 
