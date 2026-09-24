@@ -71,6 +71,7 @@
 
 | 1.62 | 2026-09-24 | Issue #153: Decap CMS 3.16.3 / Node.js 22.23.3対応。dependency freshnessの期待値更新、T07/T50実データ読込アサーション、Bug #54再発防止を追加。既存754件にSEC-42 identity gate 8件を含む現行Vitest 762件。包括E2Eは強化条件で150/150 PASS、T07/T50はタイトル・本文を目視確認。初回誤PASSは記録し無効扱い。QA: `docs/qa-2026-09-24-issue153.md`。
 | 1.63 | 2026-09-24 | Issue #153の続き（Bug #55）: Node.js 22.23.3はCloudflare Pagesのnode-build未対応でstagingビルドが失敗したため22.23.2へ戻し、SEC-40のdependency-freshness判定に猶予期間`nodePatchGraceDays`（既定14日）を追加。`dependency-freshness.test.mjs`に固定日付フィクスチャの回帰テスト3件（猶予内/猶予超過/公開日未取得）を追加し2.9章を27件→30件に更新。既存762件に3件を加えた現行Vitest 765件（全ブランチ共通）。QA: `docs/qa-2026-09-24-issue153-pages-nodebuild.md`。
+| 1.64 | 2026-09-24 | Issue #154完了。Cloudflare Pages ビルド環境の残っていた未確認項目（Build system version 等）をユーザーがダッシュボードのスクリーンショットで確認し、`scripts/dependency-freshness.config.json` の手動確認項目を全て`reviewed`に更新（`unverified`空）。`node scripts/check-dependency-freshness.mjs`実行で対象項目が`MANUAL_PARTIAL`を出さず`MANUAL_REVIEWED`になることを確認。2.9章 No.14の説明を実設定の確認状況に合わせて更新（テストコード・テストケース数の変更なし、フィクスチャは合成`unverified`のまま）。`CF_PAGES_BRANCH=staging`・`CF_PAGES_BRANCH=main`両方でVitest 765件全PASSを再確認。テスト件数変更なし。QA: `docs/qa-2026-09-24-issue154-pages-build-env.md`。
 
 ## テスト基盤の変更履歴
 
@@ -1432,7 +1433,7 @@ SEC-40（Issue #132）。`scripts/check-dependency-freshness.mjs` の純関数�
 | 11 | Issue #132 の実例（3.10.0 で 6 マイナー遅れ）は alert、2 マイナー遅れは warning | M-07 | `CDN_MINOR_DRIFT` / `CDN_UPDATE_AVAILABLE` |
 | 12 | integrity 欠落・範囲指定バージョンは alert（SEC-03 / SEC-12 の退行検知） | M-08 | `SRI_MISSING` / `CDN_VERSION_NOT_EXACT` |
 | 13 | タグ固定の action・未記録／期限超過の手動確認・Node メジャー不一致は warning | M-07 | 総合 warning |
-| 14 | 手動確認が期限内でも未確認項目が残れば warning、全て確認済みなら manual | M-07 | `MANUAL_PARTIAL`（Pages のビルドイメージ・NODE_VERSION 未確認の記録に対応） |
+| 14 | 手動確認が期限内でも未確認項目が残れば warning、全て確認済みなら manual | M-07 | `MANUAL_PARTIAL`（フィクスチャの合成 `unverified` で検証。実設定の Pages ビルドイメージ・NODE_VERSION は Issue #154 で全項目 `reviewed` 済み、`unverified` は空） |
 | 15 | リモート照会が全て失敗したら ok ではなく error（exit 1） | M-08 | status=error、success=false |
 | 16 | 結果 JSON は schemaVersion・status・counts・items・problems を持ち、Markdown はセル内の \| をエスケープする | M-02 | JSON 契約と Markdown 表の安全性 |
 | 17 | CLI 引数を検証する | M-08 | 不正な `--fail-on` / 未知引数は例外 |
@@ -2054,7 +2055,7 @@ Issue #117 項目2/12 により `build.test.mjs` 111→113、`fuzz-validation.te
 
 ---
 
-**最終更新**: 2026年9月24日（v1.62）
+**最終更新**: 2026年9月24日（v1.64）
 
 
 ### 2026-09-20 セキュリティIssue #109〜#113対応完了

@@ -35,6 +35,7 @@ Astro + Decap CMS によるブログサイト。Cloudflare Pages でホスティ
 | 1.26 | 2026-09-24 | #90/#131 履歴移行完了: 大容量エビデンスをDriveへ退避し、公開索引・復元方針を整備。25 headsをatomic更新し、refs/CI/fresh clone/Pages postflightを確認。118 read-only PR refsの残存を明記 |
 | 1.27 | 2026-09-24 | Issue #153: Decap CMS 3.16.3 と Node.js 22.23.3 へ更新（SRI再計算、監視fixture・仕様書更新）。T07/T50の既存データ表示を必須化し、3デバイス包括E2E 150/150 PASS。Vitest 762、E2E 465 |
 | 1.28 | 2026-09-24 | Bug #55: Node.js 22.23.3 は公開直後で Cloudflare Pages の node-build (asdf) に定義が無く、staging の Pages ビルドが `node-build: definition not found` で失敗した。`.nvmrc`・`engines` を node-build に定義済みの `22.23.2` へ戻し、依存鮮度チェック（SEC-40）に猶予期間（`nodePatchGraceDays: 14`日）を追加して公開直後のパッチを追従不要と誤判定しないようにした。Vitest 762→765 |
+| 1.29 | 2026-09-24 | Issue #154: Cloudflare Pages ビルド環境の残っていた未確認項目（Build system version 等）をダッシュボードのスクリーンショットで確認し、`scripts/dependency-freshness.config.json` の手動確認項目を全て `reviewed` に更新（`unverified` 空）。依存鮮度チェック実行で該当項目の warning が解消したことを確認。Vitest 765件（変更なし） |
 
 詳細なシステム変更履歴は [DOCUMENTATION.md](docs/DOCUMENTATION.md) を参照。
 
