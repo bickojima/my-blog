@@ -86,6 +86,8 @@
 
 | 1.78 | 2026-09-24 | Issue #153の続き（Issue #154関連情報を含む）。PR #157で `.nvmrc`/`engines` を22.23.3へ更新後、Cloudflare Pagesのstagingビルドが `node-build: definition not found: 22.23.3` で失敗（node-buildが公開直後のパッチに未対応）。Bug #55として5 Whysを4.5章へ追記し、`.nvmrc`・`engines`をnode-build定義済みの22.23.2へ戻した（Decap CMS 3.16.3は維持）。再発防止としてSEC-40の判定ロジック（`scripts/check-dependency-freshness.mjs`）に猶予期間`nodePatchGraceDays`（既定14日）を追加し、Node.js最新パッチの公開から猶予日数未満は`NODE_PATCH_BEHIND`ではなく情報用の`NODE_PATCH_TOO_NEW`にする改訂を行った（判定テストはフィクスチャの固定日付のみでネットワーク非依存）。1.4.2章SEC-40の説明、2.2.1章の技術一覧、4.5章バグ一覧、4.11.1章棚卸し表、4.11.2章判定ルール、4.11.5章更新手順を更新。Cloudflare Pagesのビルドログ（2026-09-24）から`NODE_VERSION`環境変数が未設定（`.nvmrc`を使用）であることを確認し`scripts/dependency-freshness.config.json`の手動確認項目に記録（Build system versionは引き続き未確認、Issue #154でフォロー）。Vitest 762→765件（fixture 3件追加）。QA: `docs/qa-2026-09-24-issue153-pages-nodebuild.md`。
 
+| 1.79 | 2026-09-24 | Issue #154完了。2026-09-24にCloudflareダッシュボードのスクリーンショットで、残っていた未確認項目（Build system version）を含むPagesビルド環境の全項目を確認: Build system version **Version 3**、Build command `npm run build`、Build output `dist`、Root directory 未設定（空）、Build comments Enabled、Build cache Disabled、Production branch `main`、Automatic deployments Enabled、Build watch paths `*`。`scripts/dependency-freshness.config.json`の手動確認項目を全て`reviewed`に記録し`unverified`を空配列にした（`lastReviewed: 2026-09-24`）。`node scripts/check-dependency-freshness.mjs`を実行し`MANUAL_PARTIAL`警告が解消（`MANUAL_REVIEWED`のみ）したことを確認。次回の手動確認は`manualReviewIntervalDays`（既定92日、四半期）以内に実施する運用を明記。2.5.1章のデプロイ設定表・4.11.1章棚卸し表・4.11.5章更新手順を更新。`CF_PAGES_BRANCH=staging`・`CF_PAGES_BRANCH=main`の両方でVitest全件PASSを確認（765件、件数変更なし）。QA: `docs/qa-2026-09-24-issue154-pages-build-env.md`。
+
 ## システム変更履歴
 
 PR履歴に基づく主要なシステム変更の記録である。
@@ -1163,10 +1165,14 @@ GitHub Settings > Developer settings > OAuth Apps で環境ごとに個別のア
 | :--- | :--- |
 | プロジェクト名 | `my-blog` |
 | フレームワーク | Astro |
+| Build system version | Version 3（2026-09-24 ダッシュボードのスクリーンショットで確認、Issue #154） |
 | ビルドコマンド | `npm run build` |
 | 出力ディレクトリ | `dist` |
-| ルートディレクトリ | `/` |
-| Node.js バージョン | 22.23.2以上（`.nvmrc`・`package.json` engines ともに 22.23.2 を指定。CI は Node 22 の最新パッチを使用）。2026-09-23公開の22.23.3はCloudflare Pagesのnode-build (asdf)に定義が無くビルド失敗したため22.23.2に固定（Bug #55）。Cloudflare Pages の build image は未確認、`NODE_VERSION` は2026-09-24のビルドログで未設定（`.nvmrc`を使用）と確認済み（4.11章の四半期手動確認で記録） |
+| ルートディレクトリ | 未設定（空）（2026-09-24 確認） |
+| Build comments | Enabled（2026-09-24 確認） |
+| Build cache | Disabled（2026-09-24 確認） |
+| Build watch paths | `*`（2026-09-24 確認） |
+| Node.js バージョン | 22.23.2以上（`.nvmrc`・`package.json` engines ともに 22.23.2 を指定。CI は Node 22 の最新パッチを使用）。2026-09-23公開の22.23.3はCloudflare Pagesのnode-build (asdf)に定義が無くビルド失敗したため22.23.2に固定（Bug #55）。`NODE_VERSION` は2026-09-24のビルドログで未設定（`.nvmrc`を使用）と確認済み。Build system version を含むビルド環境の手動確認項目はすべて確認済み（Issue #154、4.11章の四半期手動確認で記録） |
 
 #### テストゲート（Issue #128）
 
@@ -2553,7 +2559,7 @@ SEC-40（Issue #132）。`npm audit` と Dependabot は npm 依存グラフと G
 | GitHub Actions `actions/setup-node` | v4.4.0（`ci.yml`）／v7.0.0（`dependency-freshness.yml`） | 同上 | 同上 | 同上 | 同上 | 週次＋Dependabot |
 | GitHub Actions `actions/upload-artifact` / `actions/download-artifact` | v7.0.1 / v8.0.1 | commit SHA＋バージョンコメント（`dependency-freshness.yml`） | 同上 | 同上 | 同上 | 週次＋Dependabot |
 | Node.js | 22 系（`.nvmrc` 22.23.2、`engines` `>=22.23.2`、CI `node-version: '22'`、週次ジョブは `.nvmrc`）。2026-09-23公開の22.23.3はCloudflare Pagesのnode-build未対応でPagesビルドが失敗したため22.23.2で据え置き（Bug #55） | `.nvmrc`（Cloudflare Pages とローカル）・`package.json` engines・CI | endoflife.date `api/v1/products/nodejs` の該当サイクル `latest`／`latest.date`（公開日、猶予判定に使用） | endoflife.date（Node.js 公式リリーススケジュール）。22 系は 2027-04-30 EOL。加えて node-build（asdf、Cloudflare Pages が使用）の定義有無を https://github.com/nodenv/node-build/tree/master/share/node-build で確認する（自動判定対象外、`.nvmrc` 更新前の手動確認） | 4.11.5章 | 週次（node-build 定義確認は `.nvmrc` 更新の都度、手動） |
-| Cloudflare Pages ビルドイメージ・`NODE_VERSION` | 2026-09-23 ダッシュボード確認: Build command `npm run build`、Build output `dist`、Production branch `main`。2026-09-24のビルドログで `NODE_VERSION` は**未設定**（`.nvmrc` の値を使用）と確認。**ビルドイメージのバージョン（Build system version）のみ未確認**（2.5.1章の記載値は v3） | ダッシュボード設定（API 未連携）・Pages ビルドログ | Cloudflare ダッシュボード Settings > Build、デプロイログ | Cloudflare Pages Build image ドキュメント（旧イメージの廃止告知） | 4.11.5章。確認後に `scripts/dependency-freshness.config.json` の `lastReviewed`・`reviewed`・`unverified` を更新 | 四半期の手動確認（期限超過・未記録・`unverified` 残存で warning） |
+| Cloudflare Pages ビルドイメージ・`NODE_VERSION` | 2026-09-24 ダッシュボードのスクリーンショットで全項目確認済み（Issue #154）: Build system version **Version 3**、Build command `npm run build`、Build output `dist`、Root directory 未設定（空）、Build comments Enabled、Build cache Disabled、Production branch `main`、Automatic deployments Enabled、Build watch paths `*`。同日のビルドログで `NODE_VERSION` は**未設定**（`.nvmrc` の値を使用）と確認。`unverified` 項目なし | ダッシュボード設定（API 未連携）・Pages ビルドログ | Cloudflare ダッシュボード Settings > Build、デプロイログ | Cloudflare Pages Build image ドキュメント（旧イメージの廃止告知） | 4.11.5章。次回確認は `manualReviewIntervalDays`（92日、四半期）以内、またはビルドイメージ変更の告知時に `scripts/dependency-freshness.config.json` の `lastReviewed`・`reviewed`・`unverified` を更新 | 四半期（92日）の手動確認（期限超過・未記録・`unverified` 残存で warning） |
 
 対象外: `https://github.com` / `api.github.com`（OAuth・API のエンドポイントであり依存ライブラリではない）、`wrangler.toml` の `compatibility_date`（Workers の互換性日付で EOL の概念がない）、`skills-lock.json`（開発補助のエージェントスキル。配信物・ビルドに含まれない）、npm パッケージと Playwright ブラウザ（npm 依存として `npm audit` / Dependabot alerts の対象）。
 
@@ -2602,7 +2608,7 @@ Actions のメジャー遅れを alert にしないのは、Dependabot が更新
 - **パッチ更新**（2026-09-24: `.nvmrc` 22.23.3 → 22.23.2、`engines` `>=22.23.2`。Bug #55: 22.23.3はnode-build未対応でstagingのPagesビルドが失敗したため、node-build定義済みの22.23.2に戻した）: `.nvmrc` を更新し、`npm ci`・`npm test`・`npm run build`・`npm run test:e2e` を実行して staging へ。Cloudflare Pages は `.nvmrc` を読むため、デプロイログの Node バージョン表示で反映を確認する。CI は Node 22 の最新パッチを使う `node-version: '22'` のため整合する
 - **メジャー更新**（EOL の 90 日前 warning を起点に計画）: `.nvmrc`、`package.json` の `engines`、`ci.yml` の `node-version` を同時に揃え、Cloudflare Pages の環境変数 `NODE_VERSION`（設定している場合）とビルドイメージの対応バージョンも確認する。宣言箇所の不一致は週次ジョブが `NODE_MAJOR_MISMATCH` として warning にする
 - **ビルドイメージ**: Cloudflare が旧イメージの廃止を告知した場合、または四半期の手動確認時に、ダッシュボードで Build system version を確認・更新し、`scripts/dependency-freshness.config.json` の `current`・`lastReviewed`・`reviewed`・`unverified` を更新する。確認できなかった項目は `unverified` に残し、warning として表示し続ける
-- **手動確認記録**: 2026-09-23 にダッシュボードで Build command `npm run build`・Build output `dist`・Production branch `main` を確認（`lastReviewed: 2026-09-23`）。2026-09-24 に Cloudflare Pages のビルドログ（PR #157 のstagingビルド失敗ログ）で `Build environment variables: (none found)` を確認し、`NODE_VERSION` は未設定（`.nvmrc` を使用）と判明したため `reviewed` に記録（`lastReviewed: 2026-09-24`）。ビルドイメージのバージョン（Build system version）は引き続きダッシュボード認証が得られず未確認のため `unverified` に残し、次回確認まで warning（`MANUAL_PARTIAL`）。Issue #154 でフォロー
+- **手動確認記録（Issue #154 完了）**: 2026-09-23 にダッシュボードで Build command `npm run build`・Build output `dist`・Production branch `main` を確認（`lastReviewed: 2026-09-23`）。2026-09-24 に Cloudflare Pages のビルドログ（PR #157 のstagingビルド失敗ログ）で `Build environment variables: (none found)` を確認し、`NODE_VERSION` は未設定（`.nvmrc` を使用）と判明。同じく2026-09-24にダッシュボードのスクリーンショットで残りの未確認項目（Build system version）を含む全項目を確認した: Build system version **Version 3**、Build command `npm run build`、Build output `dist`、Root directory 未設定（空）、Build comments Enabled、Build cache Disabled、Production branch `main`、Automatic deployments Enabled、Build watch paths `*`。`scripts/dependency-freshness.config.json` の `reviewed` に全項目を記録し `unverified` を空配列にした（`lastReviewed: 2026-09-24`）。`node scripts/check-dependency-freshness.mjs` を実行し、この項目が `MANUAL_PARTIAL` を出さず `MANUAL_REVIEWED`（`status: manual`）になることを確認した。次回の手動確認は `manualReviewIntervalDays`（既定92日、四半期）以内に実施する
 
 ### 4.11.6 Dependabot・npm audit との役割分担
 
@@ -2620,4 +2626,4 @@ Actions のメジャー遅れを alert にしないのは、Dependabot が更新
 
 ---
 
-**最終更新**: 2026年9月24日（v1.77）
+**最終更新**: 2026年9月24日（v1.79）
