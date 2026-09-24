@@ -80,7 +80,7 @@
 | 1.73 | 2026-09-24 | #90/#131 履歴移行計画と証跡アーカイブを4.2.6章に追加。公開索引のスキーマ、SHA-256復元確認、バックアップbundle、PR refsの制約と残余リスクを記録。`.gitignore` に画像・動画・PDF・trace・ZIP・report.html/work-completion-report.html を追加し、必須HTMLレポートはDrive正本としてreadback SHA-256検証後に索引へ登録、JSONと検証scriptはGit保持する運用を明記。
 | 1.74 | 2026-09-24 | #90/#131 の25 heads履歴更新を実施。old-OID lease付きatomic push、143/143 refs一致、main/staging CIとfresh clone fsck成功、Cloudflare production/stagingのread-only確認を記録。118 read-only PR refsは残存し、完全消去とは扱わない。TEST-REPORT 4.3.6 と履歴監査文書を更新。
 | 1.75 | 2026-09-24 | CLAUDE.md・TEST-REPORT.mdに残っていた旧エビデンス保存記述（`report.html`/`work-completion-report.html`をコミット・プッシュする前提の記述）を4.2.6章のDrive正本方針に統一。4.9.2章のエビデンス構成表と4.10.3章のフォルダ構成図にGit保持対象／Drive正本対象の区別を明記。2026-09-24の履歴書換え時点で既にGit管理下にあった14件（`work-completion-report.html` 13件、`report.html` 1件）は`evidence/archive-index.json`で`storage_class: "git"`登録済みの例外として当面Gitに残す方針を明文化（新規作成分はDrive正本を適用）。テスト件数変更なし。 |
-| 1.76 | 2026-09-24 | Issue #152 の再発防止として SEC-42 を追加。main/staging に入る新規コミットの author/committer を PR 差分・push 差分で検査し、force-push と before SHA 不在時は新HEAD全履歴を検査する。Dependabot bot の許可 identity と、拒否値をログへ出さない挙動を含む。
+| 1.76 | 2026-09-24 | Issue #152 の再発防止として SEC-42 を追加。main/staging に入る新規コミットの author/committer を PR 差分・push 差分で検査し、force-push と before SHA 不在時は新HEAD全履歴を検査する。PRはマージ前に検査されるが、main/stagingのブランチ保護は未設定のため直接pushは受理後のCI検知となる。履歴修復force-push完了後にrequired status checks等のブランチ保護を別Issueで検討する。Dependabot botの許可identityと、拒否値をログへ出さない挙動を含む。
 
 ## システム変更履歴
 
@@ -691,7 +691,7 @@ robots.txtは`src/pages/robots.txt.ts`がビルド時に生成し、`CF_PAGES_BR
 | SEC-39 | `<script>` 埋め込み値の JSON.stringify リテラル化 | security-hardening, fuzz-validation, auth-functions | `<script> 埋め込み値は JSON.stringify リテラルで出力する（SEC-39, Issue #117 項目10）`（12件）、fuzz-validation `トークンのエスケープ検証`（挙動検証へ強化）、E2E エビデンス H03 | M-02 | 充足 |
 | SEC-40 | npm管理外依存の鮮度・EOL監視 | dependency-freshness | TEST-REPORT 2.9章 #1〜#27（判定ロジックはフィクスチャ、実ファイル棚卸し、週次ワークフローの権限・SHA 固定・通知分岐、Dependabot 設定）。ネットワーク実行と alert/error 経路の dry-run は `evidence/2026-09-23/issue132/` | M-02, M-07, M-08, M-12 | 充足 |
 | SEC-41 | 管理画面CSPで外部解析ビーコンを許可しない | fuzz-validation, E2E evidence | fuzz-validationのSEC-41検証3件、実ホストE2E `evidence/2026-09-23/issue130-review/`（production/staging×3端末、ユーザー操作、mock保存branch） | M-02, M-03 | 対象操作の範囲で充足 |
-| SEC-42 | 新規コミット author/committer allowlist | commit-identities | TEST-REPORT 2.11章 #1〜#8（差分限定、force-push全履歴、許可bot、拒否値の非出力） | M-02, Git実行テスト | 充足 |
+| SEC-42 | 新規コミット author/committer allowlist | commit-identities | TEST-REPORT 2.11章 #1〜#8（差分限定、force-push全履歴、許可bot、拒否値の非出力）。PRはマージ前検査、ブランチ保護未設定のため直接pushは受理後検知 | M-02, Git実行テスト | 充足（CI検査。push拒否を保証しない） |
 | SEC-127A（仮ID） | 環境固有値をファイルに置かない | env-derivation | `main / staging で環境固有ファイルに差分を置かない静的ガード（SEC-35 改訂, Bug #51・Issue #127）`（7件: config.yml に branch/base_url・環境URLなし、public/robots.txt なし・エンドポイント生成、SITE_URL 非リテラル、CMS_MANUAL_INIT と cms-env.js の読込順、CMS.init 1回、cms-env.js の URL 非保持・strict）、両方向マージ実証 `evidence/2026-09-23/issue127/merge-demo.md` | M-02, M-03 | 充足 |
 
 **充足状況: FR-01〜FR-29, CMS-01〜CMS-19, NFR-01〜NFR-08, SEC-01〜SEC-42, SEC-127A（仮ID）はテストで充足されている。SEC-41は実ホストで検証した操作範囲を対象とする。未テスト要件は0件。**
@@ -2210,14 +2210,14 @@ git履歴に個人情報（氏名・メールアドレス）が含まれてい�
 | 2 | pre-commit hook | `.git/hooks/pre-commit` でauthor emailとステージファイル内容を検査し、個人情報パターン検出時にコミットを拒否 | ローカルコミット |
 | 3 | CLAUDE.md ルール9 | Claude Codeが個人情報をコード・ドキュメント・コミットに含めないルールを明文化 | AI支援開発 |
 | 4 | GitHub noreply設定 | GitHubアカウントの「Keep my email addresses private」を有効化し、CMS経由のコミットにも個人メールが使われないようにする | CMS経由コミット |
-| 5 | CI identity gate（SEC-42） | PRのbase..headとmain/staging pushのbefore..headを検査し、不許可identityがあれば失敗させる。force-pushまたはbefore SHA不在時は新HEAD全履歴を検査する | main/stagingに入る新規コミット |
+| 5 | CI identity gate（SEC-42） | PRのbase..headとmain/staging pushのbefore..headを検査し、不許可identityがあればジョブを失敗させる。force-pushまたはbefore SHA不在時は新HEAD全履歴を検査する。ブランチ保護未設定の現状では直接push後の検知となる | main/stagingに入る新規コミット |
 
 ### 4.8.3 pre-commit hook の検査内容
 
 1. **author email検査**: `git config user.email` が個人メールパターン（gmail.com, yahoo.co.jp, hotmail等）に該当する場合、コミットを拒否
 2. **ステージファイル内容検査**: ステージされたテキストファイル内に特定の個人情報パターンが含まれる場合、コミットを拒否
 
-**注意**: `.git/hooks/` はgit管理外のため、リポジトリをクローンした場合はhookを再設定する必要がある。CIのSEC-42ゲートはGitHub操作にも適用され、通常はPR差分またはpush差分だけを調べる。force-push、およびbefore SHAを取得できない場合は新HEADの全履歴を検査する。過去のPR refsは対象外とする。
+**注意**: `.git/hooks/` はgit管理外のため、リポジトリをクローンした場合はhookを再設定する必要がある。SEC-42はPR差分またはpush差分をCIで検査し、force-push、およびbefore SHAを取得できない場合は新HEADの全履歴を検査する。PRはマージ前にチェックされるが、main/stagingにブランチ保護がない限り直接pushはGitHubに受理された後でCIが失敗するだけであり、pushを拒否しない。履歴修復force-push完了前はブランチ保護を有効化せず、完了後にrequired status checks等を別Issueで検討する。過去のPR refsは対象外とする。
 
 ## 4.9. 動作確認エビデンス取得
 

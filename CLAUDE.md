@@ -242,7 +242,7 @@ DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を�
 - **frontmatter は `scripts/lib/safe-frontmatter.mjs` 経由で解析する**（scripts だけでなく tests/・E2E も同じ。gray-matter を直接呼ばない。`npm run build` は organize-posts より先に Vitest を実行するため、テストも同じ経路になる。`language: 'yaml'` 指定だけでは `---js` の eval を防げない。Bug #52）
 - **OAuth オリジン許可リストは `functions/_shared/allowed-origin.js` だけで管理する**（SEC-37）。コールバック HTML への値の埋め込みは `toScriptStringLiteral()`（JSON.stringify ベース、SEC-39）を使い、応答 CSP は `frame-ancestors`/`form-action`/`base-uri` まで自己完結させる（SEC-38。Functions の応答には `_headers` が適用されない）
 - **GitHub Actions は commit SHA で固定し `# vX.Y.Z` を併記する**（SEC-36）
-- **main/staging に入る新規 commit の author と committer はCIで許可リスト検査する**（SEC-42）。PRはbase..head、通常pushはbefore..headを対象にする。force-pushまたはbefore SHA不在時は新HEAD全履歴を検査し、拒否ログにauthor/email値を出さない。Dependabot bot は固定tupleで許可する
+- **main/staging に入る新規 commit の author と committer はCIで許可リスト検査する**（SEC-42）。PRはマージ前にbase..headを検査し、push eventはbefore..headを検査する。main/stagingにブランチ保護がない現状では直接pushは受理後の検知となるため、履歴修復force-push完了後にrequired status checks等の保護設定を別途検討する。force-pushまたはbefore SHA不在時は新HEAD全履歴を検査し、拒否ログにauthor/email値を出さない。Dependabot bot は固定tupleで許可する
 - Issue #117 の hardening 項目の判定（実装・対応不要・#127移管）は `docs/security/issue-117-hardening-decisions.md` を参照
 - `npm run build` はビルド前に自動でテスト実行（build.test.mjs以外）。テスト失敗時はビルド中断
 - CDN `<script src="...">` タグは必ず `</script>` で閉じる（閉じタグ欠落で後続スクリプトが飲み込まれる）
