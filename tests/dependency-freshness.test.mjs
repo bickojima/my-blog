@@ -165,6 +165,53 @@ describe('npm管理外依存 鮮度・EOL監視（SEC-40, Issue #132）', () => 
       expect(mk('3.14.0').status).toBe('warning');
     });
 
+    it('Issue #153/#154, Bug #55: Node.js最新パッチの公開から猶予期間（14日）未満は NODE_PATCH_BEHIND を出さず NODE_PATCH_TOO_NEW にする', () => {
+      const remote = fixture('remote-ok.json');
+      const inv = syntheticInventory({
+        nodeSources: [
+          { source: '.nvmrc', kind: 'version-file', value: '22.23.2', major: 22 },
+          { source: 'package.json#engines.node', kind: 'engines', value: '>=22.23.2', major: 22 },
+        ],
+      });
+      const withRelease = (latest, latestDate) => ({
+        ...remote,
+        endoflife: { nodejs: { releases: [{ name: '22', isLts: true, isEol: false, eolFrom: '2027-04-30', latest, latestDate }] } },
+      });
+      // 2026-09-23 公開の 22.23.3（実例: Issue #153）。判定時刻 now は同じ 2026-09-23 なので 0 日後 = 猶予内。
+      const recent = evaluateInventory(inv, withRelease('22.23.3', '2026-09-23'), { now, config });
+      expect(codes(recent)).toContain('ok:NODE_PATCH_TOO_NEW');
+      expect(codes(recent)).not.toContain('warning:NODE_PATCH_BEHIND');
+    });
+
+    it('Issue #153/#154, Bug #55: 猶予期間（14日）を超えた古い固定パッチは引き続き NODE_PATCH_BEHIND になる', () => {
+      const remote = fixture('remote-ok.json');
+      const inv = syntheticInventory({
+        nodeSources: [
+          { source: '.nvmrc', kind: 'version-file', value: '22.23.2', major: 22 },
+          { source: 'package.json#engines.node', kind: 'engines', value: '>=22.23.2', major: 22 },
+        ],
+      });
+      // 2026-08-01 公開（now=2026-09-23 との差は 14 日を大きく超える）なら猶予対象にしない。
+      const stale = evaluateInventory(inv, {
+        ...remote,
+        endoflife: { nodejs: { releases: [{ name: '22', isLts: true, isEol: false, eolFrom: '2027-04-30', latest: '22.23.3', latestDate: '2026-08-01' }] } },
+      }, { now, config });
+      expect(codes(stale)).toContain('warning:NODE_PATCH_BEHIND');
+      expect(codes(stale)).not.toContain('ok:NODE_PATCH_TOO_NEW');
+    });
+
+    it('Node.js 最新パッチの公開日が取得できない場合は猶予を適用せず従来どおり NODE_PATCH_BEHIND にする', () => {
+      const remote = fixture('remote-ok.json');
+      const inv = syntheticInventory({
+        nodeSources: [{ source: '.nvmrc', kind: 'version-file', value: '22.23.2', major: 22 }],
+      });
+      const noDate = evaluateInventory(inv, {
+        ...remote,
+        endoflife: { nodejs: { releases: [{ name: '22', isLts: true, isEol: false, eolFrom: '2027-04-30', latest: '22.23.3', latestDate: null }] } },
+      }, { now, config });
+      expect(codes(noDate)).toContain('warning:NODE_PATCH_BEHIND');
+    });
+
     it('integrity 欠落・範囲指定バージョンは alert（SEC-03 / SEC-12 の退行検知）', () => {
       const url = 'https://unpkg.com/decap-cms@^3.16.2/dist/decap-cms.js';
       const inv = syntheticInventory({ cdn: [{ file: 'a', line: 1, url, integrity: null, ...parseCdnUrl(url) }] });

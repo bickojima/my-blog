@@ -1,11 +1,12 @@
 {
-  "$comment": "npm管理外依存の鮮度・EOL監視（SEC-40, Issue #132）の設定。閾値の根拠と運用手順は docs/DOCUMENTATION.md 4.11章を参照。",
+  "$comment": "npm管理外依存の鮮度・EOL監視（SEC-40, Issue #132）の設定。閾値の根拠と運用手順は docs/DOCUMENTATION.md 4.11章を参照。thresholds.nodePatchGraceDays（Issue #153/#154, Bug #55）: Node.js公式リリース直後はCloudflare Pagesのnode-build(asdf)定義がまだ無いことがある（2026-09-23公開の22.23.3が該当し、Pagesビルドが`node-build: definition not found`で失敗した）。公開からこの日数未満の最新パッチはNODE_PATCH_BEHINDの対象から外し、NODE_PATCH_TOO_NEWとして情報記録のみにする。",
   "thresholds": {
     "eolWarnDays": 90,
     "eolAlertDays": 30,
     "cdnMinorAlert": 3,
     "upstreamStaleDays": 365,
-    "manualReviewIntervalDays": 92
+    "manualReviewIntervalDays": 92,
+    "nodePatchGraceDays": 14
   },
   "scan": {
     "cdnRoots": ["public", "src"],
@@ -17,11 +18,11 @@
     {
       "id": "cloudflare-pages-build-image",
       "name": "Cloudflare Pages ビルドイメージ・環境変数 NODE_VERSION",
-      "current": "Build command `npm run build`、Build output `dist`、Production branch `main`（2026-09-23 ダッシュボードで確認）。ビルドイメージのバージョンと NODE_VERSION は未確認（設計書 2.5.1章の記載値は v3）",
-      "lastReviewed": "2026-09-23",
-      "reviewed": ["Build command: npm run build", "Build output directory: dist", "Production branch: main"],
-      "unverified": ["ビルドイメージ（Build system version）", "環境変数 NODE_VERSION の有無・値"],
-      "how": "Cloudflare ダッシュボード > Workers & Pages > my-blog > Settings > Build で Build system version と環境変数 NODE_VERSION の有無を確認し、.nvmrc と同じメジャーでビルドされていることをデプロイログの Node バージョン表示で確認する。確認後に lastReviewed を更新する",
+      "current": "Build command `npm run build`、Build output `dist`、Production branch `main`（2026-09-23 ダッシュボードで確認）。2026-09-24 のビルドログ（Issue #153/#154, PR #157 の Pages ビルド失敗ログ）で `Build environment variables: (none found)` を確認し、`NODE_VERSION` は未設定（`.nvmrc` の値がそのまま使われる）と判明。ビルドイメージのバージョン（Build system version）は未確認（設計書 2.5.1章の記載値は v3）",
+      "lastReviewed": "2026-09-24",
+      "reviewed": ["Build command: npm run build", "Build output directory: dist", "Production branch: main", "NODE_VERSION: 未設定（.nvmrc を使用、2026-09-24 ビルドログで確認）"],
+      "unverified": ["ビルドイメージ（Build system version）"],
+      "how": "Cloudflare ダッシュボード > Workers & Pages > my-blog > Settings > Build で Build system version を確認し、.nvmrc と同じメジャーでビルドされていることをデプロイログの Node バージョン表示で確認する。確認後に lastReviewed を更新する。加えて `.nvmrc` を更新する前に https://github.com/nodenv/node-build/tree/master/share/node-build に該当パッチ版の定義ファイルがあることを確認する（Issue #153/#154, Bug #55: 公開直後の 22.23.3 は node-build 未対応で Pages ビルドが失敗した）",
       "eolSource": "https://developers.cloudflare.com/pages/configuration/build-image/"
     }
   ]
