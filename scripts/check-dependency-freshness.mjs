@@ -303,7 +303,7 @@ export async function fetchRemoteData(inventory, { fetchImpl = fetch, githubToke
   if (inventory.nodeSources.length > 0) {
     try {
       const doc = await fetchJson('https://endoflife.date/api/v1/products/nodejs', { headers: { accept: 'application/json' } }, fetchImpl);
-      remote.endoflife.nodejs = { releases: (doc?.result?.releases || []).map((r) => ({ name: r.name, isLts: r.isLts, isEol: r.isEol, eolFrom: r.eolFrom, latest: r.latest?.name ?? null })) };
+      remote.endoflife.nodejs = { releases: (doc?.result?.releases || []).map((r) => ({ name: r.name, isLts: r.isLts, isEol: r.isEol, eolFrom: r.eolFrom, latest: r.latest?.name ?? null, latestDate: r.latest?.date ?? null })) };
     } catch (error) { remote.endoflife.nodejs = { error: error.message }; }
   }
   return remote;
@@ -409,7 +409,19 @@ function evaluateNode(nodeSources, remote, t, now) {
       for (const src of nodeSources.filter((s) => s.major === major && parseExactSemver(s.value))) {
         const { diff } = compareVersions(src.value, release?.latest);
         if (diff === 'minor' || diff === 'patch') {
-          findings.push(finding('warning', 'NODE_PATCH_BEHIND', `${src.source} の固定版 ${src.value} は ${major} 系最新 ${release.latest} より古い（セキュリティリリース未適用の可能性。Cloudflare Pages は .nvmrc を使う）`));
+          // Issue #153/#154, Bug #55: Node.js公式リリース直後はCloudflare Pagesのnode-build(asdf)に
+          // 定義が無いことがある（22.23.3は公開から追従不能でPagesビルドが失敗した）。最新パッチの公開日から
+          // t.nodePatchGraceDays 未満なら「追従すべき遅れ」ではなく「まだ追従できない新しさ」として扱い、
+          // NODE_PATCH_BEHIND ではなく情報用の NODE_PATCH_TOO_NEW にする。公開日が取得できない場合は
+          // 猶予を適用しない（従来どおり NODE_PATCH_BEHIND）。
+          const graceDays = t.nodePatchGraceDays ?? 0;
+          const daysSinceLatest = release?.latestDate ? Math.floor((now.getTime() - new Date(release.latestDate).getTime()) / 86_400_000) : null;
+          const withinGrace = daysSinceLatest !== null && daysSinceLatest >= 0 && daysSinceLatest < graceDays;
+          if (withinGrace) {
+            findings.push(finding('ok', 'NODE_PATCH_TOO_NEW', `${src.source} の固定版 ${src.value} は ${major} 系最新 ${release.latest}（${release.latestDate} 公開、${daysSinceLatest}日前）より古いが、公開から ${graceDays} 日未満のため Cloudflare Pages の node-build 未対応の可能性がある。追従を見送る（猶予 ${graceDays} 日、Issue #153/#154, Bug #55）`));
+          } else {
+            findings.push(finding('warning', 'NODE_PATCH_BEHIND', `${src.source} の固定版 ${src.value} は ${major} 系最新 ${release.latest} より古い（セキュリティリリース未適用の可能性。Cloudflare Pages は .nvmrc を使う）`));
+          }
         }
       }
     }
@@ -503,7 +515,7 @@ export function renderMarkdown(report) {
     '',
     `- 判定時刻: ${report.generatedAt}（リモート: ${report.remoteSource}）`,
     `- 総合: **${LABEL[report.status] || report.status}**`,
-    `- 閾値: EOL warning ${report.thresholds.eolWarnDays}日前 / alert ${report.thresholds.eolAlertDays}日前、CDN ${report.thresholds.cdnMinorAlert}マイナー遅れで alert、手動確認 ${report.thresholds.manualReviewIntervalDays}日ごと`,
+    `- 閾値: EOL warning ${report.thresholds.eolWarnDays}日前 / alert ${report.thresholds.eolAlertDays}日前、CDN ${report.thresholds.cdnMinorAlert}マイナー遅れで alert、手動確認 ${report.thresholds.manualReviewIntervalDays}日ごと、Node.js最新パッチの追従猶予 ${report.thresholds.nodePatchGraceDays}日`,
     '',
     '| 状態 | 分類 | 名称 | 現在 | 最新 | 固定方法 | 箇所 |',
     '| :--- | :--- | :--- | :--- | :--- | :--- | :--- |',

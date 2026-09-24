@@ -23,7 +23,7 @@
 npm run dev          # 開発サーバー起動（前処理含む）
 npm run build        # テスト必須ビルド（vitest run → normalize-images → organize-posts → astro build → image-optimize）
 npm run build:raw    # テストなしビルド（build.test.mjs内部とGitHub Actions CIで使用。Cloudflare Pagesは使わない）
-npm test             # Vitest 全テスト実行（762テスト、記事数により変動。Issue #127 以降はブランチによって件数が変わらない）
+npm test             # Vitest 全テスト実行（765テスト、記事数により変動。Issue #127 以降はブランチによって件数が変わらない）
 npm run test:watch   # Vitest ウォッチモード
 node scripts/check-dependency-freshness.mjs  # npm管理外依存の鮮度・EOL・SRI判定（ネットワーク必要、SEC-40。週次はGitHub Actions）
 npm run test:e2e     # Playwright E2Eテスト（要: npm run build 済み、465テスト：457実行+8スキップ）
@@ -118,7 +118,7 @@ tests/
 
 ## テスト
 
-- **Vitest**: 設定検証、コンテンツ検証、単体テスト、ビルド統合テスト、セキュリティ検証、ファズテスト、基本機能保護テスト（762テスト、記事数により変動）。`.github/workflows/ci.yml` によりmain/staging/feature/*へのpush・PRで自動実行される（Playwright は含めない）。Issue #127 で SEC-35 のブランチ別テスト登録を廃止したため、feature・main・staging・CI で件数は同じ
+- **Vitest**: 設定検証、コンテンツ検証、単体テスト、ビルド統合テスト、セキュリティ検証、ファズテスト、基本機能保護テスト（765テスト、記事数により変動）。`.github/workflows/ci.yml` によりmain/staging/feature/*へのpush・PRで自動実行される（Playwright は含めない）。Issue #127 で SEC-35 のブランチ別テスト登録を廃止したため、feature・main・staging・CI で件数は同じ
 - **Playwright**: PC/iPad/iPhone 3デバイスで465テスト（457実行+8スキップ、ローカルのみ）。**CI に Playwright は載せない**（実行時間のためローカル運用を継続）。本番（main）マージ前のローカル全件は必須（Bug #50）
 - コンテンツ検証テストは記事数・ページ数に応じて動的展開される
 - テスト実行後、失敗がある場合は原因を調査し修正する（テストを削除・スキップしない）
@@ -273,4 +273,4 @@ DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を�
 - sitemap除外は `astro.config.mjs` の `filter` で行う。**frontmatterとfilterのずれは `build.test.mjs`（FR-29）が検出する**ので、slugを変えたらfilterも直す。
 - 原稿変更時は `tests/e2e/app-info.spec.ts` のソース連動E2E（2ページ×3デバイス）で確認する。
 - **CMSに項目を足さずにフロントマターを増やさない**。Decap CMSは設定にない項目を保存時に落とす。`cms-config.test.mjs` が固定ページの全フロントマター項目とZodスキーマ項目をCMS設定と突き合わせて検出する。
-- 現行テスト定義はVitest 762件（全ブランチ共通。Issue #127 で SEC-35 のブランチ別登録を廃止）、E2E 465件（旧444件＋FR-29 9件＋Issue #127 E-47 12件、457実行+8スキップ）。QAは `docs/qa-2026-09-09-otp-app-pages.md`。
+- 現行テスト定義はVitest 765件（全ブランチ共通。Issue #127 で SEC-35 のブランチ別登録を廃止）、E2E 465件（旧444件＋FR-29 9件＋Issue #127 E-47 12件、457実行+8スキップ）。QAは `docs/qa-2026-09-09-otp-app-pages.md`。

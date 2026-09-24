@@ -70,6 +70,7 @@
 
 
 | 1.62 | 2026-09-24 | Issue #153: Decap CMS 3.16.3 / Node.js 22.23.3対応。dependency freshnessの期待値更新、T07/T50実データ読込アサーション、Bug #54再発防止を追加。既存754件にSEC-42 identity gate 8件を含む現行Vitest 762件。包括E2Eは強化条件で150/150 PASS、T07/T50はタイトル・本文を目視確認。初回誤PASSは記録し無効扱い。QA: `docs/qa-2026-09-24-issue153.md`。
+| 1.63 | 2026-09-24 | Issue #153の続き（Bug #55）: Node.js 22.23.3はCloudflare Pagesのnode-build未対応でstagingビルドが失敗したため22.23.2へ戻し、SEC-40のdependency-freshness判定に猶予期間`nodePatchGraceDays`（既定14日）を追加。`dependency-freshness.test.mjs`に固定日付フィクスチャの回帰テスト3件（猶予内/猶予超過/公開日未取得）を追加し2.9章を27件→30件に更新。既存762件に3件を加えた現行Vitest 765件（全ブランチ共通）。QA: `docs/qa-2026-09-24-issue153-pages-nodebuild.md`。
 
 ## テスト基盤の変更履歴
 
@@ -116,7 +117,7 @@
 2.6. [管理画面HTML検証](#26-管理画面html検証)
 2.7. [ファズテスト・不整合値テスト](#27-ファズテスト不整合値テスト-fuzz-validationtestmjs-219件)
 2.8. [Issue #117 hardening 再発防止](#28-issue-117-hardening-再発防止-security-hardeningtestmjs-28件)
-2.9. [npm管理外依存の鮮度・EOL監視](#29-npm管理外依存の鮮度eol監視-dependency-freshnesstestmjs--27件)
+2.9. [npm管理外依存の鮮度・EOL監視](#29-npm管理外依存の鮮度eol監視-dependency-freshnesstestmjs--30件)
 2.10. [環境値の導出](#210-環境値の導出-env-derivationtestmjs-37件)
 2.11. [Git commit identity gate](#211-git-commit-identity-gate-commit-identitiestestmjs--8件)
 
@@ -192,7 +193,7 @@
 | :--- | :--- |
 | テストフレームワーク | Vitest v4.0.18 |
 | テストランナー | `vitest run`（CI）/ `vitest`（ウォッチ） |
-| Node.js | v22.23.3以上 |
+| Node.js | v22.23.2以上 |
 | OS | macOS / Linux（Cloudflare Pages ビルド環境） |
 
 ### 1.3.2 テストファイル構成
@@ -497,7 +498,7 @@ admin-html.test.mjs              -     ●     -     -     -     -     -     -  
 
 | No. | 基準 |
 | :--- | :--- |
-| 1 | 全テストケース（Vitest 762件〔全ブランチ共通。Issue #127 で SEC-35 のブランチ別登録を廃止〕 + E2E 465件 = 1227件）がPASSまたは仕様上の条件スキップであること |
+| 1 | 全テストケース（Vitest 765件〔全ブランチ共通。Issue #127 で SEC-35 のブランチ別登録を廃止〕 + E2E 465件 = 1230件）がPASSまたは仕様上の条件スキップであること |
 | 2 | `npm run build` が正常に完了すること |
 | 3 | 要件トレーサビリティマトリクス（docs/DOCUMENTATION.md 1.5章）において全要件が「充足」であること |
 | 4 | 本番（main）マージ前にローカル `npm run test:e2e` 全件と `verify-comprehensive.mjs` が完了していること（**CI に Playwright は載せない**。Bug #50） |
@@ -1412,7 +1413,7 @@ Bug #27時点は`/admin/*`側で値を「オーバーライド」する設計だ
 実ブラウザでの確認は `evidence/2026-09-23/issue117/verify-oauth-hardening.mjs`（OAuth Functions の実コードで `/auth`・`/auth/callback` を応答させ、実クリックでログイン。PC/iPad/iPhone × H01〜H05、15/15 PASS）。
 
 
-### 2.9 npm管理外依存の鮮度・EOL監視 (`dependency-freshness.test.mjs`) — 27件
+### 2.9 npm管理外依存の鮮度・EOL監視 (`dependency-freshness.test.mjs`) — 30件
 
 SEC-40（Issue #132）。`scripts/check-dependency-freshness.mjs` の純関数と、リポジトリ実ファイルの棚卸し、週次ワークフロー・Dependabot 設定を検証する。リモート応答は `tests/fixtures/dependency-freshness/`（`remote-ok.json` / `remote-alert.json` / `remote-unreachable.json`）で与え、`globalThis.fetch` は呼ばれたら例外を投げるスタブに置換し、`afterAll` で未呼び出しを確認する（`npm test` をネットワーク非依存に保つ）。コンテンツ・Decap のバージョン値は判定ロジックのテストでは合成インベントリを使い、実リポジトリのテストでは `public/admin/index.html` から動的に取得する。
 
@@ -1445,6 +1446,9 @@ SEC-40（Issue #132）。`scripts/check-dependency-freshness.mjs` の純関数�
 | 25 | run スクリプトに ${{ }} 式を直接埋め込まない（スクリプトインジェクション防止） | M-02 | 値は `env:` 経由 |
 | 26 | alert で Issue 起票（既存はコメント）とジョブ失敗、error でジョブ失敗する | M-02 | 通知経路の分岐が定義されている |
 | 27 | Dependabot は github-actions を staging 向けに週次更新する | M-03 | `.github/dependabot.yml` |
+| 28 | Issue #153/#154, Bug #55: Node.js最新パッチの公開から猶予期間（14日）未満は NODE_PATCH_BEHIND を出さず NODE_PATCH_TOO_NEW にする | M-07 | 猶予内（公開0日後）は `ok:NODE_PATCH_TOO_NEW`、`warning:NODE_PATCH_BEHIND` は出ない |
+| 29 | Issue #153/#154, Bug #55: 猶予期間（14日）を超えた古い固定パッチは引き続き NODE_PATCH_BEHIND になる | M-07 | 公開53日後相当は `warning:NODE_PATCH_BEHIND`、`ok:NODE_PATCH_TOO_NEW` は出ない（回帰防止） |
+| 30 | Node.js 最新パッチの公開日が取得できない場合は猶予を適用せず従来どおり NODE_PATCH_BEHIND にする | M-08 | `latestDate: null` では `warning:NODE_PATCH_BEHIND`（endoflife.date 応答が旧形式でも安全側に倒れる） |
 
 ネットワーク実行の結果と alert / error 経路の dry-run は `evidence/2026-09-23/issue132/` に保存する（`network/` 実照会、`fixture-alert/` alert 経路、`fixture-unreachable/` error 経路、`notify-dry-run.log` Issue 起票手順の dry-run）。
 
@@ -1930,7 +1934,7 @@ npm run build
 | 実行時間 | 約7s（`npm test`） |
 | 合否判定 | **合格**（762 passed。うち新規 identity gate 8件） |
 
-**Vitest総件数はブランチに依存しない（Issue #127 以降）**: SEC-42の8ケース追加後、feature・main・staging・CIで同じ762件。
+**Vitest総件数はブランチに依存しない（Issue #127 以降）**: SEC-42の8ケース追加後、feature・main・staging・CIで同じ765件（Bug #55再発防止のdependency-freshness.test.mjs 3件追加後）。
 
 ### 4.3.2 テストファイル別結果
 
@@ -1954,7 +1958,7 @@ npm run build
 
 
 
-Issue #117 項目2/12 により `build.test.mjs` 111→113、`fuzz-validation.test.mjs` 215→216。Vitest 合計 635→638。Bug #51再発防止（SEC-35、`cms-config.test.mjs`に環境固有ファイルの実ブランチ整合性検証を追加）によりVitest合計は **feature ブランチ 639件／main・staging 642件**（差の3件はSEC-35のブランチ別テスト登録による。既存テストへの影響はない）。Issue #117 hardening 対応で `security-hardening.test.mjs` 28件と `build.test.mjs` 1件（SEC-36）を追加し、**feature ブランチ 668件／main・staging 671件**。Issue #132（SEC-40）で `dependency-freshness.test.mjs` 27件を追加し **feature ブランチ 695件／main・staging 698件**。Issue #127 で `env-derivation.test.mjs` 37件、`build.test.mjs` 15件（114→129）を追加し、`cms-config.test.mjs` の SEC-35 を 1件（feature）／4件（main・staging）から全ブランチ共通5件へ改訂（56→60）。**全ブランチ 751件**。SEC-41対応で `fuzz-validation.test.mjs` にCSP運用時の違反検知3件を追加し、全ブランチ共通 **754件**。
+Issue #117 項目2/12 により `build.test.mjs` 111→113、`fuzz-validation.test.mjs` 215→216。Vitest 合計 635→638。Bug #51再発防止（SEC-35、`cms-config.test.mjs`に環境固有ファイルの実ブランチ整合性検証を追加）によりVitest合計は **feature ブランチ 639件／main・staging 642件**（差の3件はSEC-35のブランチ別テスト登録による。既存テストへの影響はない）。Issue #117 hardening 対応で `security-hardening.test.mjs` 28件と `build.test.mjs` 1件（SEC-36）を追加し、**feature ブランチ 668件／main・staging 671件**。Issue #132（SEC-40）で `dependency-freshness.test.mjs` 27件を追加し **feature ブランチ 695件／main・staging 698件**。Issue #127 で `env-derivation.test.mjs` 37件、`build.test.mjs` 15件（114→129）を追加し、`cms-config.test.mjs` の SEC-35 を 1件（feature）／4件（main・staging）から全ブランチ共通5件へ改訂（56→60）。**全ブランチ 751件**。SEC-41対応で `fuzz-validation.test.mjs` にCSP運用時の違反検知3件を追加し、全ブランチ共通 **754件**。SEC-42（`commit-identities.test.mjs`）8件を追加し **762件**。Issue #153の続き（Bug #55）で `dependency-freshness.test.mjs` にNode.jsパッチ猶予期間の回帰テスト3件を追加し、全ブランチ共通 **765件**。
 
 ### 4.3.3 E2Eテスト最新実行結果（Playwright）
 
@@ -2038,7 +2042,7 @@ Issue #117 項目2/12 により `build.test.mjs` 111→113、`fuzz-validation.te
 
 | 項目 | 結果 |
 | :--- | :--- |
-| Node.js | 22.23.3（`.nvmrc` と一致） |
+| Node.js | 22.23.2（`.nvmrc` と一致） |
 | CMS配布物 | Decap CMS 3.16.3。CDN JS SHA-384とSRI一致 |
 | Vitest | `npm test`: 762/762 PASS（12 files） |
 | Build | `npm run build`: gate 633/633 PASS、Astro 20ページ、画像最適化完了 |
