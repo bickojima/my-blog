@@ -2043,6 +2043,7 @@ Issue #117 項目2/12 により `build.test.mjs` 111→113、`fuzz-validation.te
 | Vitest | `npm test`: 762/762 PASS（12 files） |
 | Build | `npm run build`: gate 633/633 PASS、Astro 20ページ、画像最適化完了 |
 | Playwright | `npm run test:e2e`: 457 PASS / 8 skip（465件）。E-29既存記事のタイトル・本文読込と実編集をPASS |
+| CI | staging向けPR #157 `test-and-build`: PASS |
 | 包括E2E | PC/iPad/iPhoneで150/150 PASS。T07/T50は実クリック後の既存タイトル・本文をassert |
 | 画面証跡 | 145枚の注釈不足0枚。iPhone T10/T36は認証後にfocused再撮影し2/2 PASS。Drive bundle readback SHA-256一致 |
 | Cloudflare Pages runtime | ダッシュボード認証がなく、Pages build logの実Nodeバージョンは未確認。workflow_dispatchもstaging実行待ち |
