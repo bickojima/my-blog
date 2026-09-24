@@ -1,0 +1,227 @@
+{
+  "schemaVersion": 1,
+  "task": "dependency-freshness",
+  "generatedAt": "2026-09-24T07:58:34.578Z",
+  "remoteFetchedAt": "2026-09-24T07:58:31.515Z",
+  "remoteSource": "network",
+  "status": "warning",
+  "success": true,
+  "thresholds": {
+    "eolWarnDays": 90,
+    "eolAlertDays": 30,
+    "cdnMinorAlert": 3,
+    "upstreamStaleDays": 365,
+    "manualReviewIntervalDays": 92
+  },
+  "counts": {
+    "ok": 8,
+    "manual": 0,
+    "warning": 1,
+    "unknown": 0,
+    "alert": 0
+  },
+  "items": [
+    {
+      "id": "cdn:decap-cms",
+      "category": "cdn",
+      "name": "decap-cms",
+      "current": "3.16.3",
+      "latest": "3.16.3",
+      "pinning": "version + SRI(sha384)",
+      "source": "public/admin/index.html:458",
+      "status": "ok",
+      "findings": [
+        {
+          "status": "ok",
+          "code": "SRI_MATCH",
+          "message": "sha384 一致"
+        },
+        {
+          "status": "ok",
+          "code": "CDN_LATEST",
+          "message": "最新（3.16.3）"
+        },
+        {
+          "status": "ok",
+          "code": "CDN_NO_ADVISORY",
+          "message": "既知の脆弱性なし（npm advisory）"
+        }
+      ]
+    },
+    {
+      "id": "action:actions/checkout@.github/workflows/ci.yml:19",
+      "category": "github-actions",
+      "name": "actions/checkout",
+      "current": "v7.0.1",
+      "latest": "v7.0.1",
+      "pinning": "commit SHA",
+      "source": ".github/workflows/ci.yml:19",
+      "status": "ok",
+      "findings": [
+        {
+          "status": "ok",
+          "code": "ACTION_SHA_PINNED",
+          "message": "SHA 固定（v7.0.1）"
+        },
+        {
+          "status": "ok",
+          "code": "ACTION_MAJOR_LATEST",
+          "message": "最新メジャー（最新 v7.0.1）"
+        }
+      ]
+    },
+    {
+      "id": "action:actions/setup-node@.github/workflows/ci.yml:22",
+      "category": "github-actions",
+      "name": "actions/setup-node",
+      "current": "v7.0.0",
+      "latest": "v7.0.0",
+      "pinning": "commit SHA",
+      "source": ".github/workflows/ci.yml:22",
+      "status": "ok",
+      "findings": [
+        {
+          "status": "ok",
+          "code": "ACTION_SHA_PINNED",
+          "message": "SHA 固定（v7.0.0）"
+        },
+        {
+          "status": "ok",
+          "code": "ACTION_MAJOR_LATEST",
+          "message": "最新メジャー（最新 v7.0.0）"
+        }
+      ]
+    },
+    {
+      "id": "action:actions/checkout@.github/workflows/dependency-freshness.yml:30",
+      "category": "github-actions",
+      "name": "actions/checkout",
+      "current": "v7.0.1",
+      "latest": "v7.0.1",
+      "pinning": "commit SHA",
+      "source": ".github/workflows/dependency-freshness.yml:30",
+      "status": "ok",
+      "findings": [
+        {
+          "status": "ok",
+          "code": "ACTION_SHA_PINNED",
+          "message": "SHA 固定（v7.0.1）"
+        },
+        {
+          "status": "ok",
+          "code": "ACTION_MAJOR_LATEST",
+          "message": "最新メジャー（最新 v7.0.1）"
+        }
+      ]
+    },
+    {
+      "id": "action:actions/setup-node@.github/workflows/dependency-freshness.yml:35",
+      "category": "github-actions",
+      "name": "actions/setup-node",
+      "current": "v7.0.0",
+      "latest": "v7.0.0",
+      "pinning": "commit SHA",
+      "source": ".github/workflows/dependency-freshness.yml:35",
+      "status": "ok",
+      "findings": [
+        {
+          "status": "ok",
+          "code": "ACTION_SHA_PINNED",
+          "message": "SHA 固定（v7.0.0）"
+        },
+        {
+          "status": "ok",
+          "code": "ACTION_MAJOR_LATEST",
+          "message": "最新メジャー（最新 v7.0.0）"
+        }
+      ]
+    },
+    {
+      "id": "action:actions/upload-artifact@.github/workflows/dependency-freshness.yml:51",
+      "category": "github-actions",
+      "name": "actions/upload-artifact",
+      "current": "v7.0.1",
+      "latest": "v7.0.1",
+      "pinning": "commit SHA",
+      "source": ".github/workflows/dependency-freshness.yml:51",
+      "status": "ok",
+      "findings": [
+        {
+          "status": "ok",
+          "code": "ACTION_SHA_PINNED",
+          "message": "SHA 固定（v7.0.1）"
+        },
+        {
+          "status": "ok",
+          "code": "ACTION_MAJOR_LATEST",
+          "message": "最新メジャー（最新 v7.0.1）"
+        }
+      ]
+    },
+    {
+      "id": "action:actions/download-artifact@.github/workflows/dependency-freshness.yml:71",
+      "category": "github-actions",
+      "name": "actions/download-artifact",
+      "current": "v8.0.1",
+      "latest": "v8.0.1",
+      "pinning": "commit SHA",
+      "source": ".github/workflows/dependency-freshness.yml:71",
+      "status": "ok",
+      "findings": [
+        {
+          "status": "ok",
+          "code": "ACTION_SHA_PINNED",
+          "message": "SHA 固定（v8.0.1）"
+        },
+        {
+          "status": "ok",
+          "code": "ACTION_MAJOR_LATEST",
+          "message": "最新メジャー（最新 v8.0.1）"
+        }
+      ]
+    },
+    {
+      "id": "runtime:nodejs",
+      "category": "runtime",
+      "name": "Node.js",
+      "current": ".nvmrc=22.23.3, package.json#engines.node=>=22.23.3, .github/workflows/ci.yml:24=22, .github/workflows/dependency-freshness.yml:37=.nvmrc",
+      "latest": "22.23.3",
+      "pinning": ".nvmrc（Pages/ローカル）・engines・CI node-version",
+      "source": ".nvmrc, package.json#engines.node, .github/workflows/ci.yml:24, .github/workflows/dependency-freshness.yml:37",
+      "status": "ok",
+      "findings": [
+        {
+          "status": "ok",
+          "code": "NODE_EOL_OK",
+          "message": "Node.js 22: EOL まで 218 日（2027-04-30）"
+        }
+      ]
+    },
+    {
+      "id": "manual:cloudflare-pages-build-image",
+      "category": "manual",
+      "name": "Cloudflare Pages ビルドイメージ・環境変数 NODE_VERSION",
+      "current": "Build command `npm run build`、Build output `dist`、Production branch `main`（2026-09-23 ダッシュボードで確認）。ビルドイメージのバージョンと NODE_VERSION は未確認（設計書 2.5.1章の記載値は v3）",
+      "latest": null,
+      "pinning": "ダッシュボード設定（API 未連携）",
+      "source": "scripts/dependency-freshness.config.json",
+      "status": "warning",
+      "findings": [
+        {
+          "status": "manual",
+          "code": "MANUAL_REVIEWED",
+          "message": "前回確認 2026-09-23（1 日前）"
+        },
+        {
+          "status": "warning",
+          "code": "MANUAL_PARTIAL",
+          "message": "未確認の項目が残っている: ビルドイメージ（Build system version）、環境変数 NODE_VERSION の有無・値"
+        }
+      ]
+    }
+  ],
+  "problems": [
+    "[warning] Cloudflare Pages ビルドイメージ・環境変数 NODE_VERSION（scripts/dependency-freshness.config.json）: 未確認の項目が残っている: ビルドイメージ（Build system version）、環境変数 NODE_VERSION の有無・値"
+  ],
+  "exitCode": 0
+}

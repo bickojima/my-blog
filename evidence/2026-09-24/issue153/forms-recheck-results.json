@@ -1,0 +1,28 @@
+{
+  "date": "2026-09-24",
+  "results": [
+    {
+      "device": "iPhone",
+      "id": "T10",
+      "name": "新規記事フォーム表示・注釈付き再撮影",
+      "pass": true,
+      "screenshot": "screenshots/T10-newform-iPhone.png",
+      "fields": 7,
+      "annotation": "フォーム見出しとタイトル項目を画面内で赤枠・ラベル表示"
+    },
+    {
+      "device": "iPhone",
+      "id": "T36",
+      "name": "固定ページ新規フォーム表示・注釈付き再撮影",
+      "pass": true,
+      "screenshot": "screenshots/T36-pagenewform-iPhone.png",
+      "fields": 6,
+      "annotation": "フォーム見出しとタイトル項目を画面内で赤枠・ラベル表示"
+    }
+  ],
+  "summary": {
+    "total": 2,
+    "passCount": 2,
+    "failCount": 0
+  }
+}

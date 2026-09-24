@@ -33,6 +33,7 @@ Astro + Decap CMS によるブログサイト。Cloudflare Pages でホスティ
 | 1.24 | 2026-09-23 | Issue #127: 環境固有値（SITE_URL・robots.txt・CMS の branch/base_url）をファイルから削除し、ビルド時 `CF_PAGES_BRANCH`／実行時ホスト名から導出。main と staging の環境差分ゼロ（Bug #51 の構造的解消）。Vitest 751（全ブランチ共通）、E2E 465 |
 | 1.25 | 2026-09-23 | Issue #130: SEC-41として管理画面CSPのCloudflare Insights遮断を維持し、実ホストの編集・入力・preview・モック保存操作を3デバイスで検証（54/54 PASS）。Vitest 754、E2E 465 |
 | 1.26 | 2026-09-24 | #90/#131 履歴移行完了: 大容量エビデンスをDriveへ退避し、公開索引・復元方針を整備。25 headsをatomic更新し、refs/CI/fresh clone/Pages postflightを確認。118 read-only PR refsの残存を明記 |
+| 1.27 | 2026-09-24 | Issue #153: Decap CMS 3.16.3 と Node.js 22.23.3 へ更新（SRI再計算、監視fixture・仕様書更新）。T07/T50の既存データ表示を必須化し、3デバイス包括E2E 150/150 PASS。Vitest 762、E2E 465 |
 
 詳細なシステム変更履歴は [DOCUMENTATION.md](docs/DOCUMENTATION.md) を参照。
 
@@ -44,7 +45,7 @@ Astro + Decap CMS によるブログサイト。Cloudflare Pages でホスティ
 - **テストURL**: https://staging.reiwa.casa（`staging` ブランチ）
 - **管理画面**: https://reiwa.casa/admin（テスト: https://staging.reiwa.casa/admin）
 - **認証方式**: GitHub OAuth（本番・テスト各環境に専用OAuth App）
-- **CMS**: Decap CMS v3.16.2
+- **CMS**: Decap CMS v3.16.3
 
 アプリ案内（FR-29）: `/playwright-home/` と `/playwright-home-privacy/`。
 CMSの固定ページ（`src/content/pages/`）で管理する。`noindex: true` の固定ページはヘッダーナビにも表示しない。要件・Google登録値は [QA記録](docs/qa-2026-09-09-otp-app-pages.md)。
@@ -150,7 +151,7 @@ my-blog/
 | `npm run dev` | 開発サーバー起動（localhost:4321） |
 | `npm run build` | 本番ビルド（`./dist/` に出力） |
 | `npm run preview` | ビルド結果のローカルプレビュー |
-| `npm test` | 単体・統合テスト実行（Vitest / 754テスト〔全ブランチ共通〕、記事数により変動。ネットワーク不要） |
+| `npm test` | 単体・統合テスト実行（Vitest / 762テスト〔全ブランチ共通〕、記事数により変動。ネットワーク不要） |
 | `node scripts/check-dependency-freshness.mjs` | npm管理外依存の鮮度・EOL・SRI を照会し `reports/dependency-freshness/latest.json` に出力（ネットワーク必要。週次は `.github/workflows/dependency-freshness.yml`。手順は DOCUMENTATION.md 4.11章） |
 | `npm run test:watch` | ウォッチモードでテスト実行 |
 | `npm run test:e2e` | E2Eテスト実行（Playwright / PC・iPad・iPhone 465テスト: 457実行+8スキップ） |
