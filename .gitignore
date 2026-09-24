@@ -35,6 +35,23 @@ evidence/tmp/
 *.webm
 *.mp4
 
+# Large evidence media and required reports are archived to Drive before commit.
+# Keep evidence JSON, source scripts, and archive-index.json in Git.
+evidence/**/*.png
+evidence/**/*.jpg
+evidence/**/*.jpeg
+evidence/**/*.webp
+evidence/**/*.gif
+evidence/**/*.avif
+evidence/**/*.mov
+evidence/**/*.pdf
+evidence/**/*.mp4
+evidence/**/*.webm
+evidence/**/*.trace
+evidence/**/*.zip
+evidence/**/report.html
+evidence/**/*-report.html
+
 # Claude Code（個人環境の許可設定。settings.json はプロジェクト共通のためコミット対象）
 .claude/settings.local.json
 
