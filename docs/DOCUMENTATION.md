@@ -78,6 +78,7 @@
 | 1.71 | 2026-09-23 | Issue #130: Cloudflare Insights beacon を `/admin/*` のCSPで遮断し、検証した操作中に他のCSP違反・機能エラーがないことを確認する SEC-41 を追加.`_headers` のCSPポリシーは維持し、遮断方針コメントと実操作回帰テストを追加。production/staging 実ホストでOAuth・GitHub APIをモックし実書込を遮断した上で、PC/iPad/iPhoneの編集・入力・preview・保存要求branchを検証（54/54 PASS: production/stagingの操作各3端末、ローカルPC操作、実ホストreadonly。非Insights CSP違反0、機能エラー0）。Vitest 754件、E2E 465件。証跡 `evidence/2026-09-23/issue130-review/` |
 | 1.72 | 2026-09-24 | 4.6.1章に「リリース経路の原則」を追記: リリースは staging のマージでのみ行い、main 直コミット・staging 未経由の main 向け PR を禁止。Issue #127 以降 main と staging はツリー完全一致が正。PR #144（`c91eb81`）・#145 の main 直行と Dependabot #140/#141 の staging 残留による双方向のずれを同期 PR で解消した経緯を記録。4.6.3章に同期後のツリー一致確認を追記。テスト件数変更なし |
 | 1.73 | 2026-09-24 | #90/#131 履歴移行計画と証跡アーカイブを4.2.6章に追加。公開索引のスキーマ、SHA-256復元確認、バックアップbundle、PR refsの制約と残余リスクを記録。`.gitignore` に画像・動画・PDF・trace・ZIP・report.html/work-completion-report.html を追加し、必須HTMLレポートはDrive正本としてreadback SHA-256検証後に索引へ登録、JSONと検証scriptはGit保持する運用を明記。
+| 1.74 | 2026-09-24 | #90/#131 の25 heads履歴更新を実施。old-OID lease付きatomic push、143/143 refs一致、main/staging CIとfresh clone fsck成功、Cloudflare production/stagingのread-only確認を記録。118 read-only PR refsは残存し、完全消去とは扱わない。TEST-REPORT 4.3.6 と履歴監査文書を更新。
 
 ## システム変更履歴
 
@@ -2578,4 +2579,4 @@ Actions のメジャー遅れを alert にしないのは、Dependabot が更新
 
 ---
 
-**最終更新**: 2026年9月24日（v1.73）
+**最終更新**: 2026年9月24日（v1.74）

@@ -32,7 +32,7 @@ Astro + Decap CMS によるブログサイト。Cloudflare Pages でホスティ
 | 1.23 | 2026-09-23 | Issue #132: npm管理外依存（Decap CMS CDN・GitHub Actions・Node.js・Cloudflare Pages ビルド環境）の鮮度・EOL・SRI を週次ワークフローで判定（SEC-40）。Dependabot（github-actions、staging 向け）追加。Vitest feature 695 / main・staging 698 |
 | 1.24 | 2026-09-23 | Issue #127: 環境固有値（SITE_URL・robots.txt・CMS の branch/base_url）をファイルから削除し、ビルド時 `CF_PAGES_BRANCH`／実行時ホスト名から導出。main と staging の環境差分ゼロ（Bug #51 の構造的解消）。Vitest 751（全ブランチ共通）、E2E 465 |
 | 1.25 | 2026-09-23 | Issue #130: SEC-41として管理画面CSPのCloudflare Insights遮断を維持し、実ホストの編集・入力・preview・モック保存操作を3デバイスで検証（54/54 PASS）。Vitest 754、E2E 465 |
-| 1.26 | 2026-09-24 | #90/#131 履歴移行リハーサル: 大容量エビデンスをDriveへ退避する索引・復元方針、PR refsを除く25 headsの履歴更新ゲートと検証結果を記録 |
+| 1.26 | 2026-09-24 | #90/#131 履歴移行完了: 大容量エビデンスをDriveへ退避し、公開索引・復元方針を整備。25 headsをatomic更新し、refs/CI/fresh clone/Pages postflightを確認。118 read-only PR refsの残存を明記 |
 
 詳細なシステム変更履歴は [DOCUMENTATION.md](docs/DOCUMENTATION.md) を参照。
 
@@ -300,4 +300,4 @@ Google公式Modern Web Guidanceスキル準拠を方針とし、公開サイト�
 - `.gitignore` は新規画像・動画・PDF・trace・ZIPと `report.html` / `work-completion-report.html` 等のレポートを除外し、検証JSON、ソースscript、小さな非レポートHTMLはGitに残します。新しい必須HTMLレポートはDriveを正本として保存し、読戻しSHA-256検証後に索引へ登録します。除外メディアをGit履歴から除去できるのはDrive読戻し・全件SHA-256・復元・HTML相対画像検査・索引更新が終わった後だけです。
 - 履歴移行時は、リポジトリの全headsとtagsをバックアップし、open PRがないこと、Drive退避物の読戻し・復元検証、候補全履歴のテストと個人情報検査を終えてから履歴を書き換えます。GitHubの読み取り専用PR refsは書き換え対象外として残存リスクに記録します。
 - 索引の形式検証は `node scripts/validate-evidence-archive-index.mjs` で行います。
-- 履歴移行の監査数値と候補テスト結果は [`docs/history-migration-2026-09-24.md`](docs/history-migration-2026-09-24.md) を参照します。
+- 履歴移行の監査数値とpostflight結果は [`docs/history-migration-2026-09-24.md`](docs/history-migration-2026-09-24.md) を参照します。

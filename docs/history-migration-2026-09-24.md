@@ -1,8 +1,8 @@
-# Git履歴・E2Eエビデンス移行候補の監査（2026-09-24）
+# Git履歴・E2Eエビデンス移行とpostflight（2026-09-24）
 
 ## 状態
 
-この文書は履歴書換えのリハーサルと2026-09-24の実行後確認を記録する。ユーザー承認と敵対的レビューGO後、25 headsをold-OID lease付き`git push --atomic`で更新し、exit 0・25件のforced updateを確認した。
+ユーザー承認と敵対的レビューGO後、25 headsをold-OID lease付き`git push --atomic`で更新した。コマンドはexit 0、25件のforced updateを返し、push直後のlive refsは候補期待値と143/143一致した。
 
 ## 凍結・バックアップ
 
@@ -29,21 +29,21 @@
 
 Drive移行対象blobはevidence外aliasが0件。22個のHTML blobを相対画像参照のある記録としてDrive対象へ含め、復元後のbroken相対参照は0件。Drive上にある既存758 pairは再コピーしない。
 
-## 書換え候補の検証
+## 書き換え後の履歴検証
 
 | 項目 | 結果 |
 | :--- | :--- |
 | refs | heads 25件すべて同名で保持、tags 0件 |
 | commit数 | 467 |
 | Git整合性 | `git fsck` 成功 |
-| Drive移行対象 | 694 unique blobすべてcandidateで到達不能 |
+| Drive移行対象 | 694 unique blobすべて書き換え後のheadsから到達不能 |
 | e2e-results JSON | 個人情報を含む旧blobは到達不能。sanitized JSONの新blobを保持 |
 | blob内容走査 | 1,082 reachable unique blob / 80,481,261 bytes。承認済みのemail・user path・氏名ルールの一致は各0 |
 | author/committer | author: bickojima 199 / tbi 268、committer: bickojima 81 / tbi 386、other 0 |
 | ツリー差分 | evidence移動と、`docs/qa-2026-09-23-open-issues.md`・`docs/security/audit-run2-report.md` の承認済みPII redactionのみ |
 | `main` / `staging` | tree hash一致、記事・uploads・url-map差分0 |
 
-GitHubの`refs/pull/*`は読み取り専用で候補から除外した。push後も118個の`refs/pull/*/head`が見え、旧OIDを指す参照が残る。これらは変更できず、heads更新だけでPR refsの旧履歴まで消えたとは扱わない。GitHub側の回収時期は未確認。
+GitHubの`refs/pull/*`は読み取り専用で更新対象から除外した。push後も118個の`refs/pull/*/head`が見え、旧OIDを指す参照が残る。これらは変更できず、heads更新だけでPR refsの旧履歴まで消えたとは扱わない。GitHub側での回収時期は未確認。
 
 ## テスト
 
@@ -54,13 +54,13 @@ GitHubの`refs/pull/*`は読み取り専用で候補から除外した。push後
 - 両branch build: prebuild Vitest 625/625、CMS env JS生成、CMS `config.yml`にbranch/base_urlなし。
 - `node scripts/validate-evidence-archive-index.mjs`: 1,519 entries PASS。
 - GitHub Actions CI: rewritten `main` (`79116e1`) run 35950842406 SUCCESS、rewritten `staging` (`2a445cc`) run 35950844123 SUCCESS。
-- fresh clone: この実行環境では `github.com` の名前解決に失敗し未実施。GitHub branch APIではmain/stagingのhead SHAを確認した。
-- Pages post-rewrite live read-only checks: この実行環境では `reiwa.casa` と `staging.reiwa.casa` のDNS解決に失敗し未実施。事前の同一アプリtreeでの環境別build検証は上記の通り。live post-rewrite反映の独立確認が残る。
+- fresh clone: GitHubから新規cloneし、pack 40.14 MiB、`git fsck` PASS。履歴書換え後の取得・オブジェクト整合性を確認した。
+- Pages post-rewrite live read-only checks: rootによる独立確認でproduction/staging双方のrobots、canonical/sitemap、CMS環境設定を確認。productionはrobots Allow・production canonical/sitemap、stagingはrobots Disallow・staging canonical/sitemap、CMS `cms-env.js`配信と環境別設定が正常。
 
 ## 実行手順と停止条件
 
 1. 完了。書換え直前にlive refs mapとfreezeの一致、open PR 0件を確認した。
-2. 完了。25 headsの旧OIDをleaseへ明記し、候補OIDでatomic更新した。`--mirror`は使用していない。
+2. 完了。25 headsの旧OIDをleaseへ明記し、書き換え済みOIDでatomic更新した。`--mirror`は使用していない。
 3. 完了。push後の25 headsを含む143 refsが候補期待値と一致。main/staging treeも一致し、tagsは0件。PR refs 118件は残存。
-4. Actions CIは両branchで成功。fresh cloneとPages live再確認はDNS制限で未実施のため、残件としてstaging/main配信確認を依頼する。
+4. 完了。GitHub Actions CI両branch成功、新規cloneのfsck成功、production/stagingのPages読取確認を実施した。
 5. atomic pushは成功。事前バックアップbundleと別bare restore検証を保持する。
