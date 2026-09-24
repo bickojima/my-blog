@@ -64,6 +64,7 @@
 | 1.56 | 2026-09-23 | Issue #130（SEC-41）: admin CSP で Cloudflare Insights beacon を許可せず、CSPポリシーは緩和せず、`public/_headers` の方針コメントとCMS実操作E2Eで検証。`fuzz-validation.test.mjs` にadmin CSP・重複ヘッダー防止35件を追加。production/staging 実ホストへPlaywrightで接続し、OAuth/GitHub APIは全面モックして実書込を遮断。PC/iPad/iPhoneで編集・入力・preview・保存要求branchを確認し54/54 PASS（production/staging各3端末の操作、ローカルPC操作、実ホストreadonly）。非Insights CSP違反・機能エラーなし。ローカルiPad/iPhoneは従前証跡 `evidence/2026-09-23/issue130/` を別保存。Vitest 754件、ローカルE2E全465件。証跡 `evidence/2026-09-23/issue130-review/` |
 | 1.57 | 2026-09-23 | Issue #127/#130 実測更新: Vitest 754件（fuzz 219件）、Playwright 457 PASS + 8 skip / 465。2.5章を2.5.1〜2.5.13順に整理し、2.10節を第3部前へ移動。包括E2Eの件数は50シナリオID×3デバイス=150検証と訂正。staging実配信の包括E2Eは端末別50/50 PASS。
 | 1.58 | 2026-09-24 | #90/#131 履歴移行の完了結果を追記。25 headsをold-OID lease付きatomic pushで更新（exit 0）、live refs 143/143一致。main/staging CI PASS、新規clone `git fsck` PASS（pack 40.14 MiB）、Pages read-only確認を記録。118 read-only PR refsは残存。公開証跡索引 validator を追加。
+| 1.59 | 2026-09-24 | 1.6.4章・4.1.6章に残っていた旧エビデンス保存記述（`report.html`/スクリーンショットをコミット前提の記述）をDrive正本方針（DOCUMENTATION.md 4.2.6章・4.10.3章）に統一。Git保持対象（検証JSON・`verify-*.mjs`・索引・小さな非レポートHTML）とDrive正本対象（画像・動画・PDF・`report.html`系）の区別を明記。テスト件数変更なし。 |
 
 ## テスト基盤の変更履歴
 
@@ -508,11 +509,13 @@ staging検証時およびmainマージ前に、Playwright自動検証でスク�
 
 | 項目 | 内容 |
 | :--- | :--- |
-| 保存先 | `evidence/YYYY-MM-DD/` フォルダ（日付ごとに整理） |
-| レポート形式 | `report.html`（画像埋め込み、PC/iPad/iPhone 3デバイス横並び表示） |
-| スクリーンショット | `screenshots/`, `site-interactive/`, `cms-interactive/` サブフォルダ |
+| 保存先（ローカル生成） | `evidence/YYYY-MM-DD/` フォルダ（日付ごとに整理） |
+| レポート形式（ローカル生成、正本はDrive） | `report.html`（画像埋め込み、PC/iPad/iPhone 3デバイス横並び表示） |
+| スクリーンショット（ローカル生成、正本はDrive） | `screenshots/`, `site-interactive/`, `cms-interactive/` サブフォルダ |
 | テストデバイス | PC (1280x800) / iPad Pro 11 (834x1194) / iPhone 14 (390x844) |
-| 検証スクリプト | `verify-staging.mjs`（基本動作）、`verify-site-interactive.mjs`（サイト操作性）、`verify-cms-interactive.mjs`（CMS操作性）、`verify-cms-crud.mjs`（CMS CRUD操作）、`verify-security.mjs`（セキュリティ検証）、`evidence/2026-05-22/verify-modern-web-guidance.mjs`（Modern Web Guidance準拠） |
+| 検証スクリプト（Gitに保持） | `verify-staging.mjs`（基本動作）、`verify-site-interactive.mjs`（サイト操作性）、`verify-cms-interactive.mjs`（CMS操作性）、`verify-cms-crud.mjs`（CMS CRUD操作）、`verify-security.mjs`（セキュリティ検証）、`evidence/2026-05-22/verify-modern-web-guidance.mjs`（Modern Web Guidance準拠） |
+
+画像・動画・PDFと `report.html` / `work-completion-report.html` 等のレポートはローカル生成後にGoogle Drive（本人のみ閲覧可能）を正本として保存し、読戻しSHA-256を照合してから `evidence/archive-index.json` に登録する（詳細: CLAUDE.md「エビデンス取得方針」、DOCUMENTATION.md 4.2.6章・4.10.3章）。Gitにコミットするのは検証JSON・`verify-*.mjs`・索引・小さな非レポートHTMLのみ。
 
 #### 赤枠アノテーション方針
 
@@ -1673,7 +1676,7 @@ CMS関連のE2Eテストでは、**認証後のCMS画面のスクリーンショ
 
 1. **認証後のスクリーンショット**: CMS操作に関連するE2Eテストでは、OAuthモック認証後のCMS画面（コレクション一覧・エディタ画面等）のスクリーンショットを取得すること
 2. **3デバイス対応**: PC/iPad/iPhone の3デバイスでスクリーンショットを取得すること
-3. **エビデンス格納先**: `evidence/YYYY-MM-DD/screenshots/` フォルダにファイル名規則 `e{テストID}-{検証項目}-{デバイス名}.png` で保存すること
+3. **エビデンス格納先**: `evidence/YYYY-MM-DD/screenshots/` フォルダにファイル名規則 `e{テストID}-{検証項目}-{デバイス名}.png` でローカル保存すること。このスクリーンショットはGitにコミットせず、Drive正本化・読戻しSHA-256照合を経て `evidence/archive-index.json` に登録する（CLAUDE.md「エビデンス取得方針」参照）
 4. **レビュー**: スクリーンショットがログイン画面のみになっていないことを社内レビューで確認すること
 
 #### 認証後スクリーンショットの取得方法

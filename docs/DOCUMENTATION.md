@@ -79,6 +79,7 @@
 | 1.72 | 2026-09-24 | 4.6.1章に「リリース経路の原則」を追記: リリースは staging のマージでのみ行い、main 直コミット・staging 未経由の main 向け PR を禁止。Issue #127 以降 main と staging はツリー完全一致が正。PR #144（`c91eb81`）・#145 の main 直行と Dependabot #140/#141 の staging 残留による双方向のずれを同期 PR で解消した経緯を記録。4.6.3章に同期後のツリー一致確認を追記。テスト件数変更なし |
 | 1.73 | 2026-09-24 | #90/#131 履歴移行計画と証跡アーカイブを4.2.6章に追加。公開索引のスキーマ、SHA-256復元確認、バックアップbundle、PR refsの制約と残余リスクを記録。`.gitignore` に画像・動画・PDF・trace・ZIP・report.html/work-completion-report.html を追加し、必須HTMLレポートはDrive正本としてreadback SHA-256検証後に索引へ登録、JSONと検証scriptはGit保持する運用を明記。
 | 1.74 | 2026-09-24 | #90/#131 の25 heads履歴更新を実施。old-OID lease付きatomic push、143/143 refs一致、main/staging CIとfresh clone fsck成功、Cloudflare production/stagingのread-only確認を記録。118 read-only PR refsは残存し、完全消去とは扱わない。TEST-REPORT 4.3.6 と履歴監査文書を更新。
+| 1.75 | 2026-09-24 | CLAUDE.md・TEST-REPORT.mdに残っていた旧エビデンス保存記述（`report.html`/`work-completion-report.html`をコミット・プッシュする前提の記述）を4.2.6章のDrive正本方針に統一。4.9.2章のエビデンス構成表と4.10.3章のフォルダ構成図にGit保持対象／Drive正本対象の区別を明記。2026-09-24の履歴書換え時点で既にGit管理下にあった14件（`work-completion-report.html` 13件、`report.html` 1件）は`evidence/archive-index.json`で`storage_class: "git"`登録済みの例外として当面Gitに残す方針を明文化（新規作成分はDrive正本を適用）。テスト件数変更なし。 |
 
 ## システム変更履歴
 
@@ -2220,10 +2221,11 @@ git履歴に個人情報（氏名・メールアドレス）が含まれてい�
 
 | 項目 | 内容 |
 |:---|:---|
-| 保存先 | `evidence/YYYY-MM-DD/` フォルダ（日付ごとに整理） |
-| レポート形式 | `report.html`（画像埋め込み、PC/iPad/iPhone 3デバイス横並び表示） |
-| スクリーンショット | `screenshots/`, `site-interactive/`, `cms-interactive/` サブフォルダ |
+| 保存先（ローカル生成） | `evidence/YYYY-MM-DD/` フォルダ（日付ごとに整理） |
+| レポート形式（ローカル生成、正本はDrive） | `report.html`（画像埋め込み、PC/iPad/iPhone 3デバイス横並び表示） |
+| スクリーンショット（ローカル生成、正本はDrive） | `screenshots/`, `site-interactive/`, `cms-interactive/` サブフォルダ |
 | テストデバイス | PC (1280x800) / iPad Pro 11 (834x1194) / iPhone 14 (390x844) |
+| Git保持対象 | 検証JSON・`verify-*.mjs`・`archive-index.json`・小さな非レポートHTMLのみ（画像・動画・PDF・`report.html`系はDriveを正本とし、読戻しSHA-256検証後に4.2.6章の索引へ登録。詳細は4.2.6章・4.10.3章） |
 
 ### 4.9.3 検証スクリプト
 
@@ -2461,28 +2463,29 @@ await loginButton.click();
 
 **エビデンス取得後の必須作業:**
 1. **社内レビュー**: スクリーンショット全数を確認し、ログイン画面のみ等の不備がないことを検証する（CLAUDE.md ルール11）
-2. **レポート生成**: `report.html` を更新し、全スクリーンショットをPC/iPad/iPhone横並びで確認可能な形式にまとめる
-3. **作業完了報告書生成**: 変更がある場合は `work-completion-report.html` を作成し、システム要件変更の有無・テスト結果・エビデンス確認結果を記録する
+2. **レポート生成（ローカル）**: `report.html` をローカルの `evidence/YYYY-MM-DD/` に更新し、全スクリーンショットをPC/iPad/iPhone横並びで確認可能な形式にまとめる。この時点ではGitにコミットしない
+3. **作業完了報告書生成（ローカル）**: 変更がある場合は `work-completion-report.html` をローカルに作成し、システム要件変更の有無・テスト結果・エビデンス確認結果を記録する。この時点ではGitにコミットしない
 4. **Drive正本化**: 新規スクリーンショット、画像埋込レポート、`report.html`、`work-completion-report.html` を本人専用Driveへ保存する。読戻ししたファイル単位のSHA-256が一致した後に `evidence/archive-index.json` を更新し、validatorを実行する。`verify-*.mjs` と `*-results.json` はGitに残す
 5. **フォルダ整理**: デバッグ用スクリーンショット・一時ファイルを削除し、正式なフォルダ構成のみを維持する
 
-**フォルダ構成（標準）:**
+**フォルダ構成（標準・ローカル作業ディレクトリ）:**
 ```
 evidence/YYYY-MM-DD/
-├── report.html                    # エビデンスレポート（画像参照、PC/iPad/iPhone横並び）
-├── work-completion-report.html    # 作業完了報告書（要件変更確認、テスト結果）
-├── verify-staging.mjs             # Part 1: サイト基本動作検証スクリプト
-├── verify-site-interactive.mjs    # Part 2: サイト操作性検証スクリプト
-├── verify-cms-interactive.mjs     # Part 3: CMS操作性検証スクリプト
-├── verify-cms-crud.mjs            # Part 4: CMS CRUD操作検証スクリプト
-├── verify-security.mjs            # Part 5: セキュリティ検証スクリプト
-├── *-results.json                 # 各検証の結果JSON
-├── screenshots/                   # Part 1: サイト基本動作スクリーンショット
-├── site-interactive/              # Part 2: サイト操作性スクリーンショット
-├── cms-interactive/               # Part 3: CMS操作性スクリーンショット
-├── cms-crud/                      # Part 4: CMS CRUD操作スクリーンショット
-└── security/                      # Part 5: セキュリティ検証スクリーンショット
+├── report.html                    # エビデンスレポート（画像参照、PC/iPad/iPhone横並び）※Drive正本化後はGit未コミット
+├── work-completion-report.html    # 作業完了報告書（要件変更確認、テスト結果）※Drive正本化後はGit未コミット
+├── verify-staging.mjs             # Part 1: サイト基本動作検証スクリプト（Gitに保持）
+├── verify-site-interactive.mjs    # Part 2: サイト操作性検証スクリプト（Gitに保持）
+├── verify-cms-interactive.mjs     # Part 3: CMS操作性検証スクリプト（Gitに保持）
+├── verify-cms-crud.mjs            # Part 4: CMS CRUD操作検証スクリプト（Gitに保持）
+├── verify-security.mjs            # Part 5: セキュリティ検証スクリプト（Gitに保持）
+├── *-results.json                 # 各検証の結果JSON（Gitに保持）
+├── screenshots/                   # Part 1: サイト基本動作スクリーンショット ※Drive正本化後はGit未コミット
+├── site-interactive/              # Part 2: サイト操作性スクリーンショット ※Drive正本化後はGit未コミット
+├── cms-interactive/               # Part 3: CMS操作性スクリーンショット ※Drive正本化後はGit未コミット
+├── cms-crud/                      # Part 4: CMS CRUD操作スクリーンショット ※Drive正本化後はGit未コミット
+└── security/                      # Part 5: セキュリティ検証スクリーンショット ※Drive正本化後はGit未コミット
 ```
+上記のうち画像・動画・PDFと `report.html` / `work-completion-report.html` はローカルで生成した後 Google Drive（本人のみ閲覧可能）へ保存し、読戻しSHA-256を照合してから `evidence/archive-index.json`（4.2.6章）へ登録する。Gitにコミットするのは検証スクリプト・結果JSON・索引・小さな非レポートHTMLのみ（`.gitignore` 参照）。2026-09-24の履歴書換え時点で既にGit管理下にあった14件（`work-completion-report.html` 13件、`report.html` 1件）は索引で `storage_class: "git"` の例外として当面Gitに残す。
 
 **CMS CRUDエビデンス取得時の特記事項:**
 - verify-cms-crud.mjsはDecap CMS OAuth 3ステップハンドシェイクをシミュレートする（詳細は4.9.9章参照）

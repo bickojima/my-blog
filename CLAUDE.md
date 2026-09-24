@@ -124,7 +124,7 @@ tests/
 - テスト実行後、失敗がある場合は原因を調査し修正する（テストを削除・スキップしない）
 - **テストにコンテンツをハードコードしない**: 記事名・固定ページ名・URL等はソースから動的取得する（コンテンツ変更でテストが壊れない設計）
 - **CMS E2Eテストの必須方式**: OAuthモック（postMessageシミュレーション）＋ GitHub APIモック（`page.route()`全面インターセプト）を統一使用する。今後のCMSテスト追加時もこの方式に従うこと。**Playwright test runnerでは `window.open` モンキーパッチ方式を使用**（`context.route()`方式はtest runnerで動作しない。詳細: DOCUMENTATION.md 4.9.10章）
-- **E2Eスクリーンショットエビデンス必須**: CMS関連のE2Eテストでは認証後のCMS画面スクリーンショットを必ず取得する。ログイン画面のみのスクリーンショットは不可。3デバイス（PC/iPad/iPhone）で `evidence/YYYY-MM-DD/screenshots/` に保存する
+- **E2Eスクリーンショットエビデンス必須**: CMS関連のE2Eテストでは認証後のCMS画面スクリーンショットを必ず取得する。ログイン画面のみのスクリーンショットは不可。3デバイス（PC/iPad/iPhone）でローカルの `evidence/YYYY-MM-DD/screenshots/` に生成し、下記「エビデンス取得方針」の保存規定（Drive正本化）に従う
 - **実操作E2E必須**: UI変更・CMS変更・Modern Web Guidance対応では、DOMを直接書き換える `page.evaluate()` やイベント発火だけを合格条件にしてはならない。クリック、入力、select選択、キーボード操作、メニュー展開など、ユーザーが実際に行うPlaywright操作（`click`, `fill`, `selectOption`, `press`, ファイル選択等）で最低1本は再現・確認すること。DOM直叩きは状態確認や補助に限定する
 - **認証後スクリーンショットの取得方法**: OAuthポップアップのインターセプトには `context.route()` を使用する（`page.route()` ではポップアップウィンドウのnavigationをインターセプトできない）。3ステップOAuthハンドシェイク: (1) `authorizing:github` 送信 → (2) 親ACK待ち → (3) `authorization:github:success:{token}` 送信。参考実装: `tests/e2e/cms-operations.spec.ts` の `openCmsWithMultiArticles()`、`evidence/2026-02-23/verify-cms-crud.mjs` の `openCmsWithAuth()`
 
@@ -166,8 +166,8 @@ DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を�
 ### エビデンス取得方針
 - **取得タイミング**: staging検証時、mainマージ前
 - **保存先**: `evidence/YYYY-MM-DD/` フォルダ（日付ごとに整理）
-- **レポート形式**: `report.html`（画像埋め込み、PC/iPad/iPhone 3デバイス横並び表示）
-- **スクリーンショット**: `screenshots/`, `site-interactive/`, `cms-interactive/` サブフォルダに整理
+- **レポート形式**: `report.html`（画像埋め込み、PC/iPad/iPhone 3デバイス横並び表示）をローカルの `evidence/YYYY-MM-DD/` に生成する。作業中のみのローカル物であり、Gitにはコミットしない（下記「エビデンス履歴アーカイブ」参照）
+- **スクリーンショット**: `screenshots/`, `site-interactive/`, `cms-interactive/` サブフォルダにローカルで整理する。これらもGitにはコミットせず、Driveへ退避する
 - **検証スクリプト**: `verify-staging.mjs`（基本動作確認）、`verify-site-interactive.mjs`（サイト操作性、10シナリオ×3デバイス）、`verify-cms-interactive.mjs`（CMS操作性、16シナリオ×3デバイス）、`verify-cms-crud.mjs`（CMS CRUD操作、16シナリオ×3デバイス）、`evidence/YYYY-MM-DD/verify-security.mjs`（SEC01〜SEC10の証跡確認、10項目）
 - **過去手法の優先**: 新しいE2Eエビデンスを作る場合も、既存スクリプトの構成（スタンドアロンPlaywright、赤枠アノテーション、HTMLレポート、結果JSON）を踏襲する。**雛形として `evidence/2026-05-24/verify-comprehensive.mjs` を優先使用する**（50シナリオを3デバイスで計150検証）。シナリオID数とデバイス展開数を混同せず、JSONのdevice別件数を照合する。旧スクリプト: `verify-site-interactive.mjs` / `verify-cms-interactive.mjs` / `verify-cms-crud.mjs` / `verify-cms19-grouping.mjs`
 - **CMS OAuthモック必須**: CMSエビデンスは実GitHub認証に依存させず、OAuth 3ステップハンドシェイクとGitHub APIモックで擬似ログインする。認証後のCMS独自カスタマイズ画面を撮影すること
@@ -178,12 +178,12 @@ DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を�
 - **過去バグ検証マトリクス**: Bug #1,#4,#5,#6,#7,#8,#9,#11,#13,#14,#15,#29,#30,#31,#32,#33の再発確認をエビデンスに含める
 - **テストデバイス**: PC (1280x800) / iPad Pro 11 (834x1194) / iPhone 14 (390x844)
 - **社内レビュー**: エビデンス提出前にスクリーンショットの内容を確認し、認証後の編集画面が正しく表示されていることをレビューする。ログイン画面のみのスクリーンショットは不可
-- **エビデンス取得後の必須作業**: (1) 社内レビュー（全数確認）→ (2) report.html更新（PC/iPad/iPhone横並び形式）→ (3) 作業完了報告書（work-completion-report.html）作成 → (4) フォルダ整理（デバッグファイル削除）→ (5) コミット・プッシュ
-- **フォルダ構成**: `evidence/YYYY-MM-DD/` 直下に `report.html`, `work-completion-report.html`, `verify-*.mjs`, `*-results.json` を配置。スクリーンショットは `screenshots/`, `site-interactive/`, `cms-interactive/`, `cms-crud/`, `security/` サブフォルダに整理。デバッグ用スクリーンショットや一時ファイルはコミット前に削除する
+- **エビデンス取得後の必須作業**: (1) 社内レビュー（全数確認）→ (2) report.html更新（PC/iPad/iPhone横並び形式、ローカル）→ (3) 作業完了報告書（work-completion-report.html）作成（ローカル）→ (4) フォルダ整理（デバッグファイル削除）→ (5) 画像・動画・PDF・`report.html`・`work-completion-report.html` をDriveへ退避し読戻しSHA-256を照合 → (6) `evidence/archive-index.json` を更新し `node scripts/validate-evidence-archive-index.mjs` を実行 → (7) 検証JSON・スクリプト・索引をstagingへコミット・プッシュ
+- **フォルダ構成（ローカル作業ディレクトリ）**: `evidence/YYYY-MM-DD/` 直下に `report.html`, `work-completion-report.html`, `verify-*.mjs`, `*-results.json` を生成する。スクリーンショットは `screenshots/`, `site-interactive/`, `cms-interactive/`, `cms-crud/`, `security/` サブフォルダに整理する。このうち画像・動画・PDFと `report.html` / `work-completion-report.html` はGitにコミットせずDriveへ退避する（`.gitignore` 対象）。Gitに残すのは `verify-*.mjs`・`*-results.json`・`archive-index.json`・小さな非レポートHTMLのみ。デバッグ用スクリーンショットや一時ファイルはDrive退避前に削除する
 - **CMS CRUD認証**: verify-cms-crud.mjsはDecap CMS 3ステップOAuthハンドシェイクをcontext.route()でシミュレート。Issue #127 以降は base_url が `location.origin` から導出されるため、**config.yml の base_url を一時変更する手順は不要**（config.yml に base_url が無い）。旧スクリプトの一時書き換え処理は置換対象が無く何もしない（詳細: DOCUMENTATION.md 4.9.9章）
-- **E2Eテストのスクリーンショットエビデンス**: CMS関連のE2Eスペックテスト（Playwright）でも認証後のCMS画面スクリーンショットを `evidence/YYYY-MM-DD/screenshots/` に保存する。ファイル名規則: `e{テストID}-{検証項目}-{デバイス名}.png`。認証には `context.route()` + 3ステップOAuthハンドシェイクを使用する。`page.route()` ではOAuthポップアップをインターセプトできないため不可（Bug #36）
-- **エビデンスの格納ルール**: エビデンス（スクリーンショット・レポート・検証結果JSON）は必ず `evidence/YYYY-MM-DD/` フォルダに格納する。ルートディレクトリや他の日付フォルダに格納してはならない。過去日付のエビデンスフォルダを上書き・削除しないこと（履歴移行時のみ、Driveへの全件退避後、Drive読戻しと個別SHA-256照合、復元テストが全PASSし、索引を更新してから履歴媒体を除去できる。手順はDOCUMENTATION 4.2.6章）
-- **エビデンス履歴アーカイブ**: `evidence/archive-index.json` は履歴エビデンスの公開復元索引で、相対パス・Git blob SHA-1・SHA-256・サイズ・保存区分だけを含める。Drive ID・非公開URL・個人情報を追加しない。更新後は `node scripts/validate-evidence-archive-index.mjs` を実行し、Driveから復元したファイルはSHA-256とHTML相対画像参照を検証する。`.gitignore` は新規画像・動画・PDF・trace・ZIPと `report.html` / `work-completion-report.html` 等のレポートを除外し、検証JSON・ソースscript・公開索引・小さな非レポートHTMLはGitに保持する。新しい必須レポートはDriveを正本として保存し、読戻しSHA-256検証後に索引へ登録する。除外メディアもDrive退避・読戻しhash・索引更新までGit履歴へ追加しない。大規模な履歴書換え手順は `docs/DOCUMENTATION.md` 4.2.6章に従う。
+- **E2Eテストのスクリーンショットエビデンス**: CMS関連のE2Eスペックテスト（Playwright）でも認証後のCMS画面スクリーンショットをローカルの `evidence/YYYY-MM-DD/screenshots/` に一時保存する。ファイル名規則: `e{テストID}-{検証項目}-{デバイス名}.png`。認証には `context.route()` + 3ステップOAuthハンドシェイクを使用する。`page.route()` ではOAuthポップアップをインターセプトできないため不可（Bug #36）。このスクリーンショットもGitにはコミットせず、Driveへ退避する
+- **エビデンスの格納ルール**: エビデンス（スクリーンショット・レポート・検証結果JSON）はローカル作業中は必ず `evidence/YYYY-MM-DD/` フォルダに格納する。ルートディレクトリや他の日付フォルダに格納してはならない。過去日付のエビデンスフォルダ（Git上のもの、Drive上のものいずれも）を上書き・削除しないこと（履歴移行時のみ、Driveへの全件退避後、Drive読戻しと個別SHA-256照合、復元テストが全PASSし、索引を更新してから履歴媒体を除去できる。手順はDOCUMENTATION 4.2.6章）
+- **エビデンス履歴アーカイブ（正本方針）**: 画像・動画・PDF・`report.html`・`work-completion-report.html` 等のレポートはGoogle Drive（本人のみ閲覧可能）を正本とする。ローカルで生成した後、Driveへ保存し、読み戻したファイルのSHA-256が一致することを確認してから `evidence/archive-index.json` に登録する。索引の1行は相対パス・Git blob SHA-1・SHA-256・サイズ・保存区分（`git` / `drive`）だけを含め、Drive ID・非公開URL・個人情報は追加しない。更新後は `node scripts/validate-evidence-archive-index.mjs` を実行する。Gitにコミットするのは検証JSON・ソースscript・`archive-index.json`・小さな非レポートHTMLのみ。`.gitignore` が画像・動画・PDF・trace・ZIPと `report.html` / `*-report.html` を除外していることと矛盾させないこと。2026-09-24の履歴書換え時点で既にGit管理下にあった14件（`work-completion-report.html` 13件、`report.html` 1件）は、`evidence/archive-index.json` で `storage_class: "git"` として明示登録済みの例外として当面Gitに残す。これらを対象にDriveへの遡及退避・Git削除は行わない。新規作成分から本方針（Drive正本）を適用する。大規模な履歴書換え手順は `docs/DOCUMENTATION.md` 4.2.6章に従う。
 
 ### 新機能追加時（要件トレーサビリティの維持）
 1. docs/DOCUMENTATION.md の要件一覧（1.2章 FR / 1.3章 CMS / 1.4.1章 NFR / 1.4.2章 SEC）に要件IDを追加
