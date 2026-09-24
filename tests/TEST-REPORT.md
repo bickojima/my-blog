@@ -63,6 +63,7 @@
 | 1.55 | 2026-09-23 | Issue #127（環境値の自動導出）: 環境固有の4項目をファイルから削除し導出する構造に変えたため、SEC-35 のテストを「導出結果の正しさ」の検証へ作り替え。新規 `env-derivation.test.mjs`（2.10章、37件: ビルド時導出16件・CMS 実行時導出14件・main/staging 差分ゼロの静的ガード7件）、`build.test.mjs` に `CF_PAGES_BRANCH 別ビルドの環境値` 15件（main/staging/未設定の3ビルド×5項目、114→129）、`cms-config.test.mjs` の SEC-35 を5件に改訂（旧: feature 1件／main・staging 4件のブランチ別登録 → 全ブランチ共通5件、56→60）。**書き換えた既存テスト（削除・スキップなし）**: cms-config 2.4章 No.3・No.5・No.45（config.yml から branch/base_url を削除したため、config.yml と実行時導出値を deepmerge した実効設定で同じ性質を検証）、2.4.3章 No.51〜55（ブランチ判定＋内部整合 → ホスト別の実効 backend 4件＋config.yml 単体に値が無いこと1件。旧テストは対象の値がファイルから消えたため成立しない）、build 2.5.5章 No.1（SITE_URL リテラルからの環境推定 → ビルド時 CF_PAGES_BRANCH による判定）。E2E E-39「固定ページのorderフィールドはmin=1の数値フィールドである」（本変更で spec の認証が実際に成立するようになり、未認証時用の `body.isVisible()` フォールバックが認証後画面で false になって3デバイスで失敗。数値フィールドの表示・min≥1・編集可を必須とする形に強化。DOCUMENTATION 4.5章 Bug #P127-2）。Vitest feature 695／main・staging 698 → **全ブランチ 751件**。SEC-41対応で `fuzz-validation.test.mjs` にCSP運用時の違反検知3件を追加し、全ブランチ共通 **754件**。E2E に `cms-env-branch.spec.ts`（E-47、4ホスト×3デバイス=12件、実操作保存で書き込み先 ref を実測）を追加し 453→**465件**。エビデンス `evidence/2026-09-23/issue127/` |
 | 1.56 | 2026-09-23 | Issue #130（SEC-41）: admin CSP で Cloudflare Insights beacon を許可せず、CSPポリシーは緩和せず、`public/_headers` の方針コメントとCMS実操作E2Eで検証。`fuzz-validation.test.mjs` にadmin CSP・重複ヘッダー防止35件を追加。production/staging 実ホストへPlaywrightで接続し、OAuth/GitHub APIは全面モックして実書込を遮断。PC/iPad/iPhoneで編集・入力・preview・保存要求branchを確認し54/54 PASS（production/staging各3端末の操作、ローカルPC操作、実ホストreadonly）。非Insights CSP違反・機能エラーなし。ローカルiPad/iPhoneは従前証跡 `evidence/2026-09-23/issue130/` を別保存。Vitest 754件、ローカルE2E全465件。証跡 `evidence/2026-09-23/issue130-review/` |
 | 1.57 | 2026-09-23 | Issue #127/#130 実測更新: Vitest 754件（fuzz 219件）、Playwright 457 PASS + 8 skip / 465。2.5章を2.5.1〜2.5.13順に整理し、2.10節を第3部前へ移動。包括E2Eの件数は50シナリオID×3デバイス=150検証と訂正。staging実配信の包括E2Eは端末別50/50 PASS。
+| 1.58 | 2026-09-24 | #90/#131 履歴書換え候補の隔離検証を追記。Vitest 754/754、E2E 457 PASS・8 skip、main/staging別ビルド、候補467 commits/25 heads、Drive移行blobとPII走査を確認。GitHub refsの書換えはこの記録作成時点で未実行。公開証跡索引 validator を追加。
 
 ## テスト基盤の変更履歴
 
@@ -1975,9 +1976,26 @@ Issue #117 項目2/12 により `build.test.mjs` 111→113、`fuzz-validation.te
 | 認証済みCMS | PC・iPad・iPhone 3/3 PASS、各12記事、ログイン画面なし |
 | Issue | #97を`completed`でクローズ |
 
+
+### 4.3.6 Issue #90/#131 履歴書換え候補の隔離検証
+
+| 項目 | 結果 |
+| :--- | :--- |
+| 対象 | 2026-09-24のfrozen refsから作成した隔離candidate-2（25 heads、467 commits） |
+| 全体テスト | Vitest 754/754 PASS、Playwright 457 PASS・8 skip / 465 |
+| branch別build | `CF_PAGES_BRANCH=main` はrobots Allow・canonical/sitemap本番URL、`staging` はrobots Disallow・sitemap行なし・canonical/sitemap staging URL。両方のbuildでVitest 625/625、CMS env生成、config.ymlのbranch/base_url不在を確認 |
+| アーカイブ索引 | 1,519 entry、許可5 fieldのみ。`node scripts/validate-evidence-archive-index.mjs` PASS |
+| 履歴候補 | 移行対象694 unique blobはcandidateで0 reachable、evidence外alias 0。Drive move 1,395 path/blob pair、Git keep 123 pair。redacted JSONは新blobで保持 |
+| 個人情報検査 | 1,082 unique reachable blob / 80,481,261 bytesをscanし、承認済みのemail・user path・氏名ルールは全0。author/committerはtbi/bickojimaのカテゴリに限定、other 0 |
+| refs/PR | freeze/live refsは143/143一致、open PR 0。`refs/pull/*` は読み取り専用のためcandidateには含めず、GitHub上の残存挙動を別途記録する |
+| GitHub履歴書換え | この候補テスト記録時点では未実行。ユーザーの明示承認後にのみ実施する |
+| E2E起動記録 | 非昇格の初回起動はlisten EPERMでテスト開始前に終了し、テスト失敗には数えない。許可されたローカルwebServer起動条件で再実行し全件を完了 |
+
+公開索引の形式検証は [`scripts/validate-evidence-archive-index.mjs`](../scripts/validate-evidence-archive-index.mjs)、集約結果は [`docs/history-migration-2026-09-24.md`](../docs/history-migration-2026-09-24.md) に記録する。非公開Drive IDや共有URLはGitへ含めない。
+
 ---
 
-**最終更新**: 2026年9月23日（v1.56）
+**最終更新**: 2026年9月24日（v1.58）
 
 ### 2026-09-20 セキュリティIssue #109〜#113対応完了
 

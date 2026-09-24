@@ -77,6 +77,7 @@
 | 1.70 | 2026-09-23 | Issue #127: 環境固有の4項目（`astro.config.mjs` の SITE_URL、`public/admin/config.yml` の backend.branch / base_url、`public/robots.txt`）をファイルから削除し、ビルド時（`CF_PAGES_BRANCH`）・実行時（`location.hostname` / `origin`）に導出する構造へ変更（ユーザー決定「環境値の自動導出」方式）。導出点は `src/lib/site-env.mjs`（SITE_URL・robots、`src/pages/robots.txt.ts` で生成）と `public/admin/cms-env.js`（CMS の branch・base_url。admin/index.html が `CMS_MANUAL_INIT` + `CMS.init` で deepmerge）。安全側の既定: 本番値は `CF_PAGES_BRANCH === 'main'`／ホスト名 `reiwa.casa` 完全一致のときだけ、それ以外は staging 値。main と staging の環境差分はゼロになり、Bug #51 の構造的原因を解消。SEC-35 を「導出結果の正しさ」の検証へ改訂し、SEC-127A（仮ID・マージ時採番調整）を1.4.2章・1.5.4章に追加。2.1.1・2.5.4・3.3.2・4.3.1・4.6（マージ手順・環境別値・main 移行手順 4.6.5・本番読み取り確認 4.6.6）・4.7.2・4.9.9・4.10.3章を更新。Bug #P127-1（仮番号: iPhone エミュレーションで「公開」メニューが表示領域外。変更前から発生・未修正）を4.5章に記録。Bug #P127-2（仮番号: CMS 系 E2E spec が base_url とのオリジン差で未認証のまま実行され、弱い分岐で PASS していた。本変更で認証が成立し E-39 の失敗で発覚。E-39 を書き換え）を4.5章に記録。Vitest 695件（feature）／698件（main・staging）→ **全ブランチ共通 751件**（ブランチ別登録を廃止）、E2E 453→**465件**（`cms-env-branch.spec.ts` 4ホスト×3デバイス） |
 | 1.71 | 2026-09-23 | Issue #130: Cloudflare Insights beacon を `/admin/*` のCSPで遮断し、検証した操作中に他のCSP違反・機能エラーがないことを確認する SEC-41 を追加.`_headers` のCSPポリシーは維持し、遮断方針コメントと実操作回帰テストを追加。production/staging 実ホストでOAuth・GitHub APIをモックし実書込を遮断した上で、PC/iPad/iPhoneの編集・入力・preview・保存要求branchを検証（54/54 PASS: production/stagingの操作各3端末、ローカルPC操作、実ホストreadonly。非Insights CSP違反0、機能エラー0）。Vitest 754件、E2E 465件。証跡 `evidence/2026-09-23/issue130-review/` |
 | 1.72 | 2026-09-24 | 4.6.1章に「リリース経路の原則」を追記: リリースは staging のマージでのみ行い、main 直コミット・staging 未経由の main 向け PR を禁止。Issue #127 以降 main と staging はツリー完全一致が正。PR #144（`c91eb81`）・#145 の main 直行と Dependabot #140/#141 の staging 残留による双方向のずれを同期 PR で解消した経緯を記録。4.6.3章に同期後のツリー一致確認を追記。テスト件数変更なし |
+| 1.73 | 2026-09-24 | #90/#131 履歴移行計画と証跡アーカイブを4.2.6章に追加。公開索引のスキーマ、SHA-256復元確認、バックアップbundle、PR refsの制約と残余リスクを記録。`.gitignore` に画像・動画・PDF・trace・ZIP・report.html/work-completion-report.html を追加し、必須HTMLレポートはDrive正本としてreadback SHA-256検証後に索引へ登録、JSONと検証scriptはGit保持する運用を明記。
 
 ## システム変更履歴
 
@@ -1714,6 +1715,25 @@ GitHubリポジトリが利用可能な場合、以下の手順でシステム�
 5. ビルド＆デプロイを実行する
 6. GitHub OAuth Appの Callback URL を新ドメインに更新する
 
+### 4.2.6 Git履歴からのエビデンスアーカイブ
+
+大容量の過去エビデンスは、本人専用のGoogle Driveアーカイブへ退避し、Gitには復元に必要な最小索引を残す。公開索引 `evidence/archive-index.json` の1行は、`path`、`git_blob_sha1`、`sha256`、`size`、`storage_class`（`git` / `drive`）で構成し、Drive file ID・共有URL・個人情報は格納しない。索引形式は `node scripts/validate-evidence-archive-index.mjs` で検証する。pathのabsolute化、`.` / `..` segment、空segment、backslash、NUL、PII・URL・Drive ID様文字列を拒否する。
+
+2026-09-24の履歴全体inventoryでは1,518個のpath/blob pairを特定した。うち1,395 pair（694 unique blob）はDriveへ移し、123 pairはGitに保持する。redaction済みの結果JSONは新しいGit blobとして追加するため、公開索引は1,519 entryとなる。これは「履歴全体のpair数」に新しいredacted blob entryを加えた数であり、Driveの既存758 pairを再コピーしない。全てのDrive移動対象は履歴全体でevidence外aliasがないことを確認する。HTMLが相対画像を参照する場合はHTML自体と画像を同じアーカイブへ保管し、復元後に相対参照のbrokenが0であることを確認する。
+
+4.10.3章で必須としている新規 `report.html` と `work-completion-report.html` は、今後は本人専用Driveを正本として保存する。スクリーンショット・大容量メディア・画像埋込レポートはDriveに保管し、各ファイルの読戻し後にSHA-256を照合してから公開索引へ追加する。`verify-*.mjs` と `*-results.json` はGitで保持する。小さく画像埋込のない非レポートHTMLもGitに保持できる。過去日付フォルダのGit媒体を除去できるのは、Drive上の全件hash・readback・復元・HTML相対画像参照・索引更新が全てPASSした後だけとする。これは「過去日付エビデンスを上書き・削除しない」規則の限定例外である。
+
+履歴書換えの手順:
+
+1. GitHubの全heads・tagsを凍結し、GitHubのlive ref mapと一致すること、open PRが0件であることを確認する。`refs/pull/*` は読み取り専用のため更新対象と混同しない。
+2. 事前bundleを作成し、SHA-256を記録する。Driveへ保管したbundleは転送partごとのSHA-256、結合後のbundle SHA-256、`git bundle verify`、別bare repositoryへの復元refsを照合する。
+3. 全履歴のpath/blob inventoryを独立二方式で一致させ、Driveの復元manifestと全対象SHA-256、HTML相対画像参照、非evidence alias、keep対象を検証する。
+4. すべてのheadsを隔離候補で書き換え、全コミットの個人情報、削除対象blob、author/committerカテゴリ、main/stagingのtree一致、全テストを検証する。
+5. 最終ユーザー承認後に限り、凍結済みold OIDをleaseに使ったatomicなheads更新を実施する。`--mirror` は使わず、tagsが存在する場合は個別にレビューする。更新の失敗・一部反映・ref driftを検出した場合は追加pushを止める。
+6. push後にlive refs、GitHub CI、Cloudflare Pages、本番・stagingの読取確認、fresh clone復元を実施する。読み取り専用PR refsが旧履歴を保持する場合は、その残存範囲とGitHub側の保持状態を記録し、解消済みと誤記しない。
+
+バックアップbundleはGoogle Driveの本人専用領域に保管し、GitHub公開索引へDrive IDや非公開共有URLを記録しない。復旧時はbundleの全hashを照合してから別のbare repositoryへrefsを復元し、通常cloneへの復旧反映は内容を確認した後に行う。
+
 ---
 
 ## 4.3. フォーク転用ガイド
@@ -2442,7 +2462,8 @@ await loginButton.click();
 1. **社内レビュー**: スクリーンショット全数を確認し、ログイン画面のみ等の不備がないことを検証する（CLAUDE.md ルール11）
 2. **レポート生成**: `report.html` を更新し、全スクリーンショットをPC/iPad/iPhone横並びで確認可能な形式にまとめる
 3. **作業完了報告書生成**: 変更がある場合は `work-completion-report.html` を作成し、システム要件変更の有無・テスト結果・エビデンス確認結果を記録する
-4. **フォルダ整理**: デバッグ用スクリーンショット・一時ファイルを削除し、正式なフォルダ構成のみを維持する
+4. **Drive正本化**: 新規スクリーンショット、画像埋込レポート、`report.html`、`work-completion-report.html` を本人専用Driveへ保存する。読戻ししたファイル単位のSHA-256が一致した後に `evidence/archive-index.json` を更新し、validatorを実行する。`verify-*.mjs` と `*-results.json` はGitに残す
+5. **フォルダ整理**: デバッグ用スクリーンショット・一時ファイルを削除し、正式なフォルダ構成のみを維持する
 
 **フォルダ構成（標準）:**
 ```
@@ -2557,4 +2578,4 @@ Actions のメジャー遅れを alert にしないのは、Dependabot が更新
 
 ---
 
-**最終更新**: 2026年9月24日（v1.72）
+**最終更新**: 2026年9月24日（v1.73）

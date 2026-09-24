@@ -182,7 +182,8 @@ DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を�
 - **フォルダ構成**: `evidence/YYYY-MM-DD/` 直下に `report.html`, `work-completion-report.html`, `verify-*.mjs`, `*-results.json` を配置。スクリーンショットは `screenshots/`, `site-interactive/`, `cms-interactive/`, `cms-crud/`, `security/` サブフォルダに整理。デバッグ用スクリーンショットや一時ファイルはコミット前に削除する
 - **CMS CRUD認証**: verify-cms-crud.mjsはDecap CMS 3ステップOAuthハンドシェイクをcontext.route()でシミュレート。Issue #127 以降は base_url が `location.origin` から導出されるため、**config.yml の base_url を一時変更する手順は不要**（config.yml に base_url が無い）。旧スクリプトの一時書き換え処理は置換対象が無く何もしない（詳細: DOCUMENTATION.md 4.9.9章）
 - **E2Eテストのスクリーンショットエビデンス**: CMS関連のE2Eスペックテスト（Playwright）でも認証後のCMS画面スクリーンショットを `evidence/YYYY-MM-DD/screenshots/` に保存する。ファイル名規則: `e{テストID}-{検証項目}-{デバイス名}.png`。認証には `context.route()` + 3ステップOAuthハンドシェイクを使用する。`page.route()` ではOAuthポップアップをインターセプトできないため不可（Bug #36）
-- **エビデンスの格納ルール**: エビデンス（スクリーンショット・レポート・検証結果JSON）は必ず `evidence/YYYY-MM-DD/` フォルダに格納する。ルートディレクトリや他の日付フォルダに格納してはならない。過去日付のエビデンスフォルダを上書き・削除しないこと
+- **エビデンスの格納ルール**: エビデンス（スクリーンショット・レポート・検証結果JSON）は必ず `evidence/YYYY-MM-DD/` フォルダに格納する。ルートディレクトリや他の日付フォルダに格納してはならない。過去日付のエビデンスフォルダを上書き・削除しないこと（履歴移行時のみ、Driveへの全件退避後、Drive読戻しと個別SHA-256照合、復元テストが全PASSし、索引を更新してから履歴媒体を除去できる。手順はDOCUMENTATION 4.2.6章）
+- **エビデンス履歴アーカイブ**: `evidence/archive-index.json` は履歴エビデンスの公開復元索引で、相対パス・Git blob SHA-1・SHA-256・サイズ・保存区分だけを含める。Drive ID・非公開URL・個人情報を追加しない。更新後は `node scripts/validate-evidence-archive-index.mjs` を実行し、Driveから復元したファイルはSHA-256とHTML相対画像参照を検証する。`.gitignore` は新規画像・動画・PDF・trace・ZIPと `report.html` / `work-completion-report.html` 等のレポートを除外し、検証JSON・ソースscript・公開索引・小さな非レポートHTMLはGitに保持する。新しい必須レポートはDriveを正本として保存し、読戻しSHA-256検証後に索引へ登録する。除外メディアもDrive退避・読戻しhash・索引更新までGit履歴へ追加しない。大規模な履歴書換え手順は `docs/DOCUMENTATION.md` 4.2.6章に従う。
 
 ### 新機能追加時（要件トレーサビリティの維持）
 1. docs/DOCUMENTATION.md の要件一覧（1.2章 FR / 1.3章 CMS / 1.4.1章 NFR / 1.4.2章 SEC）に要件IDを追加
