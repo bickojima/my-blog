@@ -228,7 +228,8 @@ DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を�
 7. **Vitest だけでは main マージ不可**。ローカル `npm run test:e2e`（3デバイス全件）と `node evidence/YYYY-MM-DD/verify-comprehensive.mjs`（雛形 `evidence/2026-05-24/verify-comprehensive.mjs`）の完了が必須。CI の Vitest 成功・staging CMS 実ログイン確認・「後で E2E」は代替にならない（Bug #50）
 8. **CI に Playwright は載せない**（実行時間のためローカル運用を継続）。E2E / verify-comprehensive の必須化はローカル手順と Vitest による手順文書の固定で行う
 9. **リリースは staging のマージでのみ行う**: main 直コミット・staging 未経由の main 向け PR（リリース候補ブランチでの追加コミット、CI のみの main 直行 PR を含む）は禁止。Issue #127 以降 main と staging はツリー完全一致が正で、リリース・同期後に `git diff origin/main origin/staging` が空であることを確認する（DOCUMENTATION.md 4.6.1章「リリース経路の原則」）
-10. 詳細手順は DOCUMENTATION.md 4.6章を参照
+10. **main / staging はリポジトリ ruleset（`protect-main-staging`）で削除・force push を禁止している**（Issue #162, Bug #56）。削除・force push が必要な場合は、ユーザーの承認を得た上で ruleset を一時的に無効化してから作業し、直後に有効へ戻して自己テストで確認する（DOCUMENTATION.md 4.6.7章）
+11. 詳細手順は DOCUMENTATION.md 4.6章を参照
 
 ### セキュリティ・品質チェック（コード変更時）
 - admin/index.html で `innerHTML` / `outerHTML` を使用しない（DOM API を使用）
@@ -263,6 +264,7 @@ DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を�
 - staging で検証せずに直接 main にコード変更をプッシュする
 - ユーザーが明示的に指示しない限り main にマージする（自己判断でマージしない）
 - Vitest のみ、または E2E をプロセス負債として先送りしたまま main にマージする（Bug #50）
+- コミットを `-c user.name` と amend の組み合わせだけで作成する（author が変わらず個人情報が再混入した原因、#152）。`GIT_AUTHOR_*` / `GIT_COMMITTER_*` を両方指定する
 
 ## 検索除外の固定ページ（FR-29）
 
