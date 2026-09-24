@@ -72,6 +72,7 @@
 | 1.62 | 2026-09-24 | Issue #153: Decap CMS 3.16.3 / Node.js 22.23.3対応。dependency freshnessの期待値更新、T07/T50実データ読込アサーション、Bug #54再発防止を追加。既存754件にSEC-42 identity gate 8件を含む現行Vitest 762件。包括E2Eは強化条件で150/150 PASS、T07/T50はタイトル・本文を目視確認。初回誤PASSは記録し無効扱い。QA: `docs/qa-2026-09-24-issue153.md`。
 | 1.63 | 2026-09-24 | Issue #153の続き（Bug #55）: Node.js 22.23.3はCloudflare Pagesのnode-build未対応でstagingビルドが失敗したため22.23.2へ戻し、SEC-40のdependency-freshness判定に猶予期間`nodePatchGraceDays`（既定14日）を追加。`dependency-freshness.test.mjs`に固定日付フィクスチャの回帰テスト3件（猶予内/猶予超過/公開日未取得）を追加し2.9章を27件→30件に更新。既存762件に3件を加えた現行Vitest 765件（全ブランチ共通）。QA: `docs/qa-2026-09-24-issue153-pages-nodebuild.md`。
 | 1.64 | 2026-09-24 | Issue #154完了。Cloudflare Pages ビルド環境の残っていた未確認項目（Build system version 等）をユーザーがダッシュボードのスクリーンショットで確認し、`scripts/dependency-freshness.config.json` の手動確認項目を全て`reviewed`に更新（`unverified`空）。`node scripts/check-dependency-freshness.mjs`実行で対象項目が`MANUAL_PARTIAL`を出さず`MANUAL_REVIEWED`になることを確認。2.9章 No.14の説明を実設定の確認状況に合わせて更新（テストコード・テストケース数の変更なし、フィクスチャは合成`unverified`のまま）。`CF_PAGES_BRANCH=staging`・`CF_PAGES_BRANCH=main`両方でVitest 765件全PASSを再確認。テスト件数変更なし。QA: `docs/qa-2026-09-24-issue154-pages-build-env.md`。
+| 1.65 | 2026-09-24 | Issue #162: GitHubリポジトリruleset `protect-main-staging`（main/staging の削除・force push禁止）を追加。リポジトリ設定そのものでありコードのテストは不可のため、`tests/`への新規テストは追加していない。再発防止はDOCUMENTATION.md 4.6.7章のruleset自己テスト手順（削除push拒否・force push拒否・fast-forwardコミット成功・PRマージ後のhead残存の4項目）で代替する。Vitest件数変更なし（765件）。 |
 
 ## テスト基盤の変更履歴
 
@@ -2055,7 +2056,7 @@ Issue #117 項目2/12 により `build.test.mjs` 111→113、`fuzz-validation.te
 
 ---
 
-**最終更新**: 2026年9月24日（v1.64）
+**最終更新**: 2026年9月24日（v1.65）
 
 
 ### 2026-09-20 セキュリティIssue #109〜#113対応完了

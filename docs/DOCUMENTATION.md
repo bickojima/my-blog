@@ -87,6 +87,7 @@
 | 1.78 | 2026-09-24 | Issue #153の続き（Issue #154関連情報を含む）。PR #157で `.nvmrc`/`engines` を22.23.3へ更新後、Cloudflare Pagesのstagingビルドが `node-build: definition not found: 22.23.3` で失敗（node-buildが公開直後のパッチに未対応）。Bug #55として5 Whysを4.5章へ追記し、`.nvmrc`・`engines`をnode-build定義済みの22.23.2へ戻した（Decap CMS 3.16.3は維持）。再発防止としてSEC-40の判定ロジック（`scripts/check-dependency-freshness.mjs`）に猶予期間`nodePatchGraceDays`（既定14日）を追加し、Node.js最新パッチの公開から猶予日数未満は`NODE_PATCH_BEHIND`ではなく情報用の`NODE_PATCH_TOO_NEW`にする改訂を行った（判定テストはフィクスチャの固定日付のみでネットワーク非依存）。1.4.2章SEC-40の説明、2.2.1章の技術一覧、4.5章バグ一覧、4.11.1章棚卸し表、4.11.2章判定ルール、4.11.5章更新手順を更新。Cloudflare Pagesのビルドログ（2026-09-24）から`NODE_VERSION`環境変数が未設定（`.nvmrc`を使用）であることを確認し`scripts/dependency-freshness.config.json`の手動確認項目に記録（Build system versionは引き続き未確認、Issue #154でフォロー）。Vitest 762→765件（fixture 3件追加）。QA: `docs/qa-2026-09-24-issue153-pages-nodebuild.md`。
 
 | 1.79 | 2026-09-24 | Issue #154完了。2026-09-24にCloudflareダッシュボードのスクリーンショットで、残っていた未確認項目（Build system version）を含むPagesビルド環境の全項目を確認: Build system version **Version 3**、Build command `npm run build`、Build output `dist`、Root directory 未設定（空）、Build comments Enabled、Build cache Disabled、Production branch `main`、Automatic deployments Enabled、Build watch paths `*`。`scripts/dependency-freshness.config.json`の手動確認項目を全て`reviewed`に記録し`unverified`を空配列にした（`lastReviewed: 2026-09-24`）。`node scripts/check-dependency-freshness.mjs`を実行し`MANUAL_PARTIAL`警告が解消（`MANUAL_REVIEWED`のみ）したことを確認。次回の手動確認は`manualReviewIntervalDays`（既定92日、四半期）以内に実施する運用を明記。2.5.1章のデプロイ設定表・4.11.1章棚卸し表・4.11.5章更新手順を更新。`CF_PAGES_BRANCH=staging`・`CF_PAGES_BRANCH=main`の両方でVitest全件PASSを確認（765件、件数変更なし）。QA: `docs/qa-2026-09-24-issue154-pages-build-env.md`。
+| 1.80 | 2026-09-24 | Issue #162: リリースPR #161（head=staging）のマージで`delete_branch_on_merge=true`によりstagingが自動削除された事故（復旧済み、#155コメントに記録）の恒久対策として、GitHubリポジトリruleset `protect-main-staging`（id `23934351`）を作成・有効化した。対象は`refs/heads/main`・`refs/heads/staging`、ルールは`deletion`（削除禁止）・`non_fast_forward`（force push禁止）、bypass対象なし。必須ステータスチェックは設定しない（Decap CMSの直接コミットを妨げないため、Issue #128と同じ判断）。使い捨てブランチによる自己テスト（削除push拒否・force push拒否・GitHub Contents APIによるfast-forwardコミット成功・`delete_branch_on_merge=true`下でのPR #164〔テスト用〕マージ後もhead残存）を実施し、`delete_branch_on_merge`を再度`true`に戻した。4.6.7章に緊急時の履歴修復手順（所有者承認→ruleset一時disabled→`--force-with-lease`→active復帰→自己テスト再実行）を追加。4.5章にBug #56を5 Whysとともに追記（再発防止テストはリポジトリ設定のためコード化不可、ruleset自己テストで代替）。テスト件数変更なし（765 Vitest）。 |
 
 ## システム変更履歴
 
@@ -1883,6 +1884,7 @@ GitHubリポジトリが利用可能な場合、以下の手順でシステム�
 | 53 | 2026-09-24 | PR #151 のマージ後、mainに許可されていないcommit author metadataを含む新規コミットが入った。既存の内容テストとローカルhookでは、PRやCMS経由で追加されたGit metadataを止められなかった | main/stagingへ入るcommit metadataをCIで検証するゲートがなく、ローカルhookはGitHub上の操作へ適用されなかった | SEC-42としてPR差分とmain/staging push差分のauthor/committerを固定allowlistで検査する。force-pushとbefore SHA不在時は新HEAD全履歴を検査し、不許可値はログへ出さない。Dependabotの公式bot identityは個別tupleで許可する | `tests/commit-identities.test.mjs`（TEST-REPORT 2.11章） |
 | 54 | 2026-09-24 | Decap CMS 3.16.3 の包括検証でT07/T50の編集画面が空でもPASSした | Git Trees APIのnested folder応答を模擬するfixtureがrepository-relative pathとfolder-relative childrenに合っておらず、blobがentryに解決されなかった。合否条件もeditor container/route到達だけで既存内容の読込を検証していなかった | Git Trees fixtureを実際のAPI階層応答に合わせ、CMSエディタで既存タイトル・本文が表示される必須assertionを加えた。実クリックを維持し、エラーや空フォームはFAILとする | 包括E2E T07/T50、`tests/e2e/cms-operations.spec.ts` E-29。Bug #54 5 Whysは本章後段 |
 | 55 | 2026-09-24 | Issue #153のPR #157（`.nvmrc`/`engines`を22.23.3へ更新）をstagingへマージ後、Cloudflare Pagesのstagingビルドが `node-build: definition not found: 22.23.3` で失敗した。Node.js 22.23.3は2026-09-23公開で、Cloudflare Pagesがビルド環境の取得に使うasdf/node-buildにはまだバージョン定義ファイルが無かった（`https://github.com/nodenv/node-build/tree/master/share/node-build`に`22.23.2`はあるが`22.23.3`は無いことを確認）。stagingの配信は旧版（Decap CMS 3.16.2）のまま更新されなかった | Node.jsパッチのバージョン選定を「endoflife.dateのサイクル最新」だけで行い、Cloudflare Pagesの実際のビルド環境（asdf/node-build）がその最新パッチに対応しているかを確認していなかった。既存のSEC-40依存鮮度チェックも「固定パッチが最新より古い」ことしか判定せず、「最新パッチが公開直後でビルド環境に未対応」というケースを考慮していなかったため、`.nvmrc`を最新パッチへ追従することを妨げる仕組みが無かった | `.nvmrc`・`engines`をnode-build定義済みの22.23.2へ戻した。SEC-40の判定ロジックに猶予期間`nodePatchGraceDays`（既定14日）を追加し、Node.js最新パッチの公開からこの日数未満は`NODE_PATCH_BEHIND`（要追従）ではなく`NODE_PATCH_TOO_NEW`（情報記録のみ）にして、公開直後のパッチへ誤って追従させないようにした。運用手順（4.11.5章）に、`.nvmrc`更新前にnode-build定義の存在を確認する手順を明記した | `tests/dependency-freshness.test.mjs`（猶予期間内は`NODE_PATCH_TOO_NEW`になり`NODE_PATCH_BEHIND`を出さないこと、猶予期間超過後は`NODE_PATCH_BEHIND`に戻ること、公開日未取得時は猶予を適用しないこと、の3件）。Bug #55 5 Whysは本章後段 |
+| 56 | 2026-09-24 | main/staging に自動削除保護がなく、`delete_branch_on_merge=true` の状態で staging を head にしたリリース PR #161 をマージした際に staging ブランチが自動削除された（復旧済み、経緯は #155 のコメントに記録）。Issue #162 として恒久対策のリポジトリ ruleset（4.6.7章）を導入した | 4.6.1章のリリース手順は「staging を head にした PR を main へマージする」ことのみを定め、GitHub の `delete_branch_on_merge`（マージ後の head ブランチ自動削除）設定がリリース対象の staging 自体にも無条件に適用される、というリポジトリ設定と運用手順の組み合わせを想定していなかった | 恒久対策はコードの再発防止テストでは表現できない（リポジトリ設定そのものであるため）。GitHub リポジトリ ruleset `protect-main-staging`（`deletion` 禁止・`non_fast_forward` 禁止、bypass 対象なし）を作成・有効化し、ruleset の自己テスト手順（4.6.7章）でブランチ削除・force push の拒否と、リリース PR マージ後も head（staging）が残ることを都度確認する運用に切り替えた | リポジトリ設定のためコードのテストは不可。4.6.7章の ruleset 自己テスト手順（削除 push 拒否・force push 拒否・fast-forward コミット成功・PR マージ後の head 残存の4項目）で代替する |
 
 Bug #53 の5 Whys: (1) なぜ許可外metadataがmainへ入ったか—PRマージcommitのauthor/committerを検査しなかった。(2) なぜ検査しなかったか—CIは内容とビルドだけを検証していた。(3) なぜ内容検証で防げなかったか—Git identityはファイル内容ではない。(4) なぜローカルhookで防げなかったか—GitHub上のPR作成・マージやCMS経由のcommitにはローカルhookが適用されない。(5) なぜ再発可能だったか—main/stagingへ入る差分をサーバー側で検査する統制がなかった。SEC-42のCIゲートを追加し、通常差分・force-push・base SHA欠損を別々に監査する。
 
@@ -1983,6 +1985,16 @@ Bug #53 の5 Whys: (1) なぜ許可外metadataがmainへ入ったか—PRマー�
 5. なぜこの種の失敗が起き得る構造だったか: Node.js 公式リリースと Cloudflare Pages のビルド環境（サードパーティの asdf/node-build）の更新には数日〜数週間のタイムラグがあり得るが、そのタイムラグを吸収する仕組み（更新前のnode-build定義確認、または機械判定の猶予期間）がこれまで存在しなかったため。
 
 **根本対策:** `.nvmrc`・`engines` を node-build 定義済みの 22.23.2 へ戻し、staging のビルドを復旧した（Decap CMS 3.16.3 は維持）。加えて (1) `.nvmrc` 更新の運用手順（4.11.5章）に、更新前に node-build の該当パッチ定義の存在確認を明記し、(2) `scripts/check-dependency-freshness.mjs` の SEC-40 判定に `nodePatchGraceDays`（既定14日）の猶予期間を追加し、Node.js 最新パッチの公開直後は `NODE_PATCH_BEHIND` ではなく情報用の `NODE_PATCH_TOO_NEW` として扱うことで、機械判定が公開直後のパッチへの追従を急かさないようにした。判定テストはフィクスチャの固定日付（ネットワーク非依存）で猶予内・猶予超過・公開日未取得の3パターンを検証する。
+
+**Bug #56 5 Whys（2026-09-24, Issue #162）:**
+
+1. なぜ staging ブランチが消えたか: リリース PR #161（head=staging, base=main）をマージした直後に GitHub が head ブランチの自動削除を実行したため。
+2. なぜ head ブランチが自動削除されたか: リポジトリ設定 `delete_branch_on_merge` が `true` であり、GitHub は「PR の head ブランチはマージ後に不要」という一般的な前提でこれを機械的に実行するため。staging がリリース対象ブランチであり削除してはならない、という区別を GitHub 側は持たない。
+3. なぜ削除してはならないブランチが `delete_branch_on_merge` の対象から外れていなかったか: 4.6.1章のリリース手順は「staging を head にした PR を main にマージする」という操作手順だけを定めており、そのマージが `delete_branch_on_merge` という別のリポジトリ設定と組み合わさったときの副作用（head=staging の自動削除）を検討していなかったため。
+4. なぜこれまで顕在化しなかったか: 過去のリリースでは `delete_branch_on_merge` が無効だった時期、または偶然削除対象ブランチと衝突しなかった運用が続いており、staging を head にした PR のマージが実際に発生するまで問題が表面化しなかったため。
+5. なぜ再発を防ぐ仕組みがなかったか: ブランチ削除を防ぐ手段（GitHub リポジトリ ruleset や分岐保護ルール）がこれまで導入されておらず、`delete_branch_on_merge` という便利機能のリスクを相殺する仕組みが存在しなかったため。
+
+**根本対策:** GitHub リポジトリ ruleset `protect-main-staging`（id `23934351`）を作成・有効化し、`refs/heads/main`・`refs/heads/staging` に `deletion`（削除禁止）・`non_fast_forward`（force push 禁止）を適用した（bypass 対象なし）。これにより `delete_branch_on_merge` が有効なままでも、リリース PR のマージで staging が自動削除されなくなる。詳細・自己テスト結果・緊急時の修復手順は4.6.7章を参照。
 
 ### 4.5.1 既知の制限事項（Bug #48関連: url-map.json対策の適用範囲）
 
@@ -2136,6 +2148,43 @@ curl -fsS https://staging.reiwa.casa/ | grep -o '<link rel="canonical"[^>]*>'
 ```
 
 5. ブラウザで `https://reiwa.casa/admin/` を開きログインまで行い（保存はしない）、開発者ツールの Network で `git/trees/main:` のように **main** を読みに行っていることを確認する。staging（`https://staging.reiwa.casa/admin/`）では `staging:` を読むこと。書き込み先の実測は `tests/e2e/cms-env-branch.spec.ts` と `evidence/2026-09-23/issue127/` のモック環境で行う。
+
+### 4.6.7 リポジトリ ruleset による main / staging 保護（Issue #162, Bug #56 恒久対策）
+
+Bug #56（本章後段参照）の恒久対策として、GitHub リポジトリ ruleset `protect-main-staging`（id `23934351`）を作成・有効化（`active`）した。
+
+**内容:**
+
+- 対象: `refs/heads/main`, `refs/heads/staging`
+- ルール: `deletion`（ブランチ削除禁止）、`non_fast_forward`（force push 禁止）
+- bypass 対象: なし（リポジトリ所有者を含め誰も bypass できない）
+- 必須ステータスチェック: 設定していない。Decap CMS が main / staging へ直接コミットする運用（fast-forward の通常コミット）を妨げないため（4.6.4章・Issue #128 と同じ判断）
+
+**自己テスト（2026-09-24 実施、使い捨てブランチを一時的に ruleset の対象へ含めて検証し、検証後は対象から外してブランチも削除済み）:**
+
+| 検証項目 | 操作 | 結果 |
+|:---|:---|:---|
+| ブランチ削除禁止 | 保護対象ブランチの削除 push | `push declined due to repository rule violations` で拒否 |
+| force push 禁止 | non-fast-forward の force push | 同様に拒否 |
+| CMS 相当の通常コミット | GitHub Contents API による fast-forward コミット（Decap CMS の保存と同じ経路） | 成功（ruleset の影響を受けない） |
+| リリース PR マージ時の head 自動削除 | `delete_branch_on_merge=true` の状態で、保護対象ブランチを head にした PR（#164、テスト用）をマージ | head ブランチは自動削除されず残った |
+
+**`delete_branch_on_merge`**: 再び有効（`true`）にしてある。上記の自己テストのとおり、staging を head にしたリリース PR をマージしても、ruleset（`deletion` ルール）により staging は自動削除されずに残る。
+
+**CMS の直接コミットへの影響**: Decap CMS が main / staging へ行う保存は通常の fast-forward コミットであり、`non_fast_forward` ルールにも `deletion` ルールにも抵触しないため、CMS の保存フローは ruleset の影響を受けない。
+
+**緊急時に履歴を修復する手順**（force-push でしか直せない事故が起きた場合）:
+
+1. リポジトリ所有者の承認を得る。
+2. ruleset `protect-main-staging` を一時的に `disabled` にする。
+3. `git push --force-with-lease` で該当ブランチを修復する（`--force` は使わない）。
+4. 修復直後に ruleset を `active` へ戻す。
+5. 4.6.7章の自己テスト（削除 push・force push の拒否）を再実行し、保護が正しく戻っていることを検証してから完了とする。
+
+**残余リスク:**
+
+- bypass 対象を設定していないため、リポジトリ所有者自身の操作も拒否される（意図どおりの設計であり、緊急手順は上記の一時無効化を経由する）。
+- 必須ステータスチェックを設定していないため、CI（Vitest）の失敗だけでは push・マージは止まらない。実際のゲートは Cloudflare Pages のビルドコマンド（`npm run build`）内の Vitest 実行であり、テスト失敗時はデプロイが止まる（Issue #128, 4.6.2章 No.3備考）。
 
 ---
 
