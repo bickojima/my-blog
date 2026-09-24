@@ -23,7 +23,7 @@
 npm run dev          # 開発サーバー起動（前処理含む）
 npm run build        # テスト必須ビルド（vitest run → normalize-images → organize-posts → astro build → image-optimize）
 npm run build:raw    # テストなしビルド（build.test.mjs内部とGitHub Actions CIで使用。Cloudflare Pagesは使わない）
-npm test             # Vitest 全テスト実行（754テスト、記事数により変動。Issue #127 以降はブランチによって件数が変わらない）
+npm test             # Vitest 全テスト実行（762テスト、記事数により変動。Issue #127 以降はブランチによって件数が変わらない）
 npm run test:watch   # Vitest ウォッチモード
 node scripts/check-dependency-freshness.mjs  # npm管理外依存の鮮度・EOL・SRI判定（ネットワーク必要、SEC-40。週次はGitHub Actions）
 npm run test:e2e     # Playwright E2Eテスト（要: npm run build 済み、465テスト：457実行+8スキップ）
@@ -118,7 +118,7 @@ tests/
 
 ## テスト
 
-- **Vitest**: 設定検証、コンテンツ検証、単体テスト、ビルド統合テスト、セキュリティ検証、ファズテスト、基本機能保護テスト（754テスト、記事数により変動）。`.github/workflows/ci.yml` によりmain/staging/feature/*へのpush・PRで自動実行される（Playwright は含めない）。Issue #127 で SEC-35 のブランチ別テスト登録を廃止したため、feature・main・staging・CI で件数は同じ
+- **Vitest**: 設定検証、コンテンツ検証、単体テスト、ビルド統合テスト、セキュリティ検証、ファズテスト、基本機能保護テスト（762テスト、記事数により変動）。`.github/workflows/ci.yml` によりmain/staging/feature/*へのpush・PRで自動実行される（Playwright は含めない）。Issue #127 で SEC-35 のブランチ別テスト登録を廃止したため、feature・main・staging・CI で件数は同じ
 - **Playwright**: PC/iPad/iPhone 3デバイスで465テスト（457実行+8スキップ、ローカルのみ）。**CI に Playwright は載せない**（実行時間のためローカル運用を継続）。本番（main）マージ前のローカル全件は必須（Bug #50）
 - コンテンツ検証テストは記事数・ページ数に応じて動的展開される
 - テスト実行後、失敗がある場合は原因を調査し修正する（テストを削除・スキップしない）
@@ -237,11 +237,12 @@ DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を�
 - OAuth scope は `public_repo,read:user` に限定する（`repo` / `user` 禁止）
 - HTMLテンプレートに埋め込む変数は必ずエスケープする
 - 変数宣言は `const` / `let` のみ（`var` 禁止）、`'use strict'` を使用
-- セキュリティ要件は DOCUMENTATION.md 1.4.2章（SEC-01〜SEC-41、SEC-127A〔仮ID〕）、品質基準は 4.7章を参照
+- セキュリティ要件は DOCUMENTATION.md 1.4.2章（SEC-01〜SEC-42、SEC-127A〔仮ID〕）、品質基準は 4.7章を参照
 - **環境固有値をファイルに書き戻さない**（SEC-127A 仮ID）: config.yml に `branch` / `base_url`、`public/robots.txt`、`astro.config.mjs` の `SITE_URL` リテラルを追加しない。本番ホスト名は `public/admin/cms-env.js` の `HOSTNAME_TO_BRANCH` と `src/lib/site-env.mjs` の `PRODUCTION_SITE_URL` の2か所だけ（一致はテストが検証）。admin/index.html にはホスト名も URL も書かない
 - **frontmatter は `scripts/lib/safe-frontmatter.mjs` 経由で解析する**（scripts だけでなく tests/・E2E も同じ。gray-matter を直接呼ばない。`npm run build` は organize-posts より先に Vitest を実行するため、テストも同じ経路になる。`language: 'yaml'` 指定だけでは `---js` の eval を防げない。Bug #52）
 - **OAuth オリジン許可リストは `functions/_shared/allowed-origin.js` だけで管理する**（SEC-37）。コールバック HTML への値の埋め込みは `toScriptStringLiteral()`（JSON.stringify ベース、SEC-39）を使い、応答 CSP は `frame-ancestors`/`form-action`/`base-uri` まで自己完結させる（SEC-38。Functions の応答には `_headers` が適用されない）
 - **GitHub Actions は commit SHA で固定し `# vX.Y.Z` を併記する**（SEC-36）
+- **main/staging に入る新規 commit の author と committer はCIで許可リスト検査する**（SEC-42）。PRはマージ前にbase..headを検査し、push eventはbefore..headを検査する。main/stagingにブランチ保護がない現状では直接pushは受理後の検知となるため、履歴修復force-push完了後にrequired status checks等の保護設定を別途検討する。force-pushまたはbefore SHA不在時は新HEAD全履歴を検査し、拒否ログにauthor/email値を出さない。Dependabot bot は固定tupleで許可する
 - Issue #117 の hardening 項目の判定（実装・対応不要・#127移管）は `docs/security/issue-117-hardening-decisions.md` を参照
 - `npm run build` はビルド前に自動でテスト実行（build.test.mjs以外）。テスト失敗時はビルド中断
 - CDN `<script src="...">` タグは必ず `</script>` で閉じる（閉じタグ欠落で後続スクリプトが飲み込まれる）
@@ -272,4 +273,4 @@ DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を�
 - sitemap除外は `astro.config.mjs` の `filter` で行う。**frontmatterとfilterのずれは `build.test.mjs`（FR-29）が検出する**ので、slugを変えたらfilterも直す。
 - 原稿変更時は `tests/e2e/app-info.spec.ts` のソース連動E2E（2ページ×3デバイス）で確認する。
 - **CMSに項目を足さずにフロントマターを増やさない**。Decap CMSは設定にない項目を保存時に落とす。`cms-config.test.mjs` が固定ページの全フロントマター項目とZodスキーマ項目をCMS設定と突き合わせて検出する。
-- 現行テスト定義はVitest 754件（全ブランチ共通。Issue #127 で SEC-35 のブランチ別登録を廃止）、E2E 465件（旧444件＋FR-29 9件＋Issue #127 E-47 12件、457実行+8スキップ）。QAは `docs/qa-2026-09-09-otp-app-pages.md`。
+- 現行テスト定義はVitest 762件（全ブランチ共通。Issue #127 で SEC-35 のブランチ別登録を廃止）、E2E 465件（旧444件＋FR-29 9件＋Issue #127 E-47 12件、457実行+8スキップ）。QAは `docs/qa-2026-09-09-otp-app-pages.md`。
