@@ -65,6 +65,12 @@
 | 1.57 | 2026-09-23 | Issue #127/#130 実測更新: Vitest 754件（fuzz 219件）、Playwright 457 PASS + 8 skip / 465。2.5章を2.5.1〜2.5.13順に整理し、2.10節を第3部前へ移動。包括E2Eの件数は50シナリオID×3デバイス=150検証と訂正。staging実配信の包括E2Eは端末別50/50 PASS。
 | 1.58 | 2026-09-24 | #90/#131 履歴移行の完了結果を追記。25 headsをold-OID lease付きatomic pushで更新（exit 0）、live refs 143/143一致。main/staging CI PASS、新規clone `git fsck` PASS（pack 40.14 MiB）、Pages read-only確認を記録。118 read-only PR refsは残存。公開証跡索引 validator を追加。
 | 1.59 | 2026-09-24 | 1.6.4章・4.1.6章に残っていた旧エビデンス保存記述（`report.html`/スクリーンショットをコミット前提の記述）をDrive正本方針（DOCUMENTATION.md 4.2.6章・4.10.3章）に統一。Git保持対象（検証JSON・`verify-*.mjs`・索引・小さな非レポートHTML）とDrive正本対象（画像・動画・PDF・`report.html`系）の区別を明記。テスト件数変更なし。 |
+| 1.60 | 2026-09-24 | SEC-42 の回帰テストを追加（`commit-identities.test.mjs` 8件）。PR差分と通常push差分のみを検査し、force-pushまたはbefore SHA不在時は新HEAD全履歴を検査すること、tbi/bickojima/GitHub/Dependabotの許可tuple、author/committer両方の拒否、拒否値の非出力を検証。CI workflowのSHA range wiringを静的確認。 |
+| 1.61 | 2026-09-24 | SEC-42 identity gate実装後に `npm test` を実行し、既存754件＋新規回帰8件の計762件PASSを確認。個別実行 `npx vitest run tests/commit-identities.test.mjs` も8/8 PASS。 |
+
+
+| 1.62 | 2026-09-24 | Issue #153: Decap CMS 3.16.3 / Node.js 22.23.3対応。dependency freshnessの期待値更新、T07/T50実データ読込アサーション、Bug #54再発防止を追加。既存754件にSEC-42 identity gate 8件を含む現行Vitest 762件。包括E2Eは強化条件で150/150 PASS、T07/T50はタイトル・本文を目視確認。初回誤PASSは記録し無効扱い。QA: `docs/qa-2026-09-24-issue153.md`。
+| 1.63 | 2026-09-24 | Issue #153の続き（Bug #55）: Node.js 22.23.3はCloudflare Pagesのnode-build未対応でstagingビルドが失敗したため22.23.2へ戻し、SEC-40のdependency-freshness判定に猶予期間`nodePatchGraceDays`（既定14日）を追加。`dependency-freshness.test.mjs`に固定日付フィクスチャの回帰テスト3件（猶予内/猶予超過/公開日未取得）を追加し2.9章を27件→30件に更新。既存762件に3件を加えた現行Vitest 765件（全ブランチ共通）。QA: `docs/qa-2026-09-24-issue153-pages-nodebuild.md`。
 
 ## テスト基盤の変更履歴
 
@@ -86,6 +92,7 @@
 | 2026-02-21 | **E2E CRUDテスト・アクセシビリティテスト追加**: cms-crud.spec.ts新規作成（E-22〜E-24: 記事作成・編集・削除 11テスト）、accessibility.spec.ts新規作成（E-25〜E-27: axe-core WCAG 2.1 AA検証 6テスト）、@axe-core/playwright導入。色コントラスト比修正（WCAG AA 4.5:1準拠）、見出し階層修正。計498 Vitest + 291 E2E = 789テスト | - |
 | 2026-02-23 | **第三者セキュリティ・品質レビュー対応**: SEC-21〜SEC-26対応。fuzz-validationスキーマ更新（date XSSテスト→拒否期待、tags長さ超過テスト追加）、content-validation Windows互換性修正（path.relative正規化、basename使用、CRLF正規表現対応）、build.test.mjs _headersパースCRLF修正、organize-posts.mjs url-map.jsonキー正規化。計519 Vitest + 375 E2E = 894テスト | - |
 | 2026-08-11 | **Issue #97回帰基盤の安定化**: Vitestの対象を`tests/**/*.test.mjs`へ限定し、リポジトリ内の別worktree・依存パッケージのテスト混入を防止。OAuth/CMS初期化を含むE-28へ60秒タイムアウトを設定。回帰テスト2件を追加し、588 Vitest + 444 E2E = 1032テスト | #97 |
+
 
 ---
 
@@ -110,8 +117,9 @@
 2.6. [管理画面HTML検証](#26-管理画面html検証)
 2.7. [ファズテスト・不整合値テスト](#27-ファズテスト不整合値テスト-fuzz-validationtestmjs-219件)
 2.8. [Issue #117 hardening 再発防止](#28-issue-117-hardening-再発防止-security-hardeningtestmjs-28件)
-2.9. [npm管理外依存の鮮度・EOL監視](#29-npm管理外依存の鮮度eol監視-dependency-freshnesstestmjs--27件)
+2.9. [npm管理外依存の鮮度・EOL監視](#29-npm管理外依存の鮮度eol監視-dependency-freshnesstestmjs--30件)
 2.10. [環境値の導出](#210-環境値の導出-env-derivationtestmjs-37件)
+2.11. [Git commit identity gate](#211-git-commit-identity-gate-commit-identitiestestmjs--8件)
 
 ### 第3部 要件トレーサビリティ
 
@@ -162,6 +170,7 @@
 | 画像キャプションプラグイン | `src/plugins/rehype-image-caption.mjs` | 単体テスト |
 | コードブロック到達性プラグイン | `src/plugins/rehype-focusable-code-blocks.mjs` | 単体テスト |
 | OAuth認証関数 | `functions/auth/index.js`, `callback.js` | 単体テスト |
+| 新規Git commit metadata | `.github/workflows/ci.yml`, `scripts/check-commit-identities.mjs` | 回帰テスト |
 | ビルド成果物 | `dist/` | 統合テスト |
 | 画像処理スクリプト | `src/integrations/image-optimize.mjs` | コード検証 |
 | 画像正規化スクリプト | `scripts/normalize-images.mjs` | コード検証（間接） |
@@ -184,7 +193,7 @@
 | :--- | :--- |
 | テストフレームワーク | Vitest v4.0.18 |
 | テストランナー | `vitest run`（CI）/ `vitest`（ウォッチ） |
-| Node.js | v22.12.0以上 |
+| Node.js | v22.23.2以上 |
 | OS | macOS / Linux（Cloudflare Pages ビルド環境） |
 
 ### 1.3.2 テストファイル構成
@@ -489,7 +498,7 @@ admin-html.test.mjs              -     ●     -     -     -     -     -     -  
 
 | No. | 基準 |
 | :--- | :--- |
-| 1 | 全テストケース（Vitest 754件〔全ブランチ共通。Issue #127 で SEC-35 のブランチ別登録を廃止〕 + E2E 465件 = 1219件）がPASSまたは仕様上の条件スキップであること |
+| 1 | 全テストケース（Vitest 765件〔全ブランチ共通。Issue #127 で SEC-35 のブランチ別登録を廃止〕 + E2E 465件 = 1230件）がPASSまたは仕様上の条件スキップであること |
 | 2 | `npm run build` が正常に完了すること |
 | 3 | 要件トレーサビリティマトリクス（docs/DOCUMENTATION.md 1.5章）において全要件が「充足」であること |
 | 4 | 本番（main）マージ前にローカル `npm run test:e2e` 全件と `verify-comprehensive.mjs` が完了していること（**CI に Playwright は載せない**。Bug #50） |
@@ -1404,14 +1413,14 @@ Bug #27時点は`/admin/*`側で値を「オーバーライド」する設計だ
 実ブラウザでの確認は `evidence/2026-09-23/issue117/verify-oauth-hardening.mjs`（OAuth Functions の実コードで `/auth`・`/auth/callback` を応答させ、実クリックでログイン。PC/iPad/iPhone × H01〜H05、15/15 PASS）。
 
 
-### 2.9 npm管理外依存の鮮度・EOL監視 (`dependency-freshness.test.mjs`) — 27件
+### 2.9 npm管理外依存の鮮度・EOL監視 (`dependency-freshness.test.mjs`) — 30件
 
 SEC-40（Issue #132）。`scripts/check-dependency-freshness.mjs` の純関数と、リポジトリ実ファイルの棚卸し、週次ワークフロー・Dependabot 設定を検証する。リモート応答は `tests/fixtures/dependency-freshness/`（`remote-ok.json` / `remote-alert.json` / `remote-unreachable.json`）で与え、`globalThis.fetch` は呼ばれたら例外を投げるスタブに置換し、`afterAll` で未呼び出しを確認する（`npm test` をネットワーク非依存に保つ）。コンテンツ・Decap のバージョン値は判定ロジックのテストでは合成インベントリを使い、実リポジトリのテストでは `public/admin/index.html` から動的に取得する。
 
 | No. | テストケース | テスト手法 | 期待結果 |
 | :--- | :--- | :--- | :--- |
 | 1 | 正確な x.y.z だけを固定バージョンとして解釈する | M-02 | `^3.16.2` / `3.16` は null |
-| 2 | 固定版と最新版の差を major / minor / patch / same に分類する | M-02 | 3.10.0→3.16.2 は minor 6 遅れ |
+| 2 | 固定版と最新版の差を major / minor / patch / same に分類する | M-02 | 3.10.0→3.16.3 は minor 6 遅れ |
 | 3 | integrity 属性を分解し最も強いアルゴリズムで照合する | M-02 | sha256/384/512 混在時は sha512 を採用 |
 | 4 | computeSri は openssl dgst -sha384 -binary \| base64 と同じ値を返す | M-02 | `abc` の既知ダイジェストと一致 |
 | 5 | EOL は 90日前 warning / 30日前 alert / 経過で alert | M-02 | 境界日付で ok→warning→alert |
@@ -1437,6 +1446,9 @@ SEC-40（Issue #132）。`scripts/check-dependency-freshness.mjs` の純関数�
 | 25 | run スクリプトに ${{ }} 式を直接埋め込まない（スクリプトインジェクション防止） | M-02 | 値は `env:` 経由 |
 | 26 | alert で Issue 起票（既存はコメント）とジョブ失敗、error でジョブ失敗する | M-02 | 通知経路の分岐が定義されている |
 | 27 | Dependabot は github-actions を staging 向けに週次更新する | M-03 | `.github/dependabot.yml` |
+| 28 | Issue #153/#154, Bug #55: Node.js最新パッチの公開から猶予期間（14日）未満は NODE_PATCH_BEHIND を出さず NODE_PATCH_TOO_NEW にする | M-07 | 猶予内（公開0日後）は `ok:NODE_PATCH_TOO_NEW`、`warning:NODE_PATCH_BEHIND` は出ない |
+| 29 | Issue #153/#154, Bug #55: 猶予期間（14日）を超えた古い固定パッチは引き続き NODE_PATCH_BEHIND になる | M-07 | 公開53日後相当は `warning:NODE_PATCH_BEHIND`、`ok:NODE_PATCH_TOO_NEW` は出ない（回帰防止） |
+| 30 | Node.js 最新パッチの公開日が取得できない場合は猶予を適用せず従来どおり NODE_PATCH_BEHIND にする | M-08 | `latestDate: null` では `warning:NODE_PATCH_BEHIND`（endoflife.date 応答が旧形式でも安全側に倒れる） |
 
 ネットワーク実行の結果と alert / error 経路の dry-run は `evidence/2026-09-23/issue132/` に保存する（`network/` 実照会、`fixture-alert/` alert 経路、`fixture-unreachable/` error 経路、`notify-dry-run.log` Issue 起票手順の dry-run）。
 
@@ -1468,6 +1480,20 @@ SEC-40（Issue #132）。`scripts/check-dependency-freshness.mjs` の純関数�
 
 No.31〜37 は「main と staging で環境固有ファイルに差分を置かない」ことを守る静的ガード（SEC-127A）。これらが通る限り、どちら向きのマージでも環境値は持ち込まれない（両方向マージの実証は `evidence/2026-09-23/issue127/merge-demo.md`）。
 
+## 2.11 Git commit identity gate (`commit-identities.test.mjs`) — 8件
+
+| # | テストケース | 手法 | 備考 |
+| :--- | :--- | :--- | :--- |
+| 1 | tbi、歴史的 bickojima noreply、GitHub Web、Dependabot bot の完全一致tupleを許可し、他を拒否する | M-02 | 他の名前がGitHub noreplyを自称しても拒否 |
+| 2 | base..head に新規追加されたcommitだけを検査し、author/committerの双方を拒否する | M-02 | 一つ前の履歴にあるidentityは通常差分検査の対象外 |
+| 3 | CIエラー出力に拒否された名前・emailを含めない | M-02 | SHAとauthor/committerの項目名だけを出力 |
+| 4 | 不正なSHA・読み取れないrangeをfail-closedで扱う | M-09 | 検査不能は成功扱いしない |
+| 5 | base SHAが存在しない時はhead到達可能履歴全体を監査する | M-02 | force pushのold SHAが取得不能なケース |
+| 6 | force-push eventはbase SHAが存在してもhead全履歴を監査する | M-02 | force-push時の巻き戻しを含めて確認 |
+| 7 | PR merge ref の第2親として取得できる head SHA を確認し、そのコミットを差分検査できる | M-02 | `git cat-file -e` と合成merge refで検証 |
+| 8 | CI workflowはPR/pushのbase/head rangeを渡し、Setup Node後かつnpm ci前に実行する | M-02 | CI wiringの静的検証 |
+
+
 ---
 
 # 第3部 要件トレーサビリティ
@@ -1477,7 +1503,7 @@ No.31〜37 は「main と staging で環境固有ファイルに差分を置か�
 
 要件トレーサビリティマトリクスは **docs/DOCUMENTATION.md 1.5章** に移動した。要件定義と同一ファイルで管理することで、要件追加時のトレース漏れを防止する。
 
-現在の充足状況: **FR-01〜FR-29, CMS-01〜CMS-19, NFR-01〜NFR-08, SEC-01〜SEC-41, SEC-127A（仮ID）はテストで充足されている。SEC-41は実ホストで検証した操作範囲を対象とする。未テスト要件は0件（docs/DOCUMENTATION.md 1.5.4章参照）。** Modern Web Guidanceエビデンスは `evidence/2026-06-11/` に保存する。
+現在の充足状況: **FR-01〜FR-29, CMS-01〜CMS-19, NFR-01〜NFR-08, SEC-01〜SEC-42, SEC-127A（仮ID）はテストで充足されている。SEC-41は実ホストで検証した操作範囲を対象とする。未テスト要件は0件（docs/DOCUMENTATION.md 1.5.4章参照）。** Modern Web Guidanceエビデンスは `evidence/2026-06-11/` に保存する。
 
 ---
 
@@ -1576,7 +1602,7 @@ OAuthモック＋GitHub APIモックを使い、CMS管理画面を実際に操�
 | No. | テストケース | 検証内容 | テスト手法 |
 | :--- | :--- | :--- | :--- |
 | E-28 | 記事作成の実操作 | タイトル・本文入力→保存ボタンクリック、日付フィールド入力可能、Git blob作成API呼び出し検証 | モック/フォーム操作/API検証 |
-| E-29 | 記事編集の実操作 | 既存記事タイトル変更、本文テキスト追加、保存ボタン状態変化 | モック/フォーム操作 |
+| E-29 | 記事編集の実操作 | 既存記事タイトルと本文の読込を必須確認後、実操作でタイトル変更、本文テキスト追加、保存ボタン状態を確認（Bug #54再発防止） | モック/フォーム操作 |
 | E-30 | UIインタラクション検証 | サイトリンク表示・クリック可能、コレクション切り替え、公開URLバー表示・URL内容、新規作成ボタン、ツールバー重なりなし、URLバーとエディタ重なりなし | モック/動作検証/レイアウト検証 |
 | E-31 | コレクション一覧エントリー表示 | 日付バッジフォーマット（YYYY-MM-DD）、バッジスタイル適用、エントリークリックでエディタ遷移 | モック/動作検証 |
 | E-32 | 画面遷移の整合性 | エディタ→コレクション戻りリンク動作、往復ナビゲーションでUI状態リセット、ブラウザ戻る・進む | モック/動作検証 |
@@ -1903,16 +1929,16 @@ npm run build
 
 | 項目 | 結果 |
 | :--- | :--- |
-| 実行日時 | 2026-09-23（main向け統合候補、`codex/release-2-issues-127-130`） |
+| 実行日時 | 2026-09-24（Issue #152 CI identity gate candidate、fresh clone `codex/issue152-author-allowlist`） |
 | Vitest バージョン | v4.1.11 |
-| 実行時間 | 約8s（`npx vitest run`。CF_PAGES_BRANCH 別の3ビルドを含む）。`CF_PAGES_BRANCH=main` / `staging` でも同件数で実測 |
-| 合否判定 | **合格**（未設定・main・staging の3文脈とも 754 passed） |
+| 実行時間 | 約7s（`npm test`） |
+| 合否判定 | **合格**（762 passed。うち新規 identity gate 8件） |
 
-**Vitest総件数はブランチに依存しない（Issue #127 以降）**: 旧 SEC-35 は判定ブランチによって登録数が変わった（feature 695／main・staging 698）が、導出結果を検証する形に改訂したため、feature・main・staging・CI のどこでも同じ754件になる。
+**Vitest総件数はブランチに依存しない（Issue #127 以降）**: SEC-42の8ケース追加後、feature・main・staging・CIで同じ765件（Bug #55再発防止のdependency-freshness.test.mjs 3件追加後）。
 
 ### 4.3.2 テストファイル別結果
 
-2026-09-23のmain向け統合候補で再実行した実測（lockfile準拠 `npm ci` 後、全ブランチ共通）:
+2026-09-24のfresh cloneで実行した実測（lockfile準拠 `npm ci` 後）:
 
 | テストファイル | テスト数 | 結果 | 実行時間 |
 | :--- | :--- | :--- | :--- |
@@ -1927,11 +1953,12 @@ npm run build
 | `security-hardening.test.mjs` | 28 | PASS | — |
 | `dependency-freshness.test.mjs` | 27 | PASS | — |
 | `env-derivation.test.mjs` | 37 | PASS | — |
-| **合計** | **754** | **全PASS** | **実測は `npx vitest run` の出力を正とする** |
+| `commit-identities.test.mjs` | 8 | PASS | 0.6s |
+| **合計** | **762** | **全PASS** | **`npm test`: 12 files, 762 tests passed** |
 
-`CF_PAGES_BRANCH=main npx vitest run` / `CF_PAGES_BRANCH=staging npx vitest run` でも同じ 754 passed（旧版の main・staging 別表は Issue #127 で不要になった）。
 
-Issue #117 項目2/12 により `build.test.mjs` 111→113、`fuzz-validation.test.mjs` 215→216。Vitest 合計 635→638。Bug #51再発防止（SEC-35、`cms-config.test.mjs`に環境固有ファイルの実ブランチ整合性検証を追加）によりVitest合計は **feature ブランチ 639件／main・staging 642件**（差の3件はSEC-35のブランチ別テスト登録による。既存テストへの影響はない）。Issue #117 hardening 対応で `security-hardening.test.mjs` 28件と `build.test.mjs` 1件（SEC-36）を追加し、**feature ブランチ 668件／main・staging 671件**。Issue #132（SEC-40）で `dependency-freshness.test.mjs` 27件を追加し **feature ブランチ 695件／main・staging 698件**。Issue #127 で `env-derivation.test.mjs` 37件、`build.test.mjs` 15件（114→129）を追加し、`cms-config.test.mjs` の SEC-35 を 1件（feature）／4件（main・staging）から全ブランチ共通5件へ改訂（56→60）。**全ブランチ 751件**。SEC-41対応で `fuzz-validation.test.mjs` にCSP運用時の違反検知3件を追加し、全ブランチ共通 **754件**。
+
+Issue #117 項目2/12 により `build.test.mjs` 111→113、`fuzz-validation.test.mjs` 215→216。Vitest 合計 635→638。Bug #51再発防止（SEC-35、`cms-config.test.mjs`に環境固有ファイルの実ブランチ整合性検証を追加）によりVitest合計は **feature ブランチ 639件／main・staging 642件**（差の3件はSEC-35のブランチ別テスト登録による。既存テストへの影響はない）。Issue #117 hardening 対応で `security-hardening.test.mjs` 28件と `build.test.mjs` 1件（SEC-36）を追加し、**feature ブランチ 668件／main・staging 671件**。Issue #132（SEC-40）で `dependency-freshness.test.mjs` 27件を追加し **feature ブランチ 695件／main・staging 698件**。Issue #127 で `env-derivation.test.mjs` 37件、`build.test.mjs` 15件（114→129）を追加し、`cms-config.test.mjs` の SEC-35 を 1件（feature）／4件（main・staging）から全ブランチ共通5件へ改訂（56→60）。**全ブランチ 751件**。SEC-41対応で `fuzz-validation.test.mjs` にCSP運用時の違反検知3件を追加し、全ブランチ共通 **754件**。SEC-42（`commit-identities.test.mjs`）8件を追加し **762件**。Issue #153の続き（Bug #55）で `dependency-freshness.test.mjs` にNode.jsパッチ猶予期間の回帰テスト3件を追加し、全ブランチ共通 **765件**。
 
 ### 4.3.3 E2Eテスト最新実行結果（Playwright）
 
@@ -1985,7 +2012,7 @@ Issue #117 項目2/12 により `build.test.mjs` 111→113、`fuzz-validation.te
 | 項目 | 結果 |
 | :--- | :--- |
 | 対象 | 2026-09-24のfrozen refsから作成した隔離candidate-2（25 heads、467 commits） |
-| 全体テスト | Vitest 754/754 PASS、Playwright 457 PASS・8 skip / 465 |
+| 全体テスト | Vitest 762/762 PASS、Playwright 457 PASS・8 skip / 465 |
 | branch別build | `CF_PAGES_BRANCH=main` はrobots Allow・canonical/sitemap本番URL、`staging` はrobots Disallow・sitemap行なし・canonical/sitemap staging URL。両方のbuildでVitest 625/625、CMS env生成、config.ymlのbranch/base_url不在を確認 |
 | アーカイブ索引 | 1,519 entry、許可5 fieldのみ。`node scripts/validate-evidence-archive-index.mjs` PASS |
 | 履歴検証 | 移行対象694 unique blobは書き換え後のheadsから0 reachable、evidence外alias 0。Drive move 1,395 path/blob pair、Git keep 123 pair。redacted JSONは新blobで保持 |
@@ -1999,9 +2026,36 @@ Issue #117 項目2/12 により `build.test.mjs` 111→113、`fuzz-validation.te
 
 公開索引の形式検証は [`scripts/validate-evidence-archive-index.mjs`](../scripts/validate-evidence-archive-index.mjs)、集約結果は [`docs/history-migration-2026-09-24.md`](../docs/history-migration-2026-09-24.md) に記録する。非公開Drive IDや共有URLはGitへ含めない。
 
+### 4.3.7 Issue #152 SEC-42 identity gate 検証
+
+| 項目 | 結果 |
+| :--- | :--- |
+| 実行日時・環境 | 2026-09-24、fresh clone branch `codex/issue152-author-allowlist` |
+| 回帰テスト | `npx vitest run tests/commit-identities.test.mjs`: 8/8 PASS |
+| 全体テスト | `npm test`: 762/762 PASS（12 files） |
+| ビルド | `npm run build:raw`: PASS |
+| CI | staging向け PR #156 `test-and-build`: PASS |
+| ゲートの適用限界 | PR経路はマージ前に検査する。main/stagingにブランチ保護がない現状では、直接pushは受理後にCIが検知する。ブランチ保護は今回設定せず、履歴修復force-push完了後に別途検討する。 |
+
+
+### 4.3.8 Issue #153 CMS / Node.js 更新検証
+
+| 項目 | 結果 |
+| :--- | :--- |
+| Node.js | 22.23.2（`.nvmrc` と一致） |
+| CMS配布物 | Decap CMS 3.16.3。CDN JS SHA-384とSRI一致 |
+| Vitest | `npm test`: 762/762 PASS（12 files） |
+| Build | `npm run build`: gate 633/633 PASS、Astro 20ページ、画像最適化完了 |
+| Playwright | `npm run test:e2e`: 457 PASS / 8 skip（465件）。E-29既存記事のタイトル・本文読込と実編集をPASS |
+| CI | staging向けPR #157 `test-and-build`: PASS |
+| 包括E2E | PC/iPad/iPhoneで150/150 PASS。T07/T50は実クリック後の既存タイトル・本文をassert |
+| 画面証跡 | 145枚の注釈不足0枚。iPhone T10/T36は認証後にfocused再撮影し2/2 PASS。Drive bundle readback SHA-256一致 |
+| Cloudflare Pages runtime | ダッシュボード認証がなく、Pages build logの実Nodeバージョンは未確認。workflow_dispatchもstaging実行待ち |
+
 ---
 
-**最終更新**: 2026年9月24日（v1.58）
+**最終更新**: 2026年9月24日（v1.62）
+
 
 ### 2026-09-20 セキュリティIssue #109〜#113対応完了
 

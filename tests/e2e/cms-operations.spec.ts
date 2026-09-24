@@ -388,19 +388,14 @@ test.describe('E-29: 記事編集の実操作', () => {
       return;
     }
 
-    // タイトル入力欄を探す
-    const titleInput = page.locator('input[type="text"]').first();
-    if (await titleInput.isVisible().catch(() => false)) {
-      // 既存タイトルが読み込まれている
-      const currentValue = await titleInput.inputValue();
+    const titleInput = page.locator('input[id^="title-field"]').first();
+    await expect(titleInput).toHaveValue('既存テスト記事', { timeout: 15000 });
+    const slateEditor = page.locator('[data-slate-editor="true"]').first();
+    await expect(slateEditor).toContainText('既存の本文です。', { timeout: 15000 });
 
-      // タイトルを変更
-      await titleInput.clear();
-      await titleInput.fill('変更後のタイトル');
-      const newValue = await titleInput.inputValue();
-      expect(newValue).toBe('変更後のタイトル');
-      expect(newValue).not.toBe(currentValue);
-    }
+    // 実際の入力操作で既存記事を編集できることも確認する。
+    await titleInput.fill('変更後のタイトル');
+    await expect(titleInput).toHaveValue('変更後のタイトル');
   });
 
   test('既存記事の本文エディタでテキストを追加できる', async ({ page }) => {

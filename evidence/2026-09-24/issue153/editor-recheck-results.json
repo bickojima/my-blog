@@ -1,0 +1,119 @@
+{
+  "date": "2026-09-24",
+  "results": [
+    {
+      "device": "PC",
+      "id": "T07",
+      "name": "既存記事の実クリック・タイトル/本文表示・注釈確認",
+      "pass": true,
+      "screenshot": "screenshots/T07-editor-PC.png",
+      "hash": "#/collections/posts/entries/2026/02/ramen",
+      "title": "ラーメン日記",
+      "body": "ラーメン日記の本文テキスト。",
+      "href": "#/collections/posts/entries/2026/02/ramen",
+      "titleFrame": true,
+      "previewFrame": true,
+      "previewBox": {
+        "x": 658,
+        "y": 173.1875,
+        "width": 606,
+        "height": 30.390625
+      }
+    },
+    {
+      "device": "PC",
+      "id": "T50",
+      "name": "既存記事の実クリック・タイトル/本文表示・注釈確認",
+      "pass": true,
+      "screenshot": "screenshots/T50-entryclick-PC.png",
+      "hash": "#/collections/posts/entries/2026/02/ramen",
+      "title": "ラーメン日記",
+      "body": "ラーメン日記の本文テキスト。",
+      "href": "#/collections/posts/entries/2026/02/ramen",
+      "titleFrame": true,
+      "previewFrame": true,
+      "previewBox": {
+        "x": 658,
+        "y": 173.1875,
+        "width": 606,
+        "height": 30.390625
+      }
+    },
+    {
+      "device": "iPad",
+      "id": "T07",
+      "name": "既存記事の実クリック・タイトル/本文表示・注釈確認",
+      "pass": true,
+      "screenshot": "screenshots/T07-editor-iPad.png",
+      "hash": "#/collections/posts/entries/2026/02/ramen",
+      "title": "ラーメン日記",
+      "body": "ラーメン日記の本文テキスト。",
+      "href": "#/collections/posts/entries/2026/02/ramen",
+      "titleFrame": true,
+      "previewFrame": true,
+      "previewBox": {
+        "x": 435,
+        "y": 173.1875,
+        "width": 383,
+        "height": 30.390625
+      }
+    },
+    {
+      "device": "iPad",
+      "id": "T50",
+      "name": "既存記事の実クリック・タイトル/本文表示・注釈確認",
+      "pass": true,
+      "screenshot": "screenshots/T50-entryclick-iPad.png",
+      "hash": "#/collections/posts/entries/2026/02/ramen",
+      "title": "ラーメン日記",
+      "body": "ラーメン日記の本文テキスト。",
+      "href": "#/collections/posts/entries/2026/02/ramen",
+      "titleFrame": true,
+      "previewFrame": true,
+      "previewBox": {
+        "x": 435,
+        "y": 173.1875,
+        "width": 383,
+        "height": 30.390625
+      }
+    },
+    {
+      "device": "iPhone",
+      "id": "T07",
+      "name": "既存記事の実クリック・タイトル/本文表示・注釈確認",
+      "pass": true,
+      "screenshot": "screenshots/T07-editor-iPhone.png",
+      "hash": "#/collections/posts/entries/2026/02/ramen",
+      "title": "ラーメン日記",
+      "body": "ラーメン日記の本文テキスト。",
+      "href": "#/collections/posts/entries/2026/02/ramen",
+      "titleFrame": true,
+      "previewFrame": true,
+      "previewBox": {
+        "x": 213,
+        "y": 345.984375,
+        "width": 161,
+        "height": 60.78125
+      }
+    },
+    {
+      "device": "iPhone",
+      "id": "T50",
+      "name": "既存記事の実クリック・タイトル/本文表示・注釈確認",
+      "pass": true,
+      "screenshot": "screenshots/T50-entryclick-iPhone.png",
+      "hash": "#/collections/posts/entries/2026/02/ramen",
+      "title": "ラーメン日記",
+      "body": "ラーメン日記の本文テキスト。",
+      "href": "#/collections/posts/entries/2026/02/ramen",
+      "titleFrame": true,
+      "previewFrame": true,
+      "previewBox": {
+        "x": 213,
+        "y": 345.984375,
+        "width": 161,
+        "height": 60.78125
+      }
+    }
+  ]
+}

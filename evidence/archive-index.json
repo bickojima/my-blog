@@ -10633,6 +10633,62 @@
       "sha256": "124619d4d02de06fa8d8b6e3190bdda35853468275fd79b073989401ec972a46",
       "size": 7903,
       "storage_class": "git"
+    },
+    {
+      "path": "evidence/2026-09-24/issue153/evidence-bundle.zip",
+      "git_blob_sha1": "9b5912f01d593d25547500c9068c1b9dcd362d39",
+      "sha256": "840154fc95c1fab8759c1e096791e457ee7933b700847d96e230526f563972ea",
+      "size": 25583591,
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-09-24/issue153/comprehensive-results.json",
+      "git_blob_sha1": "1645dc7de5ddbd8f9d10c9ed95e6ddefcca0f26c",
+      "sha256": "d8b8ffa458c63e650e7e479ae1ece1b94f903ab05c3fdce1a5df2d23e5320d69",
+      "size": 47670,
+      "storage_class": "git"
+    },
+    {
+      "path": "evidence/2026-09-24/issue153/dependency-freshness-results.json",
+      "git_blob_sha1": "706b4cfddca18d265d126351c8b4eec0be31837e",
+      "sha256": "9697a1aea74007fd9b1b50fc8ffe1c6ed6dd19bc9018ae4f2a525b4ffa5b05da",
+      "size": 7036,
+      "storage_class": "git"
+    },
+    {
+      "path": "evidence/2026-09-24/issue153/editor-recheck-results.json",
+      "git_blob_sha1": "a995216a73c16807cca29ec63af11e2ed73f4b5a",
+      "sha256": "ecae45095f59f2c39ae6d5eae292bd5d251c73fd41a53f9b31fc5a54840f43cf",
+      "size": 3731,
+      "storage_class": "git"
+    },
+    {
+      "path": "evidence/2026-09-24/issue153/forms-recheck-results.json",
+      "git_blob_sha1": "beafced2b9a2ff1d9ead980473791230e80ffcfd",
+      "sha256": "bba3d34b207dc5cd6e82975da3b376d39b95d72d2778f40c0507dee9c38cf72a",
+      "size": 796,
+      "storage_class": "git"
+    },
+    {
+      "path": "evidence/2026-09-24/issue153/initial-review.json",
+      "git_blob_sha1": "bf0f60976109c0a7f184dc6860bfa2c9a8d34148",
+      "sha256": "99eb79619e438e456c483493ceb3ea55db3b36dd5a74fb98e726d0b3213afc4e",
+      "size": 1103,
+      "storage_class": "git"
+    },
+    {
+      "path": "evidence/2026-09-24/issue153/verify-comprehensive.mjs",
+      "git_blob_sha1": "c06d18f11fcad186161201d3472840efff0e94f6",
+      "sha256": "24d413da9bef1d083284fc79f9ab92df18aec6f670b51c7c79929a316448a9ad",
+      "size": 96192,
+      "storage_class": "git"
+    },
+    {
+      "path": "evidence/2026-09-24/issue153/screenshot-audit.json",
+      "git_blob_sha1": "897768414073604ad1c4362a168de053a3cbe8cf",
+      "sha256": "12fe05476984e7fbf5cff9811db592beba4b73d2af835feed06596fef0cfc027",
+      "size": 914,
+      "storage_class": "git"
     }
   ]
 }

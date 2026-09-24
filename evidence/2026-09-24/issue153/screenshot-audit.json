@@ -1,0 +1,36 @@
+{
+  "date": "2026-09-24",
+  "scope": "evidence/2026-09-24/issue153/screenshots/*.png",
+  "totalScreenshots": 145,
+  "annotationPixelThreshold": {
+    "redPixelsAtLeast": 20
+  },
+  "missingAnnotations": [],
+  "focusedRetakes": [
+    {
+      "scenario": "T10",
+      "device": "iPhone",
+      "pass": true,
+      "observed": "New article form title control with red frame and label visible"
+    },
+    {
+      "scenario": "T36",
+      "device": "iPhone",
+      "pass": true,
+      "observed": "New page form title control with red frame and label visible"
+    }
+  ],
+  "visualReview": {
+    "representatives": [
+      "T07-editor-PC.png",
+      "T07-editor-iPad.png",
+      "T07-editor-iPhone.png",
+      "T50-entryclick-PC.png",
+      "T50-entryclick-iPad.png",
+      "T50-entryclick-iPhone.png"
+    ],
+    "titleAndBodyFramesVisible": true,
+    "framesViewportAligned": true,
+    "formRetakesReviewed": true
+  }
+}

@@ -80,6 +80,11 @@
 | 1.73 | 2026-09-24 | #90/#131 履歴移行計画と証跡アーカイブを4.2.6章に追加。公開索引のスキーマ、SHA-256復元確認、バックアップbundle、PR refsの制約と残余リスクを記録。`.gitignore` に画像・動画・PDF・trace・ZIP・report.html/work-completion-report.html を追加し、必須HTMLレポートはDrive正本としてreadback SHA-256検証後に索引へ登録、JSONと検証scriptはGit保持する運用を明記。
 | 1.74 | 2026-09-24 | #90/#131 の25 heads履歴更新を実施。old-OID lease付きatomic push、143/143 refs一致、main/staging CIとfresh clone fsck成功、Cloudflare production/stagingのread-only確認を記録。118 read-only PR refsは残存し、完全消去とは扱わない。TEST-REPORT 4.3.6 と履歴監査文書を更新。
 | 1.75 | 2026-09-24 | CLAUDE.md・TEST-REPORT.mdに残っていた旧エビデンス保存記述（`report.html`/`work-completion-report.html`をコミット・プッシュする前提の記述）を4.2.6章のDrive正本方針に統一。4.9.2章のエビデンス構成表と4.10.3章のフォルダ構成図にGit保持対象／Drive正本対象の区別を明記。2026-09-24の履歴書換え時点で既にGit管理下にあった14件（`work-completion-report.html` 13件、`report.html` 1件）は`evidence/archive-index.json`で`storage_class: "git"`登録済みの例外として当面Gitに残す方針を明文化（新規作成分はDrive正本を適用）。テスト件数変更なし。 |
+| 1.76 | 2026-09-24 | Issue #152 の再発防止として SEC-42 を追加。main/staging に入る新規コミットの author/committer を PR 差分・push 差分で検査し、force-push と before SHA 不在時は新HEAD全履歴を検査する。PRはマージ前に検査されるが、main/stagingのブランチ保護は未設定のため直接pushは受理後のCI検知となる。履歴修復force-push完了後にrequired status checks等のブランチ保護を別Issueで検討する。Dependabot botの許可identityと、拒否値をログへ出さない挙動を含む。 |
+
+| 1.77 | 2026-09-24 | Issue #153: Decap CMS 3.16.3（配布JS実体とSHA-384 SRI一致）および Node.js 22.23.3 へ更新。SEC-40 fixture・期待値、技術一覧、運用要件を更新。T07/T50の空フォーム誤PASSをBug #54として5 Whysと再発防止E2Eへ反映。Vitest 762件を最新staging統合後の基準に更新。Drive証跡bundleのreadback SHA-256一致を確認。QA: `docs/qa-2026-09-24-issue153.md`。
+
+| 1.78 | 2026-09-24 | Issue #153の続き（Issue #154関連情報を含む）。PR #157で `.nvmrc`/`engines` を22.23.3へ更新後、Cloudflare Pagesのstagingビルドが `node-build: definition not found: 22.23.3` で失敗（node-buildが公開直後のパッチに未対応）。Bug #55として5 Whysを4.5章へ追記し、`.nvmrc`・`engines`をnode-build定義済みの22.23.2へ戻した（Decap CMS 3.16.3は維持）。再発防止としてSEC-40の判定ロジック（`scripts/check-dependency-freshness.mjs`）に猶予期間`nodePatchGraceDays`（既定14日）を追加し、Node.js最新パッチの公開から猶予日数未満は`NODE_PATCH_BEHIND`ではなく情報用の`NODE_PATCH_TOO_NEW`にする改訂を行った（判定テストはフィクスチャの固定日付のみでネットワーク非依存）。1.4.2章SEC-40の説明、2.2.1章の技術一覧、4.5章バグ一覧、4.11.1章棚卸し表、4.11.2章判定ルール、4.11.5章更新手順を更新。Cloudflare Pagesのビルドログ（2026-09-24）から`NODE_VERSION`環境変数が未設定（`.nvmrc`を使用）であることを確認し`scripts/dependency-freshness.config.json`の手動確認項目に記録（Build system versionは引き続き未確認、Issue #154でフォロー）。Vitest 762→765件（fixture 3件追加）。QA: `docs/qa-2026-09-24-issue153-pages-nodebuild.md`。
 
 ## システム変更履歴
 
@@ -563,9 +568,11 @@ robots.txtは`src/pages/robots.txt.ts`がビルド時に生成し、`CF_PAGES_BR
 | SEC-37 | OAuth オリジン許可リストの単一化: `isAllowedOrigin` は `functions/_shared/allowed-origin.js` にのみ定義し、`/auth`・`/auth/callback` の両方が import する。共有モジュールは `onRequest*` を export せず Pages のルートにならない | `functions/_shared/allowed-origin.js`, `functions/auth/*.js` | 対応Issue: #117 項目5。許可リストの写しが独立に変更され、開始とコールバックで判定が食い違う（ログイン不能等）ことを構造的に防ぐ。許可範囲は SEC-27 と同一 |
 | SEC-38 | OAuth コールバック応答の CSP 自己完結: `Content-Security-Policy` に `default-src 'none'` に加えて `frame-ancestors 'none'; form-action 'none'; base-uri 'none'` を明示し、`Content-Type: text/html; charset=utf-8` と `<meta charset="utf-8">` を付ける | `functions/auth/callback.js` | 対応Issue: #117 項目9。これらのディレクティブは `default-src` にフォールバックせず、Functions の応答には `public/_headers` が適用されないため応答自身で完結させる |
 | SEC-39 | `<script>` 埋め込み値の安全なリテラル化: コールバック HTML に埋め込むトークン・オリジンは `JSON.stringify` で引用符込みの JS 文字列リテラルにし、`<` `>` `&` と U+2028/U+2029 を `\uXXXX` へ変換してから埋め込む | `functions/auth/callback.js` | 対応Issue: #117 項目10。手書きの置換列（旧 `escapeForScript`）は U+2028/U+2029・バッククオート・`${` を扱わず置換順序にも依存していた。埋め込み先の引用符の種類に依存しない方式にする |
-| SEC-40 | npm管理外依存の鮮度・EOL監視: npm audit / Dependabot の対象外である依存（CDN の `<script>`、GitHub Actions、Node.js のバージョン宣言、Cloudflare Pages ビルド環境）を棚卸しし、最新版との差・EOL・SRI 実体一致・既知脆弱性を週次で機械判定して結果 JSON に記録する。alert は Issue 起票とジョブ失敗で通知し、判定ロジックはネットワーク非依存のテストで検証する | `scripts/check-dependency-freshness.mjs`, `scripts/dependency-freshness.config.json`, `.github/workflows/dependency-freshness.yml`, `.github/dependabot.yml` | 対応Issue: #132。Decap CMS が 3.10.0 のまま 6 マイナー遅れていたことに監査まで気づけなかった再発防止。運用手順は 4.11章 |
+| SEC-40 | npm管理外依存の鮮度・EOL監視: npm audit / Dependabot の対象外である依存（CDN の `<script>`、GitHub Actions、Node.js のバージョン宣言、Cloudflare Pages ビルド環境）を棚卸しし、最新版との差・EOL・SRI 実体一致・既知脆弱性を週次で機械判定して結果 JSON に記録する。alert は Issue 起票とジョブ失敗で通知し、判定ロジックはネットワーク非依存のテストで検証する。Node.js は最新パッチの公開から `nodePatchGraceDays`（既定14日）未満なら `NODE_PATCH_BEHIND`（warning）ではなく `NODE_PATCH_TOO_NEW`（情報記録のみ）とし、Cloudflare Pages の node-build (asdf) が公開直後のパッチに未対応な期間を誤って「更新すべき遅れ」と判定しないようにする（Bug #55） | `scripts/check-dependency-freshness.mjs`, `scripts/dependency-freshness.config.json`, `.github/workflows/dependency-freshness.yml`, `.github/dependabot.yml` | 対応Issue: #132, #153, #154。Decap CMS が 3.10.0 のまま 6 マイナー遅れていたことに監査まで気づけなかった再発防止に加え、Node.js 22.23.3 が node-build 未対応で Pages ビルドを壊した再発防止。運用手順は 4.11章 |
 | SEC-41 | 管理画面CSPで Cloudflare Insights beacon を許可しない: `/admin/*` の `script-src` / `connect-src` に外部解析ホストを追加せず、実ホストのCMS操作で他のCSP違反・機能エラーが観測されないことを確認する | `public/_headers`, `tests/fuzz-validation.test.mjs`, `evidence/2026-09-23/issue130-review/` | 対応Issue: #130。実ホスト証跡はproduction/staging・PC/iPad/iPhone、OAuth/GitHub APIモック、保存要求branchの確認を含む。検証対象操作の範囲を超える一般的無影響の主張はしない |
-| SEC-127A（仮ID・マージ時採番調整） | 環境固有値をファイルに置かない: main / staging で値が異なる設定（SITE_URL、robots.txt、CMS の backend.branch / base_url）をリポジトリのファイルに書かず、ビルド時は `src/lib/site-env.mjs`、実行時は `public/admin/cms-env.js` の1か所から導出する。本番値になるのは `CF_PAGES_BRANCH === 'main'`（ビルド）／ホスト名 `reiwa.casa` 完全一致（CMS）のときだけで、未設定・未知の値はすべて staging 値（検索除外・staging への書き込み）に倒す。config.yml に branch / base_url、`public/robots.txt`、SITE_URL のリテラルを置かないことを静的テストで固定する | `src/lib/site-env.mjs`, `src/pages/robots.txt.ts`, `astro.config.mjs`, `public/admin/cms-env.js`, `public/admin/index.html`, `public/admin/config.yml` | 対応Issue: #127（#117 項目15 と同根）。どちら向きのマージでも相手の値が持ち込まれない（差分がそもそも存在しない）。Decap は config.yml の上に `CMS.init({config})` を deepmerge し init 側が優先（3.16.2 配布物で確認） |
+| SEC-42 | main/staging に新しく入るコミットの author と committer を固定 allowlist で検査する。PR は base..head、通常 push は before..head を検査し、force-push または before SHA を取得できない場合は新 HEAD の全履歴を検査する。不許可値はログへ出さない | `.github/workflows/ci.yml`, `scripts/check-commit-identities.mjs` | tbi、従来の bickojima noreply、GitHub Web、Dependabot bot の定義済み identity tuple のみ許可する |
+| SEC-127A（仮ID・マージ時採番調整） | 環境固有値をファイルに置かない: main / staging で値が異なる設定（SITE_URL、robots.txt、CMS の backend.branch / base_url）をリポジトリのファイルに書かず、ビルド時は `src/lib/site-env.mjs`、実行時は `public/admin/cms-env.js` の1か所から導出する。本番値になるのは `CF_PAGES_BRANCH === 'main'`（ビルド）／ホスト名 `reiwa.casa` 完全一致（CMS）のときだけで、未設定・未知の値はすべて staging 値（検索除外・staging への書き込み）に倒す。config.yml に branch / base_url、`public/robots.txt`、SITE_URL のリテラルを置かないことを静的テストで固定する | `src/lib/site-env.mjs`, `src/pages/robots.txt.ts`, `astro.config.mjs`, `public/admin/cms-env.js`, `public/admin/index.html`, `public/admin/config.yml` | 対応Issue: #127（#117 項目15 と同根）。どちら向きのマージでも相手の値が持ち込まれない（差分がそもそも存在しない）。Decap は config.yml の上に `CMS.init({config})` を deepmerge し init 側が優先（3.16.3 配布物で確認） |
+
 
 ---
 
@@ -689,9 +696,10 @@ robots.txtは`src/pages/robots.txt.ts`がビルド時に生成し、`CF_PAGES_BR
 | SEC-39 | `<script>` 埋め込み値の JSON.stringify リテラル化 | security-hardening, fuzz-validation, auth-functions | `<script> 埋め込み値は JSON.stringify リテラルで出力する（SEC-39, Issue #117 項目10）`（12件）、fuzz-validation `トークンのエスケープ検証`（挙動検証へ強化）、E2E エビデンス H03 | M-02 | 充足 |
 | SEC-40 | npm管理外依存の鮮度・EOL監視 | dependency-freshness | TEST-REPORT 2.9章 #1〜#27（判定ロジックはフィクスチャ、実ファイル棚卸し、週次ワークフローの権限・SHA 固定・通知分岐、Dependabot 設定）。ネットワーク実行と alert/error 経路の dry-run は `evidence/2026-09-23/issue132/` | M-02, M-07, M-08, M-12 | 充足 |
 | SEC-41 | 管理画面CSPで外部解析ビーコンを許可しない | fuzz-validation, E2E evidence | fuzz-validationのSEC-41検証3件、実ホストE2E `evidence/2026-09-23/issue130-review/`（production/staging×3端末、ユーザー操作、mock保存branch） | M-02, M-03 | 対象操作の範囲で充足 |
+| SEC-42 | 新規コミット author/committer allowlist | commit-identities | TEST-REPORT 2.11章 #1〜#8（差分限定、force-push全履歴、許可bot、拒否値の非出力）。PRはマージ前検査、ブランチ保護未設定のため直接pushは受理後検知 | M-02, Git実行テスト | 充足（CI検査。push拒否を保証しない） |
 | SEC-127A（仮ID） | 環境固有値をファイルに置かない | env-derivation | `main / staging で環境固有ファイルに差分を置かない静的ガード（SEC-35 改訂, Bug #51・Issue #127）`（7件: config.yml に branch/base_url・環境URLなし、public/robots.txt なし・エンドポイント生成、SITE_URL 非リテラル、CMS_MANUAL_INIT と cms-env.js の読込順、CMS.init 1回、cms-env.js の URL 非保持・strict）、両方向マージ実証 `evidence/2026-09-23/issue127/merge-demo.md` | M-02, M-03 | 充足 |
 
-**充足状況: FR-01〜FR-29, CMS-01〜CMS-19, NFR-01〜NFR-08, SEC-01〜SEC-41, SEC-127A（仮ID）はテストで充足されている。SEC-41は実ホストで検証した操作範囲を対象とする。未テスト要件は0件。**
+**充足状況: FR-01〜FR-29, CMS-01〜CMS-19, NFR-01〜NFR-08, SEC-01〜SEC-42, SEC-127A（仮ID）はテストで充足されている。SEC-41は実ホストで検証した操作範囲を対象とする。未テスト要件は0件。**
 
 ---
 
@@ -806,13 +814,13 @@ my-blog/
 | 分類 | 技術 | バージョン | 用途 |
 | :--- | :--- | :--- | :--- |
 | SSG | Astro | v7.3.3 | 静的サイト生成 |
-| CMS | Decap CMS | v3.16.2 | コンテンツ管理 |
+| CMS | Decap CMS | v3.16.3 | コンテンツ管理 |
 | ホスティング | Cloudflare Pages | - | 静的配信 + Functions |
 | 認証 | GitHub OAuth App | - | CMS管理者認証 |
 | 画像処理 | sharp | v0.35.4 | 画像圧縮・回転・リサイズ |
 | Web実装方針 | Google Modern Web Guidance | 公式ガイド準拠 | 独自実装部のモダンWeb機能・アクセシビリティ・パフォーマンス設計指針 |
-| テスト（単体・統合） | Vitest | v4.0.18 | 単体テスト・統合テスト・セキュリティ検証・基本機能保護（featureブランチ695テスト／main・staging 698テスト、記事数により変動） |
-| テスト（E2E） | Playwright | v1.58.2 | ブラウザE2Eテスト（PC/iPad/iPhone 453テスト、うち8件はデバイス固有条件でスキップ） |
+| テスト（単体・統合） | Vitest | v4.1.11 | 単体テスト・統合テスト・セキュリティ検証・基本機能保護（762テスト、全ブランチ共通。記事数により変動） |
+| テスト（E2E） | Playwright | v1.58.2 | ブラウザE2Eテスト（PC/iPad/iPhone 465テスト、うち8件はデバイス固有条件でスキップ） |
 | コンテンツ | Markdown | - | frontmatter形式 |
 
 ### 2.2.2 選定理由
@@ -1108,7 +1116,7 @@ return new Response(`
 | postMessage のオリジン検証 | callback.js は `expectedOrigin`（サーバーサイド算出）で `postMessage` の送信先を制限し、`event.origin` で受信元を検証する。ワイルドカード `"*"` は使用しない |
 | scope の最小化 | `public_repo,read:user` のみを要求し、不要な権限は取得しない。`repo` スコープ（プライベートリポジトリ含む全アクセス）は使用しない |
 | XSS 対策 | callback.js でトークン値をHTMLに埋め込む際に `toScriptStringLiteral()`（JSON.stringify で引用符込みリテラル化し `< > &`・U+2028/U+2029 を `\uXXXX` 化。SEC-39）を使い、スクリプト注入を防止する。admin/index.html では innerHTML を使用せず DOM API（createElement/textContent）で安全にDOM構築する |
-| CDN バージョン固定 | Decap CMS の CDN URL はキャレット範囲（`^3.16.2`）ではなく正確なバージョン（`3.16.2`）を指定し、SRI（`integrity`）と合わせてサプライチェーン攻撃のリスクを軽減する。3.16.2 dist の `.wasm` は任意の `media_processing` WebP 変換でのみ遅延読み込みされ、本サイトでは未使用のため管理画面 CSP に `wasm-unsafe-eval` は追加しない |
+| CDN バージョン固定 | Decap CMS の CDN URL はキャレット範囲ではなく正確なバージョン（現行 `3.16.3`）を指定し、実配布物から再計算した SRI（`integrity`）と合わせてサプライチェーン攻撃のリスクを軽減する。3.16.3 dist に `.wasm`・`media_processing.enabled` はなく、管理画面 CSP に `wasm-unsafe-eval` は追加しない |
 | コールバック応答の CSP | `frame-ancestors`・`form-action`・`base-uri` は `default-src` にフォールバックしないため個別に `'none'` を指定し、`charset=utf-8` を明示する（SEC-38）。Functions の応答には `public/_headers` が適用されない |
 | トークンの保管 | ブラウザの localStorage に保管される。XSS 対策として管理画面に `noindex` を設定し外部からのアクセスを制限する |
 
@@ -1158,7 +1166,7 @@ GitHub Settings > Developer settings > OAuth Apps で環境ごとに個別のア
 | ビルドコマンド | `npm run build` |
 | 出力ディレクトリ | `dist` |
 | ルートディレクトリ | `/` |
-| Node.js バージョン | 22.12.0以上（`.nvmrc` で 22.12.0。Astro 7 要件。Cloudflare Pages v3 既定は 22.16.0）。ビルドイメージ・`NODE_VERSION` の実設定はダッシュボード管理で、2026-09-23 時点では未確認（4.11章の四半期手動確認で記録） |
+| Node.js バージョン | 22.23.2以上（`.nvmrc`・`package.json` engines ともに 22.23.2 を指定。CI は Node 22 の最新パッチを使用）。2026-09-23公開の22.23.3はCloudflare Pagesのnode-build (asdf)に定義が無くビルド失敗したため22.23.2に固定（Bug #55）。Cloudflare Pages の build image は未確認、`NODE_VERSION` は2026-09-24のビルドログで未設定（`.nvmrc`を使用）と確認済み（4.11章の四半期手動確認で記録） |
 
 #### テストゲート（Issue #128）
 
@@ -1362,7 +1370,7 @@ backend:
 
 1. Decap 読み込み前に `window.CMS_MANUAL_INIT = true` を設定し、`/admin/cms-env.js` を読み込む（`resolveCmsBackend(location)` を定義）。
 2. `CMS.registerPreviewStyle()` の後で `CMS.init({ config: { backend: window.resolveCmsBackend(window.location) } })` を1回呼ぶ。
-3. Decap は config.yml を読み込み、その上に init の config を deepmerge する（init 側が優先。3.16.2 配布物の `deepmerge(loadedYaml, manualConfig)` を確認済み）。
+3. Decap は config.yml を読み込み、その上に init の config を deepmerge する（init 側が優先。3.16.3 CDN配布物で CMS_MANUAL_INIT・CMS.init と backend設定の動作をCMS実操作E2Eで確認済み）。
 
 | 配信ホスト名 | branch | base_url |
 |:---|:---|:---|
@@ -1866,6 +1874,12 @@ GitHubリポジトリが利用可能な場合、以下の手順でシステム�
 | 50 | 2026-09-20 | セキュリティ監査run-2の本番反映で、ローカル Playwright E2E 全件（3デバイス）と包括エビデンスを完了せずに main へマージした。CI の Vitest 成功と staging CMS 実ログインをもって完了扱いし、E2E を「プロセス負債」として後回しにした | 4.6.2章が E2E を「可能な場合」と任意化し、マージ後手順も `npm test`（Vitest）のみだった。Playwright は CI 未実行（実行時間のためローカル運用）であるため、「CI が緑＝テスト完了」と読み替えられた。ユーザーの staging ログイン確認と「やりきる」指示が、未完了の E2E を免除すると解釈された | 4.6章から「可能な場合」を削除し、ローカル `npm run test:e2e` 全件と `verify-comprehensive.mjs` を main マージの必須条件にする。**CI に Playwright は載せない**（Q23）。Vitest 成功・CMS 実ログイン・「後で E2E」は代替にならないと明文化。雛形スクリプトはシナリオ FAIL で `process.exit(1)` する。再発防止テストで CI ワークフローと手順文書を固定する | build.test.mjs（`CI は Vitest とビルドのみで Playwright E2E を必須化しない（Bug #50）`ほか2件） |
 | 51 | 2026-09-20 | PR #119 のマージにより staging ブランチの環境固有ファイルが main の値で丸ごと上書きされた: `public/admin/config.yml` の `branch`（`staging`→`main`）・`base_url`（`https://staging.reiwa.casa`→`https://reiwa.casa`）、`astro.config.mjs` の `SITE_URL`（`https://staging.reiwa.casa`→`https://reiwa.casa`）、`public/robots.txt`（`Disallow: /`→`Allow: /` + 本番sitemap行）の4項目が同時に main 値へ変わった。結果として staging の CMS 管理画面で記事を保存すると本番 main ブランチへ直接コミットされる状態になり、staging の `robots.txt` も検索インデックス可能になった。上書きは22:26:18のマージで発生し、22:47:40の復旧コミット `0a6c762` まで約21分間継続した。実害の報告はない | マージ作業がPRのマージ方向（マージ元→マージ先のファイル差分をそのまま採用する操作）の副作用で環境固有ファイルを巻き込んだ。上書き後の4項目（config.ymlのbranch/base_url、SITE_URL、robots.txt）はすべてmain値で揃っており内部的には完全に整合していたため、当時存在した「4項目が互いに整合しているか」だけを見る既存テスト（cms-config.test.mjsのbase_url検証等）では検知できなかった。実際にチェックアウトしているブランチに対して値が正しいかを検証する仕組みが存在しなかった | （初期対策 2026-09-21）実際にチェックアウトしているブランチに対して4項目が正しい値かを検証する回帰テスト（旧 SEC-35）を追加。（恒久対策 2026-09-23, Issue #127）4項目をファイルから削除し、ビルド時は `CF_PAGES_BRANCH`、CMS は配信ホスト名から導出する構造に変更。main と staging のファイル差分がゼロになり、マージで持ち込まれる値そのものが存在しない。旧 SEC-35 は検知のみで CI の pull_request では判定不能側に倒れていたため、導出結果の正しさを検証するテストへ改訂（SEC-35 改訂、SEC-127A 仮ID） | cms-config.test.mjs（`環境固有値の導出整合性検証（SEC-35 改訂, Bug #51再発防止, Issue #127）`）、env-derivation.test.mjs、build.test.mjs（`CF_PAGES_BRANCH 別ビルドの環境値`）、E2E cms-env-branch.spec.ts |
 | 52 | 2026-09-23 | SEC-29（Bug #48 対策）で「gray-matter の javascript エンジンを無効化する」として入れた `matter(content, { language: 'yaml' })` が効いていなかった: frontmatter が `---js`（`---javascript`/`---JS` も同様）で始まる記事を `organize-posts.mjs` が処理すると、gray-matter の javascript エンジン（`eval`）でペイロードが実行される。旧版で実行・新版で非実行を実測。Issue #117 項目1は「完了」と記録されていたが誤りだった。**第2の経路（レビュー差し戻しで判明）**: Cloudflare Pages のビルドコマンド `npm run build` は organize-posts より前に `vitest run --exclude tests/build.test.mjs` を実行し、`content-validation`・`cms-config`・`fuzz-validation`・`build`（CI のみ）の各テストと E2E `app-info.spec.ts` が全記事・固定ページを gray-matter の `matter()` で直接解析していた。このため `---js` 記事は Pages のビルド環境と CI で organize-posts より先に eval される（修正前、一時的な `---js` 記事を置いて `npx vitest run tests/content-validation.test.mjs` を実行し、ペイロードがマーカーファイルを作ることを実測）。Astro 本体のコンテンツローダー（`@astrojs/internal-helpers/frontmatter`）は `---`/`+++` を js-yaml の `load`／TOML でのみ解析するため `---js` は YAML エラーになり eval されない（実測: ビルド失敗・マーカー非作成）。能力の増加は無い（到達主体は既にリポジトリ書込権限または CI 上の任意コード実行を持つ）ため脆弱性ではなく hardening の実装不備 | gray-matter は `language` オプションより開始区切り直後の言語宣言を優先し（`index.js` parseMatter）、`engines` は置換ではなくマージされる（`lib/defaults.js`）。修正時にオプションの字面だけで効果を判断し、`---js` を実際に投入する挙動テストを書かなかった。さらに修正範囲を organize-posts に限定し、同じライブラリで同じ入力（`src/content`）を読む他の呼び出し元（テスト群）を洗い出さなかった | `scripts/lib/safe-frontmatter.mjs` で javascript/json エンジンを「必ず例外を投げるエンジン」で上書きし、`organize-posts.mjs` と、`src/content` を読む全テスト（`content-validation`・`cms-config`・`fuzz-validation`・`build`・E2E `app-info.spec.ts`）をこのラッパー経由に置換。tests/ と scripts/ ではラッパー以外の gray-matter 読み込みを禁止する。例外は既存の catch で当該記事を対象外にして継続 | security-hardening.test.mjs（`frontmatter は YAML のみを解析する（SEC-29, Bug #52 再発防止, Issue #117 項目1）` 10件。うち1件は一時ディレクトリで organize-posts.mjs を実行しペイロード非実行を確認、2件は tests/・scripts/ の gray-matter 直接読み込み禁止と `src/content` 読み取り箇所のラッパー経由を静的検証） |
+| 53 | 2026-09-24 | PR #151 のマージ後、mainに許可されていないcommit author metadataを含む新規コミットが入った。既存の内容テストとローカルhookでは、PRやCMS経由で追加されたGit metadataを止められなかった | main/stagingへ入るcommit metadataをCIで検証するゲートがなく、ローカルhookはGitHub上の操作へ適用されなかった | SEC-42としてPR差分とmain/staging push差分のauthor/committerを固定allowlistで検査する。force-pushとbefore SHA不在時は新HEAD全履歴を検査し、不許可値はログへ出さない。Dependabotの公式bot identityは個別tupleで許可する | `tests/commit-identities.test.mjs`（TEST-REPORT 2.11章） |
+| 54 | 2026-09-24 | Decap CMS 3.16.3 の包括検証でT07/T50の編集画面が空でもPASSした | Git Trees APIのnested folder応答を模擬するfixtureがrepository-relative pathとfolder-relative childrenに合っておらず、blobがentryに解決されなかった。合否条件もeditor container/route到達だけで既存内容の読込を検証していなかった | Git Trees fixtureを実際のAPI階層応答に合わせ、CMSエディタで既存タイトル・本文が表示される必須assertionを加えた。実クリックを維持し、エラーや空フォームはFAILとする | 包括E2E T07/T50、`tests/e2e/cms-operations.spec.ts` E-29。Bug #54 5 Whysは本章後段 |
+| 55 | 2026-09-24 | Issue #153のPR #157（`.nvmrc`/`engines`を22.23.3へ更新）をstagingへマージ後、Cloudflare Pagesのstagingビルドが `node-build: definition not found: 22.23.3` で失敗した。Node.js 22.23.3は2026-09-23公開で、Cloudflare Pagesがビルド環境の取得に使うasdf/node-buildにはまだバージョン定義ファイルが無かった（`https://github.com/nodenv/node-build/tree/master/share/node-build`に`22.23.2`はあるが`22.23.3`は無いことを確認）。stagingの配信は旧版（Decap CMS 3.16.2）のまま更新されなかった | Node.jsパッチのバージョン選定を「endoflife.dateのサイクル最新」だけで行い、Cloudflare Pagesの実際のビルド環境（asdf/node-build）がその最新パッチに対応しているかを確認していなかった。既存のSEC-40依存鮮度チェックも「固定パッチが最新より古い」ことしか判定せず、「最新パッチが公開直後でビルド環境に未対応」というケースを考慮していなかったため、`.nvmrc`を最新パッチへ追従することを妨げる仕組みが無かった | `.nvmrc`・`engines`をnode-build定義済みの22.23.2へ戻した。SEC-40の判定ロジックに猶予期間`nodePatchGraceDays`（既定14日）を追加し、Node.js最新パッチの公開からこの日数未満は`NODE_PATCH_BEHIND`（要追従）ではなく`NODE_PATCH_TOO_NEW`（情報記録のみ）にして、公開直後のパッチへ誤って追従させないようにした。運用手順（4.11.5章）に、`.nvmrc`更新前にnode-build定義の存在を確認する手順を明記した | `tests/dependency-freshness.test.mjs`（猶予期間内は`NODE_PATCH_TOO_NEW`になり`NODE_PATCH_BEHIND`を出さないこと、猶予期間超過後は`NODE_PATCH_BEHIND`に戻ること、公開日未取得時は猶予を適用しないこと、の3件）。Bug #55 5 Whysは本章後段 |
+
+Bug #53 の5 Whys: (1) なぜ許可外metadataがmainへ入ったか—PRマージcommitのauthor/committerを検査しなかった。(2) なぜ検査しなかったか—CIは内容とビルドだけを検証していた。(3) なぜ内容検証で防げなかったか—Git identityはファイル内容ではない。(4) なぜローカルhookで防げなかったか—GitHub上のPR作成・マージやCMS経由のcommitにはローカルhookが適用されない。(5) なぜ再発可能だったか—main/stagingへ入る差分をサーバー側で検査する統制がなかった。SEC-42のCIゲートを追加し、通常差分・force-push・base SHA欠損を別々に監査する。
+
 | P127-1（仮番号・マージ時採番調整） | 2026-09-23 | iPhone 14 エミュレーション（Playwright Chromium）で記事編集画面の「公開」ボタンを押すと、メニュー（公開する／公開して新規作成／公開して複製する）がレイアウト幅 800px・表示領域外（y≈1238、表示領域の高さ 664）に描画され、タップ（クリック）が届かない。Issue #127 の E2E 実装中に発見。**変更前の staging（fc4fb3b）のビルドでも同じ位置に描画されることを確認済み**で、Issue #127 の変更による退行ではない。実機 iOS Safari では未確認 | 未調査（推測: モバイル向けボトムシート CSS〔`position: fixed; bottom: 0`〕が、transform 等で包含ブロックが変わる祖先要素の中で効き、表示領域ではなくエディタ要素基準で配置されている可能性） | **未修正**（1セッション1系統のため別 Issue で扱う）。Issue #127 の E2E・エビデンスでは iPhone のみメニュー項目をキーボード（Enter）で選択し、その旨を結果に記録している | （未作成。別 Issue で再現テストを追加する） |
 | P127-2（仮番号・マージ時採番調整） | 2026-09-23 | CMS 系 E2E スペック（window.open モンキーパッチ方式）の多くが、実際には**ログイン未完了のまま**実行されていた。モンキーパッチは `window.location.origin`（localhost）から postMessage するが、Decap は config.yml の `base_url`（staging/本番の URL）のオリジンからのメッセージしか受け付けないため、認証が成立しない。各テストは「要素が無ければ別の弱い条件で PASS」の分岐を持つため失敗として表に出なかった。Issue #127 で base_url が `location.origin` になり認証が実際に成立した結果、E-39「固定ページのorderフィールドはmin=1の数値フィールドである」が3デバイスで失敗して発覚した（認証後のエディタ画面では `body` の高さが0になり、フォールバック分岐の `body.isVisible()` が false）。変更前の staging（fc4fb3b）のビルドで、同じモンキーパッチでは記事一覧まで到達しないことを確認済み | (1) テスト側の認証方式が config.yml の base_url と localhost のオリジン差に依存していた（スタンドアロン証跡スクリプトは config.yml を一時書き換えて回避していたが、spec 側は回避していなかった）。(2) 認証が成立したことを必須条件にせず、未認証でも PASS する分岐を持たせていた。(3) 「認証後の画面が撮れているか」の社内レビュー規定は証跡スクリプト向けで、spec の合否には効いていなかった | Issue #127 で base_url が配信オリジンから導出され、spec でも認証が成立するようになった（構造的に解消）。E-39 は数値フィールドの表示・min=1・編集可を必須で検証する形に書き換えた。**他の CMS spec に残る「未認証でも PASS する分岐」の見直しは未着手**（別 Issue で扱う。Issue #127 の範囲では、認証が成立した状態で全件 PASS することを確認） | cms-exploratory.spec.ts E-39（書き換え）、cms-env-branch.spec.ts E-47（ログイン後の一覧表示を必須で待つ） |
 
@@ -1944,6 +1958,26 @@ GitHubリポジトリが利用可能な場合、以下の手順でシステム�
 
 根本対策は、セキュリティ上の遮断を「オプション指定の有無」ではなく「遮断対象の入力を実際に与えて非実行を確認するテスト」で担保し、遮断点をライブラリ呼び出しの単一ラッパーに集約して「ラッパー以外からの直接読み込み禁止」を静的テストで固定すること。`security-hardening.test.mjs` は旧実装ではペイロードが実行されることを確認したうえで、新実装で非実行となることを検証している。
 
+**Bug #54 5 Whys（2026-09-24 Issue #153 検証で発見）:**
+
+1. なぜ包括E2Eの CMS エディタ画面で既存記事のタイトル・本文が空だったか: GitHub API モックが `/git/trees/{ref}:{folder}` の階層取得へ、実際のリポジトリ相対パスと異なる tree entries を返していたため。3.16.3 で記事を開く操作が月別フォルダーの tree を追加取得した際、fixture が不正な path 形式のまま応答し、entry の blob として解決されなかった。
+2. なぜ空フォームでも包括E2Eが PASS したか: T07/T50 は URL hash と Editor DOM の存在だけを合格条件にしており、フォームの値・本文の読込を確認していなかったため。
+3. なぜfixtureとアサーションが誤りを見つけられなかったか: fixture は初期コレクション一覧を表示するための再帰 tree と blob を用意していたが、実際の GitHub Git Trees API の repository-relative path と nested folder の相対 path を模擬していなかった。テストは画面遷移を見てデータ読込の完了とみなしていた。
+4. なぜ同じ問題が既存CMS E2Eにも残ったか: 既存の E-31 は遷移 hash のみを検証し、E-29 はフォーム要素の存在を前提に条件付きで値を編集していたため、読み込まれた既存内容を必須アサーションにしていなかった。
+5. なぜ更新レビューで見逃されたか: 依存更新の回帰確認を広いシナリオ数と画面遷移成功率で評価し、CMS backend が返す実データと編集フォームの一致を独立した完了条件にしていなかったため。
+
+**根本対策:** E2E GitHub API fixture を repository-relative path に揃え、URL-encoded nested folder を decode して直下 entries を返す。CMSエディタの操作後は既存タイトルと本文が画面に表示されたことを待機・assertする（包括検証 T07/T50、`cms-operations.spec.ts` E-29）。Issue #153 の初回包括 run は数値上 150/150 PASS だったが、画像レビューで空フォームを検出し、編集データ検証としては無効と判定した。修正後は150/150件を3デバイスで再実行し、タイトル・本文の表示を確認した。
+
+**Bug #55 5 Whys（2026-09-24 Issue #153 の続き、PR #157 staging マージ後に発見）:**
+
+1. なぜ staging の Cloudflare Pages ビルドが失敗したか: ビルドログに `node-build: definition not found: 22.23.3` と出力され、`.nvmrc` が指定する Node.js 22.23.3 を Pages のビルド環境（asdf 経由の node-build）がインストールできなかったため。
+2. なぜ node-build が 22.23.3 をインストールできなかったか: 22.23.3 は 2026-09-23（PR #157 のマージ前日）に公開されたばかりで、node-build の公開バージョン定義リポジトリ（`nodenv/node-build`）にまだ該当パッチのファイルが追加されていなかったため（`22.23.2` の定義は存在するが `22.23.3` は存在しないことを実測で確認）。
+3. なぜ公開直後のパッチを `.nvmrc` に採用してしまったか: Issue #153 の QA で「Node.js 22 パッチを最新（22.23.3）に揃える」とだけ決定し、Cloudflare Pages の実際のビルド環境（node-build）がその版に対応しているかどうかを確認する手順が存在しなかったため。
+4. なぜ既存の SEC-40 依存鮮度チェックが更新前に警告しなかったか: `evaluateNode` は「固定パッチが endoflife.date のサイクル最新より古いか」だけを見ており、「サイクル最新パッチが公開されたばかりでビルド環境がまだ追従できない」というケースを区別していなかった。むしろ最新でない版を維持していると `NODE_PATCH_BEHIND`（警告）を出す設計だったため、`.nvmrc` を最新へ追従させる方向の圧力しかなかった。
+5. なぜこの種の失敗が起き得る構造だったか: Node.js 公式リリースと Cloudflare Pages のビルド環境（サードパーティの asdf/node-build）の更新には数日〜数週間のタイムラグがあり得るが、そのタイムラグを吸収する仕組み（更新前のnode-build定義確認、または機械判定の猶予期間）がこれまで存在しなかったため。
+
+**根本対策:** `.nvmrc`・`engines` を node-build 定義済みの 22.23.2 へ戻し、staging のビルドを復旧した（Decap CMS 3.16.3 は維持）。加えて (1) `.nvmrc` 更新の運用手順（4.11.5章）に、更新前に node-build の該当パッチ定義の存在確認を明記し、(2) `scripts/check-dependency-freshness.mjs` の SEC-40 判定に `nodePatchGraceDays`（既定14日）の猶予期間を追加し、Node.js 最新パッチの公開直後は `NODE_PATCH_BEHIND` ではなく情報用の `NODE_PATCH_TOO_NEW` として扱うことで、機械判定が公開直後のパッチへの追従を急かさないようにした。判定テストはフィクスチャの固定日付（ネットワーク非依存）で猶予内・猶予超過・公開日未取得の3パターンを検証する。
+
 ### 4.5.1 既知の制限事項（Bug #48関連: url-map.json対策の適用範囲）
 
 SEC-29（Bug #48）の対策は`public/admin/url-map.json`から下書き記事のslugを除外するものであり、下書き記事の**アップロード画像そのもの**は対象外である。Decap CMS ＋ 静的ホスティング（Cloudflare Pages）構成では、記事本文に挿入した画像は記事の公開状態と無関係に`public/images/uploads/`へ保存され、Astroビルド時に無条件で`dist/images/uploads/`へコピーされて公開URLでアクセス可能になる。これはCMSの保存フロー（画像は先にアップロードされ、後から記事の下書き/公開状態が決まる）に起因する仕様上の制限であり、コード修正では解消できない。運用面の回避策として、**下書き記事に未公開情報を含む画像を貼らない**運用を徹底する（監査の敵対的レビューで指摘された事項）。
@@ -2016,7 +2050,7 @@ git push origin main
 | 6 | `public/robots.txt` が存在しない（`src/pages/robots.txt.ts` が生成） | ファイル確認・`npm test` | Issue #127: 本番の `Allow: /` は `CF_PAGES_BRANCH=main` のビルドでのみ生成。デプロイ後は4.6.6章で本番の実物を読み取り確認（Bug #41再発防止） |
 | 7 | astro.config.mjs の `SITE_URL` が `resolveSiteUrl(process.env.CF_PAGES_BRANCH)` | ファイル確認・`npm test` | Issue #127: リテラル URL を書かない。canonical/OGP/RSS/sitemap の絶対URLは main ビルドでのみ本番URL |
 | 8 | 包括エビデンス | `node evidence/YYYY-MM-DD/verify-comprehensive.mjs` | **必須**。雛形は `evidence/2026-05-24/verify-comprehensive.mjs`。認証後 CMS 画面。ログイン画面のみ不可。**CI に載せない**（Bug #50） |
-| 9 | 環境固有値の導出が正しい（ブランチ・ホスト別） | `npm test`（SEC-35 改訂: cms-config / env-derivation / build の CF_PAGES_BRANCH 別ビルド）＋ 4.6.6章の本番読み取り確認 | Bug #51再発防止。Issue #127 以降はファイル差分が無いので「混ざる」値が存在しない。テスト件数はブランチに依存しない（754件） |
+| 9 | 環境固有値の導出が正しい（ブランチ・ホスト別） | `npm test`（SEC-35 改訂: cms-config / env-derivation / build の CF_PAGES_BRANCH 別ビルド）＋ 4.6.6章の本番読み取り確認 | Bug #51再発防止。Issue #127 以降はファイル差分が無いので「混ざる」値が存在しない。テスト件数はブランチに依存しない（762件） |
 
 ### 4.6.3 main → staging コンテンツ同期
 
@@ -2103,7 +2137,7 @@ curl -fsS https://staging.reiwa.casa/ | grep -o '<link rel="canonical"[^>]*>'
 
 第三者セキュリティ診断（2026年2月21日実施）で検出された問題と対策を踏まえ、再発防止のための品質向上策と定期診断の運用を定める。
 
-セキュリティ要件は第1部 1.4.2章（SEC-01〜SEC-41）として定義されている。本章では運用面での品質基準、再発防止策、定期診断の手順を定める。個人情報保護については4.8章を参照。
+セキュリティ要件は第1部 1.4.2章（SEC-01〜SEC-42）として定義されている。本章では運用面での品質基準、再発防止策、定期診断の手順を定める。個人情報保護については4.8章を参照。
 
 ### 4.7.1 品質向上策
 
@@ -2203,13 +2237,14 @@ git履歴に個人情報（氏名・メールアドレス）が含まれてい�
 | 2 | pre-commit hook | `.git/hooks/pre-commit` でauthor emailとステージファイル内容を検査し、個人情報パターン検出時にコミットを拒否 | ローカルコミット |
 | 3 | CLAUDE.md ルール9 | Claude Codeが個人情報をコード・ドキュメント・コミットに含めないルールを明文化 | AI支援開発 |
 | 4 | GitHub noreply設定 | GitHubアカウントの「Keep my email addresses private」を有効化し、CMS経由のコミットにも個人メールが使われないようにする | CMS経由コミット |
+| 5 | CI identity gate（SEC-42） | PRのbase..headとmain/staging pushのbefore..headを検査し、不許可identityがあればジョブを失敗させる。force-pushまたはbefore SHA不在時は新HEAD全履歴を検査する。ブランチ保護未設定の現状では直接push後の検知となる | main/stagingに入る新規コミット |
 
 ### 4.8.3 pre-commit hook の検査内容
 
 1. **author email検査**: `git config user.email` が個人メールパターン（gmail.com, yahoo.co.jp, hotmail等）に該当する場合、コミットを拒否
 2. **ステージファイル内容検査**: ステージされたテキストファイル内に特定の個人情報パターンが含まれる場合、コミットを拒否
 
-**注意**: `.git/hooks/` はgit管理外のため、リポジトリをクローンした場合はhookを再設定する必要がある。
+**注意**: `.git/hooks/` はgit管理外のため、リポジトリをクローンした場合はhookを再設定する必要がある。SEC-42はPR差分またはpush差分をCIで検査し、force-push、およびbefore SHAを取得できない場合は新HEADの全履歴を検査する。PRはマージ前にチェックされるが、main/stagingにブランチ保護がない限り直接pushはGitHubに受理された後でCIが失敗するだけであり、pushを拒否しない。履歴修復force-push完了前はブランチ保護を有効化せず、完了後にrequired status checks等を別Issueで検討する。過去のPR refsは対象外とする。
 
 ## 4.9. 動作確認エビデンス取得
 
@@ -2279,6 +2314,7 @@ UI変更・CMS変更・Modern Web Guidance対応では、DOMを直接書き換�
 | Bug #33 | タグURLエンコード | S08 |
 | Bug #36 | CMS認証後エディタ表示（ログイン画面のみ問題） | T17〜T32 全48枚 |
 | Bug #37 | CMS年月フィルター（選択年月のみ表示） | E-37 / cms19-month-filter |
+| Bug #54 | CMS既存記事のtree/blob読込・空フォーム誤PASS再発防止 | T07, T50, E-29 |
 
 ### 4.9.7 CMS CRUD操作検証（T17〜T32）
 
@@ -2495,7 +2531,7 @@ evidence/YYYY-MM-DD/
 
 | 指標 | 目標値 | 現状 |
 |:---|:---|:---|
-| Vitestテスト全PASS | 100% | 754/754 (100%)（2026-09-23 Issue #130対応後。Issue #127 以降は全ブランチ共通件数） |
+| Vitestテスト全PASS | 100% | 762/762 (100%)（2026-09-24 Issue #153 対応後。Issue #127 以降は全ブランチ共通件数） |
 | Playwright E2Eテスト全PASS | 100% | 2026-09-20 ローカル全件: 445 PASS・8 skip / 453件（16.3m）。CI では実行しない（Bug #50） |
 | セキュリティ検証全PASS | 100% | 10/10 (100%) |
 | ボタン重なり検出 | 0件 | 0件 |
@@ -2512,12 +2548,12 @@ SEC-40（Issue #132）。`npm audit` と Dependabot は npm 依存グラフと G
 
 | 名称 | 現在バージョン | 固定方法（箇所） | 最新確認方法 | EOL・サポート情報源 | 更新手順 | 自動判定 |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| Decap CMS（unpkg CDN） | 3.16.2 | 正確なバージョン＋SRI sha384＋`crossorigin="anonymous"`（`public/admin/index.html`） | npm registry `decap-cms` の `dist-tags.latest`、`/-/npm/v1/security/advisories/bulk`、CDN 実体の sha384 | 明文化された EOL ポリシーなし（コミュニティメンテの Netlify CMS フォーク）。上流の最終リリースからの経過日数を代替指標にする（`decaporg/decap-cms` Releases） | 4.11.4章 | 週次 |
+| Decap CMS（unpkg CDN） | 3.16.3 | 正確なバージョン＋SRI sha384＋`crossorigin="anonymous"`（`public/admin/index.html`） | npm registry `decap-cms` の `dist-tags.latest`、`/-/npm/v1/security/advisories/bulk`、CDN 実体の sha384 | 明文化された EOL ポリシーなし（コミュニティメンテの Netlify CMS フォーク）。上流の最終リリースからの経過日数を代替指標にする（`decaporg/decap-cms` Releases） | 4.11.4章 | 週次 |
 | GitHub Actions `actions/checkout` | v4.4.0（`ci.yml`）／v7.0.1（`dependency-freshness.yml`） | commit SHA＋`# vX.Y.Z` コメント（`ci.yml` は SEC-36 / Issue #117 項目3 で固定済み） | GitHub API `releases/latest` | 各リポジトリの Releases。実行ランタイム（Node）の非推奨告知は GitHub Changelog | Dependabot PR（staging 向け）をレビューしてマージ（SHA とバージョンコメントを同時に更新） | 週次＋Dependabot |
 | GitHub Actions `actions/setup-node` | v4.4.0（`ci.yml`）／v7.0.0（`dependency-freshness.yml`） | 同上 | 同上 | 同上 | 同上 | 週次＋Dependabot |
 | GitHub Actions `actions/upload-artifact` / `actions/download-artifact` | v7.0.1 / v8.0.1 | commit SHA＋バージョンコメント（`dependency-freshness.yml`） | 同上 | 同上 | 同上 | 週次＋Dependabot |
-| Node.js | 22 系（`.nvmrc` 22.12.0、`engines` `>=22.12.0`、CI `node-version: '22'`、週次ジョブは `.nvmrc`） | `.nvmrc`（Cloudflare Pages とローカル）・`package.json` engines・CI | endoflife.date `api/v1/products/nodejs` の該当サイクル `latest` | endoflife.date（Node.js 公式リリーススケジュール）。22 系は 2027-04-30 EOL | 4.11.5章 | 週次 |
-| Cloudflare Pages ビルドイメージ・`NODE_VERSION` | 2026-09-23 ダッシュボード確認: Build command `npm run build`、Build output `dist`、Production branch `main`。**ビルドイメージのバージョンと `NODE_VERSION` は未確認**（2.5.1章の記載値は v3） | ダッシュボード設定（API 未連携） | Cloudflare ダッシュボード Settings > Build、デプロイログ | Cloudflare Pages Build image ドキュメント（旧イメージの廃止告知） | 4.11.5章。確認後に `scripts/dependency-freshness.config.json` の `lastReviewed`・`reviewed`・`unverified` を更新 | 四半期の手動確認（期限超過・未記録・`unverified` 残存で warning） |
+| Node.js | 22 系（`.nvmrc` 22.23.2、`engines` `>=22.23.2`、CI `node-version: '22'`、週次ジョブは `.nvmrc`）。2026-09-23公開の22.23.3はCloudflare Pagesのnode-build未対応でPagesビルドが失敗したため22.23.2で据え置き（Bug #55） | `.nvmrc`（Cloudflare Pages とローカル）・`package.json` engines・CI | endoflife.date `api/v1/products/nodejs` の該当サイクル `latest`／`latest.date`（公開日、猶予判定に使用） | endoflife.date（Node.js 公式リリーススケジュール）。22 系は 2027-04-30 EOL。加えて node-build（asdf、Cloudflare Pages が使用）の定義有無を https://github.com/nodenv/node-build/tree/master/share/node-build で確認する（自動判定対象外、`.nvmrc` 更新前の手動確認） | 4.11.5章 | 週次（node-build 定義確認は `.nvmrc` 更新の都度、手動） |
+| Cloudflare Pages ビルドイメージ・`NODE_VERSION` | 2026-09-23 ダッシュボード確認: Build command `npm run build`、Build output `dist`、Production branch `main`。2026-09-24のビルドログで `NODE_VERSION` は**未設定**（`.nvmrc` の値を使用）と確認。**ビルドイメージのバージョン（Build system version）のみ未確認**（2.5.1章の記載値は v3） | ダッシュボード設定（API 未連携）・Pages ビルドログ | Cloudflare ダッシュボード Settings > Build、デプロイログ | Cloudflare Pages Build image ドキュメント（旧イメージの廃止告知） | 4.11.5章。確認後に `scripts/dependency-freshness.config.json` の `lastReviewed`・`reviewed`・`unverified` を更新 | 四半期の手動確認（期限超過・未記録・`unverified` 残存で warning） |
 
 対象外: `https://github.com` / `api.github.com`（OAuth・API のエンドポイントであり依存ライブラリではない）、`wrangler.toml` の `compatibility_date`（Workers の互換性日付で EOL の概念がない）、`skills-lock.json`（開発補助のエージェントスキル。配信物・ビルドに含まれない）、npm パッケージと Playwright ブラウザ（npm 依存として `npm audit` / Dependabot alerts の対象）。
 
@@ -2528,7 +2564,8 @@ SEC-40（Issue #132）。`npm audit` と Dependabot は npm 依存グラフと G
 | 状態 | 条件 | 対応 |
 | :--- | :--- | :--- |
 | alert | CDN: SRI 実体不一致／integrity 欠落／バージョン範囲指定／固定版が npm で deprecated／high・critical の既知脆弱性／メジャー遅れ／3 マイナー以上の遅れ。Node.js: 宣言メジャーの EOL まで 30 日以内または経過 | Issue 起票とジョブ失敗で通知。1 週間以内に staging で対処 |
-| warning | CDN: patch または 1〜2 マイナー遅れ／low・moderate の既知脆弱性／上流の最終リリースから 365 日超。Actions: タグ固定／SHA 固定でバージョンコメントなし／メジャー遅れ。Node.js: EOL まで 90 日以内／固定パッチがサイクル最新より古い／宣言箇所のメジャー不一致。手動確認: 未記録・92 日超・未確認項目（`unverified`）の残存 | 結果 JSON とジョブサマリーに記録。四半期レビューまでに解消するか理由を記録 |
+| warning | CDN: patch または 1〜2 マイナー遅れ／low・moderate の既知脆弱性／上流の最終リリースから 365 日超。Actions: タグ固定／SHA 固定でバージョンコメントなし／メジャー遅れ。Node.js: EOL まで 90 日以内／固定パッチがサイクル最新より古く、かつ最新パッチの公開から `nodePatchGraceDays`（既定14日）以上経過している（`NODE_PATCH_BEHIND`）／宣言箇所のメジャー不一致。手動確認: 未記録・92 日超・未確認項目（`unverified`）の残存 | 結果 JSON とジョブサマリーに記録。四半期レビューまでに解消するか理由を記録 |
+| ok（情報記録） | Node.js: 固定パッチがサイクル最新より古いが、最新パッチの公開から `nodePatchGraceDays` 未満（`NODE_PATCH_TOO_NEW`）。Cloudflare Pages の node-build (asdf) が公開直後のパッチにまだ対応していない可能性があるための猶予（Bug #55）。公開日が取得できない場合は猶予を適用せず warning のまま | 記録のみ。猶予期間経過後に再度 `NODE_PATCH_BEHIND` として検知される |
 | unknown | 個別のリモート照会の失敗（warning 相当として集計） | 翌週の結果で再確認。連続する場合は原因を調査 |
 | error | リモート照会がすべて失敗し判定できない | ジョブ失敗で通知 |
 | ok / manual | 上記に該当しない／手動確認が期限内 | なし |
@@ -2551,7 +2588,7 @@ Actions のメジャー遅れを alert にしないのは、Dependabot が更新
 
 `public/admin/index.html` は Decap の内部 DOM を直接操作しているため、パッチ更新でもフル CMS E2E と 3 デバイスのエビデンス取得を必須とする。
 
-1. `feature/*` ブランチを staging から作成し、上流の CHANGELOG / Releases で破壊的変更と修正内容を確認する
+1. `feature/*` ブランチを staging から作成し、上流の CHANGELOG / Releases で破壊的変更と修正内容を確認する。3.16.3（2026-09-22）は editor performance 最適化、Notes pane 改善、GitLab 対応、release publish trigger 修正を含む。CMS_MANUAL_INIT / CMS.init・DOM カスタマイズへの影響を上流差分と実ブラウザE2Eで確認する
 2. `public/admin/index.html` の `<script src="https://unpkg.com/decap-cms@X.Y.Z/dist/decap-cms.js">` を正確なバージョンに書き換える（`^` / `~` / 省略は禁止。SEC-03）
 3. SRI を再計算して `integrity` を更新する: `curl -sL https://unpkg.com/decap-cms@X.Y.Z/dist/decap-cms.js | openssl dgst -sha384 -binary | openssl base64 -A`（`sha384-` を前置。`crossorigin="anonymous"` は維持。SEC-12）。ハッシュを誤ると管理画面が起動しない
 4. `node scripts/check-dependency-freshness.mjs` を実行し、`SRI_MATCH` と `CDN_LATEST`（または意図した版）になることを確認する
@@ -2561,10 +2598,11 @@ Actions のメジャー遅れを alert にしないのは、Dependabot が更新
 
 ### 4.11.5 Node.js・Cloudflare Pages ビルド環境の更新手順
 
-- **パッチ更新**（例: `.nvmrc` 22.12.0 → 22 系最新）: `.nvmrc` を更新し、`npm test`・`npm run build`・`npm run test:e2e` を実行して staging へ。Cloudflare Pages は `.nvmrc` を読むため、デプロイログの Node バージョン表示で反映を確認する
+- **パッチ更新前に node-build 定義の存在を必ず確認する**（Bug #55の再発防止）: Cloudflare Pages は `.nvmrc` の値を asdf 経由の node-build でビルドするため、Node.js 公式リリース直後（概ね `nodePatchGraceDays` の猶予期間内）は node-build に定義が無いことがある。`.nvmrc` を書き換える**前**に https://github.com/nodenv/node-build/tree/master/share/node-build に該当パッチ版のファイル（例: `22.23.2`）が存在するかを確認する（`curl -s -o /dev/null -w '%{http_code}' https://raw.githubusercontent.com/nodenv/node-build/master/share/node-build/<version>` が `200` であること）。無い場合は staging へ push せず、定義が追加されるまで待つか、定義済みの1つ前のパッチに留める
+- **パッチ更新**（2026-09-24: `.nvmrc` 22.23.3 → 22.23.2、`engines` `>=22.23.2`。Bug #55: 22.23.3はnode-build未対応でstagingのPagesビルドが失敗したため、node-build定義済みの22.23.2に戻した）: `.nvmrc` を更新し、`npm ci`・`npm test`・`npm run build`・`npm run test:e2e` を実行して staging へ。Cloudflare Pages は `.nvmrc` を読むため、デプロイログの Node バージョン表示で反映を確認する。CI は Node 22 の最新パッチを使う `node-version: '22'` のため整合する
 - **メジャー更新**（EOL の 90 日前 warning を起点に計画）: `.nvmrc`、`package.json` の `engines`、`ci.yml` の `node-version` を同時に揃え、Cloudflare Pages の環境変数 `NODE_VERSION`（設定している場合）とビルドイメージの対応バージョンも確認する。宣言箇所の不一致は週次ジョブが `NODE_MAJOR_MISMATCH` として warning にする
 - **ビルドイメージ**: Cloudflare が旧イメージの廃止を告知した場合、または四半期の手動確認時に、ダッシュボードで Build system version を確認・更新し、`scripts/dependency-freshness.config.json` の `current`・`lastReviewed`・`reviewed`・`unverified` を更新する。確認できなかった項目は `unverified` に残し、warning として表示し続ける
-- **手動確認記録**: 2026-09-23 にダッシュボードで Build command `npm run build`・Build output `dist`・Production branch `main` を確認（`lastReviewed: 2026-09-23`）。ビルドイメージのバージョンと `NODE_VERSION` は未確認のため `unverified` に登録し、次回確認まで warning（`MANUAL_PARTIAL`）
+- **手動確認記録**: 2026-09-23 にダッシュボードで Build command `npm run build`・Build output `dist`・Production branch `main` を確認（`lastReviewed: 2026-09-23`）。2026-09-24 に Cloudflare Pages のビルドログ（PR #157 のstagingビルド失敗ログ）で `Build environment variables: (none found)` を確認し、`NODE_VERSION` は未設定（`.nvmrc` を使用）と判明したため `reviewed` に記録（`lastReviewed: 2026-09-24`）。ビルドイメージのバージョン（Build system version）は引き続きダッシュボード認証が得られず未確認のため `unverified` に残し、次回確認まで warning（`MANUAL_PARTIAL`）。Issue #154 でフォロー
 
 ### 4.11.6 Dependabot・npm audit との役割分担
 
@@ -2582,4 +2620,4 @@ Actions のメジャー遅れを alert にしないのは、Dependabot が更新
 
 ---
 
-**最終更新**: 2026年9月24日（v1.74）
+**最終更新**: 2026年9月24日（v1.77）
