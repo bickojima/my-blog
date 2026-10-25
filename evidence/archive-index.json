@@ -10689,6 +10689,1140 @@
       "sha256": "12fe05476984e7fbf5cff9811db592beba4b73d2af835feed06596fef0cfc027",
       "size": 914,
       "storage_class": "git"
+    },
+    {
+      "path": "evidence/2026-10-25/comprehensive-results.json",
+      "sha256": "6f9d4f8c341e72b853fc23d5670bf4abab764d29e5118419451dad43d027fe1f",
+      "size": 46545,
+      "git_blob_sha1": "f064c0a48a4e2fc8a66179be6f142c2212080770",
+      "storage_class": "git"
+    },
+    {
+      "path": "evidence/2026-10-25/e2e/2026-09-23/issue127/screenshots/e127-localhost-PC.png",
+      "sha256": "b7b98dee24963f3a94d9ddac3376713bde61d04ecfc293490ea93f70f71f1dc3",
+      "size": 76758,
+      "git_blob_sha1": "bb7aa1889e4278a2a5ac6b8e1741b6213b71859e",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/e2e/2026-09-23/issue127/screenshots/e127-localhost-iPad.png",
+      "sha256": "62bf0161190c7eee55249dec0f591f66a1f0af641f1b9079278c9d453c44f297",
+      "size": 181139,
+      "git_blob_sha1": "53a7c21a7b08975a8309a895eb77c08d49b4bb72",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/e2e/2026-09-23/issue127/screenshots/e127-localhost-iPhone.png",
+      "sha256": "96f30825735fe9246b2b546ec9b6f7ffa2b414e842109007aaff2d9b5e535243",
+      "size": 160654,
+      "git_blob_sha1": "f0092d805a3a18b43ff790c90f06559b1ffb3698",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/e2e/2026-09-23/issue127/screenshots/e127-pages-preview-PC.png",
+      "sha256": "454bd5a108c3c1a6f6da6193aa6e55f478df07a2918d8a1070091d047c6cc831",
+      "size": 82266,
+      "git_blob_sha1": "104bad0e09c3264312b9912d8e083049cbf3d5f6",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/e2e/2026-09-23/issue127/screenshots/e127-pages-preview-iPad.png",
+      "sha256": "090c9458ef40d7b139247a97f8ce8b2141c6a0e72771c04874bba443133fa595",
+      "size": 188912,
+      "git_blob_sha1": "398215acbcdd1b834deccca385cda207c4b44cd7",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/e2e/2026-09-23/issue127/screenshots/e127-pages-preview-iPhone.png",
+      "sha256": "76c77b7be89280ca5d52b9fb46f75251c9d8462f986069ab2c32c92d715d9739",
+      "size": 167587,
+      "git_blob_sha1": "350d8bd137ebb639c80b3d19a9e4e216b9c697e0",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/e2e/2026-09-23/issue127/screenshots/e127-production-PC.png",
+      "sha256": "1f49b6c4ec2d3fa3bd56400618a5676db0a2f8df4449b3c783a81f8391595ebd",
+      "size": 76545,
+      "git_blob_sha1": "576cc5e89b6d7f28c03ca24f60427293e277c9a6",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/e2e/2026-09-23/issue127/screenshots/e127-production-iPad.png",
+      "sha256": "376065f6472005d0aed0a2e7c2fd5520a2c603bca158d53f04249adea86c98e7",
+      "size": 179328,
+      "git_blob_sha1": "38f49de7ec632564b909dd6a715ca29d44abd367",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/e2e/2026-09-23/issue127/screenshots/e127-production-iPhone.png",
+      "sha256": "a751fdcacdbcc23d2615e3cfa6e1e903b3cdc02a86d19004b277e3d0f0e4c137",
+      "size": 161239,
+      "git_blob_sha1": "5c7ffc0d6c2824105a3d00518a370665ad8e4e4b",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/e2e/2026-09-23/issue127/screenshots/e127-staging-PC.png",
+      "sha256": "5c84c1529a8195d0f80a610280214f668772d4f35f2d755f18da9e3f295cb86f",
+      "size": 77265,
+      "git_blob_sha1": "3b11539106dc16df57ea74249d79243eb4fa6bee",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/e2e/2026-09-23/issue127/screenshots/e127-staging-iPad.png",
+      "sha256": "42b3c0bfb54f6dac0938ed8d6202167d604a52f8c9413419887075af8532643b",
+      "size": 182356,
+      "git_blob_sha1": "4115ec0b730a8c51130aae185d5618df7b54bcd2",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/e2e/2026-09-23/issue127/screenshots/e127-staging-iPhone.png",
+      "sha256": "f84b465d69b290af226ad707c603cbc0d4bca531a3d2312527a453e3c2e86ebf",
+      "size": 124024,
+      "git_blob_sha1": "667b695e0cc3f3db4afae0dd3d98280e0f241b95",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/report.html",
+      "sha256": "e45b2790257b02d9d3a78cad469d3ef1cfae7af9db0eef3c6f83c80c0863ca0e",
+      "size": 43755,
+      "git_blob_sha1": "f9e5cb0fdd503f73702e8c1fc48cda3cd443440f",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/S01-homepage-PC.png",
+      "sha256": "509ee9022cf8554a8d5a48705f4fcc2d2494dd53cbd16c948e5c5d64d6584828",
+      "size": 215240,
+      "git_blob_sha1": "f78fdb8dd21cc649dfe86b62f32f89ea90f4fb9d",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/S01-homepage-iPad.png",
+      "sha256": "aadbbf855b33dfceac4228f33182a0642402e48d17fabdd06fc391548b16946c",
+      "size": 872877,
+      "git_blob_sha1": "bbc9f58e00bb9b70052478b82113133fc4d23162",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/S01-homepage-iPhone.png",
+      "sha256": "b670eb488e71d7d052613e168f61472c174e6b1a3fa1c91b33c6dcde15258590",
+      "size": 1249439,
+      "git_blob_sha1": "5492d1c71ff286e0d004b1a4d1e78fdca923b4f7",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/S02-article-PC.png",
+      "sha256": "d6a9b212e49ef9ab56f0f3fd082f5b3657058f87fecead5d6eacfef828922a26",
+      "size": 521824,
+      "git_blob_sha1": "3f5d58cc31274d6da6452e5ec830cbe6c6211404",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/S02-article-iPad.png",
+      "sha256": "978ad51c467acd4ba11c3859261d442591147b004a49978cc145cfde45378ecf",
+      "size": 1556273,
+      "git_blob_sha1": "8ba572a2981277d9b550e7c56a7d072f79b8d305",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/S02-article-iPhone.png",
+      "sha256": "50145e2fd95a8b797c02276a73eaddeebbdd695ba4699755c77e62ed0fc84b5a",
+      "size": 1075860,
+      "git_blob_sha1": "0ec6bbd1c5d88fed32cbfc41117b9abe6496d123",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/S03-tagfilter-PC.png",
+      "sha256": "6d40aa542dd242f90efc01e9c06ab47a80088a4be9d31c7e1cda57b9a44a5353",
+      "size": 28509,
+      "git_blob_sha1": "24b73f6d1806c99d5b7bdeb1181e7d801485cb54",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/S03-tagfilter-iPad.png",
+      "sha256": "1acb95ba1a1ef78e01d11d1bfb43c91130214fa0c1bcd16800f34dbc0cb66d22",
+      "size": 67082,
+      "git_blob_sha1": "30eee12333949273ec15de12514865cf3f7875c9",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/S03-tagfilter-iPhone.png",
+      "sha256": "a0b24111b4b6793b10ec38e42c29b6f14e05fc818a18049c99f20ff718f5e0f9",
+      "size": 82725,
+      "git_blob_sha1": "fafbce3638f13d379a27b41f0a693ab10b06a375",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/S04-archive-PC.png",
+      "sha256": "0077ba59e665052cb95326126541ed228fcf956daaa69c2221c8f268ab9bb523",
+      "size": 44186,
+      "git_blob_sha1": "c3b1d29bb0440a3b566fc386eba2fb16bae078ec",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/S04-archive-iPad.png",
+      "sha256": "d96209b61bfb8efe86a2b1436a7b6911811ae1aba3cad4398c7122acf8fb811c",
+      "size": 101437,
+      "git_blob_sha1": "e7f3b774cad7fa4a4cc5b6e02d4699f1549eff08",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/S04-archive-iPhone.png",
+      "sha256": "d5f537d1afa34118a2330bd6f5fc084a16e49ebbb1626fa013a680004d5940d6",
+      "size": 129412,
+      "git_blob_sha1": "e7731673e75bcc8d2e046d566dc4f5aa3714fcb5",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/S05-navdrop-PC.png",
+      "sha256": "e9ec73d50bc6df956c5f196b80871c41b45e62f26db4755b7e7786edbf6e7250",
+      "size": 217582,
+      "git_blob_sha1": "404f121713fc07ba085670b01e700fc11cf41324",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/S05-navdrop-iPad.png",
+      "sha256": "017cc9bca5f2f27853b164e2fa193206d83ae10d6e9f2fd7fe03699d892378b0",
+      "size": 878416,
+      "git_blob_sha1": "4b4044c0814d61f795a58a977399542ed91c23a1",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/S05-navdrop-iPhone.png",
+      "sha256": "f89e9973e9860145f233a34ee642d2dad8cc5b8637ccff4feea90092dbfeea1a",
+      "size": 1257180,
+      "git_blob_sha1": "751eb8f0c54d51240120da55439aa2b62f386bc2",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/S06-draft404-PC.png",
+      "sha256": "24f489f797afa479e700acf9d53e310602e9383efe6501b36bd8ac53e9498be3",
+      "size": 6063,
+      "git_blob_sha1": "d4e4b1fd8db6d57c7235f4c3bd9f24db3d24d63d",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/S06-draft404-iPad.png",
+      "sha256": "0dc1386151c8586bad7f28913ab96f119a1c286fdb002ae4d684e4cea03fa447",
+      "size": 19239,
+      "git_blob_sha1": "d5bd651f50229cfef93e8661ae533a898ea87cec",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/S06-draft404-iPhone.png",
+      "sha256": "1a1cbc5a3259b0fddee683e560fd9eb0b4518606fa419421c13a3ff47465009e",
+      "size": 12978,
+      "git_blob_sha1": "4b4930bbf2937f0ca9eddef336fe46d69be88508",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/S07-exifcss-PC.png",
+      "sha256": "e9ec73d50bc6df956c5f196b80871c41b45e62f26db4755b7e7786edbf6e7250",
+      "size": 217582,
+      "git_blob_sha1": "404f121713fc07ba085670b01e700fc11cf41324",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/S07-exifcss-iPad.png",
+      "sha256": "8f796d075a3f80d3ea514a64fddac4f2f3b7bd438cae6592fbcb7d855671f5ad",
+      "size": 870059,
+      "git_blob_sha1": "8abbab3d6f3278d794f7111aa027e79e29ea0a3c",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/S07-exifcss-iPhone.png",
+      "sha256": "940e493990582df651bc04ca9f34e844f14224a2660f0bab68546c20b31c818c",
+      "size": 1244971,
+      "git_blob_sha1": "312877b2e0267615c97628e2bb1280700bf3dd85",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/S08-a11y-PC.png",
+      "sha256": "e9ec73d50bc6df956c5f196b80871c41b45e62f26db4755b7e7786edbf6e7250",
+      "size": 217582,
+      "git_blob_sha1": "404f121713fc07ba085670b01e700fc11cf41324",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/S08-a11y-iPad.png",
+      "sha256": "8f796d075a3f80d3ea514a64fddac4f2f3b7bd438cae6592fbcb7d855671f5ad",
+      "size": 870059,
+      "git_blob_sha1": "8abbab3d6f3278d794f7111aa027e79e29ea0a3c",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/S08-a11y-iPhone.png",
+      "sha256": "940e493990582df651bc04ca9f34e844f14224a2660f0bab68546c20b31c818c",
+      "size": 1244971,
+      "git_blob_sha1": "312877b2e0267615c97628e2bb1280700bf3dd85",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/S09-layout-PC.png",
+      "sha256": "e9ec73d50bc6df956c5f196b80871c41b45e62f26db4755b7e7786edbf6e7250",
+      "size": 217582,
+      "git_blob_sha1": "404f121713fc07ba085670b01e700fc11cf41324",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/S09-layout-iPad.png",
+      "sha256": "8f796d075a3f80d3ea514a64fddac4f2f3b7bd438cae6592fbcb7d855671f5ad",
+      "size": 870059,
+      "git_blob_sha1": "8abbab3d6f3278d794f7111aa027e79e29ea0a3c",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/S09-layout-iPhone.png",
+      "sha256": "940e493990582df651bc04ca9f34e844f14224a2660f0bab68546c20b31c818c",
+      "size": 1244971,
+      "git_blob_sha1": "312877b2e0267615c97628e2bb1280700bf3dd85",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/S10-fixedpage-PC.png",
+      "sha256": "e90eea4983e55b09915a9ed56200b3f15bc066190532ae20e4080ddf16207408",
+      "size": 31845,
+      "git_blob_sha1": "aa86d937f5339dad070d957863d279802215d9e8",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/S10-fixedpage-iPad.png",
+      "sha256": "65f2ea73e1723615983992bccc6cb27de0ec130a078ef6c0716abbbfd506367d",
+      "size": 64079,
+      "git_blob_sha1": "04b6d0bef44149bb99f2d6dd9efee779b6ebaeb4",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/S10-fixedpage-iPhone.png",
+      "sha256": "be2e8708c7c907ae8ffdc4914c1f1b45aae11b4f1f8570909d0320d56cce9ad4",
+      "size": 79899,
+      "git_blob_sha1": "de4e28762fee66ce61b67d5e7193f7bf823a8926",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T01-login-PC.png",
+      "sha256": "a08b9a11711d2ce53a07ab61dd0d893eb7403713b9784052ec67c6b1763b24f7",
+      "size": 55798,
+      "git_blob_sha1": "9e2111ede0a6b6d7e214d666b7c9bc17a4919870",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T01-login-iPad.png",
+      "sha256": "8d9a6433ed199c2f3dc53040deaf2fecd4bea3c59eee0a2e98164a312cb5a7b6",
+      "size": 124312,
+      "git_blob_sha1": "db6453775d01d0fd1cb23c0545ff25377bac7334",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T01-login-iPhone.png",
+      "sha256": "646d4cdce11b50e5074862140cc973a0b7ee54ea1b8f150443e65ea4089034af",
+      "size": 98399,
+      "git_blob_sha1": "42c4781623e718b645a17929c975c116103495dc",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T02-sitelink-PC.png",
+      "sha256": "5bc2f3fc336feaf70044a2add735f7eab878b2278cee14089f45c4292538190c",
+      "size": 56823,
+      "git_blob_sha1": "bfed31fc868dd1080c3c473e8a3a8e1e17ed75df",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T02-sitelink-iPad.png",
+      "sha256": "4296208f67246db085e107fdcaecbf0d95e1bb29ba22cdb9ef8a61da97e405cf",
+      "size": 126609,
+      "git_blob_sha1": "4a3197114a5c5b5831cbb87d600a3e29bc62ab76",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T02-sitelink-iPhone.png",
+      "sha256": "452ae6b326c085d3f0acafe63f3730ec4e55c2838a62835562331d5f1705aac2",
+      "size": 101733,
+      "git_blob_sha1": "acffc410f602a806aa23be315b31274a4a1dfa00",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T03-entryfmt-PC.png",
+      "sha256": "a188b37287ab67daa479592e3db9bbb1cfb0df1f278ed94b79925eb3851bcd1d",
+      "size": 57018,
+      "git_blob_sha1": "6ae594d4d9b31ec23010271f591fb2bafe1dc4a2",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T03-entryfmt-iPad.png",
+      "sha256": "793fa64f92fdb1831a4ad14724d53ed5e37de3a615c50f01fea350011d5d0b95",
+      "size": 126970,
+      "git_blob_sha1": "0b7f6a20ad52f4afa632361d428c9ed31483f351",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T03-entryfmt-iPhone.png",
+      "sha256": "278d7904f123af147ed4f69d5d696277dea909a7f8da2b6f9f0b07e46bc3c31f",
+      "size": 102455,
+      "git_blob_sha1": "d5f083471e93959637a9439db1d54ac754e8fee7",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T04-draftbadge-PC.png",
+      "sha256": "1159bae69b30d4fa470f6d40a596336205bc036af8885d62618e66d2ec8b8321",
+      "size": 57275,
+      "git_blob_sha1": "2da028824dcd298f45e3295d7a0db5d9deda21c6",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T04-draftbadge-iPad.png",
+      "sha256": "fc399635470447d71e3b15e9a3e87513aa0f029298d6a7c7f2c63a1354e1a11d",
+      "size": 127665,
+      "git_blob_sha1": "c5d98c00c44e9af33aa1c3a9fc66166f5b3ec0bf",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T04-draftbadge-iPhone.png",
+      "sha256": "646d4cdce11b50e5074862140cc973a0b7ee54ea1b8f150443e65ea4089034af",
+      "size": 98399,
+      "git_blob_sha1": "42c4781623e718b645a17929c975c116103495dc",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T05-pagescoll-PC.png",
+      "sha256": "560dfbebf90d92883aa20b8210316ddcaef29e5df78c14d53c7687ac2203ddb6",
+      "size": 34689,
+      "git_blob_sha1": "f4e408d65daddc301d2816f57d781cfab0efbb98",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T05-pagescoll-iPad.png",
+      "sha256": "7b3b9bae01007a8fd1021c0d4497e34f579204dbddc3b984c7ae0f3dfeded4de",
+      "size": 79993,
+      "git_blob_sha1": "5ee24f9e52964d2e1a96175b0d3ab7f34fc08fe7",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T05-pagescoll-iPhone.png",
+      "sha256": "c0d6b277504bc2b9a21ca6f2bf10a4fd6af6f4cfd04b3d39de59160e001d75f8",
+      "size": 99446,
+      "git_blob_sha1": "2dc23761936d8ef3c250b3bde69d4d9c1578002d",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T06-pagefmt-PC.png",
+      "sha256": "560dfbebf90d92883aa20b8210316ddcaef29e5df78c14d53c7687ac2203ddb6",
+      "size": 34689,
+      "git_blob_sha1": "f4e408d65daddc301d2816f57d781cfab0efbb98",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T06-pagefmt-iPad.png",
+      "sha256": "7b3b9bae01007a8fd1021c0d4497e34f579204dbddc3b984c7ae0f3dfeded4de",
+      "size": 79993,
+      "git_blob_sha1": "5ee24f9e52964d2e1a96175b0d3ab7f34fc08fe7",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T06-pagefmt-iPhone.png",
+      "sha256": "c0d6b277504bc2b9a21ca6f2bf10a4fd6af6f4cfd04b3d39de59160e001d75f8",
+      "size": 99446,
+      "git_blob_sha1": "2dc23761936d8ef3c250b3bde69d4d9c1578002d",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T07-editor-PC.png",
+      "sha256": "ff0729e67bc1930ff05deca534266e19dca79b6a1f462154b8330f99cd0b31da",
+      "size": 49878,
+      "git_blob_sha1": "3aa30f6e41337f24b15e3682f5555afd58b075ea",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T07-editor-iPad.png",
+      "sha256": "1d9e072d77971fb05fd6865fef2c2dd39f0fb64eca425cb739c87f532f9646cb",
+      "size": 137679,
+      "git_blob_sha1": "edaaf0dab5095b1196fa72adbbd074092e2ee906",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T07-editor-iPhone.png",
+      "sha256": "ce036310b5ac93f7549bc8261975074ffd5fc97c88bba1972e05a28fdac9681a",
+      "size": 93871,
+      "git_blob_sha1": "79dbdc39667fde9e5d0d6e37174e533577ef9fdb",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T08-urlbar-article-PC.png",
+      "sha256": "c0e27bce360a82c38a8fa3aaa414f19e5859edb88bbb736a244824f122998cfe",
+      "size": 51938,
+      "git_blob_sha1": "51194ffe0652b2df01c3f702e72ec9a35db208c9",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T08-urlbar-article-iPad.png",
+      "sha256": "a1bc6e3d0b72a2d87044ae02b2910b726fb68084a7e646d4ccb7a8c2cc32ab27",
+      "size": 142549,
+      "git_blob_sha1": "1ba7ee8759ef2b59ea7e4c676216ef470fc95cd4",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T08-urlbar-article-iPhone.png",
+      "sha256": "ce036310b5ac93f7549bc8261975074ffd5fc97c88bba1972e05a28fdac9681a",
+      "size": 93871,
+      "git_blob_sha1": "79dbdc39667fde9e5d0d6e37174e533577ef9fdb",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T09-urlbar-page-PC.png",
+      "sha256": "fcb0d17d24c67168c42bbbae78e576ab2dd4b743c070410aefe3254d77535d83",
+      "size": 76330,
+      "git_blob_sha1": "322f4190f3c2993769c4a2e273ed1bb19c1d9ee3",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T09-urlbar-page-iPad.png",
+      "sha256": "404c97c905f78ad02f7f48fa48de012e2534f50c8ceaeb1d7ff285d178a6a98f",
+      "size": 186029,
+      "git_blob_sha1": "b72c50f78f0b34b9a7d2601c1bec0e1120f059c7",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T09-urlbar-page-iPhone.png",
+      "sha256": "ffe19281106eb7586ab4460a6422debe6331faff6a743e99fc90df3111b8e051",
+      "size": 151132,
+      "git_blob_sha1": "668757bfaa0358b4598a98f408f16c53393e7673",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T10-newform-PC.png",
+      "sha256": "27f616491a55a15ec06be54520d73ea76d7f5d38a5a240d709862beb52930752",
+      "size": 38644,
+      "git_blob_sha1": "af2aae2d39a35f3c454a938e43de82938d5d256b",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T10-newform-iPad.png",
+      "sha256": "9b1e065565c7c7d33bf8daf0e1787f2f4e6eb3b296bcf544c96d139b026998bb",
+      "size": 113786,
+      "git_blob_sha1": "35c554333203ff44ed301848546d3315841152e9",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T10-newform-iPhone.png",
+      "sha256": "6af81cfdf76ebae6d3424858bb8b20122135bd7d167e98d97b0e1c6e8be6cc09",
+      "size": 87239,
+      "git_blob_sha1": "858a4b0efe0c21028529ee5f99b355310ab43133",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T11-titleinput-PC.png",
+      "sha256": "ada741550a14ccf8e83c91a7864aa7bdba4121a76ea0dec5730855ce1630b43c",
+      "size": 47779,
+      "git_blob_sha1": "ead8ad5d83fb25a6170c0a0d70f8d1de9e6ed92a",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T11-titleinput-iPad.png",
+      "sha256": "8da6ab7f98af21d75970c77ae57dd6277ee417bbf2c137e65dbe8294ec7bba3a",
+      "size": 131078,
+      "git_blob_sha1": "0c0aaa9a6cc0d03aa25324128322735c1fe659e1",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T11-titleinput-iPhone.png",
+      "sha256": "4c4268360318283291b9c24e19aa62d58c6612fdb4261b3ac4d7fe8f3c95b46a",
+      "size": 112623,
+      "git_blob_sha1": "02bd0400dc6bdc0def135031833b666455dade94",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T12-imagewidget-PC.png",
+      "sha256": "dd417216276f8d6b8e5f8ae7f39578a37e572ed28d7ca899e4b180b53b427073",
+      "size": 46389,
+      "git_blob_sha1": "e14e65753682fa4e256d03968a986e9ab46b6148",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T12-imagewidget-iPad.png",
+      "sha256": "33de62bbfbc88a48732dc207e635cddf5497a6a0152ea6804891e18dd0948e91",
+      "size": 128411,
+      "git_blob_sha1": "2d926e6e90aa01f21af2395e4acbf70aa03d9679",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T12-imagewidget-iPhone.png",
+      "sha256": "1e516751c8654d3929cc05f7cd8680705a054c2063d45d70ab814f5cc6332614",
+      "size": 108249,
+      "git_blob_sha1": "60b1f20f3b4aa0f383095a26275ef2e24b7531b5",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T13-urlbar-hidden-PC.png",
+      "sha256": "dd417216276f8d6b8e5f8ae7f39578a37e572ed28d7ca899e4b180b53b427073",
+      "size": 46389,
+      "git_blob_sha1": "e14e65753682fa4e256d03968a986e9ab46b6148",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T13-urlbar-hidden-iPad.png",
+      "sha256": "33de62bbfbc88a48732dc207e635cddf5497a6a0152ea6804891e18dd0948e91",
+      "size": 128411,
+      "git_blob_sha1": "2d926e6e90aa01f21af2395e4acbf70aa03d9679",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T13-urlbar-hidden-iPhone.png",
+      "sha256": "1e516751c8654d3929cc05f7cd8680705a054c2063d45d70ab814f5cc6332614",
+      "size": 108249,
+      "git_blob_sha1": "60b1f20f3b4aa0f383095a26275ef2e24b7531b5",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T14-deletebtn-PC.png",
+      "sha256": "dd417216276f8d6b8e5f8ae7f39578a37e572ed28d7ca899e4b180b53b427073",
+      "size": 46389,
+      "git_blob_sha1": "e14e65753682fa4e256d03968a986e9ab46b6148",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T14-deletebtn-iPad.png",
+      "sha256": "33de62bbfbc88a48732dc207e635cddf5497a6a0152ea6804891e18dd0948e91",
+      "size": 128411,
+      "git_blob_sha1": "2d926e6e90aa01f21af2395e4acbf70aa03d9679",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T14-deletebtn-iPhone.png",
+      "sha256": "1e516751c8654d3929cc05f7cd8680705a054c2063d45d70ab814f5cc6332614",
+      "size": 108249,
+      "git_blob_sha1": "60b1f20f3b4aa0f383095a26275ef2e24b7531b5",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T16-grouping-PC.png",
+      "sha256": "c138a7ac6ea510270e738e2e7e709afc9c5989e1f85635f7314878dbf5d0ef56",
+      "size": 58427,
+      "git_blob_sha1": "2f8fa9819d2b1c98e492b699e2e65e71a6e8c4d1",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T16-grouping-iPad.png",
+      "sha256": "ccb79f2631ee3b113a70a8af1d9c6a21ed3f74893ebf91bb28407b76c567f4c4",
+      "size": 130606,
+      "git_blob_sha1": "c8dc18bba4a64adce7619bfb836e246c86238686",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T16-grouping-iPhone.png",
+      "sha256": "c39748b83d43320344b38006911019965c0148c8ff10cc03002ae54bab94d602",
+      "size": 104059,
+      "git_blob_sha1": "5f10716487d674e8cdfb467ef8bf46bc678910be",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T17-groupdesc-PC.png",
+      "sha256": "a08b9a11711d2ce53a07ab61dd0d893eb7403713b9784052ec67c6b1763b24f7",
+      "size": 55798,
+      "git_blob_sha1": "9e2111ede0a6b6d7e214d666b7c9bc17a4919870",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T17-groupdesc-iPad.png",
+      "sha256": "e349a93f21a20d20582ed5b710295d1a97008c8475f320264bea8db2c70d57b4",
+      "size": 124340,
+      "git_blob_sha1": "e98fd86493162a5c2192e4de4fff6d1a558cf35b",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T17-groupdesc-iPhone.png",
+      "sha256": "646d4cdce11b50e5074862140cc973a0b7ee54ea1b8f150443e65ea4089034af",
+      "size": 98399,
+      "git_blob_sha1": "42c4781623e718b645a17929c975c116103495dc",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T18-groupja-PC.png",
+      "sha256": "e0d9fb41aaf0e58a6ffca9386a2019c2c9bb0c3457947f0501bd6ef77a0dec82",
+      "size": 57718,
+      "git_blob_sha1": "f0a1c3a80f5d5a0d72a9da94090c29ac917316fd",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T18-groupja-iPad.png",
+      "sha256": "633afb72ed819496fa15cf142bff7d8e5ceae1f30189001aea5f0fe09d7037b7",
+      "size": 128468,
+      "git_blob_sha1": "161bf8195dbcf2fed3e26d358cac98bf151d0803",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T18-groupja-iPhone.png",
+      "sha256": "68e2c2a95603e67d26091365a70f55acb001a6fd50182434bd9fbb4b85188e3d",
+      "size": 102044,
+      "git_blob_sha1": "fb8b3854484e00535d8ca5568ee22701646e0d9b",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T19-groupbtnhidden-PC.png",
+      "sha256": "a08b9a11711d2ce53a07ab61dd0d893eb7403713b9784052ec67c6b1763b24f7",
+      "size": 55798,
+      "git_blob_sha1": "9e2111ede0a6b6d7e214d666b7c9bc17a4919870",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T19-groupbtnhidden-iPad.png",
+      "sha256": "e349a93f21a20d20582ed5b710295d1a97008c8475f320264bea8db2c70d57b4",
+      "size": 124340,
+      "git_blob_sha1": "e98fd86493162a5c2192e4de4fff6d1a558cf35b",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T19-groupbtnhidden-iPhone.png",
+      "sha256": "646d4cdce11b50e5074862140cc973a0b7ee54ea1b8f150443e65ea4089034af",
+      "size": 98399,
+      "git_blob_sha1": "42c4781623e718b645a17929c975c116103495dc",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T20-monthsel-PC.png",
+      "sha256": "60de9383fb9e70ca3afd1a56797769e4b2e8d51ba03b448ab117ee86b76ddd18",
+      "size": 57207,
+      "git_blob_sha1": "4682a43512f8f72cc03522ca62075300974931f3",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T20-monthsel-iPad.png",
+      "sha256": "0653b6534003918d71d02382bc2daf4dd11127c961a9e8d3a2aa23f9b138a982",
+      "size": 127380,
+      "git_blob_sha1": "3c4869050faf90ea940cde8fd586953a54a5eec6",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T20-monthsel-iPhone.png",
+      "sha256": "357afe1c1c852f068570202f405e0f4bbc4339256579c2345ae8fd60f6a27d17",
+      "size": 102756,
+      "git_blob_sha1": "84cd2d05264127d936ad917c63ddfcebfe0b5c4d",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T21-monthfilter-PC.png",
+      "sha256": "34bf0d99b6bda229422d658fbc931bda4dcd998003e63d7d97266ea82b6b6fd2",
+      "size": 43870,
+      "git_blob_sha1": "e87f5ec6d42aae8ca332b3119488cfff19fb020c",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T21-monthfilter-iPad.png",
+      "sha256": "b30227aa4546223e27454cca0c6df91829a6d3841cb79413c54c4f5886c7e7be",
+      "size": 99374,
+      "git_blob_sha1": "558392cbabf242b49db6a990d77c28d26bff32ae",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T21-monthfilter-iPhone.png",
+      "sha256": "70d08e4f89dba888eb66ce58d20f5054c56f4fc6fe6ad841f2a8784d1ff3eb3b",
+      "size": 104468,
+      "git_blob_sha1": "b2215b18682dfbcd361d505e259aac9ce3d766ec",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T22-selectstable-PC.png",
+      "sha256": "45977f4a57b7c2384b92d6862b7e841856cacea247312339fcbeb1481b1d292b",
+      "size": 58244,
+      "git_blob_sha1": "bc2966bf7b99d952bc99c4b6923f07733262e736",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T22-selectstable-iPad.png",
+      "sha256": "c55a8c374a03d55d2bc5212e73e9ea780c145f17f332b468b32d91ba579d61f7",
+      "size": 130688,
+      "git_blob_sha1": "20e7960682ee01a035cc1b8a700731ab972280e1",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T22-selectstable-iPhone.png",
+      "sha256": "a5715e884ed1d04c62130818711f7678dd02e7a30177be43dd3edeb58c69b7ac",
+      "size": 107165,
+      "git_blob_sha1": "4fbb5075a09f40c8dfc52f15a905a26ce0d649eb",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T23-sortasc-PC.png",
+      "sha256": "fecb20fa2a9e3132dd07563efdea748d6ee040a52c9482a2b9b5bf14be1bacb9",
+      "size": 53686,
+      "git_blob_sha1": "d9828fa590644fc07ca43e8294975ec41d0d05d5",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T23-sortasc-iPad.png",
+      "sha256": "cdbb778e3f54735909dc6c551877c86c799450b03b2cab4374c3d022bdf9903b",
+      "size": 121156,
+      "git_blob_sha1": "21acbe885adfe68cbefe1fa076764044b5dc51bd",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T23-sortasc-iPhone.png",
+      "sha256": "3b59947474ffb3840afdd92e209101c3b4ab23dc8499ecc5a45610714cbe9226",
+      "size": 103740,
+      "git_blob_sha1": "2169f5f469e59ee09a85f6b8292763b45b0c33f9",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T24-sortdesc-PC.png",
+      "sha256": "017f0808075c69df500b15215a92121c920447ad59fc9b80622d8b9d95d3c6da",
+      "size": 59654,
+      "git_blob_sha1": "47f99225ab2a3ea86f0feba7001efbb899b68b34",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T24-sortdesc-iPad.png",
+      "sha256": "4ec636d3e880dc4b52bef961186d030712612f80b063e46f2a93467764aa06a8",
+      "size": 135309,
+      "git_blob_sha1": "76a9761b3372f2baaffd5bedfb37b3e9d4706a2d",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T24-sortdesc-iPhone.png",
+      "sha256": "32c677f37bbf1e6f501b706371b9f08f4fda74d6d994bbaf9737fc0e41aac8a0",
+      "size": 101511,
+      "git_blob_sha1": "3089e47b87bc399710b3d4255cf70a07621059e6",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T25-entrydesc-PC.png",
+      "sha256": "01e7fb4eef7cd8a57267cc97f78f5add650948563abf5abdcd3b9a2194556cb7",
+      "size": 56879,
+      "git_blob_sha1": "248f4b4d61b3db31fb5861dbeebc8aac3c2be0e2",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T25-entrydesc-iPad.png",
+      "sha256": "4b060d39897ee0d891669ca8bcafae6d0072d6fd052d07446a84a20fbe6eb57a",
+      "size": 128925,
+      "git_blob_sha1": "9a44000e2d3772a0860fbdc2730db4bdfe78a38c",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T25-entrydesc-iPhone.png",
+      "sha256": "28f9ea659ddecd3bd137b25f1fa02bae744cc4bb424ea794bcfabda1ebf03ca9",
+      "size": 95867,
+      "git_blob_sha1": "dd7ded06424fde350e637c4adf36941bc6509544",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T27-codeblock-iPad.png",
+      "sha256": "1d9e072d77971fb05fd6865fef2c2dd39f0fb64eca425cb739c87f532f9646cb",
+      "size": 137679,
+      "git_blob_sha1": "edaaf0dab5095b1196fa72adbbd074092e2ee906",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T27-codeblock-iPhone.png",
+      "sha256": "ce036310b5ac93f7549bc8261975074ffd5fc97c88bba1972e05a28fdac9681a",
+      "size": 93871,
+      "git_blob_sha1": "79dbdc39667fde9e5d0d6e37174e533577ef9fdb",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T28-taparea-PC.png",
+      "sha256": "01e7fb4eef7cd8a57267cc97f78f5add650948563abf5abdcd3b9a2194556cb7",
+      "size": 56879,
+      "git_blob_sha1": "248f4b4d61b3db31fb5861dbeebc8aac3c2be0e2",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T28-taparea-iPad.png",
+      "sha256": "9df08a3035485afce17026e49013ee015cd71b5e1e2b3878d5caddff7e766009",
+      "size": 120345,
+      "git_blob_sha1": "a33fb3168330e8f32fd0bebf4f19c51b563fb8aa",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T28-taparea-iPhone.png",
+      "sha256": "c8b25ef56e2f5188512a936b597ab0b8ceae8154de88305f2e8462476069117b",
+      "size": 92789,
+      "git_blob_sha1": "77a39168506b5763b0e87a4d3c5c63c3113e9927",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T29-urlbar-drop-iPad.png",
+      "sha256": "8324816137ff78ed783b34cc805ee263de1096a1dccf3fe5bd10c071743c3bd8",
+      "size": 121041,
+      "git_blob_sha1": "ce27257e59015bdd382871f0bc1112537a3cb42f",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T29-urlbar-drop-iPhone.png",
+      "sha256": "ddd844395ed2772b430588183e9be31a145d3d317f7fa7a338d692bbf80d87f9",
+      "size": 93585,
+      "git_blob_sha1": "e4c0ed038649cb984f341141c625d3d9aa84f368",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T30-pullrefresh-PC.png",
+      "sha256": "01e7fb4eef7cd8a57267cc97f78f5add650948563abf5abdcd3b9a2194556cb7",
+      "size": 56879,
+      "git_blob_sha1": "248f4b4d61b3db31fb5861dbeebc8aac3c2be0e2",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T30-pullrefresh-iPad.png",
+      "sha256": "8324816137ff78ed783b34cc805ee263de1096a1dccf3fe5bd10c071743c3bd8",
+      "size": 121041,
+      "git_blob_sha1": "ce27257e59015bdd382871f0bc1112537a3cb42f",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T30-pullrefresh-iPhone.png",
+      "sha256": "ddd844395ed2772b430588183e9be31a145d3d317f7fa7a338d692bbf80d87f9",
+      "size": 93585,
+      "git_blob_sha1": "e4c0ed038649cb984f341141c625d3d9aa84f368",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T31-iosfont-PC.png",
+      "sha256": "01e7fb4eef7cd8a57267cc97f78f5add650948563abf5abdcd3b9a2194556cb7",
+      "size": 56879,
+      "git_blob_sha1": "248f4b4d61b3db31fb5861dbeebc8aac3c2be0e2",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T31-iosfont-iPad.png",
+      "sha256": "8324816137ff78ed783b34cc805ee263de1096a1dccf3fe5bd10c071743c3bd8",
+      "size": 121041,
+      "git_blob_sha1": "ce27257e59015bdd382871f0bc1112537a3cb42f",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T31-iosfont-iPhone.png",
+      "sha256": "ddd844395ed2772b430588183e9be31a145d3d317f7fa7a338d692bbf80d87f9",
+      "size": 93585,
+      "git_blob_sha1": "e4c0ed038649cb984f341141c625d3d9aa84f368",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T36-pagenewform-PC.png",
+      "sha256": "e3f0089ef3eafa37e9463cf59757f51e4f7dd62b7078561674255ee671bb62fe",
+      "size": 49072,
+      "git_blob_sha1": "8d429c6bc4dfa06db1600e4541ff256bd3bb2a6f",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T36-pagenewform-iPad.png",
+      "sha256": "5d4c297a438cd6d94fceee7af85894ad0ef96699ed3bbb812f099bb58273e6c7",
+      "size": 117595,
+      "git_blob_sha1": "2ad31ec8e5593094354e27dd897fd5fa5f72f82e",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T36-pagenewform-iPhone.png",
+      "sha256": "ecbd3e189e2f7e95ca4091f84584346d872dc1cb61f42f6badeb2d279df6fbbc",
+      "size": 96859,
+      "git_blob_sha1": "1ce267ba7998bca1cc38e2ba4df8d8f7bcd4f418",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T38-overflow-PC.png",
+      "sha256": "db3aa2fbdcf170cbbc1dc04521d762efcc71803695a3d3f95bfff97b683972c8",
+      "size": 53583,
+      "git_blob_sha1": "0704645cb5329fb1aa47d40870f675858e5143ea",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T38-overflow-iPad.png",
+      "sha256": "9df08a3035485afce17026e49013ee015cd71b5e1e2b3878d5caddff7e766009",
+      "size": 120345,
+      "git_blob_sha1": "a33fb3168330e8f32fd0bebf4f19c51b563fb8aa",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T38-overflow-iPhone.png",
+      "sha256": "8689689928aecab991d2dff6052c29269c03907b8e4388e8a7c0005920eb3c9e",
+      "size": 92789,
+      "git_blob_sha1": "f86a833b38cf4e4fcc02cd8b2c9f8448cfa011a7",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T44-collswitch-PC.png",
+      "sha256": "b0b91e5e3a25c043ed019b57ead80cb216bd0a641cc7a9a567a26c9e39d82696",
+      "size": 53568,
+      "git_blob_sha1": "92263f158590c8ae7b2ea51dedadc4e39e1aa053",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T44-collswitch-iPad.png",
+      "sha256": "9df08a3035485afce17026e49013ee015cd71b5e1e2b3878d5caddff7e766009",
+      "size": 120345,
+      "git_blob_sha1": "a33fb3168330e8f32fd0bebf4f19c51b563fb8aa",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T44-collswitch-iPhone.png",
+      "sha256": "8689689928aecab991d2dff6052c29269c03907b8e4388e8a7c0005920eb3c9e",
+      "size": 92789,
+      "git_blob_sha1": "f86a833b38cf4e4fcc02cd8b2c9f8448cfa011a7",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T46-entrycount-PC.png",
+      "sha256": "b0b91e5e3a25c043ed019b57ead80cb216bd0a641cc7a9a567a26c9e39d82696",
+      "size": 53568,
+      "git_blob_sha1": "92263f158590c8ae7b2ea51dedadc4e39e1aa053",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T46-entrycount-iPad.png",
+      "sha256": "9df08a3035485afce17026e49013ee015cd71b5e1e2b3878d5caddff7e766009",
+      "size": 120345,
+      "git_blob_sha1": "a33fb3168330e8f32fd0bebf4f19c51b563fb8aa",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T46-entrycount-iPhone.png",
+      "sha256": "8689689928aecab991d2dff6052c29269c03907b8e4388e8a7c0005920eb3c9e",
+      "size": 92789,
+      "git_blob_sha1": "f86a833b38cf4e4fcc02cd8b2c9f8448cfa011a7",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T47-toolbarover-PC.png",
+      "sha256": "ff0729e67bc1930ff05deca534266e19dca79b6a1f462154b8330f99cd0b31da",
+      "size": 49878,
+      "git_blob_sha1": "3aa30f6e41337f24b15e3682f5555afd58b075ea",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T47-toolbarover-iPad.png",
+      "sha256": "1d9e072d77971fb05fd6865fef2c2dd39f0fb64eca425cb739c87f532f9646cb",
+      "size": 137679,
+      "git_blob_sha1": "edaaf0dab5095b1196fa72adbbd074092e2ee906",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T47-toolbarover-iPhone.png",
+      "sha256": "ce036310b5ac93f7549bc8261975074ffd5fc97c88bba1972e05a28fdac9681a",
+      "size": 93871,
+      "git_blob_sha1": "79dbdc39667fde9e5d0d6e37174e533577ef9fdb",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T48-medialibrary-PC.png",
+      "sha256": "ff0729e67bc1930ff05deca534266e19dca79b6a1f462154b8330f99cd0b31da",
+      "size": 49878,
+      "git_blob_sha1": "3aa30f6e41337f24b15e3682f5555afd58b075ea",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T48-medialibrary-iPad.png",
+      "sha256": "1d9e072d77971fb05fd6865fef2c2dd39f0fb64eca425cb739c87f532f9646cb",
+      "size": 137679,
+      "git_blob_sha1": "edaaf0dab5095b1196fa72adbbd074092e2ee906",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T48-medialibrary-iPhone.png",
+      "sha256": "ce036310b5ac93f7549bc8261975074ffd5fc97c88bba1972e05a28fdac9681a",
+      "size": 93871,
+      "git_blob_sha1": "79dbdc39667fde9e5d0d6e37174e533577ef9fdb",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T50-entryclick-PC.png",
+      "sha256": "7bdc20f4de390ce039ebb1aa2b825dd9af30fa3cb6a8986b4fbb232c85725bae",
+      "size": 49971,
+      "git_blob_sha1": "a75efb1ba8c7a2518f8bda2e0d0bce98bd0c7bfb",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T50-entryclick-iPad.png",
+      "sha256": "9a4a8e88ac45687ec6b955df82bd3af2e9edd2d4cf11b46434cd7d3cf075badc",
+      "size": 137855,
+      "git_blob_sha1": "bebbed92c2f6345530b15a3d252607b6f7b766ee",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T50-entryclick-iPhone.png",
+      "sha256": "185d538024b2dc1fcc70794df2ca138279e5a1981e10ddf9faa04cd3589456b2",
+      "size": 93979,
+      "git_blob_sha1": "ade875d9b47a120e5ee548da1be11fcfac9d354e",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T51-errhandle-PC.png",
+      "sha256": "d6500cfcaae345f8bd475b888c173967736c152204f87c5f23eac41eb24ff520",
+      "size": 53306,
+      "git_blob_sha1": "03a278c90128188c896246e4b5f184520cf479d6",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T51-errhandle-iPad.png",
+      "sha256": "9df08a3035485afce17026e49013ee015cd71b5e1e2b3878d5caddff7e766009",
+      "size": 120345,
+      "git_blob_sha1": "a33fb3168330e8f32fd0bebf4f19c51b563fb8aa",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T51-errhandle-iPhone.png",
+      "sha256": "c8b25ef56e2f5188512a936b597ab0b8ceae8154de88305f2e8462476069117b",
+      "size": 92789,
+      "git_blob_sha1": "77a39168506b5763b0e87a4d3c5c63c3113e9927",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T52-unknownhash-PC.png",
+      "sha256": "5b33fc576456ce2d4a6fa9c52c59e666ef55197977b75f2c05e5f6c7b913da2b",
+      "size": 14810,
+      "git_blob_sha1": "7428c83cd0cdb0b222024e2c52f1465bf5d16600",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T52-unknownhash-iPad.png",
+      "sha256": "0e08fe404b79bf4d2ef2bd84eeb3b99dc9b7e6676599141f7fc3a1f8ca9551fa",
+      "size": 38447,
+      "git_blob_sha1": "ae2525ef8a4ac4ffe327fda5fc0722b1e4dbb0ee",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T52-unknownhash-iPhone.png",
+      "sha256": "33c52752061d352c95c208bb0041caa6a810578018378614acf618164f40c46c",
+      "size": 40542,
+      "git_blob_sha1": "115cbfac2cfae9278cb9c5e581026c6ebcf2c77e",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T55-reload-PC.png",
+      "sha256": "a08b9a11711d2ce53a07ab61dd0d893eb7403713b9784052ec67c6b1763b24f7",
+      "size": 55798,
+      "git_blob_sha1": "9e2111ede0a6b6d7e214d666b7c9bc17a4919870",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T55-reload-iPad.png",
+      "sha256": "e349a93f21a20d20582ed5b710295d1a97008c8475f320264bea8db2c70d57b4",
+      "size": 124340,
+      "git_blob_sha1": "e98fd86493162a5c2192e4de4fff6d1a558cf35b",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/screenshots/T55-reload-iPhone.png",
+      "sha256": "120b01b69b17bf52ff878c8ada2e02c21fb16a9627421026a331cff15910a438",
+      "size": 98399,
+      "git_blob_sha1": "10c3a4274b8e97b00572b9254073c55ba2afdf9d",
+      "storage_class": "drive"
+    },
+    {
+      "path": "evidence/2026-10-25/security-verification-results.json",
+      "sha256": "96c656d638fb4a97757846e6597d4c0ceddc33983c3a41a7c09510d7b9c7ad00",
+      "size": 460,
+      "git_blob_sha1": "ebebb04ecca6a50b32820c06f662998b060e28f6",
+      "storage_class": "git"
+    },
+    {
+      "path": "evidence/2026-10-25/verify-comprehensive.mjs",
+      "sha256": "82627428f309e5d8fe230dda79e5b94524216f40d1617e148c0aea6e580b52f8",
+      "size": 90769,
+      "git_blob_sha1": "78d264c489f25fa1c134c59573b30c460cabbc02",
+      "storage_class": "git"
+    },
+    {
+      "path": "evidence/2026-10-25/work-completion-report.html",
+      "sha256": "107641ea0c9f130e7a65618829362185c84d64f29436ec09d3ef511293f8f246",
+      "size": 876,
+      "git_blob_sha1": "6c883cf3081c1a49656935300609ec1feee35101",
+      "storage_class": "drive"
     }
   ]
 }
