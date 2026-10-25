@@ -2062,3 +2062,8 @@ Issue #117 項目2/12 により `build.test.mjs` 111→113、`fuzz-validation.te
 ### 2026-09-20 セキュリティIssue #109〜#113対応完了
 
 Vitest 622 passed（全PASS）。SEC-27（オリジン許可リスト）、SEC-22（Cache-Control全レスポンス適用）、SEC-25（ピクセル上限パラメータ整合性）、SEC-28（公開ページCSPメタタグ）の検証を含む。全E2E 457 passed / 8 skipped（465テスト）。
+
+
+## 2026-10-25 Issue #170 依存更新
+
+npm audit 0件、Vitest 765件PASS、20ページビルド成功。serve/compression互換性は既存の全E2E、画像処理はビルド、CMSは包括検証で確認する。最終結果はdocs/qa-2026-10-25-npm-security.mdへ記録する。

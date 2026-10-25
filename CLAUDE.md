@@ -276,3 +276,8 @@ DOCUMENTATION.md と TEST-REPORT.md は「第N部」ごとの章番号体系を�
 - 原稿変更時は `tests/e2e/app-info.spec.ts` のソース連動E2E（2ページ×3デバイス）で確認する。
 - **CMSに項目を足さずにフロントマターを増やさない**。Decap CMSは設定にない項目を保存時に落とす。`cms-config.test.mjs` が固定ページの全フロントマター項目とZodスキーマ項目をCMS設定と突き合わせて検出する。
 - 現行テスト定義はVitest 765件（全ブランチ共通。Issue #127 で SEC-35 のブランチ別登録を廃止）、E2E 465件（旧444件＋FR-29 9件＋Issue #127 E-47 12件、457実行+8スキップ）。QAは `docs/qa-2026-09-09-otp-app-pages.md`。
+
+
+### 2026-10-25 依存更新の検証記録
+
+Issue #170のQA・compression overrideの理由・検証用Node24への切り分けは `docs/qa-2026-10-25-npm-security.md` を参照。serveはE2Eで使用中のため不要依存ではない。包括検証の現行実行スクリプトは `evidence/2026-10-25/verify-comprehensive.mjs`。

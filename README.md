@@ -305,3 +305,8 @@ Google公式Modern Web Guidanceスキル準拠を方針とし、公開サイト�
 - 履歴移行時は、リポジトリの全headsとtagsをバックアップし、open PRがないこと、Drive退避物の読戻し・復元検証、候補全履歴のテストと個人情報検査を終えてから履歴を書き換えます。GitHubの読み取り専用PR refsは書き換え対象外として残存リスクに記録します。
 - 索引の形式検証は `node scripts/validate-evidence-archive-index.mjs` で行います。
 - 履歴移行の監査数値とpostflight結果は [`docs/history-migration-2026-09-24.md`](docs/history-migration-2026-09-24.md) を参照します。
+
+
+## npm依存のセキュリティ更新記録
+
+2026-10-25の依存更新・compression override・検証環境の切り分けは [Issue #170のQA記録](docs/qa-2026-10-25-npm-security.md) を参照。更新時はauditだけでなく単体・ビルド・全E2E・包括検証を通す。
