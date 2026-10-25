@@ -2676,3 +2676,8 @@ Actions のメジャー遅れを alert にしないのは、Dependabot が更新
 ---
 
 **最終更新**: 2026年9月24日（v1.79）
+
+
+## 2026-10-25 npm依存のセキュリティ更新（Issue #170）
+
+既存のserveはE2E用途に必要なため維持し、compressionのパッチ更新をoverrideする。sharp/libvipsとnpm依存の修正版をlockfileへ反映。QA・原因分析・検証は [記録](qa-2026-10-25-npm-security.md) を参照。staging検証後、所有者承認済みの自己レビューGOを条件としてmainへ反映する。
